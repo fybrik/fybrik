@@ -39,7 +39,7 @@ type DataInfo struct {
 type Environment struct {
 	Modules          map[string]*app.FybrikModule
 	Clusters         []multicluster.Cluster
-	StorageAccounts  []app.FybrikStorageAccount
+	StorageAccounts  []*app.FybrikStorageAccount
 	AttributeManager *infrastructure.AttributeManager
 }
 

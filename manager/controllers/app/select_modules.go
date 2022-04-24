@@ -10,7 +10,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/logging"
@@ -105,7 +105,7 @@ func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 	for accountInd := range p.Env.StorageAccounts {
 		// validate restrictions
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-		account := &p.Env.StorageAccounts[accountInd]
+		account := p.Env.StorageAccounts[accountInd]
 		if !p.validateRestrictions(
 			p.Asset.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
 			&account.Spec, account.Name) {
@@ -243,9 +243,11 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 			if n > 1 {
 				sources := []*taxonomy.Interface{}
 				for _, inter := range capability.SupportedInterfaces {
-					sources = append(sources, inter.Source)
+					if inter.Source != nil {
+						sources = append(sources, inter.Source)
+					}
 				}
-				if capability.API != nil {
+				if (len(sources) == 0) && (capability.API != nil) {
 					sources = append(sources, &taxonomy.Interface{
 						Protocol:   capability.API.Connection.Name,
 						DataFormat: capability.API.DataFormat})
@@ -272,11 +274,11 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 // helper functions
 
 // CheckDependencies returns dependent modules
-func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikModule) ([]*app.FybrikModule, []string) {
-	var found []*app.FybrikModule
+func CheckDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, []string) {
+	var found []*v1alpha1.FybrikModule
 	var missing []string
 	for _, dependency := range module.Spec.Dependencies {
-		if dependency.Type != app.Module {
+		if dependency.Type != v1alpha1.Module {
 			continue
 		}
 		if moduleMap[dependency.Name] == nil {
@@ -292,14 +294,14 @@ func CheckDependencies(module *app.FybrikModule, moduleMap map[string]*app.Fybri
 }
 
 // SupportsDependencies checks whether the module supports the dependency requirements
-func SupportsDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikModule) bool {
+func SupportsDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) bool {
 	// check dependencies
 	_, missingModules := CheckDependencies(module, moduleMap)
 	return len(missingModules) == 0
 }
 
 // GetDependencies returns dependencies of a selected module
-func GetDependencies(module *app.FybrikModule, moduleMap map[string]*app.FybrikModule) ([]*app.FybrikModule, error) {
+func GetDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, error) {
 	dependencies, missingModules := CheckDependencies(module, moduleMap)
 	if len(missingModules) > 0 {
 		return dependencies, errors.New("Module " + module.Name + " has missing dependencies")
@@ -397,7 +399,7 @@ func (p *PathBuilder) getAssetConnectionNode() *Node {
 	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
 	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = app.S3
+		protocol = v1alpha1.S3
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat
