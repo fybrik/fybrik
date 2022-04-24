@@ -715,12 +715,16 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]api.FybrikStorageAccount, error) {
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*api.FybrikStorageAccount, error) {
 	var accountList api.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	return accountList.Items, nil
+	accounts := []*api.FybrikStorageAccount{}
+	for i := range accountList.Items {
+		accounts = append(accounts, accountList.Items[i].DeepCopy())
+	}
+	return accounts, nil
 }
 
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext,
