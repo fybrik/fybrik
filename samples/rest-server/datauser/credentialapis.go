@@ -17,6 +17,8 @@ import (
 
 var k8sClient *K8sClient
 
+const paramSecret = "secret"
+
 // UserCredentials contains the credentials needed to access a given system for the purpose of running a specific compute function.
 type UserCredentials struct {
 	SecretName  string            `json:"secretName"`
@@ -29,8 +31,9 @@ func CredentialRoutes(client *K8sClient) *chi.Mux {
 	k8sClient = client // global variable used by all funcs in this package
 
 	router := chi.NewRouter()
-	router.Get("/{secret}", GetCredentials)
-	router.Delete("/{secret}", DeleteCredentials)
+	key := "/{secret}"
+	router.Get(key, GetCredentials)
+	router.Delete(key, DeleteCredentials)
 	router.Post("/", StoreCredentials)
 	router.Options("/*", CredentialOptions)
 	return router
@@ -46,12 +49,12 @@ func CredentialOptions(w http.ResponseWriter, r *http.Request) {
 func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetCredentials")
 	if k8sClient == nil {
-		err := render.Render(w, r, ErrConfigProblem(errors.New("no k8sClient set")))
+		err := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
 		if err != nil {
-			log.Printf(err.Error() + " upon No k8sClient set")
+			log.Print(err.Error())
 		}
 	}
-	secretName := chi.URLParam(r, "secret")
+	secretName := chi.URLParam(r, paramSecret)
 
 	// Call kubernetes to get the FybrikApplication CRD
 	secret, err := k8sClient.GetSecret(secretName)
@@ -66,24 +69,23 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteCredentials deletes the secret
-//nolint:dupl
 func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteCredentials")
 	if k8sClient == nil {
 		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no client set")))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon no client set")
+			log.Print(suberr.Error())
 		}
 	}
 
-	secretName := chi.URLParam(r, "secret")
+	secretName := chi.URLParam(r, paramSecret)
 
 	// Call kubernetes to get the FybrikApplication CRD
 	err := k8sClient.DeleteSecret(secretName, nil)
 	if err != nil {
 		suberr := render.Render(w, r, ErrRender(err))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
+			log.Printf(suberr.Error() + " : " + err.Error())
 		}
 		return
 	}
@@ -99,9 +101,9 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("In StoreCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no k8sClient set")))
+		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
 		if suberr != nil {
-			log.Printf(suberr.Error() + " upon No k8sClient set")
+			log.Print(suberr.Error())
 		}
 	}
 
@@ -133,7 +135,7 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 
 	secret, err := k8sClient.CreateOrUpdateSecret(&secretStruct)
 	if err != nil {
-		log.Print("err = " + err.Error())
+		log.Print(err.Error())
 		_ = render.Render(w, r, ErrConfigProblem(err))
 		return
 	}
@@ -156,4 +158,8 @@ type CredsSuccessResponse struct {
 
 	// Optional message about the action performed
 	Message string `json:"message,omitempty"`
+}
+
+func clientNotSetError() error {
+	return errors.New("no k8sclient set")
 }

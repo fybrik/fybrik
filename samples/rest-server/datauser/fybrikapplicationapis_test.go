@@ -4,6 +4,7 @@
 package datauser
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -28,7 +29,7 @@ var (
 
 func createApplication(t *testing.T, obj, name string) {
 	body := strings.NewReader(obj)
-	req, err := http.NewRequest("POST", dmaserverurl, body)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, dmaserverurl, body)
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
@@ -39,7 +40,9 @@ func createApplication(t *testing.T, obj, name string) {
 
 func listApplications(t *testing.T) {
 	url := dmaserverurl
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to list applications")
@@ -47,7 +50,9 @@ func listApplications(t *testing.T) {
 
 func getApplication(t *testing.T, name string) {
 	url := dmaserverurl + "/" + name
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to get application "+name)
@@ -55,7 +60,7 @@ func getApplication(t *testing.T, name string) {
 
 func deleteApplication(t *testing.T, name string) {
 	url := dmaserverurl + "/" + name
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodDelete, url, http.NoBody)
 	assert.Nil(t, err)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

@@ -4,6 +4,7 @@
 package datauser
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -19,7 +20,9 @@ func TestEnvironmentAPIs(t *testing.T) {
 		Geography: os.Getenv("GEOGRAPHY"),
 	}
 	// Call the REST API to get the environment information
-	resp, err := http.Get("http://localhost:8080/v1/env/datauserenv")
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "http://localhost:8080/v1/env/datauserenv", http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "expected status OK")
 
