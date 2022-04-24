@@ -747,7 +747,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 			DatasetRef:       info.Storage.Name,
 			SecretRef:        api.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
 			Details:          details,
-			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Geography},
+			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status

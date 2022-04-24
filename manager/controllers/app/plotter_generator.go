@@ -59,7 +59,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		Name:      genBucketName,
 		Endpoint:  account.Endpoint,
 		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: utils.GetSystemNamespace()},
-		Geography: string(account.Region),
+		Region:    string(account.Region),
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {

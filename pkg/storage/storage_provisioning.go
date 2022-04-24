@@ -53,8 +53,8 @@ type ProvisionedBucket struct {
 	Name string
 	// Endpoint
 	Endpoint string
-	// Geography of the resource
-	Geography string
+	// Storage Region
+	Region string
 	// Secret containing credentials
 	SecretRef types.NamespacedName
 }
