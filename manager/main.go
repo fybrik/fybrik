@@ -13,8 +13,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
-	kapps "k8s.io/api/apps/v1"
-	kbatch "k8s.io/api/batch/v1"
+	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
@@ -50,8 +49,7 @@ var (
 func init() {
 	_ = appv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
-	_ = kbatch.AddToScheme(scheme)
-	_ = kapps.AddToScheme(scheme)
+	_ = coordinationv1.AddToScheme(scheme)
 }
 
 //nolint:funlen,gocyclo
