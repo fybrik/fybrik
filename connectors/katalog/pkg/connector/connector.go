@@ -100,10 +100,10 @@ func (r *Handler) createAsset(c *gin.Context) {
 		return
 	}
 
+	errString := "Error during create asset! Error:"
 	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
 	if err != nil {
-		errString := "Error during create asset!"
-		r.reportError(c, http.StatusInternalServerError, errString+" Error: "+err.Error())
+		r.reportError(c, http.StatusInternalServerError, errString+err.Error())
 		return
 	}
 
@@ -120,11 +120,10 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		errString := "Error during create asset!"
 		if errors.IsAlreadyExists(err) {
-			errString = "Asset Already exists!"
+			errString = "Asset Already exists!, Error:"
 		}
-		r.reportError(c, http.StatusInternalServerError, errString+" Error: "+err.Error())
+		r.reportError(c, http.StatusInternalServerError, errString+err.Error())
 		return
 	}
 	logging.LogStructure("Created Asset: ", asset, &r.log, zerolog.DebugLevel, false, false)
