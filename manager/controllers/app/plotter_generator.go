@@ -32,7 +32,7 @@ const (
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
 	Storage *storage.ProvisionedBucket
-	Details *app.DataStore
+	Details *v1alpha1.DataStore
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -97,7 +97,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{}
 		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{}
 	}
-	return &v1alpha1.DataStore{
+	datastore := &v1alpha1.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
 		Format:     destinationInterface.DataFormat,
