@@ -28,13 +28,9 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		details.DataFormat = info.Details.Format
 	}
 
-	var resourceMetadata datacatalog.ResourceMetadata
-	if info.ResourceMetadata != nil {
-		resourceMetadata = *info.ResourceMetadata.DeepCopy()
-	} else {
-		resourceMetadata.Name = assetID
+	resourceMetadata := datacatalog.ResourceMetadata{
+		Name: assetID,
 	}
-
 	creds := ""
 	if utils.IsVaultEnabled() {
 		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)

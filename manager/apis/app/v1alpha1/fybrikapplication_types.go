@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -134,10 +133,6 @@ type DatasetDetails struct {
 	// Dataset information
 	// +optional
 	Details *DataStore `json:"details,omitempty"`
-
-	// Resource Metadata
-	// +optional
-	ResourceMetadata *datacatalog.ResourceMetadata `json:"resourceMetadata,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

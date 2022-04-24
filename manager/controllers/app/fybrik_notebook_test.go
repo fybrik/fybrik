@@ -193,8 +193,6 @@ func TestS3Notebook(t *testing.T) {
 		return k8sClient.Get(context.Background(), assetObjectKey, asset)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	g.Expect(asset.Spec.Metadata.Geography).To(gomega.Equal("theshire"))
-
 	// Forward port of arrow flight service to local port
 	connection := writeApplication.Status.AssetStates["fybrik-notebook-sample/data-csv"].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})

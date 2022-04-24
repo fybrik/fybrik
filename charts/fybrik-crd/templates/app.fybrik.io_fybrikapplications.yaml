@@ -338,40 +338,6 @@ spec:
                       required:
                       - connection
                       type: object
-                    resourceMetadata:
-                      description: Resource Metadata
-                      properties:
-                        columns:
-                          description: Columns associated with the asset
-                          items:
-                            description: ResourceColumn represents a column in a tabular
-                              resource
-                            properties:
-                              name:
-                                description: Name of the column
-                                type: string
-                              tags:
-                                description: Tags associated with the column
-                                type: object
-                                x-kubernetes-preserve-unknown-fields: true
-                            required:
-                            - name
-                            type: object
-                          type: array
-                        geography:
-                          description: Geography of the resource
-                          type: string
-                        name:
-                          description: Name of the resource
-                          type: string
-                        owner:
-                          description: Owner of the resource
-                          type: string
-                        tags:
-                          description: Tags associated with the asset
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                      type: object
                     secretRef:
                       description: Reference to a secret where the credentials are
                         stored
