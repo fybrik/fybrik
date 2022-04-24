@@ -20,8 +20,8 @@ var (
 	dm1name = "unittest-read"
 	dm2     = "{\"apiVersion\": \"app.fybrik.io/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-copy\"}," +
 		"\"spec\": {\"selector\": {\"workloadSelector\": {}}," +
-		"\"appInfo\": {\"intent\": \"copy data\"}, \"data\": [{\"dataSetID\": \"456\",\"requirements\": " +
-		"{\"copy\": {\"required\": true,\"catalog\": {\"catalogID\": \"enterprise\"}}, \"interface\": " +
+		"\"appInfo\": {}, \"data\": [{\"dataSetID\": \"456\", \"flow\": \"copy\", \"requirements\": " +
+		"{\"flowParams\": {\"catalog\": \"enterprise\"}, \"interface\": " +
 		"{\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
 	dm2name = "unittest-copy"
 )
@@ -67,8 +67,6 @@ func deleteApplication(t *testing.T, name string) {
 }
 
 func TestApplicationAPIs(t *testing.T) {
-	SkipOnClosedSocket("localhost:8080", t)
-
 	createApplication(t, dm1, dm1name)
 	createApplication(t, dm2, dm2name)
 	listApplications(t)

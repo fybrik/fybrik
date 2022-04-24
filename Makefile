@@ -59,6 +59,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
   	-b charts/fybrik/files/taxonomy/taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
+	go run samples/rest-server/main.go&
 
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints

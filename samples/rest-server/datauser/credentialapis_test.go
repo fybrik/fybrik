@@ -40,7 +40,7 @@ func readCredentials(t *testing.T, path string) {
 
 func deleteCredentials(t *testing.T, path string) {
 	url := credserverurl + "/" + path
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequest("DELETE", url, http.NoBody)
 	assert.Nil(t, err)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -52,8 +52,6 @@ func deleteCredentials(t *testing.T, path string) {
 }
 
 func TestCredentialAPIs(t *testing.T) {
-	SkipOnClosedSocket("localhost:8080", t)
-
 	storeCredentials(t, cred1)
 	storeCredentials(t, cred2)
 	readCredentials(t, name)
