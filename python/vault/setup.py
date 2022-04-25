@@ -7,7 +7,7 @@ setup(name='fybrik_python_vault',
       license='Apache License, Version 2.0',
       author='FybrikUser',
       author_email='FybrikUser@il.ibm.com',
-      # url='https://github.com/fybrik/fybrik/tree/master/python/vault',
+      url='https://github.com/fybrik/fybrik/tree/master/python/vault',
       packages=['fybrik_python_vault'],
       install_requires=[
           'fybrik_python_logging',

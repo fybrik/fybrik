@@ -65,27 +65,3 @@ def get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_path, role,
             extra={Error: str(response.status_code) + ': ' + str(response.json()),
                    DataSetID: datasetID, ForUser: True})
     return None
-
-def get_credentials_from_vault(vault_credentials, datasetID):
-    jwt_file_path = vault_credentials.get('jwt_file_path', '/var/run/secrets/kubernetes.io/serviceaccount/token')
-    jwt = get_jwt_from_file(jwt_file_path)
-    vault_address = vault_credentials.get('address', 'https://localhost:8200')
-    secret_path = vault_credentials.get('secretPath', '/v1/secret/data/cred')
-    vault_auth = vault_credentials.get('authPath', '/v1/auth/kubernetes/login')
-    role = vault_credentials.get('role', 'demo')
-    credentials = get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_auth, role, datasetID)
-    if not credentials:
-        raise ValueError("Vault credentials are missing")
-    if 'access_key' in credentials and 'secret_key' in credentials:
-        if credentials['access_key'] and credentials['secret_key']:
-            return credentials['access_key'], credentials['secret_key']
-        else:
-            if not credentials['access_key']:
-                logger.error("'access_key' must be non-empty",
-                             extra={DataSetID: datasetID, ForUser: True})
-            if not credentials['secret_key']:
-                logger.error("'secret_key' must be non-empty",
-                             extra={DataSetID: datasetID, ForUser: True})
-    logger.error("Expected both 'access_key' and 'secret_key' fields in vault secret",
-                 extra={DataSetID: datasetID, ForUser: True})
-    raise ValueError("Vault credentials are missing")
