@@ -42,19 +42,14 @@ func FybrikApplicationOptions(w http.ResponseWriter, r *http.Request) {
 func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
 	log.Println("In ListFybrikApplications")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	// Call kubernetes to get the list of FybrikApplication CRDs
 	dmaList, err := dmaClient.ListApplications()
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -66,10 +61,8 @@ func ListFybrikApplications(w http.ResponseWriter, r *http.Request) {
 func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetFybrikApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	fybrikapplicationID := chi.URLParam(r, "fybrikapplicationID")
@@ -77,10 +70,7 @@ func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	// Call kubernetes to get the FybrikApplication CRD
 	dma, err := dmaClient.GetApplication(fybrikapplicationID)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -91,10 +81,8 @@ func GetFybrikApplication(w http.ResponseWriter, r *http.Request) {
 func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In UpdateFybrikApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -104,10 +92,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	// Create the golang structure from the json
 	err := decoder.Decode(&dmaStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrInvalidRequest(err))
-		if suberr != nil {
-			printErrors(suberr, err)
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -116,10 +101,7 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	dmaStruct.Namespace = dmaClient.namespace
 	dma, err := dmaClient.UpdateApplication(fybrikapplicationID, &dmaStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			printErrors(suberr, err)
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -133,10 +115,8 @@ func UpdateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteFybrikApplication")
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	fybrikapplicationID := chi.URLParam(r, paramID)
@@ -144,10 +124,7 @@ func DeleteFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	// Call kubernetes to get the FybrikApplication CRD
 	err := dmaClient.DeleteApplication(fybrikapplicationID, nil)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			printErrors(suberr, err)
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -171,28 +148,20 @@ func CreateFybrikApplication(w http.ResponseWriter, r *http.Request) {
 	// Create the golang structure from the json
 	err := decoder.Decode(&dmaStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrInvalidRequest(err))
-		if suberr != nil {
-			printErrors(suberr, err)
-		}
+		OnError(w, r, err)
 		return
 	}
 
 	if dmaClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	// Create the FybrikApplication CRD
 	dmaStruct.Namespace = dmaClient.namespace
 	dma, err := dmaClient.CreateApplication(&dmaStruct)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			printErrors(suberr, err)
-		}
+		OnError(w, r, err)
 		return
 	}
 
@@ -213,8 +182,4 @@ type DMASuccessResponse struct {
 
 	// Optional message about the action performed
 	Message string `json:"message,omitempty"`
-}
-
-func printErrors(suberr, err error) {
-	log.Printf("%s, %s", suberr.Error(), err.Error())
 }

@@ -49,20 +49,15 @@ func CredentialOptions(w http.ResponseWriter, r *http.Request) {
 func GetCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In GetCredentials")
 	if k8sClient == nil {
-		err := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if err != nil {
-			log.Print(err.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 	secretName := chi.URLParam(r, paramSecret)
 
 	// Call kubernetes to get the FybrikApplication CRD
 	secret, err := k8sClient.GetSecret(secretName)
 	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			log.Printf(suberr.Error() + " upon " + err.Error())
-		}
+		OnError(w, r, err)
 		return
 	}
 	render.JSON(w, r, secret.Data) // Return the credentials as json
@@ -72,24 +67,17 @@ func GetCredentials(w http.ResponseWriter, r *http.Request) {
 func DeleteCredentials(w http.ResponseWriter, r *http.Request) {
 	log.Println("In DeleteCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(errors.New("no client set")))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
-	}
-
-	secretName := chi.URLParam(r, paramSecret)
-
-	// Call kubernetes to get the FybrikApplication CRD
-	err := k8sClient.DeleteSecret(secretName, nil)
-	if err != nil {
-		suberr := render.Render(w, r, ErrRender(err))
-		if suberr != nil {
-			log.Printf(suberr.Error() + " : " + err.Error())
-		}
+		OnClientNotSet(w, r)
 		return
 	}
 
+	secretName := chi.URLParam(r, paramSecret)
+	// Call kubernetes to get the FybrikApplication CRD
+	err := k8sClient.DeleteSecret(secretName, nil)
+	if err != nil {
+		OnError(w, r, err)
+		return
+	}
 	render.Status(r, http.StatusOK)
 	result := CredsSuccessResponse{Name: secretName, Message: "Deleted!!"}
 	render.JSON(w, r, result)
@@ -101,10 +89,8 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("In StoreCredentials")
 	if k8sClient == nil {
-		suberr := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
-		if suberr != nil {
-			log.Print(suberr.Error())
-		}
+		OnClientNotSet(w, r)
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -114,7 +100,7 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 	// Create the golang structure from the json
 	err = decoder.Decode(&userCredentials)
 	if err != nil {
-		log.Print("err = " + err.Error())
+		log.Print(err.Error())
 		_ = render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
@@ -144,6 +130,23 @@ func StoreCredentials(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, http.StatusCreated)
 	result := CredsSuccessResponse{Name: secret.Name, Message: "Created!!"}
 	render.JSON(w, r, result)
+}
+
+func OnClientNotSet(w http.ResponseWriter, r *http.Request) {
+	err := render.Render(w, r, ErrConfigProblem(clientNotSetError()))
+	if err != nil {
+		log.Print(err.Error())
+		render.Status(r, http.StatusInternalServerError)
+	}
+}
+
+func OnError(w http.ResponseWriter, r *http.Request, err error) {
+	log.Print(err.Error())
+	suberr := render.Render(w, r, ErrRender(err))
+	if suberr != nil {
+		log.Print(suberr.Error())
+		render.Status(r, http.StatusInternalServerError)
+	}
 }
 
 // ---------------- Responses -----------------------------------------
