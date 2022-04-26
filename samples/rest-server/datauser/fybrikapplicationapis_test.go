@@ -4,9 +4,12 @@
 package datauser
 
 import (
+	"context"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,15 +23,15 @@ var (
 	dm1name = "unittest-read"
 	dm2     = "{\"apiVersion\": \"app.fybrik.io/v1alpha1\",\"kind\": \"FybrikApplication\",\"metadata\": {\"name\": \"unittest-copy\"}," +
 		"\"spec\": {\"selector\": {\"workloadSelector\": {}}," +
-		"\"appInfo\": {\"intent\": \"copy data\"}, \"data\": [{\"dataSetID\": \"456\",\"requirements\": " +
-		"{\"copy\": {\"required\": true,\"catalog\": {\"catalogID\": \"enterprise\"}}, \"interface\": " +
+		"\"appInfo\": {}, \"data\": [{\"dataSetID\": \"456\", \"flow\": \"copy\", \"requirements\": " +
+		"{\"flowParams\": {\"catalog\": \"enterprise\"}, \"interface\": " +
 		"{\"protocol\": \"s3\",\"dataformat\": \"parquet\"}}}]}}"
 	dm2name = "unittest-copy"
 )
 
 func createApplication(t *testing.T, obj, name string) {
 	body := strings.NewReader(obj)
-	req, err := http.NewRequest("POST", dmaserverurl, body)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, dmaserverurl, body)
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
@@ -39,7 +42,9 @@ func createApplication(t *testing.T, obj, name string) {
 
 func listApplications(t *testing.T) {
 	url := dmaserverurl
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to list applications")
@@ -47,7 +52,9 @@ func listApplications(t *testing.T) {
 
 func getApplication(t *testing.T, name string) {
 	url := dmaserverurl + "/" + name
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to get application "+name)
@@ -55,7 +62,7 @@ func getApplication(t *testing.T, name string) {
 
 func deleteApplication(t *testing.T, name string) {
 	url := dmaserverurl + "/" + name
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodDelete, url, http.NoBody)
 	assert.Nil(t, err)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -66,9 +73,19 @@ func deleteApplication(t *testing.T, name string) {
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to delete application "+name)
 }
 
+func SkipOnClosedSocket(address string, t *testing.T) {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		t.Skip("Skipping test as server is not running...")
+	}
+	if conn != nil {
+		defer conn.Close()
+	}
+}
+
 func TestApplicationAPIs(t *testing.T) {
 	SkipOnClosedSocket("localhost:8080", t)
-
 	createApplication(t, dm1, dm1name)
 	createApplication(t, dm2, dm2name)
 	listApplications(t)

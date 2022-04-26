@@ -82,6 +82,7 @@ run-integration-tests:
 	$(MAKE) -C modules helm
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
+	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
 	$(MAKE) -C modules test
 
