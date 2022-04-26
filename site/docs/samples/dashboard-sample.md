@@ -68,7 +68,6 @@ The backend data server is responsible for reading or writing data to a database
 example the backend data server is a simple server that returns the mock data for the dashboard.    
 Run the backend data server:  
 ```bash
-export HELM_EXPERIMENTAL_OCI=1
 helm chart pull ghcr.io/fybrik/backend-server-chart:v0.0.1
 helm chart export --destination=./tmp ghcr.io/fybrik/backend-server-chart:v0.0.1
 helm install rel1-backend-server ./tmp/backend_server
