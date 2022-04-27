@@ -30,6 +30,7 @@ const (
 	BoolLeConstraint     = "bool_le"
 	BoolLinEqConstraint  = "bool_lin_eq"
 	BoolLinLeConstraint  = "bool_lin_le"
+	BoolNotEqConstraint  = "bool_not"
 	ArrBoolOrConstraint  = "array_bool_or"
 	IntEqConstraint      = "int_eq"
 	IntNotEqConstraint   = "int_ne_reif"

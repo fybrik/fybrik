@@ -54,6 +54,7 @@ func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCS
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
 	dpCSP.reverseIntfcMap = map[int]*taxonomy.Interface{}
+	dpCSP.indicators = map[string]bool{}
 	dataSetIntfc := taxonomy.Interface{
 		Protocol:   dpCSP.problemData.DataDetails.Details.Connection.Name,
 		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
@@ -158,9 +159,9 @@ func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
 }
 
 // enforce restrictions from admin configuration decisions:
-// a. Ensure capabilities that must be deployed are indeed deployed
-// b. cluster satisfies restrictions for the selected capability
-// c. storage account satisfies restrictions for the selected capability
+// a. cluster satisfies restrictions for the selected capability
+// b. storage account satisfies restrictions for the selected capability
+// c. Ensure capabilities that must be deployed are indeed deployed
 func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 	for decCapability := range dpc.problemData.Configuration.ConfigDecisions {
 		decision := dpc.problemData.Configuration.ConfigDecisions[decCapability]
@@ -187,27 +188,19 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 			if len(relevantModCaps) == 0 {
 				return fmt.Errorf("capability %v is required, but it is not supported by any module", decCapability)
 			}
-			dpc.ensureCapabilityIsDeployed(decCapability, relevantModCaps, pathLength)
+			dpc.ensureCapabilityIsDeployed(relevantModCaps, pathLength)
 		}
 	}
 	return nil
 }
 
-func (dpc *DataPathCSP) ensureCapabilityIsDeployed(capability taxonomy.Capability, modCaps []string, pathLength int) {
-	reqCapVarname := fmt.Sprintf(capVarname, capability)
-	dpc.fzModel.AddVariableArray(reqCapVarname, BoolType, pathLength, false, true)
-	// TODO: capability should be applied AT LEAST once, not EXACTLY once
-	dpc.fzModel.AddConstraint(
+// Adds a constraint to ensure that at least one moduleCapability is chosen from the given set "modCaps"
+func (dpc *DataPathCSP) ensureCapabilityIsDeployed(modCaps []string, pathLength int) {
+	reqCapIndicator := dpc.addSetInIndicator(modCapVarname, modCaps, pathLength)
+	dpc.fzModel.AddConstraint( // the weighted sum of the indicators (with all weights set to -1) should be <= -1
 		BoolLinLeConstraint,
-		[]string{fznCompoundLiteral(arrayOfSameInt(-1, pathLength), false), reqCapVarname, strconv.Itoa(-1)},
+		[]string{fznCompoundLiteral(arrayOfSameInt(-1, pathLength), false), reqCapIndicator, strconv.Itoa(-1)},
 	)
-
-	for pos := 1; pos <= pathLength; pos++ {
-		dpc.fzModel.AddConstraint(
-			SetInConstraint,
-			[]string{varAtPos(modCapVarname, pos), fznCompoundLiteral(modCaps, true), varAtPos(reqCapVarname, pos)},
-		)
-	}
 }
 
 // Decide if a given module and its given capability satisfy all administrator's restrictions
@@ -251,34 +244,59 @@ func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *appApi.FybrikStorageAccount,
 
 // Replicates a constraint to block a specific assignment for each position in the path
 func (dpc *DataPathCSP) preventAssignments(variables []string, values []int, pathLength int) {
-	for pos := 1; pos <= pathLength; pos++ {
-		indexedVars := []string{}
-		for _, v := range variables {
-			indexedVars = append(indexedVars, varAtPos(v, pos))
-		}
-		dpc.preventAssignment(indexedVars, values)
-	}
-}
-
-// Adds constraints to prevent the joint assignment of `values` to `variables`
-func (dpc *DataPathCSP) preventAssignment(variables []string, values []int) {
 	indicators := []string{}
 	for idx, variable := range variables {
-		indicators = append(indicators, dpc.addInequalityIndicator(variable, values[idx]))
+		indicators = append(indicators, dpc.addInequalityIndicator(variable, values[idx], pathLength))
 	}
-	indicatorsArray := fznCompoundLiteral(indicators, false)
-	dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, TrueValue})
+
+	for pos := 1; pos <= pathLength; pos++ {
+		indexedIndicators := []string{}
+		for _, v := range indicators {
+			indexedIndicators = append(indexedIndicators, varAtPos(v, pos))
+		}
+		indicatorsArray := fznCompoundLiteral(indexedIndicators, false)
+		dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, TrueValue})
+	}
 }
 
-// Adds an indicator variable which is true iff a given integer variable DOES NOT EQUAL a given value
-func (dpc *DataPathCSP) addInequalityIndicator(variable string, value int) string {
+// Adds an indicator array whose elements are true iff a given integer variable DOES NOT EQUAL a given value in a given pos
+func (dpc *DataPathCSP) addInequalityIndicator(variable string, value, pathLength int) string {
 	indicator := fmt.Sprintf("ind_%s_ne_%d", variable, value)
-	indicator = strings.ReplaceAll(indicator, "[", "")
-	indicator = strings.ReplaceAll(indicator, "]", "")
-	if _, defined := dpc.indicators[indicator]; !defined {
-		dpc.fzModel.AddVariable(indicator, BoolType, true, false)
-		annotation := GetDefinesVarAnnotation(indicator)
-		dpc.fzModel.AddConstraint(IntNotEqConstraint, []string{variable, strconv.Itoa(value), indicator}, annotation)
+	if _, defined := dpc.indicators[indicator]; defined {
+		return indicator
+	}
+
+	dpc.indicators[indicator] = true
+	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, true, false)
+	strVal := strconv.Itoa(value)
+	for pathPos := 1; pathPos <= pathLength; pathPos++ {
+		variableAtPos := varAtPos(variable, pathPos)
+		indicatorAtPos := varAtPos(indicator, pathPos)
+		annotation := GetDefinesVarAnnotation(indicatorAtPos)
+		dpc.fzModel.AddConstraint(IntNotEqConstraint, []string{variableAtPos, strVal, indicatorAtPos}, annotation)
+	}
+	return indicator
+}
+
+// Adds an indicator per path location to check if the value of "variable" in this location is in the given set of values
+func (dpc *DataPathCSP) addSetInIndicator(variable string, valueSet []string, pathLength int) string {
+	indicator := fmt.Sprintf("ind_%s_in_%s", variable, strings.Join(valueSet, "_"))
+	if _, defined := dpc.indicators[indicator]; defined {
+		return indicator
+	}
+
+	dpc.indicators[indicator] = true
+	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, false, false)
+	if len(valueSet) > 0 {
+		for pathPos := 1; pathPos <= pathLength; pathPos++ {
+			variableAtPos := varAtPos(variable, pathPos)
+			indicatorAtPos := varAtPos(indicator, pathPos)
+			setLiteral := fznCompoundLiteral(valueSet, true)
+			annotation := GetDefinesVarAnnotation(indicatorAtPos)
+			dpc.fzModel.AddConstraint(SetInConstraint, []string{variableAtPos, setLiteral, indicatorAtPos}, annotation)
+		}
+	} else { // value set is empty - indicators should always be false as variable value is never in the given set
+		dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicator, FalseValue})
 	}
 	return indicator
 }
@@ -303,15 +321,13 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 				}
 			}
 		}
-		modCapsSupportingAction := fznCompoundLiteral(moduleCapabilitiesStrs, true)
 
 		// add vars (and constraints) indicating if an action is supported at each path location
+		setInIndicator := dpc.addSetInIndicator(modCapVarname, moduleCapabilitiesStrs, pathLength)
 		for pathPos := 1; pathPos <= pathLength; pathPos++ {
-			modCapAtPos := varAtPos(modCapVarname, pathPos)
-			actSupportedVarname := fmt.Sprintf("action%sSupportedAt%d", action.Name, pathPos)
-			dpc.fzModel.AddVariable(actSupportedVarname, BoolType, true, false)
-			dpc.fzModel.AddConstraint(SetInConstraint, []string{modCapAtPos, modCapsSupportingAction, actSupportedVarname})
-			dpc.fzModel.AddConstraint(BoolLeConstraint, []string{varAtPos(actionVar, pathPos), actSupportedVarname})
+			indicatorAtPos := varAtPos(setInIndicator, pathPos)
+			actionVarAtPos := varAtPos(actionVar, pathPos)
+			dpc.fzModel.AddConstraint(BoolLeConstraint, []string{actionVarAtPos, indicatorAtPos})
 		}
 	}
 }
@@ -346,6 +362,21 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 	}
 	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength),
 		strconv.Itoa(dpc.interfaceIdx[*dpc.problemData.Context.Requirements.Interface])})
+
+	// Making sure a storage account is assigned iff the sink interface is non-virtual
+	virtualModCaps := []string{}
+	for modCapIdx, modCap := range dpc.modulesCapabilities {
+		if modCap.virtualSink {
+			virtualModCaps = append(virtualModCaps, strconv.Itoa(modCapIdx+1))
+		}
+	}
+	virtualSinkVarName := dpc.addSetInIndicator(modCapVarname, virtualModCaps, pathLength)
+	realSA := dpc.addInequalityIndicator(saVarname, 0, pathLength)
+	for pathPos := 1; pathPos <= pathLength; pathPos++ {
+		virtualSinkAtPos := varAtPos(virtualSinkVarName, pathPos)
+		realSAAtPos := varAtPos(realSA, pathPos)
+		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{realSAAtPos, virtualSinkAtPos})
+	}
 }
 
 // If there are optimization goals set, defines appropriate variables and sets the CSP-solver optimization goal

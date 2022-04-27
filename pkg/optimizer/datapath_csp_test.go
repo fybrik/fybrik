@@ -15,6 +15,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func getTestEnv() *app.Environment {
@@ -56,7 +57,8 @@ func getTestEnv() *app.Environment {
 	cluster3 := multicluster.Cluster{Name: "cluster3"}
 	cluster3Cost := taxonomy.InfrastructureElement{Attribute: "ClusterCost", Value: "58", Instance: "cluster3"}
 	clusters := []multicluster.Cluster{cluster1, cluster2, cluster3}
-	storageAccounts := []appApi.FybrikStorageAccount{}
+	sa1 := appApi.FybrikStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "sa1"}, Spec: appApi.FybrikStorageAccountSpec{Region: "us-south"}}
+	storageAccounts := []appApi.FybrikStorageAccount{sa1}
 	infra := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost}}
 	attrManager := infrastructure.AttributeManager{Infrastructure: infra}
 	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
