@@ -184,7 +184,7 @@ jobs:
         dockerhub_hostname: docker.io
         git_user: fake@fake.com
         image_repo: kind-registry:5000
-        image_source_repo_username: fake@fake.com 
+        image_source_repo_username: fake@fake.com
         GH_TOKEN: fake
       run: pushd hack/tools/ && ./create_kind.sh && docker info && popd && . pipeline/source-external.sh && skip_tests=false kind=true github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
 
@@ -197,7 +197,7 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     needs: [verify, test, integration-tests]
-    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' && startsWith(github.ref, 'refs/tags/v' }}
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik'  }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
