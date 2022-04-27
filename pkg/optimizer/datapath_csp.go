@@ -286,7 +286,7 @@ func (dpc *DataPathCSP) addSetInIndicator(variable string, valueSet []string, pa
 	}
 
 	dpc.indicators[indicator] = true
-	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, false, false)
+	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, true, false)
 	if len(valueSet) > 0 {
 		for pathPos := 1; pathPos <= pathLength; pathPos++ {
 			variableAtPos := varAtPos(variable, pathPos)
@@ -418,7 +418,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 
 	attribute := goal.Attribute
 	goalVarname := fmt.Sprintf("goal%s", attribute)
-	dpc.fzModel.AddVariableArray(goalVarname, IntType, pathLen, false, false)
+	dpc.fzModel.AddVariableArray(goalVarname, IntType, pathLen, true, false)
 
 	goalVarNames := []string{}
 	selectorVar, paramArray, err := dpc.getAttributeMapping(attribute)
@@ -426,9 +426,11 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 		return "", "", err
 	}
 	for pos := 1; pos <= pathLen; pos++ {
+		selectorVarAtPos := varAtPos(selectorVar, pos)
 		goalAtPos := varAtPos(goalVarname, pos)
 		goalVarNames = append(goalVarNames, goalAtPos)
-		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{varAtPos(selectorVar, pos), paramArray, goalAtPos})
+		definesAnnotation := GetDefinesVarAnnotation(goalAtPos)
+		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{selectorVarAtPos, paramArray, goalAtPos}, definesAnnotation)
 	}
 
 	goalSumVarname := fmt.Sprintf("goal%sSum", attribute)
@@ -437,40 +439,49 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 	return goalSumVarname, weight, nil
 }
 
-// This creates a param array with the values of the given attribute for each cluster/storage account instance
+// This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changes if some values are floats.
 func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, string, error) {
-	resArray := []string{}
-	for _, cluster := range dpc.env.Clusters {
-		infraElement := dpc.env.AttributeManager.GetAttribute(attr, cluster.Name)
-		if infraElement != nil {
-			resArray = append(resArray, infraElement.Value)
-		}
-	}
-	if len(resArray) > 0 {
-		if len(resArray) != len(dpc.env.Clusters) {
-			return "", "", fmt.Errorf("attribute %s is not defined for all clusters", attr)
-		}
-		paramName := "cluster" + string(attr)
-		dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
-		return clusterVarname, paramName, nil
+	instanceType := dpc.env.AttributeManager.GetInstanceType(attr)
+	if instanceType == nil {
+		return "", "", fmt.Errorf("there are no clusters, modules or storage accounts with an attribute %s", attr)
 	}
 
-	for saIdx := range dpc.env.StorageAccounts {
-		infraElement := dpc.env.AttributeManager.GetAttribute(attr, dpc.env.StorageAccounts[saIdx].Name)
-		if infraElement != nil {
+	resArray := []string{}
+	varName := ""
+	switch *instanceType {
+	case taxonomy.Cluster:
+		varName = clusterVarname
+		for _, cluster := range dpc.env.Clusters {
+			infraElement := dpc.env.AttributeManager.GetAttribute(attr, cluster.Name)
+			if infraElement == nil {
+				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
+			}
+			resArray = append(resArray, infraElement.Value)
+		}
+	case taxonomy.StorageAccount:
+		varName = saVarname
+		for saIdx := range dpc.env.StorageAccounts {
+			saName := dpc.env.StorageAccounts[saIdx].Name
+			infraElement := dpc.env.AttributeManager.GetAttribute(attr, saName)
+			if infraElement == nil {
+				return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, saName)
+			}
+			resArray = append(resArray, infraElement.Value)
+		}
+	default: // should be taxonomy.Module
+		varName = modCapVarname
+		for _, modCap := range dpc.modulesCapabilities {
+			infraElement := dpc.env.AttributeManager.GetAttribute(attr, modCap.module.Name)
+			if infraElement == nil {
+				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
+			}
 			resArray = append(resArray, infraElement.Value)
 		}
 	}
-	if len(resArray) > 0 {
-		if len(resArray) != len(dpc.env.StorageAccounts) {
-			return "", "", fmt.Errorf("attribute %s is not defined for all storage accounts", attr)
-		}
-		paramName := "storageAccount" + string(attr)
-		dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
-		return saVarname, paramName, nil
-	}
-	return "", "", fmt.Errorf("there are no clusters or storage accounts with an attribute %s", attr)
+	paramName := varName + string(attr)
+	dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
+	return varName, paramName, nil
 }
 
 // Sets the CSP int variable sumVarname to be the weighted sum of int elements in arrayToSum.
