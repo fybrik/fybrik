@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'releases/**'
 
 env:
   GO_VERSION: 1.17
@@ -201,7 +202,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
-      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/download-artifact@v2
       with:
         name: images
@@ -237,7 +237,6 @@ jobs:
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
     - name: Publish images
-      if: ${{ github.event_name != 'pull_request' }}
       env:
         DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
       run: make docker-retag-and-push-public && make helm-push-public
