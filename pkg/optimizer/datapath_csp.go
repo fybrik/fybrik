@@ -177,8 +177,8 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 						[]int{modCapIdx + 1, clusterIdx + 1}, pathLength)
 				}
 			}
-			for saIdx := range dpc.env.StorageAccounts {
-				if !dpc.saSatisfiesRestrictions(&dpc.env.StorageAccounts[saIdx], decision.DeploymentRestrictions.StorageAccounts) {
+			for saIdx, sa := range dpc.env.StorageAccounts {
+				if !dpc.saSatisfiesRestrictions(sa, decision.DeploymentRestrictions.StorageAccounts) {
 					dpc.preventAssignments([]string{modCapVarname, saVarname},
 						[]int{modCapIdx + 1, saIdx + 1}, pathLength)
 				}
@@ -461,11 +461,10 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 		}
 	case taxonomy.StorageAccount:
 		varName = saVarname
-		for saIdx := range dpc.env.StorageAccounts {
-			saName := dpc.env.StorageAccounts[saIdx].Name
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, saName)
+		for _, sa := range dpc.env.StorageAccounts {
+			infraElement := dpc.env.AttributeManager.GetAttribute(attr, sa.Name)
 			if infraElement == nil {
-				return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, saName)
+				return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
 			}
 			resArray = append(resArray, infraElement.Value)
 		}

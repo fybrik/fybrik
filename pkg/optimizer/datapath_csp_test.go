@@ -58,7 +58,7 @@ func getTestEnv() *app.Environment {
 	cluster3Cost := taxonomy.InfrastructureElement{Attribute: "ClusterCost", Value: "58", Instance: "cluster3", Object: taxonomy.Cluster}
 	clusters := []multicluster.Cluster{cluster1, cluster2, cluster3}
 	sa1 := appApi.FybrikStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "sa1"}, Spec: appApi.FybrikStorageAccountSpec{Region: "us-south"}}
-	storageAccounts := []appApi.FybrikStorageAccount{sa1}
+	storageAccounts := []*appApi.FybrikStorageAccount{&sa1}
 	infra := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost}}
 	attrManager := infrastructure.AttributeManager{Infrastructure: infra}
 	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
