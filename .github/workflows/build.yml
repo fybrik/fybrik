@@ -197,7 +197,7 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     needs: [verify, test, integration-tests]
-    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik'  }}
+    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' && startsWith(github.ref, 'refs/tags/v') }}
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
