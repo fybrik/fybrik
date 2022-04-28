@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
@@ -79,7 +79,7 @@ jobs:
         k8s_version: [ 'new', 'old' ]
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
@@ -131,7 +131,7 @@ jobs:
         k8s_version: [ 'new', 'old' ]
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
@@ -164,7 +164,7 @@ jobs:
       DOCKER_NAMESPACE: fybrik-system
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
