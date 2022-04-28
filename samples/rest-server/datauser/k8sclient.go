@@ -63,7 +63,7 @@ func (f *K8sClient) GetApplication(name string) (*app.FybrikApplication, error) 
 }
 
 // ListApplications gets the list of existing FybrikApplication CRDs
-func (f *K8sClient) ListApplications(opts meta_v1.ListOptions) (*app.FybrikApplicationList, error) {
+func (f *K8sClient) ListApplications() (*app.FybrikApplicationList, error) {
 	var result app.FybrikApplicationList
 	err := f.client.List(context.Background(), &result, kclient.InNamespace(k8sClient.namespace))
 	return &result, err

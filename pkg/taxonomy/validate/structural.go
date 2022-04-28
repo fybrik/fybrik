@@ -5,7 +5,6 @@ package validate
 
 import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -49,7 +48,7 @@ func IsStructuralSchema(path string) error {
 		},
 	}
 
-	errorList := validation.ValidateCustomResourceDefinition(crd, apiextensionsv1.SchemeGroupVersion)
+	errorList := validation.ValidateCustomResourceDefinition(crd)
 	if len(errorList) > 0 {
 		return errorList.ToAggregate()
 	}
