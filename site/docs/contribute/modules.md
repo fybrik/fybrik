@@ -54,7 +54,6 @@ Once your Helm chart is ready, you need to push it to a [OCI-based registry](htt
 You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart as described in the [link](https://github.com/helm/community/blob/main/hips/hip-0006.md):
 
 ```bash
-HELM_EXPERIMENTAL_OCI=1 
 helm registry login -u <username> <registry>
 helm package <chart folder> -d <local-chart-path>
 helm push <local-chart-path> oci://<registry>/<path>

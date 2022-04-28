@@ -1,6 +1,5 @@
 ROOT_DIR := ../..
 include $(ROOT_DIR)/Makefile.env
-export HELM_EXPERIMENTAL_OCI=1
 
 CHART_NAME=mychart
 VERSION=0.7.0
