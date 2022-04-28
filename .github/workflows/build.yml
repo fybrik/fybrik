@@ -114,7 +114,7 @@ jobs:
       run: make save-images
     - name: Upload images
       if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: images
         path: images.tar
