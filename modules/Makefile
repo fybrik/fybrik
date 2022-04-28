@@ -21,8 +21,3 @@ helm-chart-push:
 .PHONY: helm-uninstall
 helm-uninstall:
 	$(MAKE) -C fybrik-template helm-uninstall
-
-# Tests if implicit copy definitions can be installed
-.PHONY: test
-test:
-	echo "No modules to test"
