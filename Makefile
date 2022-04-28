@@ -41,7 +41,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
 	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
-	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) \
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: pre-test
@@ -84,7 +84,6 @@ run-integration-tests:
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
-	$(MAKE) -C modules test
 
 .PHONY: run-notebook-tests
 run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000
@@ -99,6 +98,22 @@ run-notebook-tests:
 	$(MAKE) deploy
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-tests
+
+.PHONY: run-namescope-integration-tests
+run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-namescope-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
+run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-namescope-integration-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) -C charts test
+	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-integration-tests
 
 .PHONY: cluster-prepare
 cluster-prepare:
