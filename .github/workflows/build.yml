@@ -75,7 +75,6 @@ jobs:
       DOCKER_NAMESPACE: fybrik-system
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-    needs: [verify, test, integration-tests]
     if: ${{ github.event_name != 'pull_request' }}
     steps:
     - uses: actions/checkout@v2
