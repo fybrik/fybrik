@@ -92,7 +92,7 @@ jobs:
         echo "HELM_TAG=${version}" >> $GITHUB_ENV
         push_tag_event='true'
         echo "version ${version}"
-        echo "GITHUB_REF ${GITHUB_REF}
+        echo "GITHUB_REF ${GITHUB_REF}"
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
