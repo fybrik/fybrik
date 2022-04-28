@@ -220,17 +220,20 @@ jobs:
       name: Infer version
       run: |
         version="${GITHUB_REF#refs/tags/v}"
+        echo "version ${version}"
         echo "HELM_TAG=${version}" >> $GITHUB_ENV
         push_tag_event='true'
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
             branch="${GITHUB_REF#refs/heads/}"
+            echo "branch = ${branch}"
             version=$branch
             echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
         elif [[ $version == releases/* ]] ;
         then
            releaseVersion="${GITHUB_REF#refs/heads/releases/}"
+           echo "releaseVersion = ${releaseVersion}"
            version="$releaseVersion-rc"
            echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
         fi
