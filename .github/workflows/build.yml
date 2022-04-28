@@ -88,22 +88,18 @@ jobs:
     - id: version
       name: Infer version
       run: |
-        version="${GITHUB_REF#refs/tags/v}"
-        echo "HELM_TAG=${version}" >> $GITHUB_ENV
-        push_tag_event='true'
-        echo "version ${version}"
-        echo "GITHUB_REF ${GITHUB_REF}"
-        if  [[ $version == refs/* ]] ;
+        if [[ ${GITHUB_REF} == refs/tags/* ]] ;
+        then 
+            version="${GITHUB_REF#refs/tags/v}"
+            echo "HELM_TAG=${version}" >> $GITHUB_ENV
+            push_tag_event='true'
+            echo "version ${version}"
+            echo "GITHUB_REF ${GITHUB_REF}"
+        elif  [[ ${GITHUB_REF} == refs/heads/master ]] ;
         then
             push_tag_event='false'
-            branch="${GITHUB_REF#refs/heads/}"
-            version=$branch
-            echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
-        elif [[ $version == releases/* ]] ;
-        then
-           releaseVersion="${GITHUB_REF#refs/heads/releases/}"
-           version="$releaseVersion-rc"
-           echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
+            version=master
+            echo "HELM_TAG=0.0.0-master" >> $GITHUB_ENV
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
