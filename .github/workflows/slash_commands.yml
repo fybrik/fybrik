@@ -15,7 +15,7 @@ jobs:
           repository: ${{ github.repository }}
       - name: Slash Command Dispatch
         id: scd
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ steps.generate-token.outputs.token }}
           commands: |
