@@ -62,6 +62,10 @@ var (
 	impl          = new(Impl)
 )
 
+func ChartRef(hostname, namespace, name, tagname string) string {
+	return fmt.Sprintf("%s/%s/%s:%s", hostname, namespace, name, tagname)
+}
+
 func TestHelmRegistry(t *testing.T) {
 	tmpChart := os.Getenv("TMP_CHART")
 	var err error
