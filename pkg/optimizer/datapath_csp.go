@@ -65,8 +65,8 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 		for idx, capability := range module.Spec.Capabilities {
 			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx, false, false}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
-				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
 				dpCSP.addModCapInterfacesToMaps(&modCap)
+				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
 				comment = strconv.Itoa(len(dpCSP.modulesCapabilities))
 			} else {
 				comment = "<forbidden>"
@@ -337,10 +337,20 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 			modcapSupportsIntfcSrc := false
 			modcapSupportsIntfcSink := false
 			for _, modifc := range modCap.capability.SupportedInterfaces {
-				if interfacesMatch(*modifc.Source, intfc) {
+				if interfacesMatch(modifc.Source, &intfc) {
 					modcapSupportsIntfcSrc = true
 				}
-				if interfacesMatch(*modifc.Sink, intfc) {
+				if interfacesMatch(modifc.Sink, &intfc) {
+					modcapSupportsIntfcSink = true
+				}
+			}
+			if modCap.virtualSource || modCap.virtualSink {
+				capApi := modCap.capability.API
+				apiIntfc := &taxonomy.Interface{Protocol: capApi.Connection.Name, DataFormat: capApi.DataFormat}
+				if modCap.virtualSource && interfacesMatch(apiIntfc, &intfc) {
+					modcapSupportsIntfcSrc = true
+				}
+				if modCap.virtualSink && interfacesMatch(apiIntfc, &intfc) {
 					modcapSupportsIntfcSink = true
 				}
 			}
@@ -568,6 +578,6 @@ func arrayOfSameInt(num, arrayLen int) []string {
 	return strings.Fields(strings.Repeat(strconv.Itoa(num)+" ", arrayLen))
 }
 
-func interfacesMatch(intfc1, intfc2 taxonomy.Interface) bool {
-	return intfc1.Protocol == intfc2.Protocol && intfc1.DataFormat == intfc2.DataFormat
+func interfacesMatch(intfc1, intfc2 *taxonomy.Interface) bool {
+	return intfc1 != nil && intfc2 != nil && intfc1.Protocol == intfc2.Protocol && intfc1.DataFormat == intfc2.DataFormat
 }
