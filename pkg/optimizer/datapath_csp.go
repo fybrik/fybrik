@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -24,7 +23,6 @@ const (
 	srcIntfcVarname  = "moduleSourceInterface" // Var's value says which interface to use as source
 	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
 	actionVarname    = "action_%s"             // Vars for each required action, say whether the action was applied
-	capVarname       = "capability_%s"         // Vars for each required capability, say whether capability was applied
 	jointGoalVarname = "jointGoal"             // Var's value indicates the quality of the data path w.r.t. optimization goals
 )
 
@@ -39,8 +37,8 @@ type moduleAndCapability struct {
 
 // The main class for producing a CSP from data-path constraints and for decoding solver's solutions
 type DataPathCSP struct {
-	problemData         *app.DataInfo
-	env                 *app.Environment
+	problemData         *DataInfo
+	env                 *Environment
 	modulesCapabilities []moduleAndCapability       // An enumeration of allowed capabilities in all modules
 	interfaceIdx        map[taxonomy.Interface]int  // gives an index for each unique interface
 	reverseIntfcMap     map[int]*taxonomy.Interface // The reverse mapping (needed when decoding the solution)
@@ -50,11 +48,10 @@ type DataPathCSP struct {
 
 // The ctor also enumerates all available (module x capabilities) and all available interfaces
 // The generated enumerations are listed at the header of the FlatZinc model
-func NewDataPathCSP(problemData *app.DataInfo, env *app.Environment) *DataPathCSP {
+func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
 	dpCSP.reverseIntfcMap = map[int]*taxonomy.Interface{}
-	dpCSP.indicators = map[string]bool{}
 	dataSetIntfc := taxonomy.Interface{
 		Protocol:   dpCSP.problemData.DataDetails.Details.Connection.Name,
 		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
@@ -128,7 +125,8 @@ func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
 //       The one exception is storage accounts, where a value of 0 means no storage account
 func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
-	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
+	dpc.fzModel.Clear()                // This function can be called multiple times - clear vars and constraints from last call
+	dpc.indicators = map[string]bool{} // Also clear previously declared indicators
 	// Variables to select the module capability we use on each data-path location
 	moduleCapabilityVarType := fznRangeVarType(1, len(dpc.modulesCapabilities))
 	dpc.fzModel.AddVariableArray(modCapVarname, moduleCapabilityVarType, pathLength, false, true)
@@ -512,13 +510,13 @@ func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathP
 
 // Translates a solver's solution into a FybrikApplication Solution for a given data-path
 // TODO: better handle error messages
-func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen int) (app.Solution, error) {
+func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen int) (Solution, error) {
 	solverSolution, err := dpc.fzModel.ReadBestSolution(solverSolutionStr)
 	if err != nil {
-		return app.Solution{}, err
+		return Solution{}, err
 	}
 	if len(solverSolution) == 0 {
-		return app.Solution{}, nil // UNSAT
+		return Solution{}, nil // UNSAT
 	}
 
 	modCapSolution := solverSolution[modCapVarname]
@@ -528,9 +526,9 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 	sinkIntfcSolution := solverSolution[sinkIntfcVarname]
 
 	srcIntfcIdx, _ := strconv.Atoi(srcIntfcSolution[0])
-	srcNode := &app.Node{Connection: dpc.reverseIntfcMap[srcIntfcIdx]}
+	srcNode := &Node{Connection: dpc.reverseIntfcMap[srcIntfcIdx]}
 
-	solution := app.Solution{}
+	solution := Solution{}
 	for pathPos := 0; pathPos < pathLen; pathPos++ {
 		modCapIdx, _ := strconv.Atoi(modCapSolution[pathPos])
 		modCap := dpc.modulesCapabilities[modCapIdx-1]
@@ -541,9 +539,9 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}
 		sinkIntfcIdx, _ := strconv.Atoi(sinkIntfcSolution[pathPos])
-		sinkNode := &app.Node{Connection: dpc.reverseIntfcMap[sinkIntfcIdx], Virtual: modCap.virtualSink}
-		edge := app.Edge{Module: modCap.module, CapabilityIndex: modCap.capabilityIdx, Source: srcNode, Sink: sinkNode}
-		resolvedEdge := app.ResolvedEdge{
+		sinkNode := &Node{Connection: dpc.reverseIntfcMap[sinkIntfcIdx], Virtual: modCap.virtualSink}
+		edge := Edge{Module: modCap.module, CapabilityIndex: modCap.capabilityIdx, Source: srcNode, Sink: sinkNode}
+		resolvedEdge := ResolvedEdge{
 			Edge:           edge,
 			Actions:        dpc.getSolutionActionsAtPos(solverSolution, pathPos),
 			Cluster:        dpc.env.Clusters[clusterIdx-1].Name,

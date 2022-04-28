@@ -19,6 +19,7 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/optimizer"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/vault"
@@ -44,7 +45,7 @@ type PlotterGenerator struct {
 }
 
 // AllocateStorage creates a Dataset for bucket allocation
-func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface *taxonomy.Interface,
+func (p *PlotterGenerator) AllocateStorage(item *optimizer.DataInfo, destinationInterface *taxonomy.Interface,
 	account *v1alpha1.FybrikStorageAccountSpec) (*v1alpha1.DataStore, error) {
 	// provisioned storage
 	var genBucketName, genObjectKeyName string
@@ -109,7 +110,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 	}, nil
 }
 
-func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *v1alpha1.DataStore {
+func (p *PlotterGenerator) getAssetDataStore(item *optimizer.DataInfo) *v1alpha1.DataStore {
 	return &v1alpha1.DataStore{
 		Connection: item.DataDetails.Details.Connection,
 		Vault:      getDatasetCredentials(item),
@@ -119,7 +120,7 @@ func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *v1alpha1.DataStore
 
 // store all available credentials in the plotter
 // only relevant credentials will be sent to modules
-func getDatasetCredentials(item *DataInfo) map[string]v1alpha1.Vault {
+func getDatasetCredentials(item *optimizer.DataInfo) map[string]v1alpha1.Vault {
 	vaultMap := make(map[string]v1alpha1.Vault)
 	// credentials for read, write, delete
 	// currently, one is used for all flows
@@ -141,7 +142,7 @@ func getDatasetCredentials(item *DataInfo) map[string]v1alpha1.Vault {
 	return vaultMap
 }
 
-func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *v1alpha1.PlotterSpec, templateName string) {
+func (p *PlotterGenerator) addTemplate(element *optimizer.ResolvedEdge, plotterSpec *v1alpha1.PlotterSpec, templateName string) {
 	moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 	template := v1alpha1.Template{
 		Name: templateName,
@@ -156,7 +157,7 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *v1alp
 	plotterSpec.Templates[template.Name] = template
 }
 
-func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+func (p *PlotterGenerator) addInMemoryStep(element *optimizer.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
 	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
 	if steps == nil {
 		steps = []v1alpha1.DataFlowStep{}
@@ -184,7 +185,7 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 	return steps
 }
 
-func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+func (p *PlotterGenerator) addStep(element *optimizer.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
 	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
 	if steps == nil {
 		steps = []v1alpha1.DataFlowStep{}
@@ -213,7 +214,7 @@ func (p *PlotterGenerator) getSupportedFormat(capability *v1alpha1.ModuleCapabil
 
 // Handle a new asset: allocate storage and update its metadata. Used when the
 // IsNewDataSet flag is true.
-func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) error {
+func (p *PlotterGenerator) handleNewAsset(item *optimizer.DataInfo, selection *optimizer.Solution) error {
 	var err error
 	if item.DataDetails != nil && item.DataDetails.Details.DataFormat != "" {
 		return nil
@@ -221,7 +222,7 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
 
 	var sinkDataStore *v1alpha1.DataStore
-	var element *ResolvedEdge
+	var element *optimizer.ResolvedEdge
 
 	needToAllocateStorage := false
 	for _, element = range selection.DataPath {
@@ -272,7 +273,7 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *v1alpha1.FybrikApplication, selection *Solution,
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *optimizer.DataInfo, application *v1alpha1.FybrikApplication, selection *optimizer.Solution,
 	plotterSpec *v1alpha1.PlotterSpec) error {
 	var err error
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")

@@ -6,8 +6,9 @@ package optimizer
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
@@ -15,10 +16,9 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func getTestEnv() *app.Environment {
+func getTestEnv() *Environment {
 	s3CSVInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "csv"}
 	s3ParquetInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "parquet"}
 	db2ParquetInterface := taxonomy.Interface{Protocol: "db2", DataFormat: "parquet"}
@@ -61,11 +61,11 @@ func getTestEnv() *app.Environment {
 	storageAccounts := []*appApi.FybrikStorageAccount{&sa1}
 	infra := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost}}
 	attrManager := infrastructure.AttributeManager{Infrastructure: infra}
-	env := app.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
+	env := Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
 	return &env
 }
 
-func getDataInfo(env *app.Environment) *app.DataInfo {
+func getDataInfo(env *Environment) *DataInfo {
 	actions := []taxonomy.Action{
 		{Name: "Reduct", AdditionalProperties: serde.Properties{}},
 		{Name: "Encrypt", AdditionalProperties: serde.Properties{}},
@@ -81,7 +81,7 @@ func getDataInfo(env *app.Environment) *app.DataInfo {
 	dataSetConnection := taxonomy.Connection{Name: "s3"}
 	resourceDetails := datacatalog.ResourceDetails{Connection: dataSetConnection, DataFormat: "parquet"}
 	dataDetails := datacatalog.GetAssetResponse{Details: resourceDetails}
-	dataInfo := app.DataInfo{
+	dataInfo := DataInfo{
 		DataDetails:         &dataDetails,
 		Context:             &appContext,
 		Configuration:       evalOutput,
