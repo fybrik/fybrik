@@ -105,7 +105,7 @@ jobs:
             echo "GITHUB_REF ${GITHUB_REF}"
         fi
         echo ::set-output name=version::$version
-        echo ::set-output name=publish_images::$publish
+        echo ::set-output name=publish_images::$publish_images
     - name: Publish images
       if: ${{ steps.version.outputs.publish_images == 'true' }}
       env:
