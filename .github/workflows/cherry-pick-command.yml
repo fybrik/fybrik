@@ -23,7 +23,7 @@ jobs:
           private_key: ${{ secrets.FYBRIK_BOT_PRIVATE_KEY }}
           repository: ${{ github.repository }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.branch }}
           token: ${{ steps.generate-token.outputs.token }}
