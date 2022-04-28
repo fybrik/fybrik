@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'releases/**'
 
 env:
   GO_VERSION: 1.17
@@ -189,7 +190,7 @@ jobs:
         dockerhub_hostname: docker.io
         git_user: fake@fake.com
         image_repo: kind-registry:5000
-        image_source_repo_username: fake@fake.com 
+        image_source_repo_username: fake@fake.com
         GH_TOKEN: fake
       run: pushd hack/tools/ && ./create_kind.sh && docker info && popd && . pipeline/source-external.sh && skip_tests=false kind=true github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
 
@@ -206,43 +207,36 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Download artifact
-      if: ${{ github.event_name != 'pull_request' }}
       uses: actions/download-artifact@v2
       with:
         name: images
     - name: Load images
-      if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
-    # Versions are created as follows (In helm 3.7 OCI reference tags must be valid SemVer):
+    # Versions are created as follows (In helm 3.7 and above OCI reference tags
+    # must be valid SemVer):
     # - Tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0).
-    #   In addition, a version with tag `latest` will be released for docker image tags and `0.0.0-latest` for
-    #   helm chart OCI reference tags.
-    # - Release branches will be released as the release number (e.g. refs/heads/releases/1.0 -> 1.0-rc).
-    # - Other branches (e.g. master) will be released with branch name as version for the docker images.
-    #   For the helm chart OCI reference tag 0.0.0-<branch-name> will be used.
+    # - Master branch will be released with `master` as version tag for the docker images and
+    #   `0.0.0-master` tag for helm chart.
     - id: version
       name: Infer version
       run: |
-        version="${GITHUB_REF#refs/tags/v}"
-        echo "HELM_TAG=${version}" >> $GITHUB_ENV
-        push_tag_event='true'
-        if  [[ $version == refs/* ]] ;
+        publish_images='false'
+        if [[ ${GITHUB_REF} == refs/tags/* ]] ;
         then
-            push_tag_event='false'
-            branch="${GITHUB_REF#refs/heads/}"
-            version=$branch
-            echo "HELM_TAG=0.0.0-${version}" >> $GITHUB_ENV
-        elif [[ $version == releases/* ]] ;
+            publish_images='true'
+            version="${GITHUB_REF#refs/tags/v}"
+            echo "HELM_TAG=${version}" >> $GITHUB_ENV
+        elif  [[ ${GITHUB_REF} == refs/heads/master ]] ;
         then
-           releaseVersion="${GITHUB_REF#refs/heads/releases/}"
-           version="$releaseVersion-rc"
-           echo "HELM_TAG=$releaseVersion-rc" >> $GITHUB_ENV
+            publish_images='true'
+            version=master
+            echo "HELM_TAG=0.0.0-master" >> $GITHUB_ENV
         fi
         echo ::set-output name=version::$version
-        echo ::set-output name=push_tag_event::$push_tag_event
+        echo ::set-output name=publish_images::$publish_images
     - name: Publish images
-      if: ${{ github.event_name != 'pull_request' }}
+      if: ${{ steps.version.outputs.publish_images == 'true' }}
       env:
         DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
       run: make docker-retag-and-push-public && make helm-push-public
