@@ -93,14 +93,14 @@ jobs:
             version="${GITHUB_REF#refs/tags/v}"
             echo "HELM_TAG=${version}" >> $GITHUB_ENV
             push_tag_event='true'
-            echo "version ${version}"
+            echo "version1 ${version}"
             echo "GITHUB_REF ${GITHUB_REF}"
         elif  [[ ${GITHUB_REF} == refs/heads/master ]] ;
         then
             push_tag_event='false'
             version=master
             echo "HELM_TAG=0.0.0-master" >> $GITHUB_ENV
-            echo "version ${version}"
+            echo "version2 ${version}"
             echo "GITHUB_REF ${GITHUB_REF}"
         fi
         echo ::set-output name=version::$version
