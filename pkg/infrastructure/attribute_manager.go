@@ -83,3 +83,14 @@ func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string
 	}
 	return nil
 }
+
+// GetInstanceType returns the instance type associated with the attribute
+// TODO: validate that there is only one instance type associated with the given attribute
+func (m *AttributeManager) GetInstanceType(name taxonomy.Attribute) *taxonomy.InstanceType {
+	for i := range m.Infrastructure.Items {
+		if m.Infrastructure.Items[i].Attribute == name {
+			return &m.Infrastructure.Items[i].Object
+		}
+	}
+	return nil
+}

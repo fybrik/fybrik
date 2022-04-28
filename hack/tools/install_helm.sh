@@ -5,13 +5,13 @@
 
 source ./common.sh
 
-DESIRED_VERSION=v3.7.2
+DESIRED_VERSION=v3.8.2
 
 header_text "Checking for bin/helm $DESIRED_VERSION"
 [[ -f bin/helm &&  `bin/helm version --template='{{.Version}}'` == $DESIRED_VERSION ]] && exit 0
 
 header_text "Installing bin/helm $DESIRED_VERSION"
-# Helm is currently fixed to 3.7.0
+
 mkdir -p ./bin
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 chmod 700 get_helm.sh
