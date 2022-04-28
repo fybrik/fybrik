@@ -206,7 +206,6 @@ jobs:
       with:
         name: images
     - name: Load images
-      if: ${{ github.event_name != 'pull_request' }}
       run: docker load -i images.tar
     - run: docker images
     # Versions are created as follows (In helm 3.7 and above OCI reference tags
