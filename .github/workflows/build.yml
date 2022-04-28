@@ -67,127 +67,6 @@ jobs:
     - name: Test
       run: make test
 
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    strategy:
-      matrix:
-        k8s_version: [ 'new', 'old' ]
-    steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v2
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
-    - name: Install tools
-      run: make install-tools
-    - name: Integration tests old
-      if: ${{ matrix.k8s_version == 'old' }}
-      env:
-        K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
-      run: make run-integration-tests
-    - name: Integration tests new
-      if: ${{ matrix.k8s_version == 'new' }}
-      env:
-        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
-      run: make run-integration-tests
-    - run: docker images
-    - name: Save images
-      if: ${{ github.event_name != 'pull_request' }}
-      run: make save-images
-    - name: Upload images
-      if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: images
-        path: images.tar
-        retention-days: 1
-
-  notebook-sample:
-    name: Notebook sample
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    strategy:
-      matrix:
-        k8s_version: [ 'new', 'old' ]
-    steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v2
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
-    - name: Install tools
-      run: make install-tools
-    - name: Notebook tests old
-      if: ${{ matrix.k8s_version == 'old' }}
-      env:
-        K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
-      run: make run-notebook-tests
-    - name: Notebook tests new
-      if: ${{ matrix.k8s_version == 'new' }}
-      env:
-        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
-      run: make run-notebook-tests
-
-  tekton-pipelines:
-    name: Tekton Tests
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v2
-    - name: install nfs rpms
-      run: sudo apt-get update && sudo apt-get install -y nfs-kernel-server nfs-common && sudo modprobe nfsd && sudo modprobe nfs
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
-    - name: Install tools
-      run: make install-tools
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
-    - name: Integration tests
-      env:
-        image_source_repo_password: "fake"
-        github: github.com
-        run_tkn: 1
-        dockerhub_hostname: docker.io
-        git_user: fake@fake.com
-        image_repo: kind-registry:5000
-        image_source_repo_username: fake@fake.com 
-        GH_TOKEN: fake
-      run: pushd hack/tools/ && ./create_kind.sh && docker info && popd && . pipeline/source-external.sh && skip_tests=false kind=true github_workspace=${{ github.workspace }} pipeline/bootstrap-pipeline.sh fybrik-system
-
   push_images:
     name: Push images
     runs-on: ubuntu-latest
@@ -197,18 +76,9 @@ jobs:
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     needs: [verify, test, integration-tests]
-    if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' }}
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
     - uses: actions/checkout@v2
-    - name: Download artifact
-      if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/download-artifact@v2
-      with:
-        name: images
-    - name: Load images
-      if: ${{ github.event_name != 'pull_request' }}
-      run: docker load -i images.tar
-    - run: docker images
     # Versions are created as follows (In helm 3.7 OCI reference tags must be valid SemVer):
     # - Tags starting with v will be released as what comes after `v`. (e.g. refs/tags/v1.0 -> 1.0).
     #   In addition, a version with tag `latest` will be released for docker image tags and `0.0.0-latest` for
@@ -222,6 +92,8 @@ jobs:
         version="${GITHUB_REF#refs/tags/v}"
         echo "HELM_TAG=${version}" >> $GITHUB_ENV
         push_tag_event='true'
+        echo "version ${version}"
+        echo "GITHUB_REF ${GITHUB_REF}
         if  [[ $version == refs/* ]] ;
         then
             push_tag_event='false'
@@ -236,8 +108,3 @@ jobs:
         fi
         echo ::set-output name=version::$version
         echo ::set-output name=push_tag_event::$push_tag_event
-    - name: Publish images
-      if: ${{ github.event_name != 'pull_request' }}
-      env:
-        DOCKER_PUBLIC_TAGNAME:  ${{ steps.version.outputs.version }}
-      run: make docker-retag-and-push-public && make helm-push-public
