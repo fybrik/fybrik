@@ -15,6 +15,6 @@ jobs:
     - name: Install yq
       run: make ./hack/tools/bin/yq
     - run: RELEASE=${{ steps.version.outputs.version }} ./hack/release.sh
-    - uses: EndBug/add-and-commit@v7
+    - uses: EndBug/add-and-commit@v9
       with:
         default_author: github_actions
