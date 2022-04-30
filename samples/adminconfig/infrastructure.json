@@ -1,0 +1,46 @@
+{
+    "infrastructure": [
+        {
+            "attribute": "storage-cost",
+            "description": "neverland object store",
+            "value": "100",
+            "type": "numeric",
+            "units": "US Dollar",
+            "object": "fybrikstorageaccount",
+            "instance": "account-neverland"
+        },
+        {
+            "attribute": "storage-cost",
+            "description": "theshire object store",
+            "value": "90",
+            "type": "numeric",
+            "units": "US Dollar",
+            "object": "fybrikstorageaccount",
+            "instance": "account-theshire"
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between neverland and theshire",
+            "value": "5",
+            "type": "numeric",
+            "units": "Mbps",
+            "arguments": ["theshire","neverland"]
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between theshire and theshire",
+            "value": "1000",
+            "type": "numeric",
+            "units": "Mbps",
+            "arguments": ["theshire","theshire"]
+        },
+        {
+            "attribute": "bandwidth",
+            "description": "bandwidth between neverland and neverland",
+            "value": "800",
+            "type": "numeric",
+            "units": "Mbps",
+            "arguments": ["neverland","neverland"]
+        }
+    ]
+}

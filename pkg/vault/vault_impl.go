@@ -26,7 +26,7 @@ type Connection struct {
 }
 
 // NewConnection returns a new Connection object
-func NewConnection(addr string, token string) (*Connection, error) {
+func NewConnection(addr, token string) (*Connection, error) {
 	conf := &api.Config{
 		Address:    addr,
 		HttpClient: httpClient,
@@ -53,7 +53,7 @@ func NewConnection(addr string, token string) (*Connection, error) {
 // LinkPolicyToIdentity registers a policy for a given identity or role, meaning that when a person or service
 // of that identity logs into vault and tries to read or write a secret the provided policy
 // will determine whether that is allowed or not.
-func (c *Connection) LinkPolicyToIdentity(identity string, policyName string, boundedNamespace string, serviceAccount string, auth string, ttl string) error {
+func (c *Connection) LinkPolicyToIdentity(identity, policyName, boundedNamespace, serviceAccount, auth, ttl string) error {
 	identityPath := "auth/" + auth + "/" + identity
 
 	logicalClient := c.Client.Logical()
@@ -80,8 +80,8 @@ func (c *Connection) LinkPolicyToIdentity(identity string, policyName string, bo
 
 // RemovePolicyFromIdentity removes the policy from the authentication identity with which it is associated, meaning
 // this policy will no longer be invoked when a person or service authenticates with this identity.
-func (c *Connection) RemovePolicyFromIdentity(identity string, policyName string, auth string) error {
-	identityPath := "auth/" + auth + "/" + identity
+func (c *Connection) RemovePolicyFromIdentity(identity, policyName, auth string) error {
+	identityPath := "auth/" + auth + "/" + identity //nolint:revive
 
 	logicalClient := c.Client.Logical()
 	if logicalClient == nil {
@@ -99,7 +99,7 @@ func (c *Connection) RemovePolicyFromIdentity(identity string, policyName string
 // an authentication identity to ensure proper use of secrets.
 // Example policy: "path \"identities/test-identity\" {\n	capabilities = [\"read\"]\n }"
 // 		NOTE the line returns and the tab.  Without them it fails!
-func (c *Connection) WritePolicy(policyName string, policy string) error {
+func (c *Connection) WritePolicy(policyName, policy string) error {
 	sys := c.Client.Sys()
 
 	err := sys.PutPolicy(policyName, policy)

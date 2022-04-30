@@ -1,0 +1,35 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Policy Manager Service
+  license:
+    name: Apache 2.0
+servers:
+  - url: https://localhost:8080
+paths:
+  /getPoliciesDecisions:
+    post:
+      summary: This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
+      operationId: getPoliciesDecisions
+      parameters:
+        - in: header
+          name: X-Request-Cred
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Policy Manager Request Object.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../../charts/fybrik/files/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsRequest"
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
+        '400':
+          description: Invalid status value

@@ -1,0 +1,44 @@
+name: Create PR in operate-first/apps repo with updated manifests
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Create PR in operate-first/apps repo with updated manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Fybrik repository
+        uses: actions/checkout@v3
+        with:
+          repository: fybrik/fybrik
+          path: fybrik-repo
+      - name: Checkout original Operate First repository
+        uses: actions/checkout@v3
+        with:
+          repository: operate-first/apps
+          path: operate-first-repo
+      - run: |
+          pushd fybrik-repo/hack/tools && ./install_yq.sh && ./install_helm.sh && popd
+          pushd fybrik-repo/integration/operate-first
+          make helm-template
+          pip install pipenv
+          pipenv install
+          pipenv run python filterClusterScoped.py
+          rm ./*.yaml
+          popd
+          rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-repo/cluster-scope/base
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          path: operate-first-repo
+          signoff: true
+          token: ${{ secrets.PAT }}
+          push-to-fork: fybrik/operate-first-apps
+          title: 'Update Fybrik manifests to new release'
+          commit-message: Update Fybrik cluster-scoped resources for Operate First
+          committer: GitHub <noreply@github.com>
+          delete-branch: true

@@ -4,8 +4,10 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in
@@ -20,51 +22,30 @@ type AssetDetails struct {
 	DataStore DataStore `json:"assetDetails"`
 }
 
-// Service holds information for accessing a module instance
-type Service struct {
-	//+required
-	Endpoint EndpointSpec `json:"endpoint"`
-
-	// Format represents data format (e.g. parquet) as received from catalog connectors
-	// +required
-	Format string `json:"format"`
-}
-
-// StepSource is the source of this step: it could be assetID
-// or an enpoint of another step
-type StepSource struct {
+// StepArgument describes a step: it could be assetID
+// or an endpoint of another step
+type StepArgument struct {
 	// AssetID identifies the source asset of this step
 	// +optional
 	AssetID string `json:"assetId,omitempty"`
 
-	//+optional
-	API *Service `json:"api,omitempty"`
-}
-
-// StepSink holds information to where the target data will be written:
-// it could be assetID of an asset specified in fybrikapplication or of an asset created
-// by fybrik control-plane
-type StepSink struct {
-	// AssetID identifies the target asset of this step
-	// +required
-	AssetID string `json:"assetId"`
+	// API holds information for accessing a module instance
+	// +optional
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 }
 
 // StepParameters holds the parameters to the module
 // that is deployed in this step
 type StepParameters struct {
 	// +optional
-	Source *StepSource `json:"source,omitempty"`
+	Arguments []*StepArgument `json:"args,omitempty"`
 
 	// +optional
-	Sink *StepSink `json:"sink,omitempty"`
-
-	// +optional
-	API *Service `json:"api,omitempty"`
+	API *datacatalog.ResourceDetails `json:"api,omitempty"`
 
 	// Actions are the data transformations that the module supports
 	// +optional
-	Actions []serde.Arbitrary `json:"action,omitempty"`
+	Actions []taxonomy.Action `json:"action,omitempty"`
 }
 
 // DataFlowStep contains details on a single data flow step
@@ -115,7 +96,7 @@ type SubFlow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// Triggers
 	// +required
@@ -137,7 +118,7 @@ type Flow struct {
 
 	// Type of the flow (e.g. read)
 	// +required
-	FlowType DataFlow `json:"flowType"`
+	FlowType taxonomy.DataFlow `json:"flowType"`
 
 	// AssetID indicates the data set being used in this data flow
 	// +required
@@ -156,7 +137,8 @@ type ModuleInfo struct {
 
 	// May be one of service, config or plugin
 	// Service: Means that the control plane deploys the component that performs the capability
-	// Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset
+	// Config: Another pre-installed service performs the capability and the module deployed configures
+	// it for the particular workload or dataset
 	// Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module
 	// +required
 	Type string `json:"type"`
@@ -169,6 +151,10 @@ type ModuleInfo struct {
 	// If not indicated it is assumed to be asset
 	// +optional
 	Scope CapabilityScope `json:"scope,omitempty"`
+
+	// Module capability
+	// +required
+	Capability taxonomy.Capability `json:"capability"`
 }
 
 // Template contains basic information about the required modules to serve the fybrikapplication
@@ -210,6 +196,9 @@ type PlotterSpec struct {
 	// +optional
 	Selector Selector `json:"appSelector,omitempty"`
 
+	// Application context to be transferred to the modules
+	AppInfo taxonomy.AppInfo `json:"appInfo,omitempty"`
+
 	// Assets is a map holding information about the assets
 	// The key is the assetID
 	// +required
@@ -217,6 +206,10 @@ type PlotterSpec struct {
 
 	// +required
 	Flows []Flow `json:"flows"`
+
+	// ModulesNamespace is the namespace where modules should be allocated
+	// +required
+	ModulesNamespace string `json:"modulesNamespace"`
 
 	// Templates is a map holding the templates used in this plotter steps
 	// The key is the template name
@@ -271,7 +264,8 @@ type Plotter struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PlotterSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   PlotterSpec   `json:"spec"`
 	Status PlotterStatus `json:"status,omitempty"`
 }
 

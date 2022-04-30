@@ -7,8 +7,8 @@ metadata:
   name: plotter
   namespace: fybrik-system
   labels:
-    app.fybrik.io/appNamespace: default
-    app.fybrik.io/appName: notebook
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
 spec:
   assets:
     S3:
@@ -25,6 +25,7 @@ spec:
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
         connection:
+          name: s3
           s3:
             bucket: my-bucket
             endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
@@ -40,6 +41,7 @@ spec:
             role: module
             secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
         connection:
+          name: db2
           db2:
             port: "5000"
             table: SMALL
@@ -61,10 +63,9 @@ spec:
           cluster: thegreendragon
           template: copyTemplate
           parameters:
-            source:
-              assetId: "DB2"
-            sink:
-              assetId: "S3"
+            args:
+              - assetId: "DB2"
+              - assetId: "S3"
     - name: subflow-read
       flowType: read
       triggers:
@@ -74,14 +75,15 @@ spec:
             cluster: thegreendragon
             template: readTemplate
             parameters:
-              source:
-                assetId: "S3"
-              api:
-                endpoint:
-                  hostname: mygrpc-service
-                  port: 80
-                  scheme: grpc
-                format: arrow-flight
+              args:
+                - assetId: "S3"
+                  api:
+                    connection:
+                      name: fybrik-arrow-flight
+                      fybrik-arrow-flight:
+                        hostname: mygrpc-service
+                        port: 80
+                        scheme: grpc
   templates:
     copyTemplate:
       name: copyTemplate

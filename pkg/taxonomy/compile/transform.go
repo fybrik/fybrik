@@ -6,9 +6,13 @@ package compile
 import (
 	"fmt"
 
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
 )
+
+const nameKey = "name"
 
 // transform applies transformations over an input document to make it structural.
 // It requires a base document and the document to transform (mutable).
@@ -53,7 +57,7 @@ func (t *transformer) transformSchema(key string, schema *model.SchemaRef) *mode
 	result = t.oneOfRefsTransform(key, result)
 
 	// Enrich enum elements based on anyOf/oneOf/allOf validation
-	result = t.propogateEnum(key, result)
+	result = t.propogateEnum(result)
 
 	// TODO: do we need to recurse over Properties, Items, AdditionalProperties? AllOf, OneOf, AnyOf, Not?
 
@@ -66,7 +70,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		return schema
 	}
 
-	if nameProp, ok := schema.Properties["name"]; !ok || nameProp.Type != "string" {
+	if _, exists := schema.Properties[nameKey]; !exists {
 		// this transform does not apply here because name property is missing
 		return schema
 	}
@@ -78,21 +82,21 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		}
 	}
 
-	var options []interface{}
+	var options []apiextensions.JSON
 	for _, v := range schema.OneOf {
 		// Extract name
 		name := v.Title
-		key := ""
+		k := ""
 		if v.Ref != "" {
 			name = v.RefName()
-			key = name
+			k = name
 		}
 
 		// Add to name options
 		options = append(options, name)
 
 		// Add property
-		schema.Properties[name] = t.transformSchema(key, v)
+		schema.Properties[name] = t.transformSchema(k, v)
 	}
 
 	// Add name enum definition
@@ -104,7 +108,7 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		},
 	}
 
-	schema.Properties["name"] = &model.SchemaRef{
+	schema.Properties[nameKey] = &model.SchemaRef{
 		Ref: fmt.Sprintf("#/definitions/%s", nameDefinitionKey),
 	}
 
@@ -114,9 +118,9 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 		schema.OneOf = append(schema.OneOf, &model.SchemaRef{
 			Schema: model.Schema{
 				Properties: model.Schemas{
-					"name": &model.SchemaRef{Schema: model.Schema{Enum: []interface{}{option}}},
+					nameKey: &model.SchemaRef{Schema: model.Schema{Enum: []apiextensions.JSON{option}}},
 				},
-				Required: []string{"name", option.(string)},
+				Required: []string{nameKey, option.(string)},
 			},
 		})
 	}
@@ -128,14 +132,14 @@ func (t *transformer) oneOfRefsTransform(key string, schema *model.SchemaRef) *m
 	return schema
 }
 
-func (t *transformer) propogateEnum(key string, schema *model.SchemaRef) *model.SchemaRef {
+func (t *transformer) propogateEnum(schema *model.SchemaRef) *model.SchemaRef {
 	for propertyName, property := range schema.Properties {
-		property := t.doc.Deref(property)
+		property = t.doc.Deref(property)
 		t.propogateEnumFromValidationGroup(propertyName, property, schema.AllOf)
 		t.propogateEnumFromValidationGroup(propertyName, property, schema.AnyOf)
 		t.propogateEnumFromValidationGroup(propertyName, property, schema.OneOf)
 
-		slices.UniqueInterfaceSlice(&property.Enum)
+		slices.UniqueJSONSlice(&property.Enum)
 	}
 	return schema
 }
@@ -162,7 +166,7 @@ func (t *transformer) removeComplexValidation(schema *model.SchemaRef) *model.Sc
 		schema.AnyOf = nil
 		schema.Not = nil
 		for _, property := range schema.Properties {
-			property := t.doc.Deref(property)
+			property = t.doc.Deref(property)
 			t.removeComplexValidation(property)
 		}
 		t.removeComplexValidation(schema.Items)

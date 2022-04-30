@@ -21,7 +21,7 @@ NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=true make -C manager test
 ```
 
 Please be aware that the controller is running locally in this case! If a controller is already deployed onto the
-cluster then the tests can be run with the command below. This will ensure that the tests are only creating CRDs on 
+cluster then the tests can be run with the command below. This will ensure that the tests are only creating custom resources on 
 the cluster and checking their status:
 ```bash
 USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=true make -C manager test
@@ -38,8 +38,6 @@ USE_EXISTING_CONTROLLER=true NO_SIMULATED_PROGRESS=true USE_EXISTING_CLUSTER=tru
 
 ## Running integration tests
 
-### Running in one step
-
 With the following you will then setup a kind cluster with the local registry,
 build and push current docker images and finally run the integration
 tests on it:
@@ -48,58 +46,20 @@ tests on it:
 make run-integration-tests
 ```
 
-### Running step by step
+It is sometimes useful to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the `run-integration-tests` target in the [Makefile](https://github.com/fybrik/fybrik/blob/master/Makefile).
 
-It is also possible to call the commands step by step, which sometimes is
-useful if you want to only repeat a specific step which failed without having
-to rerun  the entire sequence
 
-```bash
-# use the local kind registry
-export DOCKER_HOSTNAME=kind-registry:5000
-export DOCKER_NAMESPACE=fybrik-system
-
-# build a local kind cluser
-make kind
-
-# deploy the the cluster 3rd party such as cert-manager and vault
-make cluster-prepare
-
-# build all docker images and push them to the local registry
-make docker
-
-# build the mock/test docker images and push them to local registry
-make -C test/services docker-build docker-push
-
-# wait until cluster-prepare setup really completed
-make cluster-prepare-wait
-
-# deploy the fybrik CRDs to the kind cluster
-make -C manager deploy-crd
-
-# deploy fybrik manager to the kind cluster
-make -C manager deploy_it
-
-# wait until manager is ready
-make -C manager wait_for_manager
-
-# configure Vault
-make configure-vault
-
-# build and push helm charts to the local registry
-make helm
-
-# actually run the integration tests
-make -C manager run-integration-tests
-```
+You can run `make kind-cleanup` to delete the created clusters when you're done.
 
 ## Building in a multi cluster environment
 
 As Fybrik can run in a multi-cluster environment there is also a test environment
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
-clusters with differnt contexts and develop and test in these. 
+clusters with different contexts and develop and test in these. 
 
 Two kind clusters that share the same kind-registry can be set up using:
 ```bash
 make kind-setup-multi
 ``` 
+
+You can run `make kind-cleanup` to delete the created clusters when you're done.

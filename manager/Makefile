@@ -1,65 +1,36 @@
 ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
-#include Makefile.env
 
 .PHONY: all
 all: manager
 
-include $(ROOT_DIR)/hack/make-rules/tools.mk
 DOCKER_NAME ?= manager
-GO_OUTPUT_FILE = manager
 KUBE_NAMESPACE ?= fybrik-system
 CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
+
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
+
+include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 
-
-pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
-	mkdir /tmp/taxonomy || true                                                                                                                          
-	cp ../charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
-	mkdir testdata/unittests/basetaxonomy || true
-	mkdir testdata/unittests/sampletaxonomy || true
-	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/basetaxonomy
-	cp ../charts/fybrik/files/taxonomy/*.json testdata/unittests/sampletaxonomy
-	go run ../main.go taxonomy compile --out testdata/unittests/sampletaxonomy/taxonomy.json --base ../config/taxonomy/base/base.yaml ../config/taxonomy/example/application/appinfo.yaml ../config/taxonomy/example/application/interface.yaml ../config/taxonomy/example/catalog/locations.yaml ../config/taxonomy/example/catalog/tags.yaml ../config/taxonomy/example/module/actions.yaml 
-
-# Run tests
-test: export BLUEPRINT_NAMESPACE?=fybrik-blueprints
-test: export CONTROLLER_NAMESPACE?=fybrik-system
-test: pre-test
-	go test ./... -v  -coverprofile cover.out
-
 # Build manager binary
-manager: generate fmt vet
-	go build -o bin/manager main.go
-
-source-build: generate fmt vet
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
+.PHONY: manager
+manager:
+	go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
-	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
+.PHONY: run
+run:
+	go run -ldflags "-X main.gitCommit=$(GIT_COMMIT)" ./main.go --enable-all-controllers --metrics-bind-addr=0
 
-# Generate manifests e.g. CRD, RBAC etc.
-.PHONY: generate
-generate: $(TOOLBIN)/controller-gen
-	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen object:headerFile=$(ROOT_DIR)/hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
-
-# Generate code
-.PHONY: manifests
-manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
-	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen crd:trivialVersions=true output:crd:artifacts:config=$(ROOT_DIR)/charts/fybrik-crd/templates/ paths=./apis/...
-	$(TOOLBIN)/controller-gen webhook paths=./apis/... output:stdout | \
-		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
-		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
-		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
-		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
-		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > $(ROOT_DIR)/charts/fybrik/files/webhook-configs.yaml
+.PHONY: source-build
+source-build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
 
 # Overwrite docker-build from docker.mk
-docker-build: generate source-build
+.PHONY: docker-build
+docker-build: source-build
 	docker build . -t ${IMG} -f Dockerfile
 	rm manager
 
@@ -73,7 +44,6 @@ run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export DOCKER_TAGNAME?=master
 run-integration-tests: export USE_MOCKUP_CONNECTOR?=true
 run-integration-tests: wait_for_manager
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestMotionAPIs -count 1
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
 
 .PHONY: run-notebook-tests
@@ -82,12 +52,8 @@ run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-tests: export DOCKER_TAGNAME?=master
 run-notebook-tests: export USE_MOCKUP_CONNECTOR?=true
 run-notebook-tests: wait_for_manager
-	pushd testdata/notebook && ./setup.sh && popd
+	cd testdata/notebook && ./setup.sh
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3Notebook -count 1
-
-
-.PHONY: main.deps
-main.deps: generate fmt vet manifests
 
 DEBUG := ./debug.out
 

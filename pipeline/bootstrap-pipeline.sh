@@ -64,7 +64,7 @@ helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
     is_public_repo="true"
-    build_image="docker.io/yakinikku/suede_compile"
+    build_image="docker.io/yakinikku/suede_compile:latest"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
@@ -104,7 +104,8 @@ if [[ ${is_kubernetes} == "true" && ${is_kind} == "true" ]]; then
         kubectl apply -f ${repo_root}/pipeline/nfs.yaml -n default
         helm repo add stable https://charts.helm.sh/stable
         ip=$(kubectl get svc -n default nfs-service -o jsonpath='{.spec.clusterIP}')
-        helm upgrade --install nfs-provisioner stable/nfs-client-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
+        helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+        helm upgrade --install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --values ${repo_root}/pipeline/nfs-values.yaml --set nfs.server=${ip} --namespace nfs-provisioner --create-namespace
     fi
 fi
 
@@ -137,25 +138,25 @@ fi
 unique_prefix=$(kubectl config view --minify --output 'jsonpath={..namespace}'; echo)
 
 if [[ "${unique_prefix}" == "fybrik-system" ]]; then
-  blueprint_namespace="fybrik-blueprints"
+  modules_namespace="fybrik-blueprints"
 else
-  blueprint_namespace="${unique_prefix}-blueprints"
+  modules_namespace="${unique_prefix}-blueprints"
 fi
-extra_params="${extra_params} -p blueprintNamespace=${blueprint_namespace}"
+extra_params="${extra_params} -p modulesNamespace=${modules_namespace}"
 
 if [[ ${cluster_scoped} == "false" ]]; then
   set +e
   rc=1
-  kubectl get ns ${blueprint_namespace}
+  kubectl get ns ${modules_namespace}
   rc=$?
   set -e
   # Create new project if necessary
   if [[ $rc -ne 0 ]]; then
     if [[ ${is_openshift} == "true" ]]; then
-      oc new-project ${blueprint_namespace}
+      oc new-project ${modules_namespace}
       oc project ${unique_prefix} 
     else
-      kubectl create ns ${blueprint_namespace} 
+      kubectl create ns ${modules_namespace} 
     fi
   fi
 fi
@@ -229,14 +230,15 @@ EOH
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.26.0/release.yaml
-    kubectl apply -f https://github.com/knative/operator/releases/download/v0.15.4/operator.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-crds.yaml
-    kubectl apply -f https://github.com/knative/eventing/releases/download/v0.21.0/eventing-core.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.32.1/release.yaml
+    set +e
+    kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
+    kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-core.yaml
+    set -e
     try_command "kubectl wait pod -n tekton-pipelines --all --for=condition=Ready --timeout=3m" 2 true 1
     set +e
     kubectl create ns knative-eventing
-    set -e
     cat > ${TMP}/knative-eventing.yaml <<EOH
 apiVersion: operator.knative.dev/v1alpha1
 kind: KnativeEventing
@@ -246,6 +248,7 @@ metadata:
 EOH
     ls -alrt ${TMP}/
     kubectl apply -f ${TMP}/knative-eventing.yaml
+    set -e
 fi
 
 if [[ ${is_openshift} == "true" ]]; then
@@ -253,7 +256,7 @@ if [[ ${is_openshift} == "true" ]]; then
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:pipeline
     oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:${unique_prefix}:root-sa
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix} --namespace ${unique_prefix}
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${blueprint_namespace} --namespace ${unique_prefix}
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${modules_namespace} --namespace ${unique_prefix}
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:${unique_prefix}-app --namespace ${unique_prefix}
     
     # Temporary hack pending a better solution
@@ -272,14 +275,14 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 1. Please rerun in a minute or so
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml
-kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml 
-kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml 
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/openshift-client.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-source.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/helm-upgrade-from-repo.yaml" 3 true 60
 helper_text=""
 
 # Wipe old pipeline definitions in case of merge conflicts
@@ -291,7 +294,7 @@ fi
 
 set -e
 if [[ "${is_public_repo}" == "true" ]]; then
-    kubectl apply -f ${repo_root}/pipeline/pipeline.yaml
+    try_command "kubectl apply -f ${repo_root}/pipeline/pipeline.yaml" 3 true 60
 else 
      if [[ -f ${repo_root}/pipeline/custom_pipeline_create.sh ]]; then
          source ${repo_root}/pipeline/custom_pipeline_create.sh
@@ -369,6 +372,11 @@ if [[ ${is_openshift} == "true" ]]; then
 else
     kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}'
     kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}'
+
+    if [[ ${cluster_scoped} == "false" ]]; then
+      kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+      kubectl patch serviceaccount default -p '{"secrets": [{"name": "regcred"}]}' -n ${modules_namespace}
+    fi
 fi
 
 extra_params="${extra_params} -p deployVault='true'"
@@ -422,9 +430,9 @@ kubectl delete apiserversource generic-watcher
 set -e
 
 # Install triggers for rebuilds of specific tasks
-kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml
-kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml
-kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggerbinding.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/triggertemplate.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/apiserversource.yaml" 3 true 60
 kubectl apply -f ${repo_root}/pipeline/eventlistener/role.yaml
 kubectl apply -f ${repo_root}/pipeline/eventlistener/serviceaccount.yaml
 
@@ -432,7 +440,14 @@ set +x
 helper_text="If this step fails, run again - knative related pods may be restarting and unable to process the webhook
 "
 set -x
-kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+if [[ ${is_openshift} == "true" ]]; then
+    try_command "kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml" 3 true 60
+else
+    sed -i.bak "s|serviceAccountName: pipeline|serviceAccountName: default|g" ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    kubectl apply -f ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+    mv ${repo_root}/pipeline/eventlistener/eventlistener.yaml.bak ${repo_root}/pipeline/eventlistener/eventlistener.yaml
+fi
+
 helper_text=""
 set +e
 kubectl delete rolebinding generic-watcher
@@ -563,8 +578,8 @@ spec:
     value: ${image_repo}
   - name: dockerhub-hostname
     value: ${dockerhub_hostname}
-  - name: blueprintNamespace
-    value: ${blueprint_namespace}
+  - name: modulesNamespace
+    value: ${modules_namespace}
   - name: docker-namespace
     value: ${unique_prefix} 
   - name: git-revision
@@ -626,13 +641,16 @@ kubectl get pipelinerun --no-headers
 kubectl get pipelinerun --no-headers | grep -e "Failed" -e "Completed"
 EOH
     chmod u+x ${TMP}/streams_csv_check_script.sh
-    try_command "${TMP}/streams_csv_check_script.sh"  60 false 30
+    try_command "${TMP}/streams_csv_check_script.sh"  60 false 40
     echo "debug: pods"
     kubectl describe pods
     echo "debug: events"
     kubectl get events
+    echo "debug: volumes"
+    kubectl describe pvc
+    for i in $(kubectl get po -n nfs-provisioner | cut -d' ' -f1); do kubectl logs -n nfs-provisioner $i --all-containers; done
     echo "debug: taskruns"
-    for i in $(kubectl get taskrun --no-headers | grep "False" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
+    for i in $(kubectl get taskrun --no-headers | grep -v "True" | cut -d' ' -f1); do kubectl logs $(kubectl get po -l tekton.dev/taskRun=$i --no-headers | cut -d' ' -f1) --all-containers --since=0s; done
     set +e
     kubectl get pipelinerun --no-headers | grep "True"
     rc=$?

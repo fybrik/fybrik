@@ -64,6 +64,14 @@ Create the value of an image field from hub, image and tag
 {{- end }}
 
 {{/*
+Extract the file name from a path
+*/}}
+{{- define "fybrik.opaServerPolicyFileName" -}}
+{{- $path := toString (first .) -}}
+{{- printf "%s" $path | base| toString }}
+{{- end }}
+
+{{/*
 isEnabled evaluates an enabled flag that might be set to "auto".
 Returns true if one of the following is true:
 The return value when using `include` is always a String.
@@ -80,9 +88,9 @@ true
 {{- end }}
 
 {{/*
-isRazeeEnabled checks if razee configuration is enabled
+isRazeeConfigurationEnabled checks if razee configuration is enabled
 */}}
-{{- define "fybrik.isRazeeEnabled" -}}
+{{- define "fybrik.isRazeeConfigurationEnabled" -}}
 {{- if or .Values.coordinator.razee.user .Values.coordinator.razee.apiKey .Values.coordinator.razee.iamKey -}}
 true
 {{- end -}}
@@ -90,24 +98,24 @@ true
 
 {{/*
 Detect the version of cert manager crd that is installed
-Defaults to cert-manager.io/v1alpha2 
+Defaults to cert-manager.io/v1
 */}}
 {{- define "fybrik.certManagerApiVersion" -}}
-{{- if (.Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1") -}}
-certmanager.k8s.io/v1alpha1
-{{- else  -}}
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1beta1" -}}
+cert-manager.io/v1beta1
+{{- else if .Capabilities.APIVersions.Has "cert-manager.io/v1alpha2" -}}
 cert-manager.io/v1alpha2
+{{- else if .Capabilities.APIVersions.Has "certmanager.k8s.io/v1alpha1" -}}
+certmanager.k8s.io/v1alpha1
+{{- else -}}
+cert-manager.io/v1
 {{- end -}}
 {{- end -}}
 
 {{/*
-Get blueprints namespace
+Get modules namespace
 */}}
-{{- define "fybrik.getBlueprintNamespace" -}}
-{{- if .Values.blueprintNamespace -}}
-{{- .Values.blueprintNamespace -}}
-{{- else -}}
-{{- "fybrik-blueprints" -}}
-{{- end -}}
+{{- define "fybrik.getModulesNamespace" -}}
+{{- .Values.modulesNamespace.name | default "fybrik-blueprints" -}}
 {{- end -}}
 

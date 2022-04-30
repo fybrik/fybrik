@@ -7,7 +7,7 @@ endef
 
 INSTALL_TOOLS += $(TOOLBIN)/controller-gen
 $(TOOLBIN)/controller-gen:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.5.0
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/dlv
@@ -22,7 +22,7 @@ $(TOOLBIN)/helm:
 
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31.0
+	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
@@ -100,10 +100,6 @@ $(TOOLBIN)/oapi-codegen:
 	GOBIN=$(ABSTOOLBIN) go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/openapi2crd
-$(TOOLBIN)/openapi2crd:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/openapi2crd@v0.4.0
-
 INSTALL_TOOLS += $(TOOLBIN)/openapi-generator-cli
 $(TOOLBIN)/openapi-generator-cli:
 	cd $(TOOLS_DIR); chmod +x ./install_openapi-generator-cli.sh; ./install_openapi-generator-cli.sh
@@ -111,7 +107,13 @@ $(TOOLBIN)/openapi-generator-cli:
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.4.0
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.6.1
+	$(call post-install-check)
+
+INSTALL_TOOLS += $(TOOLBIN)/json-schema-generator
+$(TOOLBIN)/json-schema-generator:
+	cd $(TOOLS_DIR); ./install_json-schema-generator.sh
+	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/yq
 $(TOOLBIN)/yq:

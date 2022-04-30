@@ -9,8 +9,8 @@
 # $2 password
 # $3 policy
 enable_userpass_auth() {
-	vault auth enable userpass
-	vault write auth/userpass/users/"$1" password="$2" policies="$3"
+	bin/vault auth enable userpass || true
+	bin/vault write auth/userpass/users/"$1" password="$2" policies="$3"
 }
 
 

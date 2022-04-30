@@ -5,12 +5,13 @@ package taxonomyio
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
-	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 )
 
 // WriteDocumentToFile writes a document model to a JSON or YAML file.
@@ -26,7 +27,7 @@ func WriteDocumentToFile(doc *model.Document, outPath string) error {
 	if err != nil {
 		return err
 	}
-	/* #nosec G306 */
-	// Avoid nosec "Expect WriteFile permissions to be 0600 or less" error
-	return ioutil.WriteFile(filepath.Clean(outPath), encoded, 0644)
+
+	// #nosec G306 -- Avoid nosec "Expect WriteFile permissions to be 0600 or less" error
+	return os.WriteFile(filepath.Clean(outPath), encoded, 0644) //nolint:revive,gomnd // Ignore 0644 not being const
 }

@@ -1,5 +1,0 @@
-definitions:
-  ProcessingLocation:
-    enum:
-      - Netherlands
-      - Turkey

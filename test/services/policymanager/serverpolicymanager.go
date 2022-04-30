@@ -5,27 +5,28 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
 
-	mockup "fybrik.io/fybrik/manager/controllers/mockup"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
 	"github.com/gin-gonic/gin"
+
+	mockup "fybrik.io/fybrik/manager/controllers/mockup"
+	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
 const (
-	PORT = 50082
+	PORT = 8080
 )
 
 var router *gin.Engine
 
-func constructPolicyManagerRequest(inputString string) *openapiclientmodels.PolicyManagerRequest {
+func constructPolicyManagerRequest(inputString string) *policymanager.GetPolicyDecisionsRequest {
 	log.Println("inconstructPolicymanagerRequest")
 	log.Println("inputString")
 	log.Println(inputString)
-	var input openapiclientmodels.PolicyManagerRequest
+	var input policymanager.GetPolicyDecisionsRequest
 	err := json.Unmarshal([]byte(inputString), &input)
 	if err != nil {
 		return nil
@@ -43,7 +44,7 @@ func main() {
 			creds = values[0]
 		}
 		log.Println("creds extracted from POST request in mockup policy manager:", creds)
-		input, _ := ioutil.ReadAll(c.Request.Body)
+		input, _ := io.ReadAll(c.Request.Body)
 		log.Println("input extracted from POST request body in mockup policy manager:", string(input))
 
 		policyManagerReq := constructPolicyManagerRequest(string(input))
@@ -57,7 +58,7 @@ func main() {
 	})
 
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello World!")
+		c.String(http.StatusOK, "Serving REST APIs as part of policy manager stub")
 	})
 
 	log.Fatal(router.Run(":" + strconv.Itoa(PORT)))

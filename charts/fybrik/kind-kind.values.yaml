@@ -5,8 +5,13 @@
 # Global configuration applies to multiple components installed by this chart
 global:
   hub: localhost:5000/fybrik-system
-  tag: "master"
+  tag: "0.0.0"
   imagePullPolicy: "Always"
+
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
 
 # Cluster metadata values
 cluster:
@@ -17,18 +22,11 @@ cluster:
   # Set to cluster region.
   region: homeoffice
   # Set to the cluster Vault auth method path.
-  vaultAuthPath: kubernetes
+  vaultAuthPath: kind
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:
-  # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
-  razee:
-    # URL for Razee local deployment
-    url: "http://control-control-plane:30333"
-    # Usernane for Razee local deployment (dev only - fake login)
-    user: "razee-dev@example.com"
-    # Password for Razee local deployment (dev only - fake password)
-    password: "password123"
+  enabled: false
 
 # Manager component
 manager:

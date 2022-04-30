@@ -7,7 +7,7 @@ This page describes what modules are and how they are leveraged by the control p
 
 As described in the [architecture](./architecture.md) page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. 
 
-Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`FybrikModule`](../reference/crds.md#fybrikmodule) CRD.
+Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a [Helm](https://helm.sh/) chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be [registered](#registering-a-module) by applying a [`FybrikModule`](../reference/crds.md#fybrikmodule) custom resource.
 
 The functionality described by the module may be deployed (a) per workload, or (b) it may be composed of one or more components that run independent of the workload and its associated control plane.  In the case of (a), the control plane handles the deployment of the functional component. In the case of (b) where the functionality of the module runs independently and handles requests from multiple workloads, a client module is what is deployed by the control plane.  This client module passes parameters to the external component(s) and monitors the status and results of the requests to the external component(s). 
 <!-- TODO: Add "which are declared as a dependencies in the module yaml"  when we support it-->
@@ -46,12 +46,7 @@ A module may be used in one or more of these flows, as is indicated in the modul
 
 ## Control plane choice of modules
 
-A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to read them, and information about the location and reason for the use of the data.  This information together with input from data and enterprise policies, determine which modules are chosen by the control plane. Currently the logic for choosing the modules for the data plane is as follows:
-1. If the user is requesting to read data, find all the read flow related modules
-1. If the data set protocol/format and the protocol/format requested by the user do not match, then make an implicit copy of the data, storing it such that it is readable via the protocol/format requested by the user.
-1. If the governance action(s) required on the data set are not supported by the read module, and it is supported by the implicit copy module ... then make an implicit copy. Otherwise no need for implicit copy, and read will be done from the source directly.
-
-<!-- TODO: Update to address multi-cluster logic -->
+A user workload description `FybrikApplicaton` includes a list of the data sets required, the technologies that will be used to access them, the access type (e.g. read, copy), information about the location and reason for the use of the data.  This information together with input from data and [enterprise policies](config-policies.md), determine which modules are chosen by the control plane and where they are deployed. 
 
 ## Available modules
 
@@ -60,7 +55,7 @@ The table below lists the currently available modules:
 Name | Description | FybrikModule | Prerequisite
 ---  | ---         | ---       | ---
 [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
-[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/fybrik/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 

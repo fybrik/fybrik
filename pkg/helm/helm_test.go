@@ -5,13 +5,16 @@ package helm
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
@@ -48,8 +51,8 @@ func Log(t *testing.T, label string, err error) {
 var (
 	kubeNamespace = "default"
 	releaseName   = "test-install-release"
-	chartName     = "test-chart"
-	tagName       = "0.1.0"
+	chartName     = "mychart"
+	tagName       = "0.7.0"
 	hostname      = os.Getenv("DOCKER_HOSTNAME")
 	namespace     = os.Getenv("DOCKER_NAMESPACE")
 	username      = os.Getenv("DOCKER_USERNAME")
@@ -59,33 +62,35 @@ var (
 	impl          = new(Impl)
 )
 
-func TestHelmCache(t *testing.T) {
-	var err error
-	origChart := buildTestChart()
-
-	err = impl.ChartSave(origChart, chartRef)
-	assert.Nil(t, err)
-	Log(t, "save chart", err)
-
-	chart, err := impl.ChartLoad(chartRef)
-	assert.Nil(t, err)
-	Log(t, "load chart", err)
-
-	err = impl.ChartRemove(chartRef)
-	assert.Nil(t, err)
-	Log(t, "remove chart", err)
-
-	assert.Equal(t, origChart.Metadata.Name, chart.Metadata.Name, "expected loaded chart equals saved chart")
+func ChartRef(hostname, namespace, name, tagname string) string {
+	return fmt.Sprintf("%s/%s/%s:%s", hostname, namespace, name, tagname)
 }
 
 func TestHelmRegistry(t *testing.T) {
+	tmpChart := os.Getenv("TMP_CHART")
+	var err error
+
 	// Test should only run as integration test if registry is available
 	if _, isSet := os.LookupEnv("DOCKER_HOSTNAME"); !isSet {
 		t.Skip("No integration environment found. Skipping test...")
 	}
 
-	var err error
-	origChart := buildTestChart()
+	tmpDir, err := ioutil.TempDir("", "test-helm-")
+	if err != nil {
+		t.Errorf("Unable to create temporary directory: %s", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	pulledChartDestPath := path.Join(tmpDir, "pulledChartDir")
+	packedChartDir := path.Join(tmpDir, "packedChartDir")
+	err = os.Mkdir(pulledChartDestPath, 0700)
+	if err != nil {
+		t.Errorf("Unable to setup test temp charts directory: %s", err)
+	}
+	err = os.Mkdir(packedChartDir, 0700)
+	if err != nil {
+		t.Errorf("Unable to setup test temp charts directory: %s", err)
+	}
 
 	if username != "" && password != "" {
 		err = impl.RegistryLogin(hostname, username, password, insecure)
@@ -93,18 +98,23 @@ func TestHelmRegistry(t *testing.T) {
 		Log(t, "registry login", err)
 	}
 
-	err = impl.ChartSave(origChart, chartRef)
+	err = impl.Package(tmpChart, packedChartDir, tagName)
 	assert.Nil(t, err)
-	err = impl.ChartPush(origChart, chartRef)
-	assert.Nil(t, err)
-	Log(t, "push chart", err)
+	Log(t, "package chart", err)
 
-	err = impl.ChartPull(chartRef)
+	err = impl.Pull(chartRef, pulledChartDestPath)
 	assert.Nil(t, err)
 	Log(t, "pull chart", err)
-	chart, err := impl.ChartLoad(chartRef)
+
+	pulledChart, err := impl.Load(chartRef, pulledChartDestPath)
 	assert.Nil(t, err)
-	assert.Equal(t, origChart.Metadata.Name, chart.Metadata.Name, "expected pushed chart equals pulled chart")
+	Log(t, "load chart", err)
+
+	packagePath := packedChartDir + "/mychart-0.7.0.tgz"
+	packedChart, err := loader.Load(packagePath)
+	assert.Nil(t, err)
+
+	assert.Equal(t, packedChart.Metadata.Name, pulledChart.Metadata.Name, "expected loaded chart equals saved chart")
 
 	if username != "" && password != "" {
 		err = impl.RegistryLogout(hostname)
@@ -135,8 +145,9 @@ func TestHelmRelease(t *testing.T) {
 	assert.Nil(t, err)
 	Log(t, "upgrade", err)
 
+	var rel *release.Release
 	assert.Eventually(t, func() bool {
-		rel, err := impl.Status(kubeNamespace, releaseName)
+		rel, err = impl.Status(kubeNamespace, releaseName)
 		assert.Nil(t, err)
 		return rel.Info.Status == release.StatusDeployed
 	}, time.Minute, time.Second)

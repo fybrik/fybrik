@@ -4,73 +4,69 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
+	"github.com/c2h5oh/datasize"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// CatalogRequirements contain the specifics for catalogging the data asset
-type CatalogRequirements struct {
-	// CatalogService specifies the datacatalog service that will be used for catalogging the data into.
+// FlowRequirements include the requirements specific to the flow
+// Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters
+type FlowRequirements struct {
+	// Catalog indicates that the data asset must be cataloged, and in which catalog to register it
 	// +optional
-	CatalogService string `json:"service,omitempty"`
+	Catalog string `json:"catalog,omitempty"`
 
-	// CatalogID specifies the catalog where the data will be cataloged.
+	// Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.
 	// +optional
-	CatalogID string `json:"catalogID,omitempty"`
-}
+	StorageEstimate datasize.ByteSize `json:"storageEstimate,omitempty"`
 
-// CopyRequirements include the requirements for the data copy operation
-type CopyRequirements struct {
-	// Required indicates that the data must be copied.
+	// IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID.
+	// Relevant when writing.
+	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
 	// +optional
-	Required bool `json:"required,omitempty"`
-
-	// Catalog indicates that the data asset must be cataloged.
-	// +optional
-	Catalog CatalogRequirements `json:"catalog,omitempty"`
+	IsNewDataSet bool `json:"isNewDataSet,omitempty"`
 }
 
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)
 type DataRequirements struct {
 	// Interface indicates the protocol and format expected by the data user
-	// +required
-	Interface InterfaceDetails `json:"interface"`
-
-	// CopyRequrements include the requirements for copying the data
 	// +optional
-	Copy CopyRequirements `json:"copy,omitempty"`
+	Interface *taxonomy.Interface `json:"interface,omitempty"`
+
+	// FlowParams include the requirements for particular data flows
+	// +optional
+	FlowParams FlowRequirements `json:"flowParams,omitempty"`
 }
 
-// DataContext indicates data set chosen by the Data Scientist to be used by his application,
-// and includes information about the data format and technologies used by the application
-// to access the data.
+// DataContext indicates data set being processed by the workload
+// and includes information about the data format and technologies used to access the data.
 type DataContext struct {
-	// DataSetID is a unique identifier of the dataset chosen from the data catalog for processing by the data user application.
+	// DataSetID is a unique identifier of the dataset chosen from the data catalog.
+	// For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id.
+	// When writing a new dataset it is the name provided by the user or workload generating it.
 	// +required
 	// +kubebuilder:validation:MinLength=1
 	DataSetID string `json:"dataSetID"`
 
-	// CatalogService represents the catalog service for accessing the requested dataset.
-	// If not specified, the enterprise catalog service will be used.
+	// Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete
+	// This is optional for the purpose of backward compatibility.
+	// If nothing is provided, read is assumed.
 	// +optional
-	CatalogService string `json:"catalogService,omitempty"`
+	Flow taxonomy.DataFlow `json:"flow,omitempty"`
+
 	// Requirements from the system
 	// +required
 	Requirements DataRequirements `json:"requirements"`
 }
 
-// ApplicationDetails provides information about the Data Scientist's application, which is deployed separately.
-// The information provided is used to determine if the data should be altered in any way prior to its use,
-// based on policies and rules defined in an external data policy manager.
-type ApplicationDetails map[string]string
-
-// FybrikApplicationSpec defines the desired state of FybrikApplication.
+// FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+// +fybrik:validation:object="fybrik_application"
 type FybrikApplicationSpec struct {
 
 	// Selector enables to connect the resource to the application
 	// Application labels should match the labels in the selector.
-	// For some flows the selector may not be used.
 	// +optional
 	Selector Selector `json:"selector"`
 
@@ -80,9 +76,9 @@ type FybrikApplicationSpec struct {
 	SecretRef string `json:"secretRef,omitempty"`
 
 	// AppInfo contains information describing the reasons for the processing
-	// that will be done by the Data Scientist's application.
+	// that will be done by the application.
 	// +required
-	AppInfo ApplicationDetails `json:"appInfo"`
+	AppInfo taxonomy.AppInfo `json:"appInfo"`
 
 	// Data contains the identifiers of the data to be used by the Data Scientist's application,
 	// and the protocol used to access it and the format expected.
@@ -102,38 +98,6 @@ const (
 	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
-// Condition indices are static. Conditions always present in the status.
-const (
-	ReadyConditionIndex int64 = 0
-	DenyConditionIndex  int64 = 1
-	ErrorConditionIndex int64 = 2
-)
-
-// ConditionType represents a condition type
-type ConditionType string
-
-const (
-	// ErrorCondition means that an error was encountered during blueprint construction
-	ErrorCondition ConditionType = "Error"
-
-	// DenyCondition means that access to a dataset is denied
-	DenyCondition ConditionType = "Deny"
-
-	// ReadyCondition means that access to a dataset is granted
-	ReadyCondition ConditionType = "Ready"
-)
-
-// Condition describes the state of a FybrikApplication at a certain point.
-type Condition struct {
-	// Type of the condition
-	Type ConditionType `json:"type"`
-	// Status of the condition: true or false
-	Status corev1.ConditionStatus `json:"status"`
-	// Message contains the details of the current condition
-	// +optional
-	Message string `json:"message,omitempty"`
-}
-
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
 	// Name of the resource
@@ -146,14 +110,12 @@ type ResourceReference struct {
 	AppVersion int64 `json:"appVersion"`
 }
 
-// DatasetDetails contain dataset connection and metadata required to register this dataset in the enterprise catalog
+// DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
 	DatasetRef string `json:"datasetRef,omitempty"`
 	// Reference to a secret where the credentials are stored
 	SecretRef string `json:"secretRef,omitempty"`
-	// Dataset information
-	Details serde.Arbitrary `json:"details,omitempty"`
 }
 
 // AssetState defines the observed state of an asset
@@ -168,7 +130,7 @@ type AssetState struct {
 
 	// Endpoint provides the endpoint spec from which the asset will be served to the application
 	// +optional
-	Endpoint EndpointSpec `json:"endpoint,omitempty"`
+	Endpoint taxonomy.Connection `json:"endpoint,omitempty"`
 }
 
 // FybrikApplicationStatus defines the observed state of FybrikApplication.
@@ -203,27 +165,29 @@ type FybrikApplicationStatus struct {
 	Generated *ResourceReference `json:"generated,omitempty"`
 
 	// ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket.
-	// It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received.
+	// It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred,
+	// or a delete event has been received.
 	// ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
 	// +optional
 	ProvisionedStorage map[string]DatasetDetails `json:"provisionedStorage,omitempty"`
 }
 
-// FybrikApplication provides information about the application being used by a Data Scientist,
-// the nature of the processing, and the data sets that the Data Scientist has chosen for processing by the application.
-// The FybrikApplication controller (aka pilot) obtains instructions regarding any governance related changes that must
+// FybrikApplication provides information about the application whose data is being operated on,
+// the nature of the processing, and the data sets chosen for processing by the application.
+// The FybrikApplication controller obtains instructions regarding any governance related changes that must
 // be performed on the data, identifies the modules capable of performing such changes, and finally
-// generates the Blueprint which defines the secure runtime environment and all the components
-// in it.  This runtime environment provides the Data Scientist's application with access to the data requested
+// generates the Plotter which defines the secure runtime environment and all the components
+// in it.  This runtime environment provides the application with access to the data requested
 // in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically
-// by the manager from an external credential management system, which may or may not be part of a data catalog.
+// by the manager from the credential management system.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 type FybrikApplication struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FybrikApplicationSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   FybrikApplicationSpec   `json:"spec"`
 	Status FybrikApplicationStatus `json:"status,omitempty"`
 }
 
@@ -241,7 +205,7 @@ func init() {
 }
 
 const (
-	ApplicationClusterLabel   = "app.fybrik.io/appCluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/appNamespace"
-	ApplicationNameLabel      = "app.fybrik.io/appName"
+	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
+	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
+	ApplicationNameLabel      = "app.fybrik.io/app-name"
 )

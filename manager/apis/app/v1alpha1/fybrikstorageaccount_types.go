@@ -5,21 +5,25 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
 type FybrikStorageAccountSpec struct {
+	// Identification of a storage account
+	// +required
+	ID string `json:"id"`
 	// +required
 	// A name of k8s secret deployed in the control plane.
 	// This secret includes secretKey and accessKey credentials for S3 bucket
 	SecretRef string `json:"secretRef"`
 	// +required
-	// Endpoint
-	Endpoint string `json:"endpoint"`
+	// Storage region
+	Region taxonomy.ProcessingLocation `json:"region"`
 	// +required
-	// +kubebuilder:validation:MinItems=1
-	// Regions
-	Regions []string `json:"regions"`
+	// Endpoint for accessing the data
+	Endpoint string `json:"endpoint"`
 }
 
 // FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
@@ -35,7 +39,8 @@ type FybrikStorageAccount struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FybrikStorageAccountSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   FybrikStorageAccountSpec   `json:"spec"`
 	Status FybrikStorageAccountStatus `json:"status,omitempty"`
 }
 

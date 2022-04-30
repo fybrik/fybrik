@@ -4,6 +4,7 @@
 package environment
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -24,10 +25,18 @@ func GetEnvAsInt(key string, defaultValue int) int {
 // If the environment variable is not set or cannot be parsed the default value is returned.
 func GetEnvAsFloat32(key string, defaultValue float32) float32 {
 	if env, isSet := os.LookupEnv(key); isSet {
-		f, err := strconv.ParseFloat(env, 32)
+		f, err := strconv.ParseFloat(env, 32) //nolint:revive,gomnd // Ignore magic number 32
 		if err == nil {
 			return float32(f)
 		}
 	}
 	return defaultValue
+}
+
+func MustGetEnv(key string) (string, error) {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return "", fmt.Errorf("missing required environment variable: %s", key)
+	}
+	return value, nil
 }

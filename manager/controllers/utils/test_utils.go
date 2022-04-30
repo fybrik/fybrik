@@ -4,17 +4,17 @@
 package utils
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	motionv1 "fybrik.io/fybrik/manager/apis/motion/v1alpha1"
 	"github.com/onsi/gomega"
 	kbatch "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 )
 
 // Creates a scheme that can be used in unit tests
 // The scheme will have the core and batch apis from K8s registered as well as
-// the app and motion apis from Fybrik.
+// the app api from Fybrik.
 // This function can be tested with a gomega environment if passed or otherwise (if nil is passed) it will ignore tests.
 func NewScheme(g *gomega.WithT) *runtime.Scheme {
 	s := runtime.NewScheme()
@@ -27,10 +27,6 @@ func NewScheme(g *gomega.WithT) *runtime.Scheme {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
 	err = app.AddToScheme(s)
-	if g != nil {
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-	}
-	err = motionv1.AddToScheme(s)
 	if g != nil {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}

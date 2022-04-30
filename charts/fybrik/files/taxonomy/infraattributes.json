@@ -1,0 +1,19 @@
+{
+  "title": "infraattributes.json",
+  "definitions": {
+    "Infrastructure": {
+      "type": "object",
+      "required": [
+        "infrastructure"
+      ],
+      "properties": {
+        "infrastructure": {
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/InfrastructureElement"
+          }
+        }
+      }
+    }
+  }
+}

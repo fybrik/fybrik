@@ -9,17 +9,17 @@ import (
 	"os"
 	"time"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 )
 
-const timeout = time.Second * 30
+const timeout = time.Second * 1000
 const interval = time.Millisecond * 100
 
 var _ = Describe("FybrikApplication Controller", func() {
@@ -55,9 +55,9 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				blueprintNamespace := utils.GetBlueprintNamespace()
-				fmt.Printf("Application test using blueprint namespace: %s\n", blueprintNamespace)
-				secret2.Namespace = blueprintNamespace
+				modulesNamespace := utils.GetDefaultModulesNamespace()
+				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
+				secret2.Namespace = modulesNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
@@ -100,10 +100,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
 			// Ensure getting cleaned up after tests finish
+
 			defer func() {
-				application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace, Name: applicationKey.Name}}
-				_ = k8sClient.Get(context.Background(), applicationKey, application)
-				// _ = k8sClient.Delete(context.Background(), application)
+				app := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+					Name: applicationKey.Name}}
+				_ = k8sClient.Get(context.Background(), applicationKey, app)
+				// _ = k8sClient.Delete(context.Background(), app)
 				module := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: moduleKey.Namespace, Name: moduleKey.Name}}
 				_ = k8sClient.Get(context.Background(), moduleKey, module)
 				// _ = k8sClient.Delete(context.Background(), module)
@@ -133,20 +135,20 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return plotter.Status.ObservedState.Ready
 			}, timeout*10, interval).Should(BeTrue(), "plotter is not ready")
 
-			blueprintObjectKey := client.ObjectKey{Namespace: utils.GetBlueprintNamespace(), Name: plotter.Name}
+			blueprintObjectKey := client.ObjectKey{Namespace: plotter.Namespace, Name: plotter.Name}
 			By("Expecting Blueprint to contain application labels")
 			blueprint := &apiv1alpha1.Blueprint{}
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
+			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
 
-			for _, module := range blueprint.Spec.Modules {
-				Expect(module.Arguments.Labels["label1"]).To(Equal("foo"))
-				Expect(module.Arguments.Labels["label2"]).To(Equal("bar"))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
-				Expect(module.Arguments.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
-				Expect(module.Arguments.AppSelector.MatchLabels["app"]).To(Equal("notebook"))
-			}
+			Expect(blueprint.Labels["label1"]).To(Equal("foo"))
+			Expect(blueprint.Labels["label2"]).To(Equal("bar"))
+			Expect(blueprint.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
+			Expect(blueprint.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+			Expect(blueprint.Spec.Application.WorkloadSelector.MatchLabels["app"]).To(Equal("notebook"))
+			Expect(blueprint.Spec.Application.Context.Items["intent"].(string)).To(Equal("Fraud Detection"))
 			By("Expecting FybrikApplication to eventually be ready")
 			Eventually(func() bool {
 				Expect(k8sClient.Get(context.Background(), applicationKey, application)).To(Succeed())
@@ -155,13 +157,14 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 			By("Status should contain the details of the endpoint")
 			Expect(len(application.Status.AssetStates)).To(Equal(1))
-			// TODO endpoint details are not set yet
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprintObjectKey.Namespace
-			Expect(application.Status.AssetStates["s3/redact-dataset"].Endpoint).To(Equal(apiv1alpha1.EndpointSpec{
-				Hostname: fqdn,
-				Port:     80,
-				Scheme:   "grpc",
-			}))
+			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
+			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
+			Expect(connection).ToNot(BeNil())
+			connectionMap := connection.AdditionalProperties.Items
+			Expect(connectionMap).To(HaveKey("fybrik-arrow-flight"))
+			config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
+			Expect(config["hostname"]).To(Equal(fqdn))
+			Expect(config["scheme"]).To(Equal("grpc"))
 		})
 	})
 })

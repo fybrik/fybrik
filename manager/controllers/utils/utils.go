@@ -4,33 +4,33 @@
 package utils
 
 import (
-	"crypto/sha256"
+	"context"
+	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"runtime"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	dc "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/util/retry"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// GetProtocol returns the existing data protocol
-func GetProtocol(info *dc.DatasetDetails) (string, error) {
-	switch info.DataStore.Type {
-	case dc.DataStore_S3:
-		return app.S3, nil
-	case dc.DataStore_KAFKA:
-		return app.Kafka, nil
-	case dc.DataStore_DB2:
-		return app.JdbcDb2, nil
-	}
-	return "", errors.New(app.InvalidAssetDataStore)
-}
+const (
+	stepNameHashLength       = 10
+	hashPostfixLength        = 5
+	k8sMaxConformNameLength  = 63
+	helmMaxConformNameLength = 53
+)
 
 // IsDenied returns true if the data access is denied
-func IsDenied(actionName string) bool {
-	return (actionName == "Deny") // TODO FIX THIS
+func IsDenied(actionName taxonomy.ActionName) bool {
+	return actionName == "Deny" // TODO FIX THIS
 }
 
 // StructToMap converts a struct to a map using JSON marshal
@@ -47,9 +47,18 @@ func StructToMap(data interface{}) (map[string]interface{}, error) {
 	return mapData, nil
 }
 
+func HasString(value string, values []string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
 // Hash generates a name based on the unique identifier
 func Hash(value string, hashLength int) string {
-	data := sha256.Sum256([]byte(value))
+	data := sha512.Sum512([]byte(value))
 	hashedStr := hex.EncodeToString(data[:])
 	if hashLength >= len(hashedStr) {
 		return hashedStr
@@ -58,42 +67,37 @@ func Hash(value string, hashLength int) string {
 }
 
 // Generating release name based on blueprint module
-func GetReleaseName(applicationName string, namespace string, instanceName string) string {
+func GetReleaseName(applicationName, namespace, instanceName string) string {
 	return GetReleaseNameByStepName(applicationName, namespace, instanceName)
 }
 
 // Generate release name from blueprint module name
-func GetReleaseNameByStepName(applicationName string, namespace string, moduleInstanceName string) string {
+func GetReleaseNameByStepName(applicationName, namespace, moduleInstanceName string) string {
 	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
 	return HelmConformName(fullName)
-}
-
-// Generate fqdn for a module
-func GenerateModuleEndpointFQDN(releaseName string, blueprintNamespace string) string {
-	return releaseName + "." + blueprintNamespace + ".svc.cluster.local"
 }
 
 // Some k8s objects only allow for a length of 63 characters.
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
 func K8sConformName(name string) string {
-	return ShortenedName(name, 63, 5)
+	return ShortenedName(name, k8sMaxConformNameLength, hashPostfixLength)
 }
 
 // Helm has stricter restrictions than K8s and restricts release names to 53 characters
 func HelmConformName(name string) string {
-	return ShortenedName(name, 53, 5)
+	return ShortenedName(name, helmMaxConformNameLength, hashPostfixLength)
 }
 
 // Create a name for a step in a blueprint.
 // Since this is part of the name of a release, this should be done in a central location to make testing easier
-func CreateStepName(moduleName string, assetID string) string {
-	return moduleName + "-" + Hash(assetID, 10)
+func CreateStepName(moduleName, assetID string) string {
+	return moduleName + "-" + Hash(assetID, stepNameHashLength)
 }
 
 // This function shortens a name to the maximum length given and uses rest of the string that is too long
 // as hash that gets added to the valid name.
-func ShortenedName(name string, maxLength int, hashLength int) string {
+func ShortenedName(name string, maxLength, hashLength int) string {
 	if len(name) > maxLength {
 		// The new name is in the form prefix-suffix
 		// The prefix is the prefix of the original name (so it's human readable)
@@ -115,27 +119,86 @@ func ListeningAddress(port int) string {
 	return address
 }
 
-// SupportsInterface returns true iff the protocol/format list contains the given protocol/format interface
-func SupportsInterface(array []*app.InterfaceDetails, element *app.InterfaceDetails) bool {
-	for _, item := range array {
-		if item.DataFormat == element.DataFormat && item.Protocol == element.Protocol {
-			return true
+// Intersection finds a common subset of two given sets of strings
+func Intersection(set1, set2 []string) []string {
+	res := []string{}
+	for _, elem1 := range set1 {
+		for _, elem2 := range set2 {
+			if elem1 == elem2 {
+				res = append(res, elem1)
+				break
+			}
 		}
 	}
-	return false
+	return res
 }
 
-// GetModuleCapabilities checks if the requested capability is supported by the module.  If so it returns
-// the ModuleCapability structure.  There could be more than one, since multiple structures could exist with
-// the same CapabilityType but different protocols, dataformats and/or actions.
-func GetModuleCapabilities(module *app.FybrikModule, requestedCapability app.CapabilityType) (bool, []app.ModuleCapability) {
-	capList := []app.ModuleCapability{}
-	capFound := false
-	for _, cap := range module.Spec.Capabilities {
-		if cap.Capability == requestedCapability {
-			capList = append(capList, cap)
-			capFound = true
-		}
+const FybrikAppUUID = "app.fybrik.io/app-uuid"
+
+// GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
+// It must be unique over time and across clusters, even after the instance has been deleted,
+// because this ID will be used for logging purposes.
+func GetFybrikApplicationUUID(fapp *api.FybrikApplication) string {
+	// Use the clusterwise unique kubernetes id.
+	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.
+	return string(fapp.GetObjectMeta().GetUID())
+}
+
+// GetFybrikApplicationUUIDfromAnnotations returns the UUID passed to the resource in its annotations
+func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) string {
+	uuid, founduuid := annotations[FybrikAppUUID]
+	if !founduuid {
+		return "UUID missing"
 	}
-	return capFound, capList
+	return uuid
+}
+
+// UpdateFinalizers adds or removes finalizers for a resource
+func UpdateFinalizers(ctx context.Context, cl client.Client, obj client.Object) error {
+	err := cl.Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
+	finalizers := obj.GetFinalizers()
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of the object before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		if err := cl.Get(ctx, client.ObjectKeyFromObject(obj), obj); err != nil {
+			return err
+		}
+		obj.SetFinalizers(finalizers)
+		return cl.Update(ctx, obj)
+	})
+}
+
+// UpdateStatus updates the resource status
+func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, previousStatus interface{}) error {
+	err := cl.Status().Update(ctx, obj)
+	if !errors.IsConflict(err) {
+		return err
+	}
+	values, err := StructToMap(obj)
+	if err != nil {
+		return err
+	}
+	statusKey := "status"
+	currentStatus := values[statusKey]
+	if previousStatus != nil && equality.Semantic.DeepEqual(previousStatus, currentStatus) {
+		return nil
+	}
+
+	res := &unstructured.Unstructured{}
+	res.SetGroupVersionKind(obj.GetObjectKind().GroupVersionKind())
+	res.SetName(obj.GetName())
+	res.SetNamespace(obj.GetNamespace())
+
+	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of the object before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		if err := cl.Get(ctx, client.ObjectKeyFromObject(res), res); err != nil {
+			return err
+		}
+		res.Object[statusKey] = currentStatus
+		return cl.Status().Update(ctx, res)
+	})
 }

@@ -14,6 +14,7 @@ spec:
   type: service  
   capabilities:
     - capability: copy
+      scope: asset
       supportedInterfaces:
       - source:
           protocol: s3
@@ -22,10 +23,8 @@ spec:
           protocol: s3
           dataformat: parquet
       actions:
-      - id: RedactAction
-        level: 2  # column
-      - id: RemoveAction
-        level: 2  # column
+      - name: RedactAction
+      - name: RemoveAction
   chart:
     name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
   statusIndicators:

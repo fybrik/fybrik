@@ -4,9 +4,10 @@
 package compile
 
 import (
+	"github.com/mpvl/unique"
+
 	"fybrik.io/fybrik/pkg/slices"
 	"fybrik.io/fybrik/pkg/taxonomy/model"
-	"github.com/mpvl/unique"
 )
 
 // mergeDefinitions merges the definitions section of multiple documents.
@@ -36,6 +37,7 @@ func maybeOverrideString(dst *string, src string) {
 	}
 }
 
+//nolint:funlen,gocyclo
 func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 	if dst == nil {
 		return src
@@ -68,7 +70,7 @@ func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 			}
 		} else if src.AdditionalProperties.Schema != nil {
 			// handle override to `additionalProperties: [object]`
-			var maybeSchema *model.SchemaRef = nil
+			var maybeSchema *model.SchemaRef
 			if dst.AdditionalProperties != nil {
 				maybeSchema = dst.AdditionalProperties.Schema
 			}
@@ -93,7 +95,7 @@ func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 	dst.Required = append(dst.Required, src.Required...)
 	unique.Strings(&dst.Required)
 
-	if src.MinProps > 0 {
+	if src.MinProps != nil {
 		dst.MinProps = src.MinProps
 	}
 	if src.MaxProps != nil {
@@ -105,9 +107,9 @@ func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 	}
 
 	dst.Enum = append(dst.Enum, src.Enum...)
-	slices.UniqueInterfaceSlice(&dst.Enum)
+	slices.UniqueJSONSlice(&dst.Enum)
 
-	if src.MinLength > 0 {
+	if src.MinLength != nil {
 		dst.MinLength = src.MinLength
 	}
 	if src.MaxLength != nil {
@@ -132,7 +134,7 @@ func mergeSchemaRef(dst, src *model.SchemaRef) *model.SchemaRef {
 	if src.ExclusiveMax {
 		dst.ExclusiveMax = src.ExclusiveMax
 	}
-	if src.MinItems > 0 {
+	if src.MinItems != nil {
 		dst.MinItems = src.MinItems
 	}
 	if src.MaxItems != nil {

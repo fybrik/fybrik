@@ -8,7 +8,7 @@ op=$1
 
 source ./common.sh
 
-K8S_VERSION=${K8S_VERSION:-v1.18.19@sha256:7af1492e19b3192a79f606e43c35fb741e520d195f96399284515f077b3b622c}
+K8S_VERSION=${K8S_VERSION:-v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047}
 : ${KUBE_NAMESPACE:=fybrik-system}
 : ${KEEP_PROXY:=true}
 
@@ -79,7 +79,8 @@ install_nginx_ingress() {
         kubectl create ns "$KUBE_NAMESPACE" || true
 
         echo Install ingress-nginx
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+        # Using v1.0.3 because of https://github.com/kubernetes/ingress-nginx/issues/7810
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.3/deploy/static/provider/kind/deploy.yaml
         kubectl wait --namespace ingress-nginx \
           --for=condition=ready pod \
           --selector=app.kubernetes.io/component=controller \

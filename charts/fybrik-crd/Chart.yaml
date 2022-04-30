@@ -11,4 +11,9 @@ type: application
 version: 0.0.0
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. 
-appVersion: master
+appVersion: 0.0.0
+
+dependencies:
+  - name: asset-crd
+    version: 0.0.0
+    condition: asset-crd.enabled

@@ -6,12 +6,18 @@ The `manager` binary includes all of the controllers that this project defines b
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
-- `enable-motion-controller` to enable the controllers for `BatchTransfer` and `StreamTransfer`
 
 
 ## Run and debug locally
 
 Beyond testing, you may run and debug the manager outside the cluster using the following instructions.
+
+### Prepare the fybrik environment
+Use one of below methods to prepare the fybrik environment.
+
+1. Install Fybrik using the [Quick Start](https://fybrik.io/dev/get-started/quickstart/) guide.
+
+2. Follow [the instructions](../pipeline/README.md) to use tekton pipeline to deploy the fybrik components to your existing cluster.
 
 ### Run required components
 
@@ -21,10 +27,16 @@ This can be done by one of these options:
 2. Running components in a cluster 
 
 For option 2, the Helm installation allows you to pick which compoenents to install. 
-Follow the installation guide as usual but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
+Follow the [installation guide](https://fybrik.io/dev/get-started/quickstart/) as usual,the fybrik crd needs to be installed before installing fybrik as is, but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
 helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false -n fybrik-system --wait
+```
+
+If your are using the local development images please use the `0.0.0` tag:
+
+```bash
+helm install fybrik charts/fybrik --set global.tag=0.0.0 --set manager.enabled=false -n fybrik-system --wait
 ```
 
 ### Expose running components
@@ -48,12 +60,22 @@ Create `.env` file in the root folder of the project. For example:
 ```bash
 VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
-MAIN_POLICY_MANAGER_CONNECTOR_URL="localhost:49153"
+MAIN_POLICY_MANAGER_CONNECTOR_URL="http://localhost:49153"
 CATALOG_PROVIDER_NAME="katalog"
-CATALOG_CONNECTOR_URL="localhost:49152"
+CATALOG_CONNECTOR_URL="http://localhost:49152"
 CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
+```
+
+If the manager works with a Razee service, you also need to add the following environment variables:
+
+```bash
+RAZEE_URL=<Razee access point> # e.g. "http://localhost:3333/graphql"
+# you should define either RAZEE_USER/RAZEE_PASSWORD or API_KEY, if both are defined, RAZEE_USER/RAZEE_PASSWORD will be used.
+RAZEE_USER=<Razee user>
+RAZEE_PASSWORD=<Razee password> 
+API_KEY=<Razee api key>
 ```
 
 If you plan to run manager from the command line,
@@ -61,6 +83,12 @@ then run the following to export all of the variables:
 
 ```bash
 set -a; . .env; set +a
+```
+
+### Copy taxonomy JSON files and config policies locally
+```bash
+cp -R ../charts/fybrik/files/taxonomy /tmp/
+cp -R ../charts/fybrik/files/adminconfig /tmp/
 ```
 
 ### Run the manager
@@ -102,13 +130,11 @@ The rest of this README describes the directory structure.
 
 Holds the Customer Resource Definitions (CRDs) of the project:
 - `app.fybrik.io/v1alpha1`: Includes `FybrikApplication`, administrator APIs `FybrikModule` and `FybrikBucket`, and internal CRDs `Blueprint` and `Plotter`.
-- `motion.fybrik.io/v1alpha1`: Includes data movements APIs `BatchTransfer` and `StreamTransfer`. Usually not used directly but rather invoked as a module.
 
 ### `controllers`
 
 Holds the customer controllers of the project:
 - `controllers/app` holds the controllers for `app.fybrik.io` APIs `FybrikApplication`, `Blueprint` and `Plotter`.
-- `controllers/motion` holds the controllers for `motion.fybrik.io` APIs `BatchTransfer` and `StreamTransfer`.
 
 ### `testdata`
 

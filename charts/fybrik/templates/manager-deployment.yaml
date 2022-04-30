@@ -72,13 +72,12 @@ spec:
             {{- end }}
             {{- if .Values.worker.enabled }}
             - "--enable-blueprint-controller"
-            - "--enable-motion-controller"
             {{- end }}
             {{- end }}
           envFrom:
             - configMapRef:
                 name: fybrik-config
-            {{- if include "fybrik.isRazeeEnabled" . }}
+            {{- if include "fybrik.isRazeeConfigurationEnabled" . }}
             - secretRef:
                 name: razee-credentials
             {{- end }}
@@ -90,8 +89,8 @@ spec:
               value: "false"
             {{- end }}
 
-            - name: BLUEPRINT_NAMESPACE
-              value: {{ include "fybrik.getBlueprintNamespace" . }}
+            - name: MODULES_NAMESPACE
+              value: {{ include "fybrik.getModulesNamespace" . }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE
@@ -115,6 +114,8 @@ spec:
             {{- end }}     
             - mountPath: /tmp/taxonomy
               name: fybrik-taxonomy
+            - mountPath: /tmp/adminconfig
+              name: fybrik-adminconfig
             {{- if .Values.manager.chartVolume }}
             - mountPath: /opt/fybrik/
               name: charts
@@ -131,10 +132,12 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
         {{- end }}
-
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config
+        - name: fybrik-adminconfig
+          configMap:
+            name: fybrik-adminconfig
         {{- if .Values.manager.chartVolume }}
         - name: charts
           persistentVolumeClaim:

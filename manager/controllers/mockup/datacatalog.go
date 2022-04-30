@@ -4,25 +4,24 @@
 package mockup
 
 import (
-	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"strings"
 
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
+	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/serde"
 )
 
-// This dummy catalog can serve as both a grpc server implementation that serves a dummy catalog
-// with dummy datasets and dummy credentials as well as a drop in for the DataCatalog interface
-// without any network traffic.
 type DataCatalogDummy struct {
-	pb.UnimplementedDataCatalogServiceServer
-	dataDetails map[string]pb.CatalogDatasetInfo
+	dataDetails map[string]datacatalog.GetAssetResponse
 }
 
-func (d *DataCatalogDummy) GetDatasetInfo(ctx context.Context, in *pb.CatalogDatasetRequest) (*pb.CatalogDatasetInfo, error) {
-	datasetID := in.GetDatasetId()
+func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
+	datasetID := string(in.AssetID)
 	log.Printf("MockDataCatalog.GetDatasetInfo called with DataSetID " + datasetID)
 
 	splittedID := strings.SplitN(datasetID, "/", 2)
@@ -34,146 +33,166 @@ func (d *DataCatalogDummy) GetDatasetInfo(ctx context.Context, in *pb.CatalogDat
 
 	dataDetails, found := d.dataDetails[catalogID]
 	if found {
+		log.Printf("GetAssetInfo in DataCatalogDummy returns:")
+		responseBytes, errJSON := json.MarshalIndent(&dataDetails, "", "\t")
+		if errJSON != nil {
+			return nil, fmt.Errorf("error in GetAssetInfo in DataCatalogDummy: %v", errJSON)
+		}
+		log.Print(string(responseBytes))
 		return &dataDetails, nil
 	}
 
-	return nil, errors.New("could not find data details")
+	return nil, errors.New(v1alpha1.InvalidAssetID)
+}
+
+func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
+	// TODO
+	// will be provide a proper implementation once the implementation of CreateAsset in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
+	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
+}
+
+func (d *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+	// TODO
+	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
+	return &datacatalog.DeleteAssetResponse{Status: "DeleteAssetInfo not implemented in DataCatalogDummy"}, nil
 }
 
 func (d *DataCatalogDummy) Close() error {
 	return nil
 }
 
+//nolint:funlen
 func NewTestCatalog() *DataCatalogDummy {
 	dummyCatalog := DataCatalogDummy{
-		dataDetails: make(map[string]pb.CatalogDatasetInfo),
+		dataDetails: make(map[string]datacatalog.GetAssetResponse),
 	}
-	dummyCatalog.dataDetails["s3-external"] = pb.CatalogDatasetInfo{
-		DatasetId: "s3-external",
-		Details: &pb.DatasetDetails{
-			Name:       "xxx",
-			DataFormat: "csv",
-			Geo:        "neverland",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_S3,
-				Name: "cos",
-				S3: &pb.S3DataStore{
-					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "fybrik-test-bucket",
-					ObjectKey: "test.csv",
+
+	tags := taxonomy.Tags{}
+	tags.Items = map[string]interface{}{"PI": true}
+
+	geo := "theshire" //nolint:goconst
+	geoExternal := "neverland"
+
+	// TODO(roee88): some of these are also defined in ifdetails.go
+	var csvFormat taxonomy.DataFormat = "csv"
+	var parquetFormat taxonomy.DataFormat = "parquet"
+	var jsonFormat taxonomy.DataFormat = "json"
+	dummyResourceName := "xxx"
+	dummyCredentials := "dummy"
+
+	s3Connection := taxonomy.Connection{
+		Name: v1alpha1.S3,
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				string(v1alpha1.S3): map[string]interface{}{
+					// TODO(roee88): why are real endpoints used?
+					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+					"bucket":     "fybrik-test-bucket",
+					"object_key": "small.csv",
 				},
 			},
-			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
-			},
-			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
-		},
-	}
-	dummyCatalog.dataDetails["s3"] = pb.CatalogDatasetInfo{
-		DatasetId: "s3",
-		Details: &pb.DatasetDetails{
-			Name:       "xxx",
-			DataFormat: "parquet",
-			Geo:        "theshire",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_S3,
-				Name: "cos",
-				S3: &pb.S3DataStore{
-					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "fybrik-test-bucket",
-					ObjectKey: "small.parq",
-				},
-			},
-			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
-			},
-			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
-		},
-	}
-	dummyCatalog.dataDetails["s3-csv"] = pb.CatalogDatasetInfo{
-		DatasetId: "s3-csv",
-		Details: &pb.DatasetDetails{
-			Name:       "small.csv",
-			DataFormat: "csv",
-			Geo:        "theshire",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_S3,
-				Name: "cos",
-				S3: &pb.S3DataStore{
-					Endpoint:  "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					Bucket:    "fybrik-test-bucket",
-					ObjectKey: "small.csv",
-				},
-			},
-			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
-			},
-			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
-		},
-	}
-	dummyCatalog.dataDetails["db2"] = pb.CatalogDatasetInfo{
-		DatasetId: "db2",
-		Details: &pb.DatasetDetails{
-			Name:       "yyy",
-			DataFormat: "table",
-			Geo:        "theshire",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_DB2,
-				Name: "db2",
-				Db2: &pb.Db2DataStore{
-					Database: "BLUDB",
-					Table:    "NQD60833.SMALL",
-					Url:      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
-					Port:     "50000",
-					Ssl:      "false",
-				},
-			},
-			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
-			},
-			Metadata: &pb.DatasetMetadata{},
-		},
-	}
-	dummyCatalog.dataDetails["kafka"] = pb.CatalogDatasetInfo{
-		DatasetId: "kafka",
-		Details: &pb.DatasetDetails{
-			Name:       "Cars",
-			DataFormat: "json",
-			Geo:        "theshire",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_KAFKA,
-				Name: "kafka",
-				Kafka: &pb.KafkaDataStore{
-					TopicName:             "topic",
-					SecurityProtocol:      "SASL_SSL",
-					SaslMechanism:         "SCRAM-SHA-512",
-					SslTruststore:         "xyz123",
-					SslTruststorePassword: "passwd",
-					SchemaRegistry:        "kafka-registry",
-					BootstrapServers:      "http://kafka-servers",
-					KeyDeserializer:       "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-					ValueDeserializer:     "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer",
-				},
-			},
-			CredentialsInfo: &pb.CredentialsInfo{
-				VaultSecretPath: "/v1/kubernetes-secrets/creds-secret-name?namespace=fybrik-system",
-			},
-			Metadata: &pb.DatasetMetadata{},
-		},
-	}
-	dummyCatalog.dataDetails["local"] = pb.CatalogDatasetInfo{
-		DatasetId: "local",
-		Details: &pb.DatasetDetails{
-			Name:       "local file",
-			DataFormat: "csv",
-			Geo:        "theshire",
-			DataStore: &pb.DataStore{
-				Type: pb.DataStore_LOCAL,
-				Name: "file.csv",
-			},
-			Metadata: &pb.DatasetMetadata{DatasetTags: []string{"PI"}},
 		},
 	}
 
+	db2Connection := taxonomy.Connection{
+		Name: v1alpha1.JdbcDB2,
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				string(v1alpha1.JdbcDB2): map[string]interface{}{
+					"database": "test-db",
+					"table":    "test-table",
+					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
+					"port":     "5000",  // TODO(roee88): should this be defined in the example taxonomy as integer?
+					"ssl":      "false", // TODO(roee88): should this be defined in the example taxonomy as boolean?
+				},
+			},
+		},
+	}
+	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
+	sslTruststore := "xyz123"
+	kafkaConnection := taxonomy.Connection{
+		Name: v1alpha1.Kafka,
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				string(v1alpha1.Kafka): map[string]interface{}{
+					"topic_name":              "topic",
+					"security_protocol":       "SASL_SSL",
+					"sasl_mechanism":          "SCRAM-SHA-512",
+					"ssl_truststore":          sslTruststore,
+					"ssl_truststore_password": sslTruststore,
+					"schema_registry":         "kafka-registry",
+					"bootstrap_servers":       "http://kafka-servers",
+					"key_deserializer":        kafkaDeserializer,
+					"value_deserializer":      kafkaDeserializer,
+				},
+			},
+		},
+	}
+
+	dummyCatalog.dataDetails["s3-external"] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geoExternal,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: s3Connection,
+			DataFormat: csvFormat,
+		},
+	}
+
+	dummyCatalog.dataDetails[string(v1alpha1.S3)] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geo,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: s3Connection,
+			DataFormat: parquetFormat,
+		},
+	}
+
+	dummyCatalog.dataDetails["s3-csv"] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geo,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: s3Connection,
+			DataFormat: csvFormat,
+		},
+	}
+
+	dummyCatalog.dataDetails[string(v1alpha1.JdbcDB2)] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geo,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: db2Connection,
+		},
+	}
+
+	dummyCatalog.dataDetails[string(v1alpha1.Kafka)] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geo,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: kafkaConnection,
+			DataFormat: jsonFormat,
+		},
+	}
 	return &dummyCatalog
 }

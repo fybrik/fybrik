@@ -1,0 +1,41 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikModule
+metadata:
+  name: transform
+  namespace: fybrik-system
+spec:
+  chart:
+    name:  ghcr.io/fybrik/fybrik-template:0.1.0
+  type: service
+  capabilities:
+    - capability: transform
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: arrow-flight-transform
+            port: 80
+            scheme: grpc
+      supportedInterfaces: 
+      - source:
+          protocol: fybrik-arrow-flight
+      actions:
+        - name: RedactAction
+        - name: RemoveAction
+    - capability: transform
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: arrow-flight-transform
+            port: 80
+            scheme: grpc
+      supportedInterfaces: 
+      - sink:
+          protocol: fybrik-arrow-flight
+      actions:
+        - name: RedactAction
+        - name: RemoveAction

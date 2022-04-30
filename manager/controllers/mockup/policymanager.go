@@ -6,12 +6,19 @@ package mockup
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
-	connectors "fybrik.io/fybrik/pkg/connectors/clients"
+	"github.com/rs/zerolog/log"
+
+	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/random"
-	openapiclientmodels "fybrik.io/fybrik/pkg/taxonomy/model/base"
+)
+
+const (
+	DenyAction   = "Deny"
+	RedactAction = "RedactAction"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
@@ -19,16 +26,32 @@ type MockPolicyManager struct {
 	connectors.PolicyManager
 }
 
-// GetPoliciesDecisions implements the PolicyCompiler interface
-func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.PolicyManagerRequest, creds string) (*openapiclientmodels.PolicyManagerResponse, error) {
-	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
-	log.Printf("ProcessingGeography: " + input.Action.GetProcessingLocation())
-	log.Printf("Destination: " + *input.Action.Destination)
+func deserializeToTaxonomyAction(action map[string]interface{}, taxAction *taxonomy.Action) error {
+	actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
+	if errJSON != nil {
+		return fmt.Errorf("error Marshalling in deserializeToTaxonomyAction: %v", errJSON)
+	}
+	err := json.Unmarshal(actionBytes, taxAction)
+	if err != nil {
+		return fmt.Errorf("error in unmarshalling in deserializeToTaxonomyAction: %v", err)
+	}
+	return nil
+}
 
-	datasetID := input.GetResource().Name
+// GetPoliciesDecisions implements the PolicyCompiler interface
+//nolint:funlen
+func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyDecisionsRequest,
+	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
+	log.Printf("Received OpenAPI request in mockup GetPoliciesDecisions: ")
+	log.Printf("ProcessingGeography: %s", input.Action.ProcessingLocation)
+	log.Printf("Destination: " + input.Action.Destination)
+	nameKey := "name"
+	theshireLiteral := "theshire"
+
+	datasetID := string(input.Resource.ID)
 	log.Printf("   DataSetID: " + datasetID)
-	respResult := []openapiclientmodels.ResultItem{}
-	policyManagerResult := openapiclientmodels.ResultItem{}
+	respResult := []policymanager.ResultItem{}
+	policyManagerResult := policymanager.ResultItem{}
 
 	splittedID := strings.SplitN(datasetID, "/", 2)
 	if len(splittedID) != 2 {
@@ -36,55 +59,85 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *openapiclientmodels.Poli
 	}
 	assetID := splittedID[1]
 	switch assetID {
-	case "allow-dataset":
+	case "allow-dataset", "new-dataset":
 		// empty result simulates allow
 		// no need to construct any result item
-	case "deny-dataset":
-		actionOnDataset := openapiclientmodels.Action{}
-		(&actionOnDataset).SetName("Deny")
-		policyManagerResult.SetAction(actionOnDataset)
-		respResult = append(respResult, policyManagerResult)
-	case "allow-theshire":
-		if *input.GetAction().Destination != "theshire" {
-			actionOnDataset := openapiclientmodels.Action{}
-			(&actionOnDataset).SetName("Deny")
-			policyManagerResult.SetAction(actionOnDataset)
-			respResult = append(respResult, policyManagerResult)
-		}
-	case "deny-theshire":
-		if *input.GetAction().Destination == "theshire" {
-			actionOnDataset := openapiclientmodels.Action{}
-			(&actionOnDataset).SetName("Deny")
-			policyManagerResult.SetAction(actionOnDataset)
-			respResult = append(respResult, policyManagerResult)
-		}
-	default:
-		actionOnCols := openapiclientmodels.Action{}
-		action := make(map[string]interface{})
-		action["name"] = "RedactAction"
-		action["column"] = []string{"SSN"}
 
-		actionBytes, errJSON := json.MarshalIndent(action, "", "\t")
-		if errJSON != nil {
-			return nil, fmt.Errorf("error Marshalling External Catalog Connector Response: %v", errJSON)
-		}
-		err := json.Unmarshal(actionBytes, &actionOnCols)
+	case "deny-dataset":
+		actionOnDataset := taxonomy.Action{}
+		action := make(map[string]interface{})
+		action[nameKey] = DenyAction
+		denyAction := map[string]interface{}{}
+		action[DenyAction] = denyAction
+
+		err := deserializeToTaxonomyAction(action, &actionOnDataset)
 		if err != nil {
-			return nil, fmt.Errorf("error in unmarshalling actionBytes : %v", err)
+			log.Print("error in deserializeToTaxonomyAction for scenario deny-dataset :", err)
+			return nil, err
 		}
-		policyManagerResult.SetAction(actionOnCols)
+		policyManagerResult.Action = actionOnDataset
+		respResult = append(respResult, policyManagerResult)
+
+	case "allow-theshire":
+		if input.Action.Destination != theshireLiteral {
+			actionOnDataset := taxonomy.Action{}
+			action := make(map[string]interface{})
+			action[nameKey] = DenyAction
+			denyAction := map[string]interface{}{}
+			action[DenyAction] = denyAction
+
+			err := deserializeToTaxonomyAction(action, &actionOnDataset)
+			if err != nil {
+				log.Print("error in deserializeToTaxonomyAction for scenario allow-theshire:", err)
+				return nil, err
+			}
+			policyManagerResult.Action = actionOnDataset
+			respResult = append(respResult, policyManagerResult)
+		}
+
+	case "deny-theshire":
+		if input.Action.Destination == theshireLiteral {
+			actionOnDataset := taxonomy.Action{}
+			action := make(map[string]interface{})
+			action[nameKey] = DenyAction
+			denyAction := map[string]interface{}{}
+			action[DenyAction] = denyAction
+
+			err := deserializeToTaxonomyAction(action, &actionOnDataset)
+			if err != nil {
+				log.Print("error in deserializeToTaxonomyAction for scenario deny-theshire:", err)
+				return nil, err
+			}
+			policyManagerResult.Action = actionOnDataset
+			respResult = append(respResult, policyManagerResult)
+		}
+
+	default:
+		actionOnCols := taxonomy.Action{}
+		action := make(map[string]interface{})
+		action[nameKey] = RedactAction
+		redactAction := make(map[string]interface{})
+		redactAction["columns"] = []string{"SSN"}
+		action[RedactAction] = redactAction
+
+		err := deserializeToTaxonomyAction(action, &actionOnCols)
+		if err != nil {
+			log.Print("error in deserializeToTaxonomyAction for scenario default:", err)
+			return nil, err
+		}
+		policyManagerResult.Action = actionOnCols
 		respResult = append(respResult, policyManagerResult)
 	}
 
-	decisionID, _ := random.Hex(20)
-	policyManagerResp := &openapiclientmodels.PolicyManagerResponse{DecisionId: &decisionID, Result: respResult}
+	decisionID, _ := random.Hex(20) //nolint:revive,gomnd
+	policyManagerResp := &policymanager.GetPolicyDecisionsResponse{DecisionID: decisionID, Result: respResult}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	if err != nil {
-		log.Println("error in marshalling policy manager response :", err)
+		log.Print("error in marshalling policy manager response :", err)
 		return nil, err
 	}
-	log.Println("Marshalled policy manager response in mockup GetPoliciesDecisions:", string(res))
+	log.Print("Marshalled policy manager response in mockup GetPoliciesDecisions:", string(res))
 
 	return policyManagerResp, nil
 }

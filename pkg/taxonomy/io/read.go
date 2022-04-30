@@ -4,16 +4,17 @@
 package taxonomyio
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
-	"fybrik.io/fybrik/pkg/taxonomy/model"
 	"sigs.k8s.io/yaml"
+
+	"fybrik.io/fybrik/pkg/taxonomy/model"
 )
 
 // ReadDocumentFromFile loads a document model from a JSON or YAML file
 func ReadDocumentFromFile(path string) (*model.Document, error) {
-	data, err := ioutil.ReadFile(filepath.Clean(path))
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}

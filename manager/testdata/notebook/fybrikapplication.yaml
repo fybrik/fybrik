@@ -15,12 +15,20 @@ spec:
       matchLabels:
         app: my-notebook
   appInfo:
-    intent: Marketing
-    role: HR
+    intent: Fraud Detection
   data:
     - dataSetID: 'fybrik-notebook-sample/data-csv'
+      flow: read
       requirements:
         interface:
           protocol: fybrik-arrow-flight
-          dataformat: arrow
-
+    - dataSetID: 'fybrik-notebook-sample/new-data-parquet'
+      flow: write
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight
+    - dataSetID: 'fybrik-notebook-sample/new-data-parquet'
+      flow: read
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight

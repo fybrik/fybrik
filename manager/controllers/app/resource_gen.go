@@ -6,21 +6,23 @@ package app
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
-	"k8s.io/apimachinery/pkg/api/equality"
 )
 
-// ContextInterface is an interface for communication with a generated resource (e.g. Blueprint)
+// ContextInterface is an interface for communication with a generated resource
 type ContextInterface interface {
 	ResourceExists(ref *app.ResourceReference) bool
-	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error
+	CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec,
+		labels map[string]string, uuid string) error
 	DeleteResource(ref *app.ResourceReference) error
 	GetResourceStatus(ref *app.ResourceReference) (app.ObservedState, error)
 	CreateResourceReference(owner *app.ResourceReference) *app.ResourceReference
@@ -73,7 +75,8 @@ func (c *PlotterInterface) GetResourceSignature(ref *app.ResourceReference) *app
 }
 
 // CreateOrUpdateResource creates a new Plotter resource or updates an existing one
-func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, ref *app.ResourceReference, plotterSpec *app.PlotterSpec, labels map[string]string) error {
+func (c *PlotterInterface) CreateOrUpdateResource(owner, ref *app.ResourceReference, plotterSpec *app.PlotterSpec,
+	labels map[string]string, uuid string) error {
 	plotter := c.GetResourceSignature(ref)
 	if err := c.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, plotter); err == nil {
 		if equality.Semantic.DeepEqual(&plotter.Spec, plotterSpec) {
@@ -83,6 +86,7 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), c.Client, plotter, func() error {
 		plotter.Spec = *plotterSpec
+		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
 		plotter.Labels = labels
 		if plotter.Labels == nil {
 			plotter.Labels = make(map[string]string)
@@ -90,6 +94,10 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 		debugLabels := ownerLabels(types.NamespacedName{Namespace: owner.Namespace, Name: owner.Name})
 		for key, val := range debugLabels {
 			plotter.Labels[key] = val
+		}
+		if plotter.Annotations == nil {
+			plotter.Annotations = make(map[string]string)
+			plotter.Annotations[utils.FybrikAppUUID] = uuid // For logging
 		}
 		return nil
 	}); err != nil {
@@ -101,10 +109,8 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner *app.ResourceReference, 
 // DeleteResource deletes the generated Plotter resource
 func (c *PlotterInterface) DeleteResource(ref *app.ResourceReference) error {
 	resource := c.GetResourceSignature(ref)
-	if err := c.Client.Delete(context.Background(), resource); err != nil {
-		return err
-	}
-	return nil
+	err := c.Client.Delete(context.Background(), resource)
+	return err
 }
 
 // GetResourceStatus returns the generated Plotter status

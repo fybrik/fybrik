@@ -79,7 +79,7 @@ stringData:
 EOF
 ```
 
-Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `objectKey` with values from the object storage service that you used and run:
+Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -90,51 +90,57 @@ metadata:
 spec:
   secretRef: 
     name: paysim-csv
-  assetDetails:
+  details:
     dataFormat: csv
     connection:
-      type: s3
+      name: s3
       s3:
         endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
         bucket: "demo"
-        objectKey: "PS_20174392719_1491204439457_log.csv"
-  assetMetadata:
-    geography: theshire
+        object_key: "PS_20174392719_1491204439457_log.csv"
+  metadata:
+    name: Synthetic Financial Datasets For Fraud Detection
+    geography: theshire 
     tags:
-    - finance
-    componentsMetadata:
-      nameOrig: 
+      finance: true
+    columns:
+      - name: nameOrig
         tags:
-        - PII
-      oldbalanceOrg:
+          PII: true
+      - name: oldbalanceOrg
         tags:
-        - sensitive
-      newbalanceOrig:
+          PII: true
+      - name: newbalanceOrig
         tags:
-        - sensitive
+          PII: true
 EOF
 ```
 
 The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
 
-Notice the `assetMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+Notice the `metadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
+For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
+
+```shell
+kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
+```
+
+[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the yaml above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
 
 ## Define data access policies
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the `nameOrig` column for datasets tagged as `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
-import data.data_policies as dp
-
-transform[action] {
-  description := "Redact sensitive columns in finance datasets"
-  dp.AccessType() == "READ"
-  dp.dataset_has_tag("finance")
-  column_names := dp.column_with_any_name({"nameOrig"})
-  action = dp.build_redact_column_action(column_names[_], dp.build_policy_from_description(description))
+rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
+  description := "Redact columns tagged as PII in datasets tagged with finance = true"
+  input.action.actionType == "read"
+  input.resource.metadata.tags.finance
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+  count(column_names) > 0
 }
 ```
 
@@ -204,13 +210,12 @@ spec:
       matchLabels:
         app: my-notebook
   appInfo:
-    intent: fraud-detection
+    intent: Fraud Detection
   data:
     - dataSetID: "fybrik-notebook-sample/paysim-csv"
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
-          dataformat: arrow
 EOF
 ```
 
@@ -218,22 +223,23 @@ Notice that:
 
 * The `selector` field matches the labels of our Jupyter notebook workload.
 * The `data` field includes a `dataSetID` that matches the asset identifier in the catalog.
-* The `protocol` and `dataformat` indicate that the developer wants to consume the data using Apache Arrow Flight.
+* The `protocol` indicates that the developer wants to consume the data using Apache Arrow Flight. For some protocols a `dataformat` can be specified as well (e.g., `s3` protocol and `parquet` format).
 
 
 Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
+while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for fybrik-notebook-sample/paysim-csv asset" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
 printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
 ```
 The next steps use the endpoint to read the data in a python notebook
@@ -244,7 +250,6 @@ The next steps use the endpoint to read the data in a python notebook
   ```
 2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
   ```bash
-  %pip install pandas pyarrow
   import json
   import pyarrow.flight as fl
   import pandas as pd
@@ -268,7 +273,7 @@ The next steps use the endpoint to read the data in a python notebook
   ```
   df
   ```
-5. Execute all notebook cells and notice that the `nameOrig` column appears redacted.
+5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
 
 
 ## Cleanup

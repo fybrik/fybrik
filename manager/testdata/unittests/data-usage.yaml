@@ -16,4 +16,3 @@ spec:
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
-          dataformat: arrow

@@ -6,21 +6,28 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# Set to false to disable deploying cluster scoped resources.
+# If Fybrik should not create cluster scope resources, set it to false.
 # Note that these resources are still required for a valid
 # deployment. Only set this to false if you deployed cluster
 # scoped resources using a different method.
-
 clusterScoped: true
 
-blueprintNamespace: "fybrik-blueprints"
+# The namespace where Fybrik deploys data path components (modules)
+modulesNamespace:
+  # The Fybrik namespace name, if not defined, default "fybrik-blueprints" is used
+  name: ""
+  # if it is true, Fybrik, during its deployment, creates this namespace and removes it when Fybrik is uninstalled.
+  # Otherwise, it is a user responsibility to create this namespace, before Fybrik deployment.
+  managedByFybrik: true
 
-# Set if need to only watch for FybrikApplication from a specific namespace
+# Define a specific namespace, if Fybrik should watch for FybrikApplication from a specific namespace only,
+#  or when we work with "clusterScope:false"
 # The namespace must already exist
 applicationNamespace: ""
 
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
+
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -38,6 +45,11 @@ global:
   imagePullSecrets: []
   # Default connection timeout for GRPC connections.
   connectionTimeout: 120
+  # Human readable logs
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
 
 # Cluster metadata values
 cluster:
@@ -60,7 +72,7 @@ coordinator:
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
-  # Defaults to `<catalog>-connector:80`.
+  # Defaults to `http://<catalog>-connector:80`.
   catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
@@ -68,12 +80,16 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `<policyManager>-connector:80`.
+  # Defaults to `http://<policyManager>-connector:80`.
   policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
-    # Set to the Vault address. 
+    # WARNING: it's an advanced feature, set it to "false" if all your modules and connectors do not require getting
+    # credentials from Fybrik.
+    # If it is "false", you can remove all other entries below.
+    enabled: true
+    # Set to the Vault address.
     address: "http://vault.{{ .Release.Namespace }}:8200"
     # Login method to Vault
     login:
@@ -107,15 +123,18 @@ worker:
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
-  enabled: auto
+  enabled: true
   
   # Override GRPC connection timeout in manager
   connectionTimeout: 
 
+  # Override data path limits in manager
+  dataPathMaxSize: "2"
+
   # Image name or a hub/image[:tag]
   image: "manager"
   # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   # Set to true to enable socat in the manager pod to forward
   # traffic from a localhost registry. Used only for development.
@@ -179,80 +198,6 @@ manager:
     # To populate the volume, create a 'charts' directory at the root of the mount,
     # and place helm charts within the charts directory.
 
-# OPA connector component
-opaConnector:
-  # Set to true to deploy the opa connector or false to skip its deployment.
-  # Defaults to true if `coordinator.policyManager` is set to "opa"
-  enabled: auto
-
-  # Overrides the URL of the OPA server
-  # Defaults to the address of the deployed OPA server
-  serverURL:
-
-  # Override GRPC connection timeout
-  # See `.global.connectionTimeout`.
-  connectionTimeout:
-
-  # Image name or a hub/image[:tag]
-  image: "opa-connector"
-
-  # Overrides `.global.imagePullPolicy`
-  imagePullPolicy: ""
-
-  # Used if autoscaling is not enabled 
-  replicaCount: 1
-  
-  serviceAccount:
-    # Specifies whether a service account should be created
-    create: true
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use
-    name: opa-connector
-
-  podAnnotations: {}
-
-  podSecurityContext: {}
-    # fsGroup: 2000
-
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
-
-  service:
-    type: ClusterIP
-    port: 80
-
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage:
-    # targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
-
 # OPA server component
 opaServer:
   # Set to true to deploy OPA service or false to skip its deployment.
@@ -260,7 +205,7 @@ opaServer:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "openpolicyagent/opa:latest"
+  image: "openpolicyagent/opa:0.36.0"
   
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
@@ -328,6 +273,19 @@ opaServer:
 
   affinity: {}
 
+  # Bootstrap policies to load upon startup
+  # Define policies in the form of:
+  # <policyName> : |-
+  #   <regoBody>
+  # For example, to mask the entire input body in the decision logs:
+  # bootstrapPolicies:
+  #   log: |-
+  #     package system.log
+  #     mask["/input"]
+
+  # Bootstrap policies to load upon startup
+  bootstrapPolicies: {}
+
 # Katalog connector component
 katalogConnector:
   # Set to true to deploy the katalog connector or false to skip its deployment.
@@ -394,84 +352,8 @@ katalogConnector:
 
   affinity: {}
 
-# Egeria connector component
-egeriaConnector:
-  # Set to true to deploy the egeria connector or false to skip its deployment.
-  # Defaults to true if `coordinator.catalog` is set to "egeria"
-  enabled: auto
-
-  # Set to the URL of the Egeria API.
-  serverURL: "https://egeria-platform.egeria-catalog:9443"
-
-  # Default username for Egeria
-  username: "garygeeke"
-
-  # Override GRPC connection timeout
-  connectionTimeout: 
-
-  # Image name or a hub/image[:tag]
-  image: "egr-connector"
-
-  # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
-
-  # Used if autoscaling is not enabled 
-  replicaCount: 1
-  
-  serviceAccount:
-    # Specifies whether a service account should be created
-    create: true
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use
-    name: egeria-connector
-
-  podAnnotations: {}
-
-  podSecurityContext: {}
-    # fsGroup: 2000
-
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
-
-  service:
-    type: ClusterIP
-    port: 80
-
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 100
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage:
-    # targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
-
-
 # V2 OPA connector component
-openPolicyAgentConnector:
+opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
   # Defaults to true if `coordinator.policyManager` is set to "opa"
   enabled: auto
@@ -485,7 +367,7 @@ openPolicyAgentConnector:
   connectionTimeout:
 
   # Image name or a hub/image[:tag]
-  image: "openpolicyagent-connector"
+  image: "opa-connector"
 
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
@@ -499,7 +381,7 @@ openPolicyAgentConnector:
     # Annotations to add to the service account
     annotations: {}
     # The name of the service account to use
-    name: openpolicyagent-connector
+    name: opa-connector
 
   podAnnotations: {}
 

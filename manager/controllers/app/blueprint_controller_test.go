@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"time"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 )
 
 func deployBlueprint(namespace string, shouldSucceed bool) {
@@ -24,7 +25,8 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Set the correct namespace
 	blueprint.SetNamespace(namespace)
-	fmt.Printf("Blueprint controller unit test - blueprint namespace: %s\n", namespace)
+	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
+	fmt.Printf("Blueprint controller unit test - blueprint namespace : %s\n", namespace)
 	blueprintKey := client.ObjectKeyFromObject(blueprint)
 
 	// Create Blueprint
@@ -32,9 +34,9 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		blueprint := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
-		_ = k8sClient.Get(context.Background(), blueprintKey, blueprint)
-		_ = k8sClient.Delete(context.Background(), blueprint)
+		bp := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
+		_ = k8sClient.Get(context.Background(), blueprintKey, bp)
+		_ = k8sClient.Delete(context.Background(), bp)
 	}()
 
 	By("Expecting blueprint to be created")
@@ -60,7 +62,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
 
-		blueprintNamespace := utils.GetBlueprintNamespace()
+		blueprintNamespace := utils.GetSystemNamespace()
 		fmt.Printf("blueprintNamespace: %s\n", blueprintNamespace)
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test

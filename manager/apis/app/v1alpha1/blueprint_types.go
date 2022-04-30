@@ -4,21 +4,16 @@
 package v1alpha1
 
 import (
-	"fybrik.io/fybrik/pkg/serde"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
-// CopyModuleArgs define the input parameters for modules that copy data from location A to location B
-// Credentials are stored in a credential management system such as vault
-type CopyModuleArgs struct {
-
-	// Source is the where the data currently resides
-	// +required
-	Source DataStore `json:"source"`
-
-	// Destination is the data store to which the data will be copied
-	// +required
-	Destination DataStore `json:"destination"`
+// AssetContext defines the input parameters for modules that access an asset
+type AssetContext struct {
+	// List of datastores associated with the asset
+	// +optional
+	Arguments []*DataStore `json:"args,omitempty"`
 
 	// AssetID identifies the asset to be used for accessing the data when it is ready
 	// It is copied from the FybrikApplication resource
@@ -27,71 +22,35 @@ type CopyModuleArgs struct {
 
 	// Transformations are different types of processing that may be done to the data as it is copied.
 	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
+	Transformations []taxonomy.Action `json:"transformations,omitempty"`
+
+	// Capability of the module
+	// +required
+	Capability taxonomy.Capability `json:"capability"`
 }
 
-// ReadModuleArgs define the input parameters for modules that read data from location A
-type ReadModuleArgs struct {
-	// Source of the read path module
-	// +required
-	Source DataStore `json:"source"`
-
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data
-	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
-}
-
-// WriteModuleArgs define the input parameters for modules that write data to location B
-type WriteModuleArgs struct {
-	// Destination is the data store to which the data will be written
-	// +required
-	Destination DataStore `json:"destination"`
-
-	// AssetID identifies the asset to be used for accessing the data when it is ready
-	// It is copied from the FybrikApplication resource
-	// +required
-	AssetID string `json:"assetID"`
-
-	// Transformations are different types of processing that may be done to the data as it is written.
-	// +optional
-	Transformations []serde.Arbitrary `json:"transformations,omitempty"`
-}
-
-// ModuleArguments are the parameters passed to a component that runs in the data path
-// In the future might support output args as well
-// The arguments passed depend on the type of module
-type ModuleArguments struct {
-	// Labels of FybrikApplication
-	// +optional
-	Labels map[string]string `json:"labels,omitempty"`
-
+type ApplicationDetails struct {
 	// Application selector is used to identify the user workload.
 	// It is obtained from FybrikApplication spec.
 	// +optional
-	AppSelector metav1.LabelSelector `json:"appSelector,omitempty"`
+	WorkloadSelector metav1.LabelSelector `json:"selector,omitempty"`
 
-	// CopyArgs are parameters specific to modules that copy data from one data store to another.
+	// Application context such as intent, role, etc.
 	// +optional
-	Copy *CopyModuleArgs `json:"copy,omitempty"`
+	Context taxonomy.AppInfo `json:"context,omitempty"`
+}
 
-	// ReadArgs are parameters that are specific to modules that enable an application to read data
+// ModuleArguments are the parameters passed to a component that runs in the data path
+type ModuleArguments struct {
+	// Assets define asset related arguments, such as data source, transformations, etc.
 	// +optional
-	Read []ReadModuleArgs `json:"read,omitempty"`
-
-	// WriteArgs are parameters that are specific to modules that enable an application to write data
-	// +optional
-	Write []WriteModuleArgs `json:"write,omitempty"`
+	Assets []AssetContext `json:"assets,omitempty"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
 // to instantiate a datapath component, including the parameters relevant for the particular workload.
 type BlueprintModule struct {
-	// Name of the fybrikmodule on which this is based
+	// Name of the FybrikModule on which this is based
 	// +required
 	Name string `json:"name"`
 
@@ -110,21 +69,30 @@ type BlueprintModule struct {
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path
-// that run in a particular cluster.  In a single cluster environment there is one blueprint.  In a multi-cluster
-// environment there is one Blueprint per cluster per workload (FybrikApplication).
+// that run in a particular cluster.
+// In a single cluster environment there is one blueprint per workload (FybrikApplication).
+// In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).
 type BlueprintSpec struct {
 	// Cluster indicates the cluster on which the Blueprint runs
 	// +required
 	Cluster string `json:"cluster"`
 
+	// ModulesNamespace is the namespace where modules should be allocated
+	// +required
+	ModulesNamespace string `json:"modulesNamespace"`
+
 	// Modules is a map which contains modules that indicate the data path components that run in this cluster
-	// The map key is InstanceName which is the unique name for the deployed instance related to this workload
+	// The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload
 	// +required
 	Modules map[string]BlueprintModule `json:"modules"`
+
+	// ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)
+	// +optional
+	Application *ApplicationDetails `json:"application,omitempty"`
 }
 
 // BlueprintStatus defines the observed state of Blueprint
-// This includes readiness, error message, and indicators forthe Kubernetes
+// This includes readiness, error message, and indicators for the Kubernetes
 // resources owned by the Blueprint for cleanup and status monitoring
 type BlueprintStatus struct {
 	// ObservedState includes information to be reported back to the FybrikApplication resource
@@ -138,9 +106,9 @@ type BlueprintStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// ModulesState is a map which holds the status of each module
-	// its key is the instance name which is the unique name for the deployed instance related to this workload
-	// +required
-	ModulesState map[string]ObservedState `json:"modules"`
+	// its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload
+	// +optional
+	ModulesState map[string]ObservedState `json:"modules,omitempty"`
 
 	// Releases map each release to the observed generation of the blueprint containing this release.
 	// At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
@@ -159,7 +127,8 @@ type Blueprint struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   BlueprintSpec   `json:"spec,omitempty"`
+	// +required
+	Spec   BlueprintSpec   `json:"spec"`
 	Status BlueprintStatus `json:"status,omitempty"`
 }
 
@@ -211,6 +180,6 @@ func CreateMetaBlueprintWithoutState(blueprint *Blueprint) MetaBlueprint {
 }
 
 const (
-	BlueprintNamespaceLabel = "app.fybrik.io/blueprintNamespace"
-	BlueprintNameLabel      = "app.fybrik.io/blueprintName"
+	BlueprintNamespaceLabel = "app.fybrik.io/blueprint-namespace"
+	BlueprintNameLabel      = "app.fybrik.io/blueprint-name"
 )

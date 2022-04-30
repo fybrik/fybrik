@@ -10,13 +10,20 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
-// This ClusterManager is meant to be used for testing
-type ClusterManager struct {
+// MockClusterManager is meant to be used for testing
+type MockClusterManager struct {
 	DeployedBlueprints map[string]*v1alpha1.Blueprint
 	Clusters           []multicluster.Cluster
 }
 
-func (m *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
+func NewDummyClusterManager(blueprints map[string]*v1alpha1.Blueprint, clusters []multicluster.Cluster) MockClusterManager {
+	return MockClusterManager{
+		DeployedBlueprints: blueprints,
+		Clusters:           clusters,
+	}
+}
+
+func (m *MockClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	if m.Clusters != nil {
 		return m.Clusters, nil
 	}
@@ -28,7 +35,7 @@ func (m *ClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	}, nil
 }
 
-func (m *ClusterManager) GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error) {
+func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
 	blueprint, found := m.DeployedBlueprints[cluster]
 	if found {
 		return blueprint, nil
@@ -36,17 +43,17 @@ func (m *ClusterManager) GetBlueprint(cluster string, namespace string, name str
 	return nil, errors.New("blueprint not found")
 }
 
-func (m *ClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (m *MockClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	m.DeployedBlueprints[cluster] = blueprint
 	return nil
 }
 
-func (m *ClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (m *MockClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
 	m.DeployedBlueprints[cluster] = blueprint
 	return nil
 }
 
-func (m *ClusterManager) DeleteBlueprint(cluster string, namespace string, name string) error {
+func (m *MockClusterManager) DeleteBlueprint(cluster, namespace, name string) error {
 	delete(m.DeployedBlueprints, cluster)
 	return nil
 }

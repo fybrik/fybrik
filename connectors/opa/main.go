@@ -1,95 +1,104 @@
-// Copyright 2020 IBM Corp.
+// Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net"
 	"os"
-	"strconv"
+	"strings"
+	"time"
 
-	opabl "fybrik.io/fybrik/connectors/opa/lib"
-	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
-	"google.golang.org/grpc"
+	"emperror.dev/errors"
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/cobra"
+
+	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
-var opaServerURL = ""
+const (
+	envOPAServerURL             = "OPA_SERVER_URL"
+	envCatalogConnectorURL      = "CATALOG_CONNECTOR_URL"
+	envCatalogProviderName      = "CATALOG_PROVIDER_NAME"
+	envConnectionTimeout        = "CONNECTION_TIMEOUT"
+	envDefaultConnectionTimeout = 10
+	commandPort                 = 8080
+)
 
-const defaultPort = "50082" // synced with opa_connector.yaml
-
-type server struct {
-	pb.UnimplementedPolicyManagerServiceServer
-	opaReader *opabl.OpaReader
+// NewRouter returns a new router.
+func NewRouter(controller *ConnectorController) *gin.Engine {
+	router := gin.Default()
+	router.POST("/getPoliciesDecisions", controller.GetPoliciesDecisions)
+	return router
 }
 
-func getEnv(key string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Fatalf("Env Variable %v not defined", key)
+// RootCmd defines the root cli command
+func RootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "opa-connector",
+		Short: "Kubernetes based policy manager connector for Fybrik",
 	}
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
+	cmd.AddCommand(RunCmd())
+	return cmd
 }
 
-func getEnvWithDefault(key string, defaultValue string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		log.Printf("Env. variable not found, default value used: %s - %s\n", key, defaultValue)
-		return defaultValue
+// RunCmd defines the command for running the connector
+func RunCmd() *cobra.Command {
+	ip := ""
+	port := commandPort
+	cmd := &cobra.Command{
+		Use:   "run",
+		Short: "Run opa connector",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			gin.SetMode(gin.ReleaseMode)
+			// Parse environment variables
+			opaServerURL, err := environment.MustGetEnv(envOPAServerURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve URL for communicating with OPA server")
+			}
+
+			if !strings.HasPrefix(opaServerURL, "https://") && !strings.HasPrefix(opaServerURL, "http://") {
+				return errors.New("server URL for OPA server must have http or https schema")
+			}
+
+			catalogConnectorAddress, err := environment.MustGetEnv(envCatalogConnectorURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve URL for communicating with data catalog")
+			}
+
+			catalogProviderName, err := environment.MustGetEnv(envCatalogProviderName)
+			if err != nil {
+				return errors.Wrap(err, "failed to get catalog provider name from the environment")
+			}
+
+			timeout := environment.GetEnvAsInt(envConnectionTimeout, envDefaultConnectionTimeout)
+			connectionTimeout := time.Duration(timeout) * time.Second
+
+			// Create data catalog client
+			catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
+			if err != nil {
+				return errors.Wrap(err, "failed to create a data catalog client")
+			}
+
+			// Create and start connector
+			controller := NewConnectorController(opaServerURL, catalogClient)
+			router := NewRouter(controller)
+			router.Use(gin.Logger())
+
+			bindAddress := fmt.Sprintf("%s:%d", ip, port)
+			return router.Run(bindAddress)
+		},
 	}
-
-	log.Printf("Env. variable extracted: %s - %s\n", key, value)
-	return value
-}
-
-func (s *server) GetPoliciesDecisions(ctx context.Context, in *pb.ApplicationContext) (*pb.PoliciesDecisions, error) {
-	log.Println("Received ApplicationContext")
-	log.Println(in)
-
-	catalogConnectorAddress := getEnv("CATALOG_CONNECTOR_URL")
-	policyToBeEvaluated := "dataapi/authz"
-
-	timeOutInSecs := getEnv("CONNECTION_TIMEOUT")
-	timeOut, err := strconv.Atoi(timeOutInSecs)
-
-	if err != nil {
-		return nil, fmt.Errorf("conversion of timeOutinseconds failed: %v", err)
-	}
-
-	catalogReader := opabl.NewCatalogReader(catalogConnectorAddress, timeOut)
-	eval, err := s.opaReader.GetOPADecisions(in, catalogReader, policyToBeEvaluated)
-	if err != nil {
-		log.Println("GetOPADecisions err:", err)
-		return nil, err
-	}
-	jsonOutput, err := json.MarshalIndent(eval, "", "\t")
-	if err != nil {
-		return nil, fmt.Errorf("error during MarshalIndent of OPA decisions: %v", err)
-	}
-	log.Println("Received evaluation : " + string(jsonOutput))
-	return eval, err
+	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")
+	cmd.Flags().IntVar(&port, "port", port, "Listening port")
+	return cmd
 }
 
 func main() {
-	port := getEnvWithDefault("PORT_OPA_CONNECTOR", defaultPort)
-	opaServerURL = getEnv("OPA_SERVER_URL") // set global variable
-
-	log.Println("OPA_SERVER_URL env variable in OPAConnector: ", opaServerURL)
-	log.Println("Using port to start go opa connector : ", port)
-
-	log.Printf("Server starts listening on port %v", port)
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		log.Fatalf("Error in listening: %v", err)
-	}
-	s := grpc.NewServer()
-	srv := &server{opaReader: opabl.NewOpaReader(opaServerURL)}
-	pb.RegisterPolicyManagerServiceServer(s, srv)
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Error in service: %v", err)
+	// Run the cli
+	if err := RootCmd().Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

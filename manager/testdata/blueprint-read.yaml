@@ -6,13 +6,16 @@ kind: Blueprint
 metadata:
   name: blueprint-with-read
   labels:
-    app.fybrik.io/appNamespace: default
-    app.fybrik.io/appName: notebook
+    app.fybrik.io/app-namespace: default
+    app.fybrik.io/app-name: notebook
 spec:
-  selector:
-    matchLabels:
-      app: notebook
+  application:
+    selector:
+      matchLabels:
+        app: notebook
+    context: {}
   cluster: cluster1
+  modulesNamespace: fybrik-blueprints
   modules:
     notebook-read-module:
       name: notebook-read-module
@@ -24,14 +27,13 @@ spec:
         api:
           service:
           interfaceDetails:
-            protocol: arrow-flight
-            dataformat: arrow
+            protocol: fybrik-arrow-flight
       arguments:
-        read:
+        assets:
         - assetID: xyz
           source:
             connection:
-              name: S3
+              name: s3
               s3:
                 bucket: fybrik-test-bucket
                 endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud

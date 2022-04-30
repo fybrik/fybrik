@@ -36,9 +36,9 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 
 ## Module Helm Chart
 
-For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.3 or above is required.
+For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.7 or above is required.
 
-The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilites.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
+The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilities.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
 
 Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
@@ -51,18 +51,17 @@ For a full example see the [Arrow Flight Module chart](https://github.com/fybrik
 
 Once your Helm chart is ready, you need to push it to a [OCI-based registry](https://helm.sh/docs/topics/registries/) such as [ghcr.io](https://ghcr.io). This allows the control plane of Fybrik to later pull the chart whenever it needs to be installed.
 
-You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart:
+You can use the [hack/make-rules/helm.mk](https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk) Makefile, or manually push the chart as described in the [link](https://github.com/helm/community/blob/main/hips/hip-0006.md):
 
 ```bash
-HELM_EXPERIMENTAL_OCI=1 
 helm registry login -u <username> <registry>
-helm chart save <chart folder> <registry>/<path>:<version>
-helm chart push <registry>/<path>:<version>
+helm package <chart folder> -d <local-chart-path>
+helm push <local-chart-path> oci://<registry>/<path>
 ```
 
 ## FybrikModule YAML
 
-`FybrikModule` is a kubernetes Custom Resource Definition (CRD) which describes to the control plane the functionality provided by the module.  The FybrikModule CRD has no controller. The specification of the `FybrikModule` Kubernetes CRD is available in the [API documentation](../reference/crds.md#fybrikmodule). 
+`FybrikModule` is a kubernetes Custom Resource Definition (custom resource) which describes to the control plane the functionality provided by the module.  The FybrikModule custom resource has no controller. The specification of the `FybrikModule` Kubernetes custom resource is available in the [API documentation](../reference/crds.md#fybrikmodule). 
 
 The YAML file begins with standard Kubernetes metadata followed by the `FybrikModule` specification:
 ```yaml
@@ -70,6 +69,9 @@ apiVersion: app.fybrik.io/v1alpha1 # always this value
 kind: FybrikModule # always this value
 metadata:
   name: "<module name>" # the name of your new module
+  labels:
+    name: "<module name>" # the name of your new module
+    version: "<semantic version>"
   namespace: fybrik-system  # control plane namespace. Always fybrik-system
 spec:
    ...
@@ -83,7 +85,10 @@ This is a link to a the Helm chart stored in the [image registry]( https://helm.
 
 ```
 spec:
-  chart: "<helm chart link>" # e.g.: ghcr.io/username/chartname:chartversion
+  chart: 
+    name: "<helm chart link>" # e.g.: ghcr.io/username/chartname:chartversion
+    values:
+      image.tag: v0.0.1
 ```
 
 ### `spec.statusIndicators`
@@ -114,41 +119,63 @@ dependencies:
 
 The `type` field may be one of the following vaues:
 
-1)service - Indicates that module workload implements the modules logic, and is deployed for every workload.
+1)service - Indicates that module workload implements the modules logic, and is deployed by the fybrik control plane.
 
 2) config - In this case the logic is performed by a component deployed externally, i.e. not by the fybrik control plane.  Such components can be assumed to support multiple workloads.
 
-3) plugin - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.
+3) plugin (FUTURE) - This type of module enables a sub-set of often used capabilities to be implemented once and re-used by any module that supports plugins of the declared type.
 
 ### `spec.pluginType`
+
+(Future Functionality)
 The types of plugins supported by this module.  Example: vault, fybrik-wasm ...
 
+
 ### `spec.capabilities`
+
 Each module may support one or more capabilities.  Currently there are four capabilities: `read` for enabling an application to read data or prepare data for being read, `write` for enabling an application to write data, and `copy` for performing an implicit data copy on behalf of the application, and `transform` for altering data based on governance policies. A module provides one or more of these capabilities.  
  
+`capabilities.capability`
+
+Indicates which of the types of capabilities this instance describes.
 
 ```yaml
-capabilityType: # Indicate the data flow(s) in which the control plane should consider using this module 
+capability: # Indicate the capabilities for which the control plane should consider using this module 
 - read  # optional
 - write # optional
 - copy  # optional
 - transform # optional
 ```
 
-### `spec.capabilities`
+`capability.scope`
 
-`capabilites.supportedInterfaces` lists the supported data services from which the module can read data and to which it can write 
-* `scope` indicate whether the capability acts on the `asset`, `workload` or `cluster` level
-* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc.
+The capability provided by the module may work on one of several different scopes:
+
+* workload - deployed once by fybrik and available for use by the data planes of all the datasets
+* asset - deployed by fybrik for each dataset
+* cluster - deployed outside of fybrik and can be used by multiple fybbrik workloads in a given cluster
+
+```yaml
+scope: <scope of the capability> # cluster, workload, asset
+```
+
+`capabilites.supportedInterfaces` 
+
+Lists the supported data services from which the module can read data (sources) and to which it can write (sinks).  There can be multiple sources and sinks.  For each, a protocol and format are provided.
+
+* `protocol` field can take a value such as `kafka`, `s3`, `db2`, `fybrik-arrow-flight`, etc.
 * `format` field can take a value such as `avro`, `parquet`, `json`, or `csv`.
+
 Note that a module that targets copy flows will omit the `api` field and contain just `source` and `sink`, a module that only supports reading data assets will omit the `sink` field and only contain `api` and `source`
 
-`capabilites.api` describes the api exposed by the module to the user's workload for the particular capability:
-* `protocol` field can take a value such as `kafka`, `s3`, `jdbc-db2`, `fybrik-arrow-flight`, etc 
-* `dataformat` field can take a value such as `parquet`, `csv`, `arrow`, etc
+`capabilites.api` describes the api exposed by the module to the user's workload for the particular capability.
+
+* `protocol` field can take a value such as `kafka`, `s3`, `db2`, `fybrik-arrow-flight`, etc 
+* `dataformat` field can take a value such as `parquet`, `csv`, `avro`, etc
 * `endpoint` field describes the endpoint exposed the module
 
 `capabilites.api.endpoint` describes the endpoint from a networking perspective:
+
 * `hostname` field is the hostname to be used when accessing the module. Equals the release name. Can be omitted.
 * `port` field is the port of the service exposed by the module.
 * `scheme` field can take a value such as `http`, `https`, `grpc`, `grpc+tls`, `jdbc:oracle:thin:@`, etc
@@ -157,11 +184,10 @@ An example for a module that copies data from a db2 database table to an s3 buck
 
 ```yaml
 capabilities:
-- copy:
+- capability: copy
     supportedInterfaces:
     - source:
-        protocol: jdbc-db2
-        dataformat: table
+        protocol: db2
       sink:
         protocol: s3
         dataformat: parquet
@@ -171,10 +197,9 @@ An example for a module that has an API for reading data, and supports reading b
 
 ```yaml
 capabilities:
-- read:
+- capability: read
     api:
       protocol: fybrik-arrow-flight
-      dataformat: arrow
       endpoint:
         port: 80
         scheme: grpc
@@ -191,22 +216,15 @@ capabilities:
 `capabilites.actions`  are taken from a defined [Enforcement Actions Taxonomy](about:blank) 
 a module that does not perform any transformation on the data may omit the `capabilities.actions` field.
 
-The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  For each action there is a level indication, which can be data set level, column level, or row level.  In the example shown column level is indicated, and the actions arguments indicate the columns on which the transformation should be performed.
+The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  Additional properties may be associated with each action.
 
 ```yaml
 capabilities:
 - read:
     actions:
-    - id: "redact-ID"
-      level: 2 # column
-      args:
-        column_name: column_value
-    - id: "removed-ID"
-      level: 2 # column
-      args:
-        column_name: column_value
-    - id: "encrypt-ID"
-      level: 2 # column
+    - name: "RedactAction"
+    - name: "RemoveAction"
+    - name: "EncryptAction"
 ```
 
 ### Full Examples 
@@ -219,7 +237,7 @@ The following are examples of YAMLs from fully implemented modules:
 ## Getting Started
 In order to help module developers get started there are two example "hello world" modules:
 * [Hello world module](https://github.com/fybrik/hello-world-module)
-* [Hellow world read module](https://github.com/fybrik/hello-world-read-module)
+* [Hello world read module](https://github.com/fybrik/hello-world-read-module)
 
 An example of a fully functional module is the [arrow flight module][https://github.com/fybrik/arrow-flight-module]
 

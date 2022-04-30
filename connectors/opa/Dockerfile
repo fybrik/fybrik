@@ -1,7 +1,12 @@
-FROM gcr.io/distroless/static:nonroot
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5
+
+ENV HOME=/tmp
+WORKDIR /tmp
 
 COPY opa-connector /
 
-EXPOSE 50082
+EXPOSE 8080
+USER 1001
 
 ENTRYPOINT ["/opa-connector"]
+CMD [ "run" ]

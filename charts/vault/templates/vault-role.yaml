@@ -1,0 +1,14 @@
+{{- range $ns := .Values.plugins.vaultPluginSecretsKubernetesReader.namespaces }}
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: vault-secrets-manager
+  namespace: "{{ $ns }}"
+rules:
+- apiGroups: [""]
+  resources:
+  - secrets
+  verbs: ["get"]
+---
+{{- end }}
+
