@@ -305,6 +305,8 @@ func TestS3Notebook(t *testing.T) {
 	// Installing application to read new data
 	readApplication := &apiv1alpha1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/fybrikapplication-read.yaml", readApplication)).ToNot(gomega.HaveOccurred())
+	// Update the name of the dataset id
+	readApplication.Spec.Data[0].DataSetID = newCatalogID + "/" + newAssetID
 	readApplicationKey := client.ObjectKeyFromObject(readApplication)
 
 	// Create FybrikApplication and FybrikModule
@@ -349,7 +351,7 @@ func TestS3Notebook(t *testing.T) {
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port
-	connection = readApplication.Status.AssetStates["fybrik-notebook-sample/new-data-parquet"].
+	connection = readApplication.Status.AssetStates["fybrik-notebook-sample/"+newAssetID].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
 	hostname = fmt.Sprintf("%v", connection["hostname"])
 	port = fmt.Sprintf("%v", connection["port"])

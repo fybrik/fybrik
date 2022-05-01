@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
+	emperror "emperror.dev/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -83,7 +83,9 @@ func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string)
 // Enables writing of assets to katalog. The different flows supported are:
 // (a) When DestinationAssetID is specified:
 //     Then an asset id is created with name : <DestinationAssetID>
-// (b) When DestinationAssetID is not specified:
+// (b) When DestinationAssetID is specified:
+//     Then an asset is created with name: <DestinationAssetID>-<Kubernetes Generated Random String>
+// (c) When DestinationAssetID is not specified:
 //     Then an asset is created with name: fybrik-<Kubernetes Generated Random String>
 func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
@@ -103,12 +105,17 @@ func (r *Handler) createAsset(c *gin.Context) {
 	errString := "Error during create asset! Error:"
 	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
 	if err != nil {
-		r.reportError(c, http.StatusInternalServerError, errString+err.Error())
+		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
 		return
 	}
 
+	assetPrefix := FybrikAssetPrefix
+	if request.DestinationAssetID != "" {
+		assetPrefix = request.DestinationAssetID + "-"
+	}
+
 	asset := &v1alpha1.Asset{
-		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, Name: request.DestinationAssetID, GenerateName: FybrikAssetPrefix},
+		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, GenerateName: assetPrefix},
 		Spec: v1alpha1.AssetSpec{
 			SecretRef: v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace},
 			Metadata:  request.ResourceMetadata,
@@ -120,10 +127,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		if errors.IsAlreadyExists(err) {
-			errString = "Asset Already exists!, Error:"
-		}
-		r.reportError(c, http.StatusInternalServerError, errString+err.Error())
+		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
 		return
 	}
 	logging.LogStructure("Created Asset: ", asset, &r.log, zerolog.DebugLevel, false, false)

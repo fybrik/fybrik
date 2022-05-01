@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gdexlab/go-render/render"
@@ -174,7 +175,7 @@ func TestCreateAsset(t *testing.T) {
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
 		assetName := response.AssetID
-		g.Expect(&assetName).To(BeEquivalentTo(&destAssetName))
+		g.Expect(strings.HasPrefix(assetName, destAssetName)).To(BeTrue())
 
 		asset := &v1alpha1.Asset{}
 		if err := handler.client.Get(context.Background(),

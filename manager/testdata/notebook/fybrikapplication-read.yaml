@@ -17,7 +17,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: 'fybrik-notebook-sample/new-data-parquet'
+    - dataSetID: 'replaceme'
       flow: read
       requirements:
         interface:
