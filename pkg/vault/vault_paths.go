@@ -14,7 +14,7 @@ import (
 // in kubernetes-secrets path. (https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader)
 // TODO: pass the plugin path in fybrik-config ConfigMap
 const vaultPluginPath = "kubernetes-secrets"
-const vaultPrefix = "/v1/" + vaultPluginPath + "/"
+const secretPath = "/v1/" + vaultPluginPath + "/"
 
 // PathForReadingKubeSecret returns the path to Vault secret that holds dataset credentials
 // stored in kubernetes secret.
@@ -38,12 +38,13 @@ func PathForReadingKubeSecret(secretNamespace, secretName string) string {
 // for example, for vault secret path:
 // "/v1/kubernetes-secrets/my-secret?namespace=default"
 // the returned values will be my-secret and default
-func GetKubeSecretDetailsFromVaultPath(secretPath string) (string, string, error) {
-	str := strings.TrimPrefix(secretPath, vaultPrefix)
-	if str == secretPath {
-		return "", "", errors.New("unexpected vault path format: wrong prefix")
+func GetKubeSecretDetailsFromVaultPath(credentialsPath string) (string, string, error) {
+	str := strings.SplitAfter(credentialsPath, secretPath)
+	if str[0] == credentialsPath {
+		return "", "", errors.New("unexpected vault path format: wrong prefix " + credentialsPath)
 	}
-	parts := strings.Split(str, "?namespace=")
+
+	parts := strings.Split(str[1], "?namespace=")
 	if len(parts) != 2 {
 		return "", "", errors.New("unexpected vault path format")
 	}
