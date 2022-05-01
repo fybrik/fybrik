@@ -8,7 +8,7 @@ All URIs are relative to *https://localhost:8080*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DefaultApi* | [**createAsset**](Apis/DefaultApi.md#createasset) | **POST** /createAsset | This REST API writes data asset information to the data catalog configured in fybrik
-*DefaultApi* | [**deleteAsset**](Apis/DefaultApi.md#deleteasset) | **POST** /deleteAsset | This REST API deletes data asset
+*DefaultApi* | [**deleteAsset**](Apis/DefaultApi.md#deleteasset) | **DELETE** /deleteAsset | This REST API deletes data asset
 *DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
 

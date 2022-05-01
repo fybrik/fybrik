@@ -4,6 +4,7 @@
 package datauser
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -21,7 +22,7 @@ var (
 
 func storeCredentials(t *testing.T, cred string) {
 	body := strings.NewReader(cred)
-	req, err := http.NewRequest("POST", credserverurl, body)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, credserverurl, body)
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
@@ -32,7 +33,9 @@ func storeCredentials(t *testing.T, cred string) {
 
 func readCredentials(t *testing.T, path string) {
 	url := credserverurl + "/" + path
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+	assert.Nil(t, err)
+	resp, err := http.DefaultClient.Do(req)
 	assert.Nil(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, http.StatusOK, "Failed to read credentials")
@@ -40,7 +43,7 @@ func readCredentials(t *testing.T, path string) {
 
 func deleteCredentials(t *testing.T, path string) {
 	url := credserverurl + "/" + path
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodDelete, url, http.NoBody)
 	assert.Nil(t, err)
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -53,7 +56,6 @@ func deleteCredentials(t *testing.T, path string) {
 
 func TestCredentialAPIs(t *testing.T) {
 	SkipOnClosedSocket("localhost:8080", t)
-
 	storeCredentials(t, cred1)
 	storeCredentials(t, cred2)
 	readCredentials(t, name)
