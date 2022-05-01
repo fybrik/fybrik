@@ -125,3 +125,40 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, &response)
 }
+
+// Enables deletion of assets to katalog.
+func (r *Handler) deleteAsset(c *gin.Context) {
+	// Parse request
+	var request datacatalog.DeleteAssetRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in deleteAsset"+err.Error())
+		return
+	}
+	logging.LogStructure("DeleteAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
+
+	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
+	if len(splittedID) != 2 {
+		errorMessage := fmt.Sprintf("DeleteAssetRequest has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+	namespace, name := splittedID[0], splittedID[1]
+
+	asset := &v1alpha1.Asset{}
+	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := r.client.Delete(context.Background(), asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	response := datacatalog.DeleteAssetResponse{
+		Status: "Deletion successful!",
+	}
+	r.log.Info().Msg(
+		"Sending response from Katalog Connector with deleted asset ID: " + string(request.AssetID))
+
+	c.JSON(http.StatusOK, &response)
+}
