@@ -28,8 +28,11 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		details.DataFormat = info.Details.Format
 	}
 
-	resourceMetadata := datacatalog.ResourceMetadata{
-		Name: assetID,
+	var resourceMetadata datacatalog.ResourceMetadata
+	if info.ResourceMetadata != nil {
+		resourceMetadata = *info.ResourceMetadata.DeepCopy()
+	} else {
+		resourceMetadata.Name = assetID
 	}
 	creds := ""
 	if utils.IsVaultEnabled() {
