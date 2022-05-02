@@ -288,10 +288,104 @@ spec:
                       description: Reference to a Dataset resource containing the
                         request to provision storage
                       type: string
+                    details:
+                      description: Dataset information
+                      properties:
+                        connection:
+                          description: Connection has the relevant details for accesing
+                            the data (url, table, ssl, etc.)
+                          properties:
+                            name:
+                              type: string
+                          required:
+                          - name
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        format:
+                          description: Format represents data format (e.g. parquet)
+                            as received from catalog connectors
+                          type: string
+                        vault:
+                          additionalProperties:
+                            description: Holds details for retrieving credentials
+                              from Vault store.
+                            properties:
+                              address:
+                                description: Address is Vault address
+                                type: string
+                              authPath:
+                                description: AuthPath is the path to auth method i.e.
+                                  kubernetes
+                                type: string
+                              role:
+                                description: Role is the Vault role used for retrieving
+                                  the credentials
+                                type: string
+                              secretPath:
+                                description: SecretPath is the path of the secret
+                                  holding the Credentials in Vault
+                                type: string
+                            required:
+                            - address
+                            - authPath
+                            - role
+                            - secretPath
+                            type: object
+                          description: Holds details for retrieving credentials by
+                            the modules from Vault store. It is a map so that different
+                            credentials can be stored for the different DataFlow operations.
+                          type: object
+                      required:
+                      - connection
+                      type: object
+                    resourceMetadata:
+                      description: Resource Metadata
+                      properties:
+                        columns:
+                          description: Columns associated with the asset
+                          items:
+                            description: ResourceColumn represents a column in a tabular
+                              resource
+                            properties:
+                              name:
+                                description: Name of the column
+                                type: string
+                              tags:
+                                description: Tags associated with the column
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                            required:
+                            - name
+                            type: object
+                          type: array
+                        geography:
+                          description: Geography of the resource
+                          type: string
+                        name:
+                          description: Name of the resource
+                          type: string
+                        owner:
+                          description: Owner of the resource
+                          type: string
+                        tags:
+                          description: Tags associated with the asset
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                      type: object
                     secretRef:
                       description: Reference to a secret where the credentials are
                         stored
-                      type: string
+                      properties:
+                        name:
+                          description: Secret name
+                          type: string
+                        namespace:
+                          description: Secret Namespace
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
                   type: object
                 description: ProvisionedStorage maps a dataset (identified by AssetID)
                   to the new provisioned bucket. It allows FybrikApplication controller

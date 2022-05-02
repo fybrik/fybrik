@@ -1302,12 +1302,265 @@ DatasetDetails holds details of the provisioned storage
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b>secretRef</b></td>
-        <td>string</td>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">details</a></b></td>
+        <td>object</td>
+        <td>
+          Dataset information<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata">resourceMetadata</a></b></td>
+        <td>object</td>
+        <td>
+          Resource Metadata<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeysecretref">secretRef</a></b></td>
+        <td>object</td>
         <td>
           Reference to a secret where the credentials are stored<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Dataset information
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details.connection
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeydetails)</sup></sup>
+
+
+
+Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].details.vault[key]
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeydetails)</sup></sup>
+
+
+
+Holds details for retrieving credentials from Vault store.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].resourceMetadata
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Resource Metadata
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].resourceMetadata.columns[index]
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata)</sup></sup>
+
+
+
+ResourceColumn represents a column in a tabular resource
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.status.provisionedStorage[key].secretRef
+<sup><sup>[↩ Parent](#fybrikapplicationstatusprovisionedstoragekey)</sup></sup>
+
+
+
+Reference to a secret where the credentials are stored
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Secret name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Secret Namespace<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
@@ -3627,8 +3880,15 @@ Reference to a Secret resource holding credentials for this asset
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the Secret resource (must exist in the same namespace)<br/>
+          Name of the Secret resource<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace of the Secret resource. If it is empty then the asset namespace is used.<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>

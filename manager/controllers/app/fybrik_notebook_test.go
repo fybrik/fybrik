@@ -30,9 +30,11 @@ import (
 	"google.golang.org/grpc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/test"
 )
@@ -110,55 +112,88 @@ func TestS3Notebook(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	application := &apiv1alpha1.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/notebook/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
-	applicationKey := client.ObjectKeyFromObject(application)
+	writeApplication := &apiv1alpha1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/notebook/fybrikapplication-write.yaml", writeApplication)).ToNot(gomega.HaveOccurred())
+	writeApplicationKey := client.ObjectKeyFromObject(writeApplication)
 
 	// Create FybrikApplication and FybrikModule
-	By("Expecting application creation to succeed")
-	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
+	By("Expecting write application creation to succeed")
+	g.Expect(k8sClient.Create(context.Background(), writeApplication)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
-	//nolint:govet
 	defer func() {
-		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
-			Name: applicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), applicationKey, application)
+		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
+			Name: writeApplicationKey.Name}}
+		_ = k8sClient.Get(context.Background(), writeApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
 	}()
 
-	By("Expecting application to be created")
+	By("Expecting write application to be created")
 	g.Eventually(func() error {
-		return k8sClient.Get(context.Background(), applicationKey, application)
+		return k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 	}, timeout, interval).Should(gomega.Succeed())
 	By("Expecting plotter to be constructed")
 	g.Eventually(func() *apiv1alpha1.ResourceReference {
-		_ = k8sClient.Get(context.Background(), applicationKey, application)
-		return application.Status.Generated
+		_ = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
+		return writeApplication.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
 	plotter := &apiv1alpha1.Plotter{}
-	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
+	plotterObjectKey := client.ObjectKey{Namespace: writeApplication.Status.Generated.Namespace, Name: writeApplication.Status.Generated.Name}
 	By("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	By("Expecting application to be ready")
+	By("Expecting write application to be ready")
 	g.Eventually(func() bool {
-		err = k8sClient.Get(context.Background(), applicationKey, application)
+		err = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 		if err != nil {
 			return false
 		}
-		return application.Status.Ready
+		return writeApplication.Status.Ready
 	}, timeout, interval).Should(gomega.Equal(true))
 
 	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
+	g.Expect(len(writeApplication.Status.AssetStates)).To(gomega.Equal(2))
+	g.Expect(writeApplication.Status.AssetStates["new-data-parquet"].CatalogedAsset).
+		ToNot(gomega.BeEmpty())
+	newAssetID := writeApplication.Status.AssetStates["new-data-parquet"].
+		CatalogedAsset
+	newCatalogID := "fybrik-notebook-sample"
+
+	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
+	// check provisioned storage
+	g.Expect(writeApplication.Status.ProvisionedStorage["new-data-parquet"].DatasetRef).
+		ToNot(gomega.BeEmpty(), "No storage provisioned")
+
+	// Get the new connection details
+	var newBucket, newObject string
+	connectionMap := writeApplication.Status.ProvisionedStorage["new-data-parquet"].
+		Details.Connection.AdditionalProperties.Items
+	g.Expect(connectionMap).To(gomega.HaveKey("s3"))
+	s3Conn := connectionMap["s3"].(map[string]interface{})
+	g.Expect(s3Conn["endpoint"]).To(gomega.Equal("http://s3.fybrik-system.svc.cluster.local:9090"))
+	newBucket = fmt.Sprint(s3Conn["bucket"])
+	newObject = fmt.Sprint(s3Conn["object_key"])
+	g.Expect(newBucket).NotTo(gomega.BeEmpty())
+	g.Expect(newObject).NotTo(gomega.BeEmpty())
+
+	err = v1alpha1.AddToScheme(scheme.Scheme)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	asset := &v1alpha1.Asset{}
+	By("Expecting asset to be fetchable")
+	assetObjectKey := client.ObjectKey{Namespace: newCatalogID, Name: newAssetID}
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), assetObjectKey, asset)
+	}, timeout, interval).Should(gomega.Succeed())
+
+	g.Expect(asset.Spec.Metadata.Geography).To(gomega.Equal("theshire"))
 	// Forward port of arrow flight service to local port
-	connection := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].
+	connection := writeApplication.Status.AssetStates["fybrik-notebook-sample/data-csv"].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
 	hostname := fmt.Sprintf("%v", connection["hostname"])
 	port := fmt.Sprintf("%v", connection["port"])
@@ -194,6 +229,7 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	reader, err := flight.NewRecordReader(stream)
+	defer reader.Release()
 	g.Expect(err).To(gomega.BeNil())
 
 	// write the data to a new asset
@@ -206,7 +242,7 @@ func TestS3Notebook(t *testing.T) {
 	wr := flight.NewRecordWriter(writeStream, ipc.WithSchema(schema))
 
 	request = ArrowRequest{
-		Asset: "fybrik-notebook-sample/new-data-parquet",
+		Asset: "new-data-parquet",
 	}
 
 	marshal, err = json.Marshal(request)
@@ -218,8 +254,10 @@ func TestS3Notebook(t *testing.T) {
 	}
 	wr.SetFlightDescriptor(descr)
 
+	var record array.Record
+
 	for reader.Next() {
-		record := reader.Record()
+		record = reader.Record()
 		defer record.Release()
 
 		err = wr.Write(record)
@@ -246,14 +284,13 @@ func TestS3Notebook(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 
 	// wait until the written data is available
-	count := 10
+	count := 50
 	found := false
-	newBucket := "bucket2"
-	newObject := "data.parquet/"
+	newObject1 := newObject + "/"
 	for i := 1; i < count; i++ {
 		_, err := s3Client.GetObject(&s3.GetObjectInput{ //nolint:govet
 			Bucket: &newBucket,
-			Key:    &newObject,
+			Key:    &newObject1,
 		})
 		if err == nil {
 			found = true
@@ -265,18 +302,96 @@ func TestS3Notebook(t *testing.T) {
 	}
 	g.Expect(found).To(gomega.BeTrue())
 
-	// read the new written data
-	info, err = flightClient.GetFlightInfo(context.Background(), descr)
+	// Installing application to read new data
+	readApplication := &apiv1alpha1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/notebook/fybrikapplication-read.yaml", readApplication)).ToNot(gomega.HaveOccurred())
+	// Update the name of the dataset id
+	readApplication.Spec.Data[0].DataSetID = newCatalogID + "/" + newAssetID
+	readApplicationKey := client.ObjectKeyFromObject(readApplication)
+
+	// Create FybrikApplication and FybrikModule
+	By("Expecting read application creation to succeed")
+	g.Expect(k8sClient.Create(context.Background(), readApplication)).Should(gomega.Succeed())
+
+	By("Expecting read application to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), readApplicationKey, readApplication)
+	}, timeout, interval).Should(gomega.Succeed())
+	// Ensure getting cleaned up after tests finish
+	defer func() {
+		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
+			Name: readApplicationKey.Name}}
+		_ = k8sClient.Get(context.Background(), readApplicationKey, application)
+		_ = k8sClient.Delete(context.Background(), application)
+	}()
+	By("Expecting plotter to be constructed")
+	g.Eventually(func() *apiv1alpha1.ResourceReference {
+		_ = k8sClient.Get(context.Background(), readApplicationKey, readApplication)
+		return readApplication.Status.Generated
+	}, timeout, interval).ShouldNot(gomega.BeNil())
+
+	// The plotter has to be created
+	plotter = &apiv1alpha1.Plotter{}
+	plotterObjectKey = client.ObjectKey{Namespace: readApplication.Status.Generated.Namespace, Name: readApplication.Status.Generated.Name}
+	By("Expecting plotter to be fetchable")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+	}, timeout, interval).Should(gomega.Succeed())
+
+	By("Expecting read application to be ready")
+	g.Eventually(func() bool {
+		err = k8sClient.Get(context.Background(), readApplicationKey, readApplication)
+		if err != nil {
+			return false
+		}
+		return readApplication.Status.Ready
+	}, timeout, interval).Should(gomega.Equal(true))
+
+	modulesNamespace = plotter.Spec.ModulesNamespace
+	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
+
+	// Forward port of arrow flight service to local port
+	connection = readApplication.Status.AssetStates["fybrik-notebook-sample/"+newAssetID].
+		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
+	hostname = fmt.Sprintf("%v", connection["hostname"])
+	port = fmt.Sprintf("%v", connection["port"])
+	svcName = strings.Replace(hostname, "."+modulesNamespace, "", 1)
+
+	By("Starting kubectl port-forward for arrow-flight")
+	portNum, err = strconv.Atoi(port)
+	g.Expect(err).To(gomega.BeNil())
+	listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
 	g.Expect(err).To(gomega.BeNil())
 
-	newDataStream, err := flightClient.DoGet(context.Background(), info.Endpoint[0].Ticket)
+	// Reading data via arrow flight
+	opts = make([]grpc.DialOption, 0)
+	opts = append(opts, grpc.WithInsecure())
+	flightClient, err = flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
+	g.Expect(err).To(gomega.BeNil(), "Connect to arrow-flight service")
+	defer flightClient.Close()
+
+	request = ArrowRequest{
+		Asset: newCatalogID + "/" + newAssetID,
+	}
+
+	marshal, err = json.Marshal(request)
 	g.Expect(err).To(gomega.BeNil())
 
-	newDataReader, err := flight.NewRecordReader(newDataStream)
+	info, err = flightClient.GetFlightInfo(context.Background(), &flight.FlightDescriptor{
+		Type: flight.FlightDescriptor_CMD,
+		Cmd:  marshal,
+	})
 	g.Expect(err).To(gomega.BeNil())
 
-	for newDataReader.Next() {
-		record := newDataReader.Record()
+	stream, err = flightClient.DoGet(context.Background(), info.Endpoint[0].Ticket)
+	g.Expect(err).To(gomega.BeNil())
+
+	reader, err = flight.NewRecordReader(stream)
+	defer reader.Release()
+	g.Expect(err).To(gomega.BeNil())
+
+	for reader.Next() {
+		record := reader.Record()
 		defer record.Release()
 
 		g.Expect(record.ColumnName(0)).To(gomega.Equal("step"))

@@ -4,16 +4,16 @@
 apiVersion: app.fybrik.io/v1alpha1
 kind: FybrikApplication
 metadata:
-  name: my-notebook
+  name: my-notebook-write
   namespace: fybrik-notebook-sample
   labels:
-    app: my-notebook
+    app: my-notebook-write
 spec:
   selector:
     clusterName: thegreendragon
     workloadSelector:
       matchLabels:
-        app: my-notebook
+        app: my-notebook-write
   appInfo:
     intent: Fraud Detection
   data:
@@ -22,13 +22,12 @@ spec:
       requirements:
         interface:
           protocol: fybrik-arrow-flight
-    - dataSetID: 'fybrik-notebook-sample/new-data-parquet'
+    - dataSetID: 'new-data-parquet'
       flow: write
       requirements:
+        flowParams:
+          isNewDataSet: true
+          catalog: fybrik-notebook-sample
         interface:
           protocol: fybrik-arrow-flight
-    - dataSetID: 'fybrik-notebook-sample/new-data-parquet'
-      flow: read
-      requirements:
-        interface:
-          protocol: fybrik-arrow-flight
+
