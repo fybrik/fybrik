@@ -5,9 +5,6 @@
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
-export ACCESS_KEY=ak
-export SECRET_KEY=sk
-
 # Create asset and secret
 kubectl -n fybrik-notebook-sample apply -f original-asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
