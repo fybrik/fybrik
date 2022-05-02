@@ -34,6 +34,7 @@ import (
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/monitor"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
@@ -134,13 +135,11 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
-		// pre-compiling config policy files
-		query, err := adminconfig.PrepareQuery()
+		evaluator, err := adminconfig.NewRegoPolicyEvaluator()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
 			return 1
 		}
-		evaluator := adminconfig.NewRegoPolicyEvaluator(query)
 		infrastructureManager, err := infrastructure.NewAttributeManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to get infrastructure attributes")
@@ -173,6 +172,10 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}
 
+		fileMonitor := &monitor.FileMonitor{Subsciptions: []monitor.Subscription{}}
+		fileMonitor.Subscribe(evaluator)
+		fileMonitor.Subscribe(infrastructureManager)
+		fileMonitor.Run()
 		// Initiate the FybrikModule Controller
 		moduleController := app.NewFybrikModuleReconciler(
 			mgr,
@@ -182,6 +185,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikModule").Msg("unable to create controller")
 			return 1
 		}
+
 	}
 
 	if enablePlotterController {

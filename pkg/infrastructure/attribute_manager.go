@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -17,6 +18,7 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/monitor"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
@@ -32,6 +34,7 @@ const ValidationPath string = "/tmp/taxonomy/infraattributes.json#/definitions/I
 type AttributeManager struct {
 	Log            zerolog.Logger
 	Infrastructure infraattributes.Infrastructure
+	Mux            *sync.RWMutex
 }
 
 func NewAttributeManager() (*AttributeManager, error) {
@@ -39,7 +42,29 @@ func NewAttributeManager() (*AttributeManager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &AttributeManager{Log: logging.LogInit(logging.CONTROLLER, "FybrikApplication"), Infrastructure: content}, nil
+	return &AttributeManager{
+		Log:            logging.LogInit(logging.CONTROLLER, "FybrikApplication"),
+		Infrastructure: content,
+		Mux:            &sync.RWMutex{},
+	}, nil
+}
+
+func (m *AttributeManager) OnError(err error) {
+	m.Log.Error().Err(err).Msg("Error reading infrastructure attributes")
+}
+
+func (m *AttributeManager) GetOptions() monitor.FileMonitorOptions {
+	return monitor.FileMonitorOptions{Path: RegoPolicyDirectory, Extension: ".json"}
+}
+
+func (m *AttributeManager) OnNotify() {
+	content, err := readInfrastructure()
+	if err != nil {
+		m.OnError(err)
+	}
+	m.Mux.Lock()
+	m.Infrastructure = content
+	m.Mux.Unlock()
 }
 
 func readInfrastructure() (infraattributes.Infrastructure, error) {
@@ -53,7 +78,7 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	if err != nil {
 		return attributes, err
 	}
-	if err := validateStructure(content, ValidationPath); err != nil {
+	if err := validateStructure(content); err != nil {
 		return attributes, err
 	}
 	if err := json.Unmarshal(content, &attributes); err != nil {
@@ -62,8 +87,8 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	return attributes, nil
 }
 
-func validateStructure(bytes []byte, taxonomySchema string) error {
-	allErrs, err := validate.TaxonomyCheck(bytes, taxonomySchema)
+func validateStructure(bytes []byte) error {
+	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
 	if err != nil {
 		return err
 	}
@@ -76,8 +101,8 @@ func validateStructure(bytes []byte, taxonomySchema string) error {
 
 // GetAttribute returns an infrastructure attribute based on the attribute and instance names
 func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *taxonomy.InfrastructureElement {
-	for i, element := range m.Infrastructure.Items {
-		if element.Attribute == name && element.Instance == instance {
+	for i := range m.Infrastructure.Items {
+		if m.Infrastructure.Items[i].Attribute == name && m.Infrastructure.Items[i].Instance == instance {
 			return &m.Infrastructure.Items[i]
 		}
 	}

@@ -9,8 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const Path string = "/tmp/taxonomy/infraattributes.json#/definitions/Infrastructure"
-
 func TestValidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
@@ -24,7 +22,7 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 			"instance": "account-neverland"
 		}]
 	}`
-	validateErr := validateStructure([]byte(data), Path)
+	validateErr := validateStructure([]byte(data))
 	assert.Nil(t, validateErr, "No error should be found")
 }
 
@@ -41,7 +39,7 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 			"instance": "account-neverland"
 		}]
 	}`
-	validateErr := validateStructure([]byte(data), Path)
+	validateErr := validateStructure([]byte(data))
 	assert.Error(t, validateErr, "An error is expected")
 }
 
@@ -58,7 +56,7 @@ func TestValidInfrastructureAttributeBW(t *testing.T) {
 			"instance": "account-neverland"
 		}]
 	}`
-	validateErr := validateStructure([]byte(data), Path)
+	validateErr := validateStructure([]byte(data))
 	assert.Nil(t, validateErr, "No error should be found")
 }
 
@@ -75,6 +73,6 @@ func TestInvalidInfrastructureAttributeBW(t *testing.T) {
 			"instance": "account-neverland"
 		}]
 	}`
-	validateErr := validateStructure([]byte(data), Path)
+	validateErr := validateStructure([]byte(data))
 	assert.Error(t, validateErr, "An error is expected")
 }
