@@ -14,6 +14,7 @@ import (
 
 // RegisterAsset registers a new asset in the specified catalog
 // Input arguments:
+// - assetID: DataSetID as it appears in fybrik-application
 // - catalogID: the destination catalog identifier
 // - info: connection and credential details
 // Returns:
