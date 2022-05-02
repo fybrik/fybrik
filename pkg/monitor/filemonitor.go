@@ -89,6 +89,9 @@ func (m *FileMonitor) visit(s *Subscription, path string) (int, time.Time, error
 	}
 	for _, entry := range entries {
 		info, _ := entry.Info()
+		if info.Mode()&os.ModeSymlink != 0 {
+			continue
+		}
 		if !info.IsDir() {
 			if !strings.HasSuffix(entry.Name(), s.Options.Extension) {
 				continue
