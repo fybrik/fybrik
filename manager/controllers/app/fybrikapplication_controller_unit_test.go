@@ -805,7 +805,7 @@ func TestCopyData(t *testing.T) {
 
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
-	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef).To(gomega.Equal("credentials-theshire"),
+	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef.Name).To(gomega.Equal("credentials-theshire"),
 		"Incorrect storage was selected")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())

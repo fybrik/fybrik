@@ -8,6 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -110,12 +111,33 @@ type ResourceReference struct {
 	AppVersion int64 `json:"appVersion"`
 }
 
+// SecretRef contains the details of a secret
+type SecretRef struct {
+	// Secret Namespace
+	// +required
+	Namespace string `json:"namespace"`
+	// Secret name
+	// +required
+	Name string `json:"name"`
+}
+
 // DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
 	// Reference to a Dataset resource containing the request to provision storage
+	// +optional
 	DatasetRef string `json:"datasetRef,omitempty"`
+
 	// Reference to a secret where the credentials are stored
-	SecretRef string `json:"secretRef,omitempty"`
+	// +optional
+	SecretRef SecretRef `json:"secretRef,omitempty"`
+
+	// Dataset information
+	// +optional
+	Details *DataStore `json:"details,omitempty"`
+
+	// Resource Metadata
+	// +optional
+	ResourceMetadata *datacatalog.ResourceMetadata `json:"resourceMetadata,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

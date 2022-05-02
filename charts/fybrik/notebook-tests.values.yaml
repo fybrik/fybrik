@@ -30,6 +30,12 @@ opaServer:
         input.action.actionType == "write"
       }
 
+      rule[{}] {
+        description := "allow read datasets with no tags"
+        input.action.actionType == "read"
+        not input.resource.metadata.tags
+      }
+ 
       rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
         description := "Redact columns tagged as PII in datasets tagged with finance = true"
         input.action.actionType == "read"
