@@ -173,8 +173,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}
 
 		fileMonitor := &monitor.FileMonitor{Subsciptions: []monitor.Subscription{}}
-		fileMonitor.Subscribe(evaluator)
-		fileMonitor.Subscribe(infrastructureManager)
+		if err = fileMonitor.Subscribe(evaluator); err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor policy changes")
+		}
+		if err = fileMonitor.Subscribe(infrastructureManager); err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor attribute changes")
+		}
 		fileMonitor.Run()
 		// Initiate the FybrikModule Controller
 		moduleController := app.NewFybrikModuleReconciler(
@@ -185,7 +189,6 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikModule").Msg("unable to create controller")
 			return 1
 		}
-
 	}
 
 	if enablePlotterController {
