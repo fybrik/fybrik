@@ -218,7 +218,8 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// register the asset
-			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
+			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
+				dataCtx.Requirements.FlowParams.ResourceMetadata, &provisionedBucketRef,
 				applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
@@ -514,6 +515,9 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		}
 		logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
 		response.DeepCopyInto(req.DataDetails)
+	} else if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
+		// Fill req.DataDetails with the metadata from the fybrikapplication
+		req.DataDetails.ResourceMetadata = *req.Context.Requirements.FlowParams.ResourceMetadata.DeepCopy()
 	}
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
@@ -542,7 +546,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 	var err error
 	switch configEvaluatorInput.Request.Usage {
 	case taxonomy.WriteFlow:
-		if !req.Context.Requirements.FlowParams.IsNewDataSet {
+		if !req.Context.Requirements.FlowParams.IsNewDataSet ||
+			req.Context.Requirements.FlowParams.ResourceMetadata != nil {
 			// update an existing dataset
 			// query the policy manager whether the operation is allowed
 			reqAction := policymanager.RequestAction{
@@ -550,7 +555,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 				Destination:        req.DataDetails.ResourceMetadata.Geography,
 				ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 			}
-			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, req.Context.Requirements.FlowParams.ResourceMetadata,
+				r.PolicyManager, appContext, &reqAction)
 		}
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
 		reqAction := policymanager.RequestAction{
@@ -558,7 +564,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, req.Context.Requirements.FlowParams.ResourceMetadata,
+			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
 		return err
@@ -575,7 +582,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        string(region),
 			ProcessingLocation: region,
 		}
-		actions, err := LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+		actions, err := LookupPolicyDecisions(req.Context.DataSetID, req.Context.Requirements.FlowParams.ResourceMetadata,
+			r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[region] = actions
 		} else if err.Error() != api.WriteNotAllowed {

@@ -43,3 +43,19 @@ type ResourceDetails struct {
 	// Data format
 	DataFormat taxonomy.DataFormat `json:"dataFormat,omitempty"`
 }
+
+// Return true if resourceMetadata is not empty. Otherwise return false.
+func ResourceMetadataNotEmpty(resourceMetadata *ResourceMetadata) bool {
+	if resourceMetadata == nil {
+		return false
+	}
+	if resourceMetadata.Columns != nil ||
+		(resourceMetadata.Tags != nil &&
+			len(resourceMetadata.Tags.Items) != 0) ||
+		resourceMetadata.Geography != "" ||
+		resourceMetadata.Name != "" ||
+		resourceMetadata.Owner != "" {
+		return true
+	}
+	return false
+}

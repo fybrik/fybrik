@@ -16,11 +16,13 @@ import (
 // Input arguments:
 // - assetID: DataSetID as it appears in fybrik-application
 // - catalogID: the destination catalog identifier
+// - resourceMetadataFromRequirements: resource metadata from the flow requirements
 // - info: connection and credential details
 // Returns:
 // - an error if happened
 // - the new asset identifier
-func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string, info *app.DatasetDetails,
+func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string,
+	resourceMetadataFromRequirements *datacatalog.ResourceMetadata, info *app.DatasetDetails,
 	input *app.FybrikApplication) (string, error) {
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
@@ -30,18 +32,23 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	var resourceMetadata datacatalog.ResourceMetadata
-	if info.ResourceMetadata != nil {
-		resourceMetadata = *info.ResourceMetadata.DeepCopy()
+	if resourceMetadataFromRequirements != nil {
+		resourceMetadata = *resourceMetadataFromRequirements.DeepCopy()
 	} else {
 		resourceMetadata.Name = assetID
 	}
+	// Update the Geography with the allocated storage region
+	if info.ResourceMetadata != nil {
+		resourceMetadata.Geography = info.ResourceMetadata.Geography
+	}
+
 	creds := ""
 	if utils.IsVaultEnabled() {
 		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
 	}
 
 	request := datacatalog.CreateAssetRequest{
-		ResourceMetadata:     resourceMetadata,
+		ResourceMetadata:     *resourceMetadata.DeepCopy(),
 		Details:              details,
 		Credentials:          creds,
 		DestinationCatalogID: catalogID,

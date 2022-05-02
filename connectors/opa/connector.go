@@ -45,20 +45,22 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Get asset metadata from catalog connector
-	requestToCatalog := &datacatalog.GetAssetRequest{
-		AssetID:       request.Resource.ID,
-		OperationType: datacatalog.READ,
+	// Avoid calling data catalog if the resource metadata is not empty
+	if !datacatalog.ResourceMetadataNotEmpty(request.Resource.Metadata) {
+		// Get asset metadata from catalog connector
+		requestToCatalog := &datacatalog.GetAssetRequest{
+			AssetID:       request.Resource.ID,
+			OperationType: datacatalog.READ,
+		}
+		assetInfo, err := r.CatalogClient.GetAssetInfo(requestToCatalog, c.GetHeader(headerCredentials))
+		if err != nil {
+			// TODO: better error propagation
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		// Enrich request with catalog information
+		request.Resource.Metadata = &assetInfo.ResourceMetadata
 	}
-	assetInfo, err := r.CatalogClient.GetAssetInfo(requestToCatalog, c.GetHeader(headerCredentials))
-	if err != nil {
-		// TODO: better error propagation
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Enrich request with catalog information
-	request.Resource.Metadata = &assetInfo.ResourceMetadata
 
 	// Add "input" hierarchy
 	inputStruct := map[string]interface{}{"input": &request}

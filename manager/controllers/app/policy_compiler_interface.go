@@ -28,16 +28,27 @@ const (
 	PolicyManagerTaxonomy = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 )
 
-func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication,
+func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
+
+	var datasetResources *datacatalog.ResourceMetadata
+	tags := &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}}
+	if resourceMetadata != nil {
+		datasetResources = resourceMetadata.DeepCopy()
+		if datasetResources.Tags == nil {
+			datasetResources.Tags = tags
+		}
+	} else {
+		datasetResources = &datacatalog.ResourceMetadata{
+			Tags: tags,
+		}
+	}
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
 		Action:  *operation,
 		Resource: policymanager.Resource{
-			ID: taxonomy.AssetID(datasetID),
-			Metadata: &datacatalog.ResourceMetadata{
-				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
-			},
+			ID:       taxonomy.AssetID(datasetID),
+			Metadata: datasetResources.DeepCopy(),
 		},
 	}
 }
@@ -68,10 +79,11 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, appContext ApplicationContext,
+func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.ResourceMetadata,
+	policyManager connectors.PolicyManager, appContext ApplicationContext,
 	op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq := ConstructOpenAPIReq(datasetID, appContext.Application, op)
+	openapiReq := ConstructOpenAPIReq(datasetID, resourceMetadata, appContext.Application, op)
 	output := render.AsCode(openapiReq)
 	appContext.Log.Debug().Str(logging.DATASETID, datasetID).Msgf("request: %s", output)
 

@@ -33,9 +33,6 @@ func TestGetPoliciesDecisions(t *testing.T) {
 		Action: policymanager.RequestAction{ActionType: taxonomy.ReadFlow},
 		Resource: policymanager.Resource{
 			ID: taxonomy.AssetID("assetID"),
-			Metadata: &datacatalog.ResourceMetadata{
-				Name: "assetName",
-			},
 		},
 	}
 
