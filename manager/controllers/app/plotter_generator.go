@@ -32,6 +32,7 @@ const (
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
 	Storage *storage.ProvisionedBucket
+	Details *v1alpha1.DataStore
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -58,6 +59,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		Name:      genBucketName,
 		Endpoint:  account.Endpoint,
 		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: utils.GetSystemNamespace()},
+		Region:    string(account.Region),
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
@@ -78,12 +80,6 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		},
 	}
 
-	assetInfo := NewAssetInfo{
-		Storage: bucket,
-	}
-	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
-	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)
-
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]v1alpha1.Vault)
 	if utils.IsVaultEnabled() {
@@ -102,11 +98,18 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{}
 		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{}
 	}
-	return &v1alpha1.DataStore{
+	datastore := &v1alpha1.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
 		Format:     destinationInterface.DataFormat,
-	}, nil
+	}
+	assetInfo := NewAssetInfo{
+		Storage: bucket,
+		Details: datastore,
+	}
+	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
+	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)
+	return datastore, nil
 }
 
 func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *v1alpha1.DataStore {
@@ -321,6 +324,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *v1al
 				Triggers: []v1alpha1.SubFlowTrigger{v1alpha1.InitTrigger},
 				Steps:    [][]v1alpha1.DataFlowStep{steps},
 			})
+
 			// clear steps
 			steps = nil
 		} else {
