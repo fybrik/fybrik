@@ -258,7 +258,7 @@ The next steps use the endpoint to read the data in a python notebook
 
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
-  %pip install pandas pyarrow
+  %pip install pandas pyarrow==7.0.*
   ```
 2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
   ```bash
