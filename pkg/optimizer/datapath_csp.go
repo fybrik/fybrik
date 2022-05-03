@@ -207,13 +207,16 @@ func (dpc *DataPathCSP) moduleCapabilityAllowedByRestrictions(modcap moduleAndCa
 	if decision.Deploy == adminconfig.StatusFalse {
 		return false // this type of capability should never be deployed
 	}
-	return dpc.moduleSatisfiesRestrictions(modcap.module, decision.DeploymentRestrictions.Modules)
+	return dpc.modcapSatisfiesRestrictions(&modcap, decision.DeploymentRestrictions.Modules)
 }
 
 // Decide if a given module satisfies all administrator's restrictions
-func (dpc *DataPathCSP) moduleSatisfiesRestrictions(module *appApi.FybrikModule, restrictions []adminconfig.Restriction) bool {
+func (dpc *DataPathCSP) modcapSatisfiesRestrictions(modcap *moduleAndCapability, restrictions []adminconfig.Restriction) bool {
+	oldPrefix := "capabilities."
+	newPrefix := oldPrefix + strconv.Itoa(modcap.capabilityIdx) + "."
 	for _, restriction := range restrictions {
-		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, module.Spec, "") {
+		restriction.Property = strings.Replace(restriction.Property, oldPrefix, newPrefix, 1)
+		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, modcap.module.Spec, "") {
 			return false
 		}
 	}
