@@ -102,11 +102,11 @@ func (m *FileMonitor) visit(s *Subscription) (int, time.Time, error) {
 			if err != nil {
 				return numFiles, modified, err
 			}
-			entry, err := os.Lstat(absName)
+			absEntry, err := os.Lstat(absName)
 			if err != nil {
 				return numFiles, modified, err
 			}
-			modTime = entry.ModTime()
+			modTime = absEntry.ModTime()
 		}
 
 		if modTime.After(modified) {
