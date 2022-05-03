@@ -1,7 +1,7 @@
 # Notebook sample
 
-This sample shows how Fybrik enables a Jupyter notebook workload to access a dataset.
-It demonstrates how policies are seamlessly applied when accessing the dataset classified as financial data.
+This sample shows how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
+It demonstrates how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
 
 In this sample you play multiple roles:
 
@@ -9,7 +9,17 @@ In this sample you play multiple roles:
 2. As a data steward you setup data governance policies
 3. As a data user you specify your data usage requirements and use a notebook to consume the data
 
+Tools used by the actors:
+
+1. The data owner would typically register the dataset in a proprietary or open source catalog.  We have provided [katalog](../reference/katalog.md) - a thin layer acting as a replacement for the data catalog for evaluation purposes. This simplifies the sample deployment.
+2. The data owner stores credentials for accessing the dataset in kubernetes secrets.
+3. Proprietary and open source data governance systems are available either as part of a data catalog or as stand-alone systems.  This sample uses the open source [OpenPolicyAgent](https://www.openpolicyagent.org/).  The data steward writes the policies in OPA's [rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language.
+4. Any editor can be used to write the FybrikApplication.yaml via which the data user expresses the data usage requirements.
+5. A jupyter notebook is the workload from which the data is consumed by the data user.
+
 ## Before you begin
+
+Typically this would be done by an IT administrator.
 
 - Install Fybrik using the [Quick Start](../get-started/quickstart.md) guide.
   This sample assumes the use of the built-in catalog, Open Policy Agent (OPA) and flight module.
@@ -64,7 +74,9 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
       ```
 ## Register the dataset in a data catalog
 
-Register the credentials required for accessing the dataset. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
+
+Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -79,7 +91,7 @@ stringData:
 EOF
 ```
 
-Then, register the data asset itself in the catalog. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
+Then, register the data asset itself in the data catalog `katalog` used for samples. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -130,7 +142,7 @@ kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Regi
 
 ## Define data access policies
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Acting as the data steward, define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
