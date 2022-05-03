@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.12">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.13">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.27ad92d8.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.e411adfe.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
@@ -1458,7 +1458,7 @@ kubectl expose deployment my-notebook --port<span class="o">=</span><span class=
 The next steps use the endpoint to read the data in a python notebook</p>
 <ol>
 <li>Insert a new notebook cell to install pandas and pyarrow packages:
-  <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span>
+  <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span><span class="o">==</span><span class="mf">7.0</span><span class="o">.*</span>
 </code></pre></div></li>
 <li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>FybrikApplication</code> in the previous step:
   <div class="highlight"><pre><span></span><code>import json
