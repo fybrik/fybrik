@@ -36,7 +36,7 @@ func (m *FileMonitor) Subscribe(subscriber Subscriber) error {
 		Entity:  subscriber,
 		Options: subscriber.GetOptions(),
 	}
-	numFiles, modified, err := m.visit(&s, s.Options.Path)
+	numFiles, modified, err := m.visit(&s)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (m *FileMonitor) Run() {
 func (m *FileMonitor) Monitor() {
 	for i := range m.Subsciptions {
 		s := &m.Subsciptions[i]
-		numFiles, lastTimestamp, err := m.visit(s, s.Options.Path)
+		numFiles, lastTimestamp, err := m.visit(s)
 		if err != nil {
 			s.Entity.OnError(err)
 			return
@@ -80,7 +80,7 @@ func (m *FileMonitor) Monitor() {
 	}
 }
 
-func (m *FileMonitor) visit(s *Subscription, path string) (int, time.Time, error) {
+func (m *FileMonitor) visit(s *Subscription) (int, time.Time, error) {
 	modified := s.LastModified
 	numFiles := 0
 	entries, err := os.ReadDir(s.Options.Path)
@@ -89,26 +89,28 @@ func (m *FileMonitor) visit(s *Subscription, path string) (int, time.Time, error
 	}
 	for _, entry := range entries {
 		info, _ := entry.Info()
-		if info.Mode()&os.ModeSymlink != 0 {
+		if info.IsDir() {
 			continue
 		}
-		if !info.IsDir() {
-			if !strings.HasSuffix(entry.Name(), s.Options.Extension) {
-				continue
-			}
-			numFiles++
-			if info.ModTime().After(modified) {
-				modified = info.ModTime()
-			}
-		} else {
-			dirNumFiles, dirModified, err := m.visit(s, path+"/"+info.Name())
+		if !strings.HasSuffix(entry.Name(), s.Options.Extension) {
+			continue
+		}
+		numFiles++
+		modTime := info.ModTime()
+		if info.Mode()&os.ModeSymlink != 0 {
+			absName, err := os.Readlink(info.Name())
 			if err != nil {
 				return numFiles, modified, err
 			}
-			numFiles += dirNumFiles
-			if dirModified.After(modified) {
-				modified = dirModified
+			entry, err := os.Lstat(absName)
+			if err != nil {
+				return numFiles, modified, err
 			}
+			modTime = entry.ModTime()
+		}
+
+		if modTime.After(modified) {
+			modified = modTime
 		}
 	}
 	return numFiles, modified, nil

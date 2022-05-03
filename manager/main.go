@@ -157,16 +157,16 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			evaluator,
 			infrastructureManager,
 		)
-		if err := applicationController.SetupWithManager(mgr); err != nil {
+		if err = applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err := (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err := (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}
