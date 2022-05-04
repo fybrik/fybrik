@@ -47,6 +47,8 @@ nav:
     - contribute/documentation/style.md
   - Plugins:
     - contribute/modules.md
+- Publications: publications.md
+
 
 extra:
   version:
