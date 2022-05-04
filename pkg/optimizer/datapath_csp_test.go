@@ -87,7 +87,7 @@ func getDataInfo(env *Environment) *DataInfo {
 		Configuration:       evalOutput,
 		WorkloadCluster:     env.Clusters[0],
 		Actions:             actions,
-		StorageRequirements: map[taxonomy.ProcessingLocation][]taxonomy.Action{},
+		StorageRequirements: map[taxonomy.ProcessingLocation][]taxonomy.Action{"us-south": {}},
 	}
 	return &dataInfo
 }

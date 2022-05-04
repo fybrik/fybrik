@@ -32,7 +32,7 @@ const (
 	BoolLinLeConstraint  = "bool_lin_le"
 	BoolNotEqConstraint  = "bool_not"
 	ArrBoolOrConstraint  = "array_bool_or"
-	IntEqConstraint      = "int_eq"
+	IntEqConstraint      = "int_eq_reif"
 	IntNotEqConstraint   = "int_ne_reif"
 	SetInConstraint      = "set_in_reif"
 	IntLinEqConstraint   = "int_lin_eq"
