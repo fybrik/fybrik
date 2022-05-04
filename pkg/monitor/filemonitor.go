@@ -47,12 +47,10 @@ func (m *FileMonitor) Subscribe(subscriber Subscriber) error {
 }
 
 func (m *FileMonitor) Run() {
-	ticker := time.NewTicker(utils.GetMonitorInterval())
-	defer ticker.Stop()
-
 	go func() {
-		for range ticker.C {
+		for {
 			m.Monitor()
+			time.Sleep(utils.GetMonitorInterval())
 		}
 	}()
 }
@@ -98,11 +96,11 @@ func (m *FileMonitor) visit(s *Subscription) (int, time.Time, error) {
 		numFiles++
 		modTime := info.ModTime()
 		if info.Mode()&os.ModeSymlink != 0 {
-			absName, err := os.Readlink(info.Name())
+			absName, err := os.Readlink(s.Options.Path + "/" + info.Name())
 			if err != nil {
 				return numFiles, modified, err
 			}
-			absEntry, err := os.Lstat(absName)
+			absEntry, err := os.Lstat(s.Options.Path + "/" + absName)
 			if err != nil {
 				return numFiles, modified, err
 			}
