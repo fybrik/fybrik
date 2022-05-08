@@ -33,7 +33,6 @@ jobs:
         then
           echo "do not publish logging library"
         else
-          echo "else logging"
           VERSION=${{ github.event.inputs.logging-version }} python -m build ./python/logging --outdir ./dist
         fi
     - name: Build vault package
@@ -42,7 +41,6 @@ jobs:
         then
           echo "do not publish vault library"
         else
-          echo "else vault"
           VERSION=${{ github.event.inputs.vault-version }} python -m build ./python/vault --outdir ./dist
         fi
     - name: Publish package
