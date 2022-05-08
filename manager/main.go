@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/fsnotify/fsnotify"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -172,14 +173,28 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}
 
-		fileMonitor := &monitor.FileMonitor{Subsciptions: []monitor.Subscription{}}
+		// monitor changes in config policies and attributes
+		fileMonitor := &monitor.FileMonitor{Subsciptions: []monitor.Subscription{}, Log: setupLog}
 		if err = fileMonitor.Subscribe(evaluator); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor policy changes")
 		}
 		if err = fileMonitor.Subscribe(infrastructureManager); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor attribute changes")
 		}
-		fileMonitor.Run()
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			setupLog.Err(err).Msg("error creating a file system watcher")
+			return 1
+		}
+		defer watcher.Close()
+		// watch /tmp/adminconfig directory for changes
+		err = watcher.Add(adminconfig.RegoPolicyDirectory)
+		if err != nil {
+			setupLog.Err(err).Msg("error adding a directory to monitor")
+			return 1
+		}
+
+		fileMonitor.Run(watcher)
 		// Initiate the FybrikModule Controller
 		moduleController := app.NewFybrikModuleReconciler(
 			mgr,

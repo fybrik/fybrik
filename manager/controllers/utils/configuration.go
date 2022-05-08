@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/onsi/ginkgo"
 	"github.com/rs/zerolog"
@@ -28,7 +27,6 @@ const (
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 	UseCSPKey                         string = "USE_CSP"
-	MonitorIntervalKey                string = "FILE_MONITOR_INTERVAL"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -79,20 +77,6 @@ func UseCSP() bool {
 // GetDataCatalogServiceAddress returns the address where data catalog is running
 func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
-}
-
-// GetMonitorInterval returns the time period (in seconds) for detecting file changes
-func GetMonitorInterval() time.Duration {
-	defaultVal := time.Minute
-	valStr := os.Getenv(MonitorIntervalKey)
-	if valStr == "" {
-		return defaultVal
-	}
-	val, err := strconv.Atoi(valStr)
-	if err != nil {
-		return defaultVal
-	}
-	return time.Duration(val) * time.Second
 }
 
 func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {

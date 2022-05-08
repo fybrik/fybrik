@@ -8,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"github.com/fsnotify/fsnotify"
+	"github.com/rs/zerolog"
 )
 
 type Subscription struct {
@@ -20,6 +21,8 @@ type Subscription struct {
 
 // FileMonitor detects  changes since the last check and notifies subscribers
 type FileMonitor struct {
+	// log
+	Log zerolog.Logger
 	// list of subscribers and their states
 	Subsciptions []Subscription
 }
@@ -31,6 +34,7 @@ type FileMonitorOptions struct {
 	Extension string
 }
 
+// Subscribe to get notifications on file changes
 func (m *FileMonitor) Subscribe(subscriber Subscriber) error {
 	s := Subscription{
 		Entity:  subscriber,
@@ -46,15 +50,28 @@ func (m *FileMonitor) Subscribe(subscriber Subscriber) error {
 	return nil
 }
 
-func (m *FileMonitor) Run() {
+// Run activates a go routine that calls Monitor() upon changes in /tmp/adminconfig directory
+func (m *FileMonitor) Run(watcher *fsnotify.Watcher) {
 	go func() {
 		for {
-			m.Monitor()
-			time.Sleep(utils.GetMonitorInterval())
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					continue
+				}
+				m.Log.Info().Msg("Event: " + event.String())
+				m.Monitor()
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					continue
+				}
+				m.Log.Err(err).Msg("error watching file changes")
+			}
 		}
 	}()
 }
 
+// Check if changes in files require any action
 func (m *FileMonitor) Monitor() {
 	for i := range m.Subsciptions {
 		s := &m.Subsciptions[i]
@@ -65,14 +82,17 @@ func (m *FileMonitor) Monitor() {
 		}
 		changeDetected := false
 		if numFiles != s.NumFiles {
+			// a file has been added or removed
 			s.NumFiles = numFiles
 			changeDetected = true
 		}
 		if lastTimestamp.After(s.LastModified) {
+			// a file has been modified
 			s.LastModified = lastTimestamp
 			changeDetected = true
 		}
 		if changeDetected {
+			m.Log.Info().Msg("File change detected, notifying...")
 			s.Entity.OnNotify()
 		}
 	}
@@ -83,19 +103,25 @@ func (m *FileMonitor) visit(s *Subscription) (int, time.Time, error) {
 	numFiles := 0
 	entries, err := os.ReadDir(s.Options.Path)
 	if err != nil {
-		return numFiles, modified, err
+		return 0, s.LastModified, err
 	}
 	for _, entry := range entries {
-		info, _ := entry.Info()
+		info, err := entry.Info()
+		if err != nil {
+			return 0, s.LastModified, err
+		}
 		if info.IsDir() {
+			// only policy/infrastructure files are monitored
 			continue
 		}
 		if !strings.HasSuffix(entry.Name(), s.Options.Extension) {
+			// this file should not be monitored for the given subscriber
 			continue
 		}
 		numFiles++
 		modTime := info.ModTime()
 		if info.Mode()&os.ModeSymlink != 0 {
+			// symbolic link
 			absName, err := os.Readlink(s.Options.Path + "/" + info.Name())
 			if err != nil {
 				return numFiles, modified, err
