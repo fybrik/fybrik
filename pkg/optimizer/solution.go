@@ -40,7 +40,7 @@ type Solution struct {
 	DataPath []*ResolvedEdge
 }
 
-func (re ResolvedEdge) String() string {
+func (re *ResolvedEdge) String() string {
 	return fmt.Sprintf("Source: %v, Sink: %v, Module:%v, CapIndex: %v, Actions: %v, Cluster: %v, SA: %v",
 		re.Source, re.Sink, re.Module.Name, re.CapabilityIndex, re.Actions, re.Cluster, re.StorageAccount)
 }
