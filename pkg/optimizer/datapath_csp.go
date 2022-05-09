@@ -10,6 +10,7 @@ import (
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
@@ -33,6 +34,8 @@ type moduleAndCapability struct {
 	capabilityIdx int  // The index of capability in module's spec
 	virtualSource bool // whether data is consumed via API
 	virtualSink   bool // whether data is transferred in memory via API
+	hasSource     bool // whether module-capability has source interfaces
+	hasSink       bool // whether module-capability has sink interfaces
 }
 
 // The main class for producing a CSP from data-path constraints and for decoding solver's solutions
@@ -51,18 +54,16 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
 	dpCSP.reverseIntfcMap = map[int]*taxonomy.Interface{}
-	dataSetIntfc := taxonomy.Interface{
-		Protocol:   dpCSP.problemData.DataDetails.Details.Connection.Name,
-		DataFormat: dpCSP.problemData.DataDetails.Details.DataFormat,
-	}
-	dpCSP.addInterfaceToMaps(&dataSetIntfc)
-	dpCSP.addInterfaceToMaps(dpCSP.problemData.Context.Requirements.Interface)
+	dataSetIntfc := getAssetInterface(dpCSP.problemData.DataDetails)
+	dpCSP.addAndGetInterface(nil)           // ensure nil interface always gets index 0
+	dpCSP.addAndGetInterface(&dataSetIntfc) // data-set interface always gets index 1 (cannot be nil)
+	dpCSP.addAndGetInterface(dpCSP.problemData.Context.Requirements.Interface)
 
 	dpCSP.fzModel.AddHeaderComment("Encoding of modules and their capabilities:")
 	comment := ""
 	for _, module := range env.Modules {
 		for idx, capability := range module.Spec.Capabilities {
-			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx, false, false}
+			modCap := moduleAndCapability{module, &module.Spec.Capabilities[idx], idx, false, false, false, false}
 			if dpCSP.moduleCapabilityAllowedByRestrictions(modCap) {
 				dpCSP.addModCapInterfacesToMaps(&modCap)
 				dpCSP.modulesCapabilities = append(dpCSP.modulesCapabilities, modCap)
@@ -95,42 +96,44 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 
 // Add the interfaces defined in a given module's capability to the 2 interface maps
 func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *moduleAndCapability) {
-	hasSource, hasSink := false, false
 	capability := modcap.capability
 	for _, intfc := range capability.SupportedInterfaces {
 		if intfc.Source != nil {
-			dpc.addInterfaceToMaps(intfc.Source)
-			hasSource = true
+			dpc.addAndGetInterface(intfc.Source)
+			modcap.hasSource = true
 		}
 		if intfc.Sink != nil {
-			dpc.addInterfaceToMaps(intfc.Sink)
-			hasSink = true
+			dpc.addAndGetInterface(intfc.Sink)
+			modcap.hasSink = true
 		}
 	}
-	if (!hasSource || !hasSink) && capability.API != nil {
+	if (!modcap.hasSource || !modcap.hasSink) && capability.API != nil {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		dpc.addInterfaceToMaps(apiInterface)
-		modcap.virtualSource = !hasSource
-		modcap.virtualSink = !hasSink
+		dpc.addAndGetInterface(apiInterface)
+		modcap.virtualSource = !modcap.hasSource
+		modcap.virtualSink = !modcap.hasSink
+		modcap.hasSource = true
+		modcap.hasSink = true
 	}
 }
 
 // Add the given interface to the 2 interface maps (but avoid duplicates)
-func (dpc *DataPathCSP) addInterfaceToMaps(intfc *taxonomy.Interface) {
+func (dpc *DataPathCSP) addAndGetInterface(intfc *taxonomy.Interface) int {
 	if intfc == nil {
-		return
+		intfc = &taxonomy.Interface{}
 	}
-	_, found := dpc.interfaceIdx[*intfc]
+	intfcIdx, found := dpc.interfaceIdx[*intfc]
 	if !found {
-		intfcIdx := len(dpc.interfaceIdx) + 1
+		intfcIdx = len(dpc.interfaceIdx)
 		dpc.interfaceIdx[*intfc] = intfcIdx
 		dpc.reverseIntfcMap[intfcIdx] = intfc
 	}
+	return intfcIdx
 }
 
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
-//       The one exception is storage accounts, where a value of 0 means no storage account
+//       The two exceptions are storage accounts, where a value of 0 means no storage account and interfaces (0 means nil)
 func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
@@ -143,7 +146,7 @@ func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
 	moduleClusterVarType := fznRangeVarType(1, len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray(clusterVarname, moduleClusterVarType, pathLength, false, true)
 	// Variables to select the source and sink interface for each module on the path
-	moduleInterfaceVarType := fznRangeVarType(1, len(dpc.interfaceIdx))
+	moduleInterfaceVarType := fznRangeVarType(0, len(dpc.interfaceIdx)-1)
 	dpc.fzModel.AddVariableArray(srcIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 	dpc.fzModel.AddVariableArray(sinkIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 
@@ -383,27 +386,53 @@ func (dpc *DataPathCSP) addActionIndicator(action taxonomy.Action, pathLength in
 
 // prevent setting source/sink interfaces which are not supported by module capability
 func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
+	// First, make sure interface selection matches module-capability selection
+	dpc.modCapSupportsIntfc(pathLength)
+
+	// Now, ensure interfaces match along the datapath from dataset to workload
+	startIntfcIdx := strconv.Itoa(1)
+	endIntfcIdx := strconv.Itoa(dpc.addAndGetInterface(dpc.problemData.Context.Requirements.Interface))
+	if dpc.problemData.Context.Flow == taxonomy.WriteFlow {
+		startIntfcIdx, endIntfcIdx = endIntfcIdx, startIntfcIdx // swap start and end for write flows
+	}
+	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(srcIntfcVarname, 1), startIntfcIdx, TrueValue})
+	for pathPos := 1; pathPos < pathLength; pathPos++ {
+		dpc.fzModel.AddConstraint(IntEqConstraint,
+			[]string{varAtPos(sinkIntfcVarname, pathPos), varAtPos(srcIntfcVarname, pathPos+1), TrueValue})
+	}
+	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength), endIntfcIdx, TrueValue})
+
+	// Finally, make sure a storage account is assigned iff there is a sink interface and it is non-virtual
+	noSaRequiredModCaps := []string{}
+	for modCapIdx, modCap := range dpc.modulesCapabilities {
+		if modCap.virtualSink || !modCap.hasSink {
+			noSaRequiredModCaps = append(noSaRequiredModCaps, strconv.Itoa(modCapIdx+1))
+		}
+	}
+	noSaRequiredVarName := dpc.addSetInIndicator(modCapVarname, noSaRequiredModCaps, pathLength)
+	realSA := dpc.addEqualityIndicator(saVarname, 0, pathLength, false) // a value >0 means a storage account is allocated
+	for pathPos := 1; pathPos <= pathLength; pathPos++ {
+		noSaRequiredAtPos := varAtPos(noSaRequiredVarName, pathPos)
+		realSAAtPos := varAtPos(realSA, pathPos)
+		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{realSAAtPos, noSaRequiredAtPos})
+	}
+}
+
+// Add constraints to ensure interface selection matches module-capability selection
+func (dpc *DataPathCSP) modCapSupportsIntfc(pathLength int) {
 	for intfc, intfcIdx := range dpc.interfaceIdx {
 		for modCapIdx, modCap := range dpc.modulesCapabilities {
 			modcapSupportsIntfcSrc := false
 			modcapSupportsIntfcSink := false
 			for _, modifc := range modCap.capability.SupportedInterfaces {
-				if interfacesMatch(modifc.Source, &intfc) {
-					modcapSupportsIntfcSrc = true
-				}
-				if interfacesMatch(modifc.Sink, &intfc) {
-					modcapSupportsIntfcSink = true
-				}
+				modcapSupportsIntfcSrc = modcapSupportsIntfcSrc || interfacesMatch(modifc.Source, &intfc)
+				modcapSupportsIntfcSink = modcapSupportsIntfcSink || interfacesMatch(modifc.Sink, &intfc)
 			}
 			if modCap.virtualSource || modCap.virtualSink {
-				capApi := modCap.capability.API
-				apiIntfc := &taxonomy.Interface{Protocol: capApi.Connection.Name, DataFormat: capApi.DataFormat}
-				if modCap.virtualSource && interfacesMatch(apiIntfc, &intfc) {
-					modcapSupportsIntfcSrc = true
-				}
-				if modCap.virtualSink && interfacesMatch(apiIntfc, &intfc) {
-					modcapSupportsIntfcSink = true
-				}
+				capAPI := modCap.capability.API
+				apiIntfc := &taxonomy.Interface{Protocol: capAPI.Connection.Name, DataFormat: capAPI.DataFormat}
+				modcapSupportsIntfcSrc = modcapSupportsIntfcSrc || modCap.virtualSource && interfacesMatch(apiIntfc, &intfc)
+				modcapSupportsIntfcSink = modcapSupportsIntfcSink || modCap.virtualSink && interfacesMatch(apiIntfc, &intfc)
 			}
 			if !modcapSupportsIntfcSrc {
 				dpc.preventAssignments([]string{modCapVarname, srcIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
@@ -412,30 +441,6 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 				dpc.preventAssignments([]string{modCapVarname, sinkIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
 			}
 		}
-	}
-
-	// ensuring interface matching along the datapath from dataset to workload
-	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(srcIntfcVarname, 1), strconv.Itoa(1), TrueValue})
-	for pathPos := 1; pathPos < pathLength; pathPos++ {
-		dpc.fzModel.AddConstraint(IntEqConstraint,
-			[]string{varAtPos(sinkIntfcVarname, pathPos), varAtPos(srcIntfcVarname, pathPos+1), TrueValue})
-	}
-	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength),
-		strconv.Itoa(dpc.interfaceIdx[*dpc.problemData.Context.Requirements.Interface]), TrueValue})
-
-	// Making sure a storage account is assigned iff the sink interface is non-virtual
-	virtualModCaps := []string{}
-	for modCapIdx, modCap := range dpc.modulesCapabilities {
-		if modCap.virtualSink {
-			virtualModCaps = append(virtualModCaps, strconv.Itoa(modCapIdx+1))
-		}
-	}
-	virtualSinkVarName := dpc.addSetInIndicator(modCapVarname, virtualModCaps, pathLength)
-	realSA := dpc.addEqualityIndicator(saVarname, 0, pathLength, false)
-	for pathPos := 1; pathPos <= pathLength; pathPos++ {
-		virtualSinkAtPos := varAtPos(virtualSinkVarName, pathPos)
-		realSAAtPos := varAtPos(realSA, pathPos)
-		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{realSAAtPos, virtualSinkAtPos})
 	}
 }
 
@@ -630,6 +635,25 @@ func arrayOfSameInt(num, arrayLen int) []string {
 	return strings.Fields(strings.Repeat(strconv.Itoa(num)+" ", arrayLen))
 }
 
-func interfacesMatch(intfc1, intfc2 *taxonomy.Interface) bool {
-	return intfc1 != nil && intfc2 != nil && intfc1.Protocol == intfc2.Protocol && intfc1.DataFormat == intfc2.DataFormat
+func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
+	if connection == nil || connection.Details.Connection.Name == "" {
+		return taxonomy.Interface{Protocol: appApi.S3, DataFormat: ""}
+	}
+	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
+}
+
+func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
+	if moduleIntfc == nil {
+		moduleIntfc = &taxonomy.Interface{}
+	}
+	if otherIntfc == nil {
+		otherIntfc = &taxonomy.Interface{}
+	}
+	if moduleIntfc.Protocol != otherIntfc.Protocol {
+		return false
+	}
+
+	// an empty DataFormat value is not checked
+	// either a module supports any format, or any format can be selected (no requirements)
+	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
 }
