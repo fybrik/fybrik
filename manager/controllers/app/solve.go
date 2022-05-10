@@ -14,8 +14,9 @@ import (
 // satisfying governance and admin policies
 // with respect to the optimization strategy
 func solve(env *optimizer.Environment, datasetInfo *optimizer.DataInfo, log *zerolog.Logger) (optimizer.Solution, error) {
-	if utils.UseCSP() {
-		optimizer := optimizer.NewOptimizer(env, datasetInfo, "")
+	cspPath := utils.GetCSPPath()
+	if cspPath != "" {
+		optimizer := optimizer.NewOptimizer(env, datasetInfo, cspPath)
 		return optimizer.Solve()
 	}
 	pathBuilder := PathBuilder{Log: log, Env: env, Asset: datasetInfo}
