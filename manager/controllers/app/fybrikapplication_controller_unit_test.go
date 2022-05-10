@@ -648,20 +648,20 @@ func TestFilterAsset(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
-	/*plotterObjectKey := types.NamespacedName{
+	/* plotterObjectKey := types.NamespacedName{
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
-	}*/
-	//plotter := &v1alpha1.Plotter{}
-	//err = cl.Get(context.Background(), plotterObjectKey, plotter)
-	//g.Expect(err).NotTo(gomega.HaveOccurred())
-	//g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3))    // 3 assets. 2 original and one implicit copy asset
-	//g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
-	//g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2))     // two flows. one for each valid asset
-	//g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/allow-dataset"))
-	//g.Expect(plotter.Spec.Flows[1].AssetID).To(gomega.Equal("db2/redact-dataset"))
-	//g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
-	//g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
+	} */
+	// plotter := &v1alpha1.Plotter{}
+	// err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	// g.Expect(err).NotTo(gomega.HaveOccurred())
+	// g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3))    // 3 assets. 2 original and one implicit copy asset
+	// g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
+	// g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2))     // two flows. one for each valid asset
+	// g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/allow-dataset"))
+	// g.Expect(plotter.Spec.Flows[1].AssetID).To(gomega.Equal("db2/redact-dataset"))
+	// g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	// g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
 }
 
 // This test checks that a non-supported data store does not prevent a plotter from being created
