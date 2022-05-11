@@ -30,11 +30,10 @@ const (
 
 func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
-
 	var datasetResources *datacatalog.ResourceMetadata
 	tags := &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}}
 	if resourceMetadata != nil {
-		datasetResources = resourceMetadata.DeepCopy()
+		datasetResources = resourceMetadata
 		if datasetResources.Tags == nil {
 			datasetResources.Tags = tags
 		}
