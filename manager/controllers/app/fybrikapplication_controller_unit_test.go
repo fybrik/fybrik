@@ -296,6 +296,60 @@ func TestDenyOnRead(t *testing.T) {
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}), "Requests another reconcile")
 }
 
+// Tests selection of read-path module
+// Read module does not have api for s3/parquet
+// Result: an error
+func TestNoReadPath(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &v1alpha1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0] = v1alpha1.DataContext{
+		DataSetID:    "db2/allow-dataset",
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.JdbcDB2}},
+	}
+	application.SetGeneration(1)
+	application.SetUID("3")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// Expect an error
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
+}
+
 // Tests finding a module for copy
 // Assumptions on response from connectors:
 // Two datasets:
@@ -346,6 +400,67 @@ func TestWrongCopyModule(t *testing.T) {
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &v1alpha1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	copyModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// Expect an error
+	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
+}
+
+// Tests finding a module for copy supporting actions
+// Assumptions on response from connectors:
+// db2 dataset
+// Enforcement action: Redact
+// copy (db2->s3) and read modules do not support redact action
+// Result: an error
+func TestActionSupport(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &v1alpha1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data[0] = v1alpha1.DataContext{
+		DataSetID:    "db2/redact-dataset",
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+	}
+	application.SetGeneration(1)
+	application.SetUID("5")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = utils.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
