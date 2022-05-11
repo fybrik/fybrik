@@ -29,7 +29,7 @@ jobs:
         pip install build
     - name: Build logging package
       run: |
-        if echo ${{ github.event.inputs.logging-version }} | grep -c "do-not-publish"
+        if [ ${{ github.event.inputs.logging-version }} == "do-not-publish" ]
         then
           echo "do not publish logging library"
         else
@@ -37,7 +37,7 @@ jobs:
         fi
     - name: Build vault package
       run: |
-        if echo ${{ github.event.inputs.vault-version }} | grep -c "do-not-publish"
+        if [ ${{ github.event.inputs.vault-version }} == "do-not-publish" ]
         then
           echo "do not publish vault library"
         else
