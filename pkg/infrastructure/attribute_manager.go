@@ -49,14 +49,17 @@ func NewAttributeManager() (*AttributeManager, error) {
 	}, nil
 }
 
+// notification from the file system monitor about an error while getting access to the infrastructure file
 func (m *AttributeManager) OnError(err error) {
 	m.Log.Error().Err(err).Msg("Error reading infrastructure attributes")
 }
 
+// Options for file monitor including the monitored directory and the relevant file extension
 func (m *AttributeManager) GetOptions() monitor.FileMonitorOptions {
 	return monitor.FileMonitorOptions{Path: RegoPolicyDirectory, Extension: ".json"}
 }
 
+// notification from the file monitor on change in the infrastructure json file
 func (m *AttributeManager) OnNotify() {
 	content, err := readInfrastructure()
 	if err != nil {
@@ -67,6 +70,8 @@ func (m *AttributeManager) OnNotify() {
 	m.Mux.Unlock()
 }
 
+// read the infrastructure file and store attribute details in-memory
+// The attribute structure is validated with respect to the generated schema (based on taxonomy)
 func readInfrastructure() (infraattributes.Infrastructure, error) {
 	infrastructureFile := RegoPolicyDirectory + InfrastructureInfo
 	attributes := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{}}

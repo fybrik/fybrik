@@ -98,6 +98,9 @@ func (m *FileMonitor) Monitor() {
 	}
 }
 
+// Scan the montored folder to update the following:
+// - number of files with the relevant extension
+// - the latest timestamp of these files
 func (m *FileMonitor) visit(s *Subscription) (int, time.Time, error) {
 	modified := s.LastModified
 	numFiles := 0

@@ -52,10 +52,12 @@ func (r *RegoPolicyEvaluator) OnError(err error) {
 	r.Log.Error().Err(err).Msg("Error compiling the policies")
 }
 
+// Options for file monitor including the monitored directory and the relevant file extension
 func (r *RegoPolicyEvaluator) GetOptions() monitor.FileMonitorOptions {
 	return monitor.FileMonitorOptions{Path: RegoPolicyDirectory, Extension: ".rego"}
 }
 
+// notification event: policy files have been changed
 func (r *RegoPolicyEvaluator) OnNotify() {
 	query, err := PrepareQuery()
 	if err != nil {
