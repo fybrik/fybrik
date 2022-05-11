@@ -16,14 +16,12 @@ import (
 // Input arguments:
 // - assetID: DataSetID as it appears in fybrik-application
 // - catalogID: the destination catalog identifier
-// - resourceMetadataFromRequirements: resource metadata from the flow requirements
 // - info: connection and credential details
 // Returns:
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string,
-	resourceMetadataFromRequirements *datacatalog.ResourceMetadata, info *app.DatasetDetails,
-	input *app.FybrikApplication) (string, error) {
+	info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
 	if info.Details != nil {
@@ -32,8 +30,8 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	var resourceMetadata datacatalog.ResourceMetadata
-	if resourceMetadataFromRequirements != nil {
-		resourceMetadata = *resourceMetadataFromRequirements.DeepCopy()
+	if info.ResourceMetadata != nil {
+		resourceMetadata = *info.ResourceMetadata.DeepCopy()
 	} else {
 		resourceMetadata.Name = assetID
 	}
@@ -48,7 +46,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	request := datacatalog.CreateAssetRequest{
-		ResourceMetadata:     *resourceMetadata.DeepCopy(),
+		ResourceMetadata:     resourceMetadata,
 		Details:              details,
 		Credentials:          creds,
 		DestinationCatalogID: catalogID,

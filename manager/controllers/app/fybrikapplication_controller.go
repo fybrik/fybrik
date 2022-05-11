@@ -217,10 +217,22 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				setErrorCondition(applicationContext, assetID, err.Error())
 				continue
 			}
+			reqResource := dataCtx.Requirements.FlowParams.ResourceMetadata
+			if reqResource != nil {
+				// we assume to have only the geography field set at this point
+				// in the provisionedBucket ResourceMetadata
+				geo := provisionedBucketRef.ResourceMetadata.Geography
+				if reqResource.Geography != "" && geo != reqResource.Geography {
+					// log an error and make a new attempt to register the asset
+					setErrorCondition(applicationContext, assetID, errors.New("conflict in Geography field").Error())
+					continue
+				}
+				provisionedBucketRef.ResourceMetadata = reqResource.DeepCopy()
+				provisionedBucketRef.ResourceMetadata.Geography = geo
+			}
 			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
-				dataCtx.Requirements.FlowParams.ResourceMetadata, &provisionedBucketRef,
-				applicationContext.Application); err == nil {
+				&provisionedBucketRef, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
