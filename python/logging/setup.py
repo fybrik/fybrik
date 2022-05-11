@@ -4,6 +4,8 @@ import os
 setup(name='fybrik_python_logging',
       version=os.environ.get('VERSION', '0.1.0'),
       description='Python Logging Package for Fybrik Components',
+      long_description='## Python logging Package for Fybrik Components',
+      long_description_content_type='text/markdown',
       license='Apache License, Version 2.0',
       author='FybrikUser',
       author_email='FybrikUser@il.ibm.com',
