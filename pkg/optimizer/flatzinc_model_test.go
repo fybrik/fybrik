@@ -4,6 +4,7 @@
 package optimizer
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -18,7 +19,10 @@ func TestWriteModel(t *testing.T) {
 	myWriter.AddVariableArray("y3", "int", 3, false, true)
 	myWriter.AddConstraint("int_le", []string{"0", "x"}, "domain")
 	myWriter.SetSolveTarget(Minimize, "x", "int_search(xs, input_order, indomain_min, complete)")
-	err := myWriter.Dump("test.fzn")
+	fileName, err := myWriter.Dump()
+	if fileName != "" {
+		os.Remove(fileName)
+	}
 	if err != nil {
 		t.Errorf("Failed writing FlatZinc file: %s ", err)
 	}

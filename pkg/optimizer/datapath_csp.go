@@ -132,9 +132,10 @@ func (dpc *DataPathCSP) addAndGetInterface(intfc *taxonomy.Interface) int {
 }
 
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
+// Returns a file name where the model was dumped
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
 //       The two exceptions are storage accounts, where a value of 0 means no storage account and interfaces (0 means nil)
-func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
+func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
 	moduleCapabilityVarType := fznRangeVarType(1, len(dpc.modulesCapabilities))
@@ -153,16 +154,15 @@ func (dpc *DataPathCSP) BuildFzModel(fzModelFile string, pathLength int) error {
 	dpc.addGovernanceActionConstraints(pathLength)
 	err := dpc.addAdminConfigRestrictions(pathLength)
 	if err != nil {
-		return err
+		return "", err
 	}
 	dpc.addInterfaceConstraints(pathLength)
 	err = dpc.addOptimizationGoals(pathLength)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	err = dpc.fzModel.Dump(fzModelFile)
-	return err
+	return dpc.fzModel.Dump()
 }
 
 // enforce restrictions from admin configuration decisions:

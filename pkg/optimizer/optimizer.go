@@ -5,7 +5,7 @@ package optimizer
 
 import (
 	"errors"
-	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -30,20 +30,31 @@ func NewOptimizer(env *Environment, problemData *DataInfo, solverPath string) *O
 	return &opt
 }
 
+func (opt *Optimizer) getSolution(pathLength int) (string, error) {
+	modelFile, err := opt.dpc.BuildFzModel(pathLength)
+	if len(modelFile) > 0 {
+		defer os.Remove(modelFile)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	// #nosec G204 -- Avoid "Subprocess launched with variable" error
+	solverSolution, err := exec.Command(opt.solverPath, modelFile).Output()
+	if err != nil {
+		return "", err
+	}
+	return string(solverSolution), nil
+}
+
 // The main method to call for finding a legal and optimal data path
 func (opt *Optimizer) Solve() (Solution, error) {
-	for pathLen := 1; pathLen < MaxDataPathDepth; pathLen++ {
-		fzModelFile := fmt.Sprintf("DataPathCSP%s_%d.fzn", opt.problemData.Context.DataSetID, pathLen)
-		err := opt.dpc.BuildFzModel(fzModelFile, pathLen)
+	for pathLen := 1; pathLen <= MaxDataPathDepth; pathLen++ {
+		solverSolution, err := opt.getSolution(pathLen)
 		if err != nil {
 			return Solution{}, err
 		}
-		// #nosec G204 -- Avoid "Subprocess launched with variable" error
-		solverSolution, err := exec.Command(opt.solverPath, fzModelFile).Output()
-		if err != nil {
-			return Solution{}, err
-		}
-		solution, err := opt.dpc.decodeSolverSolution(string(solverSolution), pathLen)
+		solution, err := opt.dpc.decodeSolverSolution(solverSolution, pathLen)
 		if err != nil {
 			return Solution{}, err
 		}

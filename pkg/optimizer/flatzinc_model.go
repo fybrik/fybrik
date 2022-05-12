@@ -205,15 +205,16 @@ func (fzw *FlatZincModel) Clear() {
 	fzw.Constraints = []FlatZincConstraint{}
 }
 
-// dumps a FlatZinc model to a file, using the FlatZinc syntax
-func (fzw *FlatZincModel) Dump(fileName string) error {
-	file, err := os.Create(path.Clean(fileName))
+// dumps a FlatZinc model to a temp file using the FlatZinc syntax, returning the file name
+// It is the caller responsibility to delete the file
+func (fzw *FlatZincModel) Dump() (string, error) {
+	file, err := os.CreateTemp("", "DataPathModel.*.fzn")
 	if err != nil {
-		return fmt.Errorf("failed opening file %s for writing: %w", fileName, err)
+		return "", fmt.Errorf("failed creating temp file %s: %w", file.Name(), err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Printf("Error closing file %s: %s\n", fileName, err)
+			log.Printf("Error closing file %s: %s\n", file.Name(), err)
 		}
 	}()
 
@@ -234,9 +235,9 @@ func (fzw *FlatZincModel) Dump(fileName string) error {
 
 	fileContent += "\n" + fzw.SolveTarget.solveItemStatement()
 	if _, err := file.WriteString(fileContent); err != nil {
-		return err
+		return file.Name(), err
 	}
-	return nil
+	return file.Name(), nil
 }
 
 // Parses a single variable assignment line in a FlatZinc solution file. Returns the variable name and its value(s)

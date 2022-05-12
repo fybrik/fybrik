@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TextOptimizer(t *testing.T) {
+func TestOptimizer(t *testing.T) {
 	env := getTestEnv()
 	opt := NewOptimizer(env, getDataInfo(env), "c:\\nevo\\projects\\or-tools_flatzinc_VisualStudio2019-64bit_v9.2.9972\\bin\\fzn-or-tools.exe")
 	solution, err := opt.Solve()
