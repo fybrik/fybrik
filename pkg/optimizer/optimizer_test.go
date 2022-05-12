@@ -4,12 +4,13 @@
 package optimizer
 
 import (
+	"os"
 	"testing"
 )
 
 func TestOptimizer(t *testing.T) {
 	env := getTestEnv()
-	opt := NewOptimizer(env, getDataInfo(env), "c:\\nevo\\projects\\or-tools_flatzinc_VisualStudio2019-64bit_v9.2.9972\\bin\\fzn-or-tools.exe")
+	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("TOOLBIN")+"/fzn-or-tools")
 	solution, err := opt.Solve()
 	if err != nil {
 		t.Fatalf("Failed solving constraint problem: %s", err)
