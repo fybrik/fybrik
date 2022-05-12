@@ -6,12 +6,12 @@
 cd "${0%/*}"
 source ./common.sh
 
-DESIRED_VERSION=9.3
-DESIRED_BUILD=10497
+DESIRED_VERSION=9.2
+DESIRED_BUILD=9972
 
 case ${os} in
     linux)
-        target_os=ubuntu-20.04
+        target_os=ubuntu-18.04
         ;;
     darwin)
         arch=""
@@ -32,5 +32,5 @@ trap "rm ${download_file}" err exit
 tmp=$(mktemp -d /tmp/or-tools.XXXXXX)
 tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-or-tools ./bin
-mv $tmp/*/lib/lib*.so.? ./lib
+mv $tmp/*/lib/lib*.so ./lib
 chmod +x ./bin/fzn-or-tools
