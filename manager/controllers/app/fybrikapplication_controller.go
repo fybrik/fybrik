@@ -224,9 +224,9 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				// in the provisionedBucket ResourceMetadata
 				geo := provisionedBucketRef.ResourceMetadata.Geography
 				if reqResource.Geography != "" && geo != reqResource.Geography {
-					// log an error and make a new attempt to register the asset
-					setErrorCondition(applicationContext, assetID, errors.New("conflict in Geography field").Error())
-					continue
+					// log conflict in Geography field
+					applicationContext.Log.Warn().Msg("Geography field from application flow requirements " +
+						"does not match provisioned bucket Geography and thus ignored")
 				}
 				provisionedBucketRef.ResourceMetadata = reqResource.DeepCopy()
 				provisionedBucketRef.ResourceMetadata.Geography = geo
