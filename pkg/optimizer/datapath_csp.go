@@ -390,17 +390,17 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 	dpc.modCapSupportsIntfc(pathLength)
 
 	// Now, ensure interfaces match along the datapath from dataset to workload
-	startIntfcIdx := strconv.Itoa(1)
-	endIntfcIdx := strconv.Itoa(dpc.addAndGetInterface(dpc.problemData.Context.Requirements.Interface))
+	startIntfcIndexes := fznCompoundLiteral(dpc.getMatchingInterfaces(dpc.reverseIntfcMap[1]), true)
+	endIntfcIndexes := fznCompoundLiteral(dpc.getMatchingInterfaces(dpc.problemData.Context.Requirements.Interface), true)
 	if dpc.problemData.Context.Flow == taxonomy.WriteFlow {
-		startIntfcIdx, endIntfcIdx = endIntfcIdx, startIntfcIdx // swap start and end for write flows
+		startIntfcIndexes, endIntfcIndexes = endIntfcIndexes, startIntfcIndexes // swap start and end for write flows
 	}
-	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(srcIntfcVarname, 1), startIntfcIdx, TrueValue})
+	dpc.fzModel.AddConstraint(SetInConstraint, []string{varAtPos(srcIntfcVarname, 1), startIntfcIndexes, TrueValue})
 	for pathPos := 1; pathPos < pathLength; pathPos++ {
 		dpc.fzModel.AddConstraint(IntEqConstraint,
 			[]string{varAtPos(sinkIntfcVarname, pathPos), varAtPos(srcIntfcVarname, pathPos+1), TrueValue})
 	}
-	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength), endIntfcIdx, TrueValue})
+	dpc.fzModel.AddConstraint(SetInConstraint, []string{varAtPos(sinkIntfcVarname, pathLength), endIntfcIndexes, TrueValue})
 
 	// Finally, make sure a storage account is assigned iff there is a sink interface and it is non-virtual
 	if dpc.problemData.Context.Flow == taxonomy.WriteFlow && !dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
@@ -420,6 +420,17 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 		realSAAtPos := varAtPos(realSA, pathPos)
 		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{realSAAtPos, noSaRequiredAtPos})
 	}
+}
+
+// Return a list of indexes of interfaces that match the input interface
+func (dpc *DataPathCSP) getMatchingInterfaces(refIntfc *taxonomy.Interface) []string {
+	res := []string{}
+	for intfc, intfcIdx := range dpc.interfaceIdx {
+		if interfacesMatch(refIntfc, &intfc) {
+			res = append(res, strconv.Itoa(intfcIdx))
+		}
+	}
+	return res
 }
 
 // Add constraints to ensure interface selection matches module-capability selection
