@@ -107,8 +107,9 @@ func validateStructure(bytes []byte) error {
 // GetAttribute returns an infrastructure attribute based on the attribute and instance names
 func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *taxonomy.InfrastructureElement {
 	for i := range m.Infrastructure.Items {
-		if m.Infrastructure.Items[i].Attribute == name && m.Infrastructure.Items[i].Instance == instance {
-			return &m.Infrastructure.Items[i]
+		element := &m.Infrastructure.Items[i]
+		if element.Attribute == name && element.Instance == instance {
+			return element
 		}
 	}
 	return nil
@@ -118,8 +119,9 @@ func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string
 // TODO: validate that there is only one instance type associated with the given attribute
 func (m *AttributeManager) GetInstanceType(name taxonomy.Attribute) *taxonomy.InstanceType {
 	for i := range m.Infrastructure.Items {
-		if m.Infrastructure.Items[i].Attribute == name {
-			return &m.Infrastructure.Items[i].Object
+		element := &m.Infrastructure.Items[i]
+		if element.Attribute == name {
+			return &element.Object
 		}
 	}
 	return nil
