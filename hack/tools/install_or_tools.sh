@@ -12,7 +12,7 @@ DESIRED_BUILD=10497
 case ${os} in
     linux)
         target_os=ubuntu-20.04
-        ;;;
+        ;;
     darwin)
         arch=""
         target_os=MacOsX-12.2.1
