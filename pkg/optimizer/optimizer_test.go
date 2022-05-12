@@ -10,7 +10,7 @@ import (
 
 func TestOptimizer(t *testing.T) {
 	env := getTestEnv()
-	opt := NewOptimizer(env, getDataInfo(env), "../../" + os.Getenv("TOOLBIN")+"/fzn-or-tools")
+	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("ABSTOOLBIN")+"/fzn-or-tools")
 	solution, err := opt.Solve()
 	if err != nil {
 		t.Fatalf("Failed solving constraint problem: %s", err)
