@@ -55,9 +55,9 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
 	dpCSP.reverseIntfcMap = map[int]*taxonomy.Interface{}
 	dataSetIntfc := getAssetInterface(dpCSP.problemData.DataDetails)
-	dpCSP.addAndGetInterface(nil)           // ensure nil interface always gets index 0
-	dpCSP.addAndGetInterface(&dataSetIntfc) // data-set interface always gets index 1 (cannot be nil)
-	dpCSP.addAndGetInterface(dpCSP.problemData.Context.Requirements.Interface)
+	dpCSP.addInterface(nil)           // ensure nil interface always gets index 0
+	dpCSP.addInterface(&dataSetIntfc) // data-set interface always gets index 1 (cannot be nil)
+	dpCSP.addInterface(dpCSP.problemData.Context.Requirements.Interface)
 
 	dpCSP.fzModel.AddHeaderComment("Encoding of modules and their capabilities:")
 	comment := ""
@@ -99,17 +99,17 @@ func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *moduleAndCapability) {
 	capability := modcap.capability
 	for _, intfc := range capability.SupportedInterfaces {
 		if intfc.Source != nil {
-			dpc.addAndGetInterface(intfc.Source)
+			dpc.addInterface(intfc.Source)
 			modcap.hasSource = true
 		}
 		if intfc.Sink != nil {
-			dpc.addAndGetInterface(intfc.Sink)
+			dpc.addInterface(intfc.Sink)
 			modcap.hasSink = true
 		}
 	}
 	if (!modcap.hasSource || !modcap.hasSink) && capability.API != nil {
 		apiInterface := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
-		dpc.addAndGetInterface(apiInterface)
+		dpc.addInterface(apiInterface)
 		modcap.virtualSource = !modcap.hasSource
 		modcap.virtualSink = !modcap.hasSink
 		modcap.hasSource = true
@@ -118,17 +118,16 @@ func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *moduleAndCapability) {
 }
 
 // Add the given interface to the 2 interface maps (but avoid duplicates)
-func (dpc *DataPathCSP) addAndGetInterface(intfc *taxonomy.Interface) int {
+func (dpc *DataPathCSP) addInterface(intfc *taxonomy.Interface) {
 	if intfc == nil {
 		intfc = &taxonomy.Interface{}
 	}
-	intfcIdx, found := dpc.interfaceIdx[*intfc]
+	_, found := dpc.interfaceIdx[*intfc]
 	if !found {
-		intfcIdx = len(dpc.interfaceIdx)
+		intfcIdx := len(dpc.interfaceIdx)
 		dpc.interfaceIdx[*intfc] = intfcIdx
 		dpc.reverseIntfcMap[intfcIdx] = intfc
 	}
-	return intfcIdx
 }
 
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
