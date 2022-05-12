@@ -403,6 +403,10 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 	dpc.fzModel.AddConstraint(IntEqConstraint, []string{varAtPos(sinkIntfcVarname, pathLength), endIntfcIdx, TrueValue})
 
 	// Finally, make sure a storage account is assigned iff there is a sink interface and it is non-virtual
+	if dpc.problemData.Context.Flow == taxonomy.WriteFlow && !dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
+		return // no need to allocate storage, write destination is known
+	}
+
 	noSaRequiredModCaps := []string{}
 	for modCapIdx, modCap := range dpc.modulesCapabilities {
 		if modCap.virtualSink || !modCap.hasSink {
@@ -616,6 +620,14 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		}
 		solution.DataPath = append(solution.DataPath, &resolvedEdge)
 		srcNode = sinkNode
+	}
+
+	if dpc.problemData.Context.Flow == taxonomy.WriteFlow { // reverse solution
+		for elementInd := 0; elementInd < len(solution.DataPath)/2; elementInd++ {
+			reversedInd := len(solution.DataPath) - elementInd - 1
+			solution.DataPath[elementInd], solution.DataPath[reversedInd] =
+				solution.DataPath[reversedInd], solution.DataPath[elementInd]
+		}
 	}
 
 	return solution, nil
