@@ -119,6 +119,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 		action[nameKey] = FilterAction
 		filterAction := make(map[string]interface{})
 		filterAction["columns"] = []string{"SSN"}
+		filterAction["query"] = "Country == 'United Kingdom'"
 		action[FilterAction] = filterAction
 
 		err := deserializeToTaxonomyAction(action, &actionOnCols)
