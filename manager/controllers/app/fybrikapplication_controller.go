@@ -41,6 +41,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
@@ -566,7 +567,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 				Destination:        req.DataDetails.ResourceMetadata.Geography,
 				ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 			}
-			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, nil, r.PolicyManager, appContext, &reqAction)
+			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+				r.PolicyManager, appContext, &reqAction)
 		}
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
 		reqAction := policymanager.RequestAction{
@@ -574,19 +576,25 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, nil, r.PolicyManager, appContext, &reqAction)
+		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
 		return err
 	}
-	var metadataFromFlowReq *datacatalog.ResourceMetadata
+	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
 	if req.Context.Requirements.FlowParams.IsNewDataSet {
 		if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
-			metadataFromFlowReq = req.Context.Requirements.FlowParams.ResourceMetadata.DeepCopy()
+			resMetadata = req.Context.Requirements.FlowParams.ResourceMetadata
 		} else {
-			metadataFromFlowReq = &datacatalog.ResourceMetadata{}
+			resMetadata = &datacatalog.ResourceMetadata{
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
+			}
 		}
+	} else {
+		// Use the existsing resource metadata if the asset is not new
+		resMetadata = &req.DataDetails.ResourceMetadata
 	}
 	for accountInd := range env.StorageAccounts {
 		region := env.StorageAccounts[accountInd].Spec.Region
@@ -595,14 +603,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        string(region),
 			ProcessingLocation: region,
 		}
-		if req.Context.Requirements.FlowParams.IsNewDataSet &&
-			metadataFromFlowReq.Geography == "" {
-			// having resource metadata not empty will prevent
-			// calling policy compiler in case it is a new asset
-			metadataFromFlowReq.Geography = string(region)
-		}
 
-		actions, err := LookupPolicyDecisions(req.Context.DataSetID, metadataFromFlowReq, r.PolicyManager, appContext, &reqAction)
+		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[region] = actions
 		} else if err.Error() != api.WriteNotAllowed {

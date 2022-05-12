@@ -19,7 +19,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -30,24 +29,12 @@ const (
 
 func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
-	var datasetResources *datacatalog.ResourceMetadata
-	tags := &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}}
-	if resourceMetadata != nil {
-		datasetResources = resourceMetadata
-		if datasetResources.Tags == nil {
-			datasetResources.Tags = tags
-		}
-	} else {
-		datasetResources = &datacatalog.ResourceMetadata{
-			Tags: tags,
-		}
-	}
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
 		Action:  *operation,
 		Resource: policymanager.Resource{
 			ID:       taxonomy.AssetID(datasetID),
-			Metadata: datasetResources.DeepCopy(),
+			Metadata: resourceMetadata.DeepCopy(),
 		},
 	}
 }
