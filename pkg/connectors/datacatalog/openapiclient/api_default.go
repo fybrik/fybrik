@@ -186,7 +186,7 @@ func (a *DefaultApiService) DeleteAsset(ctx context.Context) ApiDeleteAssetReque
 //  @return DeleteAssetResponse
 func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*DeleteAssetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
+		localVarHTTPMethod  = http.MethodDelete
 		localVarPostBody    interface{}
 		formFiles           []formFile
 		localVarReturnValue *DeleteAssetResponse

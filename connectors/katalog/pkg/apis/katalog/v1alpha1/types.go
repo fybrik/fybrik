@@ -31,8 +31,10 @@ type AssetSpec struct {
 
 // SecretRef is a reference to a local Kubernetes secret.
 type SecretRef struct {
-	// Name of the Secret resource (must exist in the same namespace)
+	// Name of the Secret resource
 	Name string `json:"name"`
+	// Namespace of the Secret resource. If it is empty then the asset namespace is used.
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -10,14 +10,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/kube"
+	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	oras "oras.land/oras-go/pkg/registry"
 )
 
 var (
@@ -49,10 +53,6 @@ func debugf(format string, v ...interface{}) {
 		format = fmt.Sprintf("[debug] %s\n", format)
 		_ = log.Output(2, fmt.Sprintf(format, v...))
 	}
-}
-
-func ChartRef(hostname, namespace, name, tagname string) string {
-	return fmt.Sprintf("%s/%s/%s:%s", hostname, namespace, name, tagname)
 }
 
 // Interface of a helm chart
@@ -171,12 +171,13 @@ func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
 		return chrt, nil
 	}
 	// Construct the packed chart path
-	chartRef, err := action.ParseReference(ref)
+	chartRef, err := parseReference(ref)
 	if err != nil {
 		return nil, err
 	}
-	_, chartName := filepath.Split(chartRef.Repo)
-	packedChartPath := chartPath + "/" + chartName + "-" + chartRef.Tag + ".tgz"
+	_, chartName := filepath.Split(chartRef.Repository)
+	packedChartPath := fmt.Sprintf("%s/%s-%s.tgz", chartPath, chartName, chartRef.Reference)
+
 	return loader.Load(packedChartPath)
 }
 
@@ -189,7 +190,6 @@ func (r *Impl) Install(chrt *chart.Chart, kubeNamespace, releaseName string, val
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.DisableOpenAPIValidation = true
 	return install.Run(chrt, vals)
 }
 
@@ -201,7 +201,6 @@ func (r *Impl) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, val
 	}
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.DisableOpenAPIValidation = true
 	return upgrade.Run(releaseName, chrt, vals)
 }
 
@@ -217,24 +216,29 @@ func (r *Impl) Status(kubeNamespace, releaseName string) (*release.Release, erro
 
 // RegistryLogin to docker registry v2
 func (r *Impl) RegistryLogin(hostname, username, password string, insecure bool) error {
-	cfg, err := getConfig("")
+	var settings = cli.New()
+	client, err := registry.NewClient(registry.ClientOptDebug(settings.Debug),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(settings.RegistryConfig),
+	)
 	if err != nil {
 		return err
 	}
-	login := action.NewRegistryLogin(cfg)
-	var buf bytes.Buffer
-	return login.Run(&buf, hostname, username, password, insecure)
+	return client.Login(hostname, registry.LoginOptBasicAuth(username, password),
+		registry.LoginOptInsecure(insecure))
 }
 
 // RegistryLogout to docker registry v2
 func (r *Impl) RegistryLogout(hostname string) error {
-	cfg, err := getConfig("")
+	var settings = cli.New()
+	client, err := registry.NewClient(registry.ClientOptDebug(settings.Debug),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(settings.RegistryConfig),
+	)
 	if err != nil {
 		return err
 	}
-	logout := action.NewRegistryLogout(cfg)
-	var buf bytes.Buffer
-	return logout.Run(&buf, hostname)
+	return client.Logout(hostname)
 }
 
 // Package helm chart from repo
@@ -255,7 +259,8 @@ func (r *Impl) Pull(ref, destination string) error {
 	if _, err := os.Stat(chartsMountPath + ref); err == nil {
 		return nil
 	}
-	chartRef, err := action.ParseReference(ref)
+
+	chartRef, err := parseReference(ref)
 	if err != nil {
 		return err
 	}
@@ -263,10 +268,21 @@ func (r *Impl) Pull(ref, destination string) error {
 	if err != nil {
 		return err
 	}
+
+	var settings = cli.New()
+	registryClient, err := registry.NewClient(registry.ClientOptDebug(settings.Debug),
+		registry.ClientOptWriter(os.Stdout),
+		registry.ClientOptCredentialsFile(settings.RegistryConfig),
+	)
+	if err != nil {
+		return err
+	}
+	cfg.RegistryClient = registryClient
 	client := action.NewPullWithOpts(action.WithConfig(cfg))
-	client.Version = chartRef.Tag
+	client.Version = chartRef.Reference
+	client.Settings = settings
 	client.DestDir = destination
-	_, err = client.Run("oci://" + chartRef.Repo)
+	_, err = client.Run("oci://" + chartRef.Registry + "/" + chartRef.Repository)
 	return err
 }
 
@@ -303,4 +319,30 @@ func (r *Impl) GetResources(kubeNamespace, releaseName string) ([]*unstructured.
 		}
 	}
 	return resources, nil
+}
+
+// parseReference will parse and validate the reference, and clean tags when
+// applicable tags are only cleaned when plus (+) signs are present, and are
+// converted to underscores (_) before pushing
+// See https://github.com/helm/helm/issues/10166
+// From https://github.com/helm/helm/blob/49819b4ef782e80b0c7f78c30bd76b51ebb56dc8/pkg/registry/util.go#L112
+func parseReference(raw string) (oras.Reference, error) {
+	// The sole possible reference modification is replacing plus (+) signs
+	// present in tags with underscores (_). To do this properly, we first
+	// need to identify a tag, and then pass it on to the reference parser
+	// NOTE: Passing immediately to the reference parser will fail since (+)
+	// signs are an invalid tag character, and simply replacing all plus (+)
+	// occurrences could invalidate other portions of the URI
+	parts := strings.Split(raw, ":")
+	if len(parts) > 1 && !strings.Contains(parts[len(parts)-1], "/") {
+		tag := parts[len(parts)-1]
+
+		if tag != "" {
+			// Replace any plus (+) signs with known underscore (_) conversion
+			newTag := strings.ReplaceAll(tag, "+", "_")
+			raw = strings.ReplaceAll(raw, tag, newTag)
+		}
+	}
+
+	return oras.ParseReference(raw)
 }

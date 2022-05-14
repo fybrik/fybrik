@@ -1,0 +1,15 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bucket-creds
+  namespace: fybrik-system
+type: Opaque
+stringData:
+  access_key: "ak"
+  accessKeyID: "ak"
+  secret_key: "sk"
+  secretAccessKey: "sk"
+

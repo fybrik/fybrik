@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Fybrik repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: fybrik/fybrik
           path: fybrik-repo
       - name: Checkout original Operate First repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: operate-first/apps
           path: operate-first-repo
@@ -32,7 +32,7 @@ jobs:
           popd
           rsync -a --include='*/' --include='*.yaml' --exclude='*' fybrik-repo/integration/operate-first/ operate-first-repo/cluster-scope/base
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           path: operate-first-repo
           signoff: true

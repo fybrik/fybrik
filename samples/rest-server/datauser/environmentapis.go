@@ -4,7 +4,6 @@
 package datauser
 
 import (
-	"log"
 	"net/http"
 	"os"
 
@@ -46,22 +45,10 @@ func EnvOptions(w http.ResponseWriter, r *http.Request) {
 // as well as info about the Fybrik control plane deployment assumptions - ex: Data Catalog in use
 func GetEnvInfo(w http.ResponseWriter, r *http.Request) {
 	var envInfo EnvironmentInfo
-
-	log.Println("In GetEnvInfo")
-
 	// Get the geography info from the environment variable
 	envInfo.Geography = os.Getenv("GEOGRAPHY")
 
 	// Get the namespace in which we are running
 	envInfo.Namespace = GetCurrentNamespace()
-
-	// Get the systems for which credentials need to be collected from the Fybrik control plane
-	// TODO - Get this from the Fybrik control plane.
-	envInfo.Systems = make(map[string][]string)
-	envInfo.Systems["Egeria"] = []string{"username"}
-
-	// Get the format for the data set identifier (specific to the data catalog)
-	envInfo.DataSetIDFormat = "{\"ServerName\":\"---\",\"AssetGuid\":\"---\"}"
-	log.Println("GetEnvInfo: geography = " + envInfo.Geography)
 	render.JSON(w, r, envInfo) // Return the environment info as json
 }

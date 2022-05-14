@@ -149,7 +149,7 @@ func TestCreateAsset(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		Credentials: "http://dummy-namespace:8200/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
+		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
@@ -174,19 +174,12 @@ func TestCreateAsset(t *testing.T) {
 		response := &datacatalog.CreateAssetResponse{}
 		err = json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(BeNil())
-		destAssetName2 := destCatalogID + "/" + destAssetName
-		g.Expect(&response.AssetID).To(BeEquivalentTo(&destAssetName2))
-
-		splittedID := strings.SplitN(destAssetName2, "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid destAssetName %s (must be in namespace/name format)", destAssetName)
-			c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
-		}
-		namespace, assetName := splittedID[0], splittedID[1]
+		assetName := response.AssetID
+		g.Expect(strings.HasPrefix(assetName, destAssetName)).To(BeTrue())
 
 		asset := &v1alpha1.Asset{}
 		if err := handler.client.Get(context.Background(),
-			types.NamespacedName{Namespace: namespace, Name: namespace + "/" + assetName}, asset); err != nil {
+			types.NamespacedName{Namespace: destCatalogID, Name: assetName}, asset); err != nil {
 			t.Log(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -253,7 +246,7 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 			Connection: s3Connection,
 			DataFormat: csvFormat,
 		},
-		Credentials: "http://dummy-namespace:8200/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
+		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 
 	// Create a fake client to mock API calls.
@@ -281,13 +274,9 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 		g.Expect(len(response.AssetID)).To(SatisfyAll(
 			BeNumerically(">", len(sourceAssetName))))
 		t.Log("response.AssetID: ", response.AssetID)
-		splittedID := strings.SplitN(response.AssetID, "/", 2)
-		if len(splittedID) != 2 {
-			errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", response.AssetID)
-			t.Log(errorMessage)
-			return
-		}
-		namespace, assetName := splittedID[0], splittedID[1]
+
+		assetName := response.AssetID
+		namespace := "fybrik-system"
 		g.Expect(assetName).Should(HavePrefix(FybrikAssetPrefix))
 		t.Log("new asset created with name: ", assetName)
 

@@ -63,3 +63,4 @@ pipeline/vault_cre*
 pipeline/custom-*
 
 dist/
+pkg/connectors/datacatalog/openapiclient/.openapi-generator/FILES

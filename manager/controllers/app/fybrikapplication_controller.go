@@ -27,8 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"fybrik.io/fybrik/pkg/vault"
-
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -45,6 +43,7 @@ import (
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 // FybrikApplicationReconciler reconciles a FybrikApplication object
@@ -210,7 +209,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 			// mark the bucket as persistent and register the asset
 			provisionedBucketRef, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
 			if !found {
-				message := "No copy has been created for the asset " + assetID + " required to be registered"
+				message := "No storage has been allocated for the asset " + assetID + " required to be registered"
 				setErrorCondition(applicationContext, assetID, message)
 				continue
 			}
@@ -218,8 +217,8 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				setErrorCondition(applicationContext, assetID, err.Error())
 				continue
 			}
-			// register the asset: experimental feature
-			if newAssetID, err := r.RegisterAsset(dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
+			// register the asset
+			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
 				applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
@@ -241,8 +240,8 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(ctx context.Context, a
 	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName)
 
 	// If the object has a scheduled deletion time, delete it and all resources it has created
-	if !applicationContext.Application.DeletionTimestamp.IsZero() {
-		// The object is being deleted
+	if !applicationContext.Application.DeletionTimestamp.IsZero() || (len(applicationContext.Application.Spec.Data) == 0) {
+		// The object is being deleted, or no datasets are defined
 		if hasFinalizer { // Finalizer was created when the object was created
 			// the finalizer is present - delete the allocated resources
 			if err := r.deleteExternalResources(applicationContext); err != nil {
@@ -340,9 +339,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 
 	if len(applicationContext.Application.Spec.Data) == 0 {
-		if err := r.deleteExternalResources(applicationContext); err != nil {
-			return ctrl.Result{}, err
-		}
 		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
 		return ctrl.Result{}, nil
 	}
@@ -652,6 +648,10 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		if labels == nil {
 			return []reconcile.Request{}
 		}
+		if !a.GetDeletionTimestamp().IsZero() {
+			// the owned resource is deleted - no updates should be sent
+			return []reconcile.Request{}
+		}
 		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
 		name, foundName := labels[api.ApplicationNameLabel]
 		if !foundNamespace || !foundName {
@@ -714,12 +714,16 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]api.FybrikStorageAccount, error) {
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*api.FybrikStorageAccount, error) {
 	var accountList api.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	return accountList.Items, nil
+	accounts := []*api.FybrikStorageAccount{}
+	for i := range accountList.Items {
+		accounts = append(accounts, accountList.Items[i].DeepCopy())
+	}
+	return accounts, nil
 }
 
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext,
@@ -734,9 +738,16 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
+		details := &api.DataStore{}
+		if info.Details != nil {
+			details = info.Details.DeepCopy()
+		}
+
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
-			DatasetRef: info.Storage.Name,
-			SecretRef:  info.Storage.SecretRef.Name,
+			DatasetRef:       info.Storage.Name,
+			SecretRef:        api.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+			Details:          details,
+			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
 		}
 	}
 	// check that the buckets have been created successfully using Dataset status

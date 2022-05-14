@@ -3,13 +3,18 @@
 
 package vault
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // The path of the Vault plugin to use to retrieve dataset credentials stored in kubernetes secret.
 // vault-plugin-secrets-kubernetes-reader plugin is used for this purpose and is enabled
 // in kubernetes-secrets path. (https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader)
 // TODO: pass the plugin path in fybrik-config ConfigMap
 const vaultPluginPath = "kubernetes-secrets"
+const secretPath = "/v1/" + vaultPluginPath + "/"
 
 // PathForReadingKubeSecret returns the path to Vault secret that holds dataset credentials
 // stored in kubernetes secret.
@@ -26,4 +31,22 @@ func PathForReadingKubeSecret(secretNamespace, secretName string) string {
 	// Construct the path to the secret in Vault that holds the dataset credentials
 	secretPath := fmt.Sprintf("%s%s?namespace=%s", pluginPath, secretName, secretNamespace)
 	return secretPath
+}
+
+// Given a path to Vault secret that holds dataset credentials
+// return the name of the secret and its namespace
+// for example, for vault secret path:
+// "/v1/kubernetes-secrets/my-secret?namespace=default"
+// the returned values will be my-secret and default
+func GetKubeSecretDetailsFromVaultPath(credentialsPath string) (string, string, error) {
+	str := strings.SplitAfter(credentialsPath, secretPath)
+	if str[0] == credentialsPath {
+		return "", "", errors.New("unexpected vault path format: wrong prefix " + credentialsPath)
+	}
+
+	parts := strings.Split(str[1], "?namespace=")
+	if len(parts) != 2 {
+		return "", "", errors.New("unexpected vault path format")
+	}
+	return parts[0], parts[1], nil
 }
