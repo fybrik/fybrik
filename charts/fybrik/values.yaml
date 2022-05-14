@@ -132,7 +132,7 @@ manager:
   dataPathMaxSize: "2"
 
   # Image name or a hub/image[:tag]
-  image: "manager"
+  image: "ghcr.io/rohithdv/manager:0.0.0"
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"
 
@@ -293,8 +293,7 @@ katalogConnector:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "katalog-connector"
-
+  image: "ghcr.io/rohithdv/katalog-connector:0.0.0"
   # Overrides global.imagePullPolicy
   imagePullPolicy: ""
 
@@ -367,8 +366,7 @@ opaConnector:
   connectionTimeout:
 
   # Image name or a hub/image[:tag]
-  image: "opa-connector"
-
+  image: "ghcr.io/rohithdv/opa-connector:0.0.0"
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: ""
 

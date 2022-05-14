@@ -11,4 +11,6 @@ Models/OperationType.md
 Models/ResourceColumn.md
 Models/ResourceDetails.md
 Models/ResourceMetadata.md
+Models/UpdateAssetRequest.md
+Models/UpdateAssetResponse.md
 README.md

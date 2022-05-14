@@ -11,5 +11,6 @@ func NewRouter(handler *Handler) *gin.Engine {
 	router.POST("/getAssetInfo", handler.getAssetInfo)
 	router.POST("/createAsset", handler.createAsset)
 	router.DELETE("/deleteAsset", handler.deleteAsset)
+	router.PUT("/updateAsset", handler.updateAsset)
 	return router
 }

@@ -177,3 +177,51 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &response)
 }
+
+// Enables deletion of assets to katalog.
+func (r *Handler) updateAsset(c *gin.Context) {
+	// Parse request
+	var request datacatalog.UpdateAssetRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in updateAsset"+err.Error())
+		return
+	}
+	logging.LogStructure("UpdateAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
+
+	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
+	if len(splittedID) != 2 {
+		errorMessage := fmt.Sprintf("DeleteAssetRequest has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+	namespace, name := splittedID[0], splittedID[1]
+
+	asset := &v1alpha1.Asset{}
+	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	errString := "Error during update asset! Error:"
+	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
+	if err != nil {
+		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
+		return
+	}
+
+	asset.Spec.Metadata = request.ResourceMetadata
+	asset.Spec.Details = request.Details
+	asset.Spec.SecretRef = v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace}
+
+	if err := r.client.Update(context.Background(), asset); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	response := datacatalog.UpdateAssetResponse{
+		Status: "Updation successful!",
+	}
+	r.log.Info().Msg(
+		"Sending response from Katalog Connector with updated asset ID: " + string(request.AssetID))
+
+	c.JSON(http.StatusOK, &response)
+}
