@@ -34,7 +34,6 @@ definitions:
       query:
         type: string
     required:
-      - columns
       - query
   AgeFilterAction:
     type: object
