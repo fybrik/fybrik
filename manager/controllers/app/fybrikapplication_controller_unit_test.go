@@ -585,17 +585,8 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
 }
 
-// XXXXX
-// Assumptions on response from connectors:
-// Datasets:
-// S3 dataset, no access is granted.
-// Db2 dataset, a copy is required.
-// S3 dataset, no copy is needed
-// Enforcement actions for the second dataset: redact
-// Enforcement action for the third dataset: Allow
-// Applied copy module db2->s3 supporting redact action
-// Result: plotter with a single blueprint is created successfully, a read module is applied once
-
+// Tests that the taxonomy is properly compiled
+// with the FilterAction transformation.
 func TestFilterAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
