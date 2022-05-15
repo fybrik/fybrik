@@ -586,7 +586,7 @@ func TestMultipleDatasets(t *testing.T) {
 }
 
 // Tests that the taxonomy is properly compiled
-// with the FilterAction transformation.
+// with the FilterAction transformation
 func TestFilterAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
@@ -646,9 +646,9 @@ func TestFilterAsset(t *testing.T) {
 	plotter := &v1alpha1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
-	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))    // 3 assets. 2 original and one implicit copy asset
-	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1)) // expect two templates
-	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))     // two flows. one for each valid asset
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))    // single asset
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1)) // expect one template
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))     // Single flow
 	g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/filter-dataset"))
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps).To(gomega.HaveLen(1))
