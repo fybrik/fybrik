@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.13">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.15">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.e411adfe.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.c382b1dc.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
@@ -896,6 +896,20 @@
           <li class="md-nav__item">
   <a href="#fybrikapplicationspecdataindexrequirementsflowparams" class="md-nav__link">
     FybrikApplication.spec.data[index].requirements.flowParams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]
   </a>
   
 </li>
@@ -2022,6 +2036,20 @@
           <li class="md-nav__item">
   <a href="#fybrikapplicationspecdataindexrequirementsflowparams" class="md-nav__link">
     FybrikApplication.spec.data[index].requirements.flowParams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]
   </a>
   
 </li>
@@ -3362,12 +3390,98 @@
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata">metadata</a></b></td>
+        <td>object</td>
+        <td>
+          Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>storageEstimate</b></td>
         <td>integer</td>
         <td>
           Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
           <br/>
             <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsflowparamsmetadata">FybrikApplication.spec.data[index].requirements.flowParams.metadata</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirementsflowparams">↩ Parent</a></sup></sup></p>
+<p>Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex">FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata">↩ Parent</a></sup></sup></p>
+<p>ResourceColumn represents a column in a tabular resource</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -6086,7 +6200,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.ed9748b7.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a6c66575.min.js"></script>
       
     
   </body>
