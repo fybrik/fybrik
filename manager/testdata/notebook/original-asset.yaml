@@ -26,6 +26,3 @@ spec:
       - name: oldbalanceOrg
         tags:
           sensitive: true
-      - name: newbalanceOrig
-        tags:
-          sensitive: true

@@ -362,10 +362,6 @@ opaConnector:
   # Defaults to the address of the deployed OPA server
   serverURL:
 
-  # Override GRPC connection timeout
-  # See `.global.connectionTimeout`.
-  connectionTimeout:
-
   # Image name or a hub/image[:tag]
   image: "opa-connector"
 
