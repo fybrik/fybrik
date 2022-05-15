@@ -42,7 +42,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 
 	creds := ""
 	if utils.IsVaultEnabled() {
-		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
+		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
 	}
 
 	request := datacatalog.CreateAssetRequest{
@@ -55,7 +55,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 
 	credentialPath := ""
 	if utils.IsVaultEnabled() {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	var err error

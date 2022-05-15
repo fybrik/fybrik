@@ -508,7 +508,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 			if !utils.IsVaultEnabled() {
 				log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
 			} else {
-				credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+				credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 			}
 		}
 		var response *datacatalog.GetAssetResponse
