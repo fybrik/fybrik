@@ -667,7 +667,7 @@ func TestFilterAsset(t *testing.T) {
 	filterAction, found := step.Parameters.Actions[0].AdditionalProperties.Items["FilterAction"]
 	g.Expect(found).To(gomega.Equal(true))
 	filterActionInterface := filterAction.(map[string]interface{})
-	g.Expect(filterActionInterface["query"]).To(gomega.Equal("Country == 'United Kingdom'"))
+	g.Expect(filterActionInterface["query"]).To(gomega.Equal("Country == 'UK'"))
 }
 
 // This test checks that a non-supported data store does not prevent a plotter from being created
