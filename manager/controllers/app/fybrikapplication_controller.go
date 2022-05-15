@@ -530,7 +530,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		response.DeepCopyInto(req.DataDetails)
 	} else if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
 		// Fill req.DataDetails with the metadata from the fybrikapplication
-		req.DataDetails.ResourceMetadata = *req.Context.Requirements.FlowParams.ResourceMetadata.DeepCopy()
+		req.DataDetails.ResourceMetadata = *req.Context.Requirements.FlowParams.ResourceMetadata
 	}
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
