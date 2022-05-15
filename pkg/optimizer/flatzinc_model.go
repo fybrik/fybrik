@@ -212,7 +212,7 @@ func (fzw *FlatZincModel) Clear() {
 func (fzw *FlatZincModel) Dump() (string, error) {
 	file, err := os.CreateTemp("", "DataPathModel.*.fzn")
 	if err != nil {
-		return "", fmt.Errorf("failed creating temp file %s: %w", file.Name(), err)
+		return "", fmt.Errorf("failed creating temp file: %w", err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
