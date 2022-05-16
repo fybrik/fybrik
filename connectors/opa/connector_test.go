@@ -11,12 +11,10 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -24,54 +22,41 @@ import (
 )
 
 func TestGetPoliciesDecisions(t *testing.T) {
+	resMetadata := datacatalog.ResourceMetadata{
+		Name: "assetName",
+		Columns: []datacatalog.ResourceColumn{
+			{
+				Name: "nameDest",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"PII": true,
+				}}},
+			},
+			{
+				Name: "nameOrig",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"SPI": true,
+				}}},
+			},
+		},
+	}
+
 	request := policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{
 			Properties: serde.Properties{Items: map[string]interface{}{
 				"env": "test",
 			}},
 		},
-		Action: policymanager.RequestAction{ActionType: taxonomy.ReadFlow},
-		Resource: policymanager.Resource{
-			ID: taxonomy.AssetID("assetID"),
-			Metadata: &datacatalog.ResourceMetadata{
-				Name: "assetName",
-			},
-		},
+		Action:   policymanager.RequestAction{ActionType: taxonomy.ReadFlow},
+		Resource: policymanager.Resource{ID: taxonomy.AssetID("assetID"), Metadata: &resMetadata},
 	}
-
-	// Catalog connector mock
-	expectedCatalogRequest := &datacatalog.GetAssetRequest{
-		AssetID:       "assetID",
-		OperationType: datacatalog.READ,
-	}
-	mockedCatalogResponse := &datacatalog.GetAssetResponse{
-		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name: "assetName",
-			Columns: []datacatalog.ResourceColumn{
-				{
-					Name: "nameDest",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"PII": true,
-					}}},
-				},
-				{
-					Name: "nameOrig",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"SPI": true,
-					}}},
-				},
-			},
-		},
-	}
-	catalogConnectorMock := createMockServer(t, "catalog", expectedCatalogRequest, mockedCatalogResponse)
-	defer catalogConnectorMock.Close()
 
 	// OPA mock
 	expectedOpaRequest := map[string]interface{}{"input": &policymanager.GetPolicyDecisionsRequest{
 		Context:  request.Context,
 		Action:   request.Action,
-		Resource: policymanager.Resource{ID: taxonomy.AssetID("assetID"), Metadata: &mockedCatalogResponse.ResourceMetadata},
+		Resource: policymanager.Resource{ID: taxonomy.AssetID("assetID"), Metadata: &resMetadata},
 	}}
+
 	mockedOpaResponse := &policymanager.GetPolicyDecisionsResponse{
 		DecisionID: "ABCD",
 		Result: []policymanager.ResultItem{
@@ -95,11 +80,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 	defer opaMock.Close()
 
 	// Create OPA connector controller for testing
-	catalogClient, err := clients.NewDataCatalog("mock", catalogConnectorMock.URL, time.Second)
-	if err != nil {
-		t.Fatal(err)
-	}
-	controller := NewConnectorController(opaMock.URL, catalogClient)
+	controller := NewConnectorController(opaMock.URL)
 
 	// Create a fake request to OPA connector
 	w := httptest.NewRecorder()

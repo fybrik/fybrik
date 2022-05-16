@@ -872,12 +872,108 @@ FlowParams include the requirements for particular data flows
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata">metadata</a></b></td>
+        <td>object</td>
+        <td>
+          Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>storageEstimate</b></td>
         <td>integer</td>
         <td>
           Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
           <br/>
             <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements.flowParams.metadata
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementsflowparams)</sup></sup>
+
+
+
+Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspecdataindexrequirementsflowparamsmetadata)</sup></sup>
+
+
+
+ResourceColumn represents a column in a tabular resource
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
         </td>
         <td>false</td>
       </tr></tbody>
