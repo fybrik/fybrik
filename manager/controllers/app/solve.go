@@ -16,8 +16,8 @@ import (
 func solve(env *optimizer.Environment, datasetInfo *optimizer.DataInfo, log *zerolog.Logger) (optimizer.Solution, error) {
 	cspPath := utils.GetCSPPath()
 	if cspPath != "" {
-		optimizer := optimizer.NewOptimizer(env, datasetInfo, cspPath)
-		return optimizer.Solve()
+		cspOptimizer := optimizer.NewOptimizer(env, datasetInfo, cspPath)
+		return cspOptimizer.Solve()
 	}
 	pathBuilder := PathBuilder{Log: log, Env: env, Asset: datasetInfo}
 	return pathBuilder.solve()
