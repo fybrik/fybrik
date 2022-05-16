@@ -59,6 +59,10 @@ func (m *FileMonitor) Run(watcher *fsnotify.Watcher) {
 				if !ok {
 					continue
 				}
+				// not watching chmod event
+				if event.Op == fsnotify.Chmod {
+					continue
+				}
 				m.Log.Info().Msg("Event: " + event.String())
 				m.Monitor()
 			case err, ok := <-watcher.Errors:
