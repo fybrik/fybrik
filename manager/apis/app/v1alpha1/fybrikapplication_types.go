@@ -28,6 +28,11 @@ type FlowRequirements struct {
 	// A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
 	// +optional
 	IsNewDataSet bool `json:"isNewDataSet,omitempty"`
+
+	// Source asset metadata like asset name, owner, geography, etc
+	// Relevant when writing new asset.
+	// +optional
+	ResourceMetadata *datacatalog.ResourceMetadata `json:"metadata,omitempty"`
 }
 
 // DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)

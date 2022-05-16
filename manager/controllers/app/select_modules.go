@@ -115,13 +115,11 @@ func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 			continue
 		}
 		// query the policy manager whether WRITE operation is allowed
-		// not relevant for new datasets
-		if !p.Asset.Context.Requirements.FlowParams.IsNewDataSet {
-			actions, found = p.Asset.StorageRequirements[account.Spec.Region]
-			if !found {
-				continue
-			}
+		actions, found = p.Asset.StorageRequirements[account.Spec.Region]
+		if !found {
+			continue
 		}
+
 		// add the selected storage account region
 		element.StorageAccount = account.Spec
 		break
