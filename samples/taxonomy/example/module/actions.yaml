@@ -3,6 +3,8 @@ definitions:
     oneOf:
       - $ref: "#/definitions/RedactAction"
       - $ref: "#/definitions/RemoveAction"
+      - $ref: "#/definitions/FilterAction"
+      - $ref: "#/definitions/AgeFilterAction"
       - $ref: "#/definitions/Deny"
   RedactAction:
     type: object
@@ -20,6 +22,28 @@ definitions:
         items:
           type: string
         type: array
+    required:
+      - columns
+  FilterAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+      query:
+        type: string
+    required:
+      - query
+  AgeFilterAction:
+    type: object
+    properties:
+      columns:
+        items:
+          type: string
+        type: array
+      age:
+        type: integer
     required:
       - columns
   Deny:
