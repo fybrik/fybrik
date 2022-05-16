@@ -4,7 +4,6 @@ include $(ROOT_DIR)/Makefile.env
 .PHONY: test
 test: *.go
 	go test -v
-	CSP_PATH=$(TOOLBIN)/fzn-or-tools go test -v
 
 DEBUG := ./debug.out
 
