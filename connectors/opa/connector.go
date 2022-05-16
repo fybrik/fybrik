@@ -13,7 +13,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/rs/zerolog"
 
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
@@ -25,12 +27,14 @@ const (
 type ConnectorController struct {
 	OpaServerURL string
 	OpaClient    *retryablehttp.Client
+	Log          zerolog.Logger
 }
 
 func NewConnectorController(opaServerURL string) *ConnectorController {
 	return &ConnectorController{
 		OpaServerURL: opaServerURL,
 		OpaClient:    retryablehttp.NewClient(),
+		Log:          logging.LogInit(logging.CONNECTOR, "opa-connector"),
 	}
 }
 
@@ -41,7 +45,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	logging.LogStructure("GetPoliciesDecisions object received:", request, &r.Log, zerolog.DebugLevel, false, false)
 	// Add "input" hierarchy
 	inputStruct := map[string]interface{}{"input": &request}
 	// Marshal request as JSON
@@ -79,6 +83,8 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	r.Log.Info().Msg(
+		"Sending response from opa connector with created asset ID: " + string(request.Resource.ID))
 
 	c.JSON(http.StatusOK, response)
 }
