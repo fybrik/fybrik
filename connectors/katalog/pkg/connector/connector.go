@@ -190,7 +190,7 @@ func (r *Handler) updateAsset(c *gin.Context) {
 
 	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
 	if len(splittedID) != 2 {
-		errorMessage := fmt.Sprintf("DeleteAssetRequest has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
+		errorMessage := fmt.Sprintf("UpdateAssetRequest has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
 		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
