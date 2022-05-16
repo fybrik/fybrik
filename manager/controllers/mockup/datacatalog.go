@@ -46,22 +46,19 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 }
 
 func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
-	// TODO
-	// will be provide a proper implementation once the implementation of CreateAsset in katalog-connector
+	// TODO: will be provided a proper implementation once the implementation of CreateAsset in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.CreateAssetResponse{AssetID: "testAssetID"}, nil
 }
 
 func (d *DataCatalogDummy) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
-	// TODO
-	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
+	// TODO: will be provided a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.DeleteAssetResponse{Status: "DeleteAssetInfo not implemented in DataCatalogDummy"}, nil
 }
 
 func (m *DataCatalogDummy) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
-	// TODO
-	// will be provide a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
+	// TODO: will be provided a proper implementation once the implementation of DeleteAssetInfo in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
 	return &datacatalog.UpdateAssetResponse{Status: "UpdateAssetInfo not implemented in DataCatalogDummy"}, nil
 }
