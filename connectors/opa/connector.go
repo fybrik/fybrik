@@ -14,8 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-retryablehttp"
 
-	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
@@ -25,16 +23,14 @@ const (
 )
 
 type ConnectorController struct {
-	OpaServerURL  string
-	OpaClient     *retryablehttp.Client
-	CatalogClient clients.DataCatalog
+	OpaServerURL string
+	OpaClient    *retryablehttp.Client
 }
 
-func NewConnectorController(opaServerURL string, catalogClient clients.DataCatalog) *ConnectorController {
+func NewConnectorController(opaServerURL string) *ConnectorController {
 	return &ConnectorController{
-		OpaServerURL:  opaServerURL,
-		OpaClient:     retryablehttp.NewClient(),
-		CatalogClient: catalogClient,
+		OpaServerURL: opaServerURL,
+		OpaClient:    retryablehttp.NewClient(),
 	}
 }
 
@@ -45,20 +41,6 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Get asset metadata from catalog connector
-	requestToCatalog := &datacatalog.GetAssetRequest{
-		AssetID:       request.Resource.ID,
-		OperationType: datacatalog.READ,
-	}
-	assetInfo, err := r.CatalogClient.GetAssetInfo(requestToCatalog, c.GetHeader(headerCredentials))
-	if err != nil {
-		// TODO: better error propagation
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Enrich request with catalog information
-	request.Resource.Metadata = &assetInfo.ResourceMetadata
 
 	// Add "input" hierarchy
 	inputStruct := map[string]interface{}{"input": &request}

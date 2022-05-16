@@ -20,8 +20,8 @@ import (
 // Returns:
 // - an error if happened
 // - the new asset identifier
-func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string, info *app.DatasetDetails,
-	input *app.FybrikApplication) (string, error) {
+func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string,
+	info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
 	if info.Details != nil {
@@ -35,6 +35,11 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	} else {
 		resourceMetadata.Name = assetID
 	}
+	// Update the Geography with the allocated storage region
+	if info.ResourceMetadata != nil {
+		resourceMetadata.Geography = info.ResourceMetadata.Geography
+	}
+
 	creds := ""
 	if utils.IsVaultEnabled() {
 		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)

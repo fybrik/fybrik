@@ -41,9 +41,23 @@
       "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
       "type": "object",
       "properties": {
+        "flowParams": {
+          "$ref": "#/definitions/FlowRequirements",
+          "description": "FlowParams include the requirements for particular data flows"
+        },
         "interface": {
           "$ref": "taxonomy.json#/definitions/Interface",
           "description": "Interface indicates the protocol and format expected by the data user"
+        }
+      }
+    },
+    "FlowRequirements": {
+      "description": "FlowRequirements include the requirements specific to the flow Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters",
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "$ref": "datacatalog.json#/definitions/ResourceMetadata",
+          "description": "Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset."
         }
       }
     }
