@@ -9,7 +9,9 @@ import (
 	"log"
 	"os"
 	"path"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -364,6 +366,8 @@ func mapValuesSortedByKey(mapToSort map[string]Declares) []Declares {
 	return res
 }
 
+// Given a slice of identifiers/constants, returns either a FlatZinc array "[a1, a2, ..., an]"
+// or a FlatZinc set "{a1, a2, ..., an}" made from these identifiers/constants
 func fznCompoundLiteral(values []string, isSet bool) string {
 	jointValues := strings.Join(values, ElementSeparator)
 	if isSet {
@@ -377,4 +381,31 @@ func fznRangeVarType(rangeStart, rangeEnd int) string {
 		rangeEnd = rangeStart
 	}
 	return fmt.Sprintf("%d..%d", rangeStart, rangeEnd)
+}
+
+// given an arbitrary string, returns a legal FlatZinc identifier, based on this string
+// with illegal characters replaced by their ASCII value
+func sanitizeFznIdentifier(identifier string) string {
+	if identifier == "" {
+		return "empty"
+	}
+
+	match, _ := regexp.MatchString("^[A-Za-z][A-Za-z0-9_]+$", identifier)
+	if match {
+		return identifier
+	}
+
+	var resStr strings.Builder
+	for i := 0; i < len(identifier); i++ {
+		ch := identifier[i]
+		if ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') {
+			resStr.WriteByte(ch)
+		} else if (('0' <= ch && ch <= '9') || ch == '_') && i > 0 { // An identifier must not BEGIN with numerics or '_'
+			resStr.WriteByte(ch)
+		} else {
+			resStr.WriteString("A" + strconv.Itoa(int(ch)))
+		}
+	}
+
+	return resStr.String()
 }

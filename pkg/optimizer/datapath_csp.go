@@ -469,6 +469,9 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 		if err != nil {
 			return err
 		}
+		if goalVarname == "" {
+			continue
+		}
 		floatWeight, err := strconv.ParseFloat(weight, 64)
 		if err != nil {
 			return err
@@ -496,13 +499,17 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 	}
 
 	attribute := goal.Attribute
-	goalVarname := fmt.Sprintf("goal%s", attribute)
+	sanitizedAttr := sanitizeFznIdentifier(string(attribute))
+	goalVarname := fmt.Sprintf("goal%s", sanitizedAttr)
 	dpc.fzModel.AddVariableArray(goalVarname, IntType, pathLen, true, false)
 
 	goalVarNames := []string{}
 	selectorVar, paramArray, err := dpc.getAttributeMapping(attribute)
 	if err != nil {
 		return "", "", err
+	}
+	if selectorVar == "" {
+		return "", "", nil // TODO: handle (this can be an attribute like bandwidth)
 	}
 	for pos := 1; pos <= pathLen; pos++ {
 		selectorVarAtPos := varAtPos(selectorVar, pos)
@@ -512,7 +519,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{selectorVarAtPos, paramArray, goalAtPos}, definesAnnotation)
 	}
 
-	goalSumVarname := fmt.Sprintf("goal%sSum", attribute)
+	goalSumVarname := fmt.Sprintf("goal%sSum", sanitizedAttr)
 	dpc.fzModel.AddVariable(goalSumVarname, IntType, true, false)
 	dpc.setVarAsWeightedSum(goalSumVarname, goalVarNames, arrayOfSameInt(1, pathLen))
 	return goalSumVarname, weight, nil
@@ -547,7 +554,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			}
 			resArray = append(resArray, infraElement.Value)
 		}
-	default: // should be taxonomy.Module
+	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
 			infraElement := dpc.env.AttributeManager.GetAttribute(attr, modCap.module.Name)
@@ -556,8 +563,13 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			}
 			resArray = append(resArray, infraElement.Value)
 		}
+	default:
+		return "", "", nil // TODO: handle (this can be bandwidth for example)
 	}
-	paramName := varName + string(attr)
+	if len(resArray) < 1 {
+		return "", "", nil
+	}
+	paramName := varName + sanitizeFznIdentifier(string(attr))
 	dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
 	return varName, paramName, nil
 }
