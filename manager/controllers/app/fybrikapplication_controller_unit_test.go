@@ -585,6 +585,82 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
 }
 
+// Tests that the taxonomy is properly compiled
+// with the FilterAction transformation
+func TestFilterAsset(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	application := &v1alpha1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []v1alpha1.DataContext{
+		{
+			DataSetID:    "s3/filter-dataset",
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		},
+	}
+	application.SetGeneration(1)
+	application.SetUID("23")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet-filter.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = utils.GetControllerNamespace()
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &v1alpha1.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))    // single asset
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1)) // expect one template
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))     // Single flow
+	g.Expect(plotter.Spec.Flows[0].AssetID).To(gomega.Equal("s3/filter-dataset"))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(1))
+	step := plotter.Spec.Flows[0].SubFlows[0].Steps[0][0]
+	g.Expect(step.Parameters.Actions).To(gomega.HaveLen(1))
+	filterAction, found := step.Parameters.Actions[0].AdditionalProperties.Items["FilterAction"]
+	g.Expect(found).To(gomega.Equal(true))
+	filterActionInterface := filterAction.(map[string]interface{})
+	g.Expect(filterActionInterface["query"]).To(gomega.Equal("Country == 'UK'"))
+}
+
 // This test checks that a non-supported data store does not prevent a plotter from being created
 func TestReadyAssetAfterUnsupported(t *testing.T) {
 	t.Parallel()

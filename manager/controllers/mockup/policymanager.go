@@ -19,6 +19,7 @@ import (
 const (
 	DenyAction   = "Deny"
 	RedactAction = "RedactAction"
+	FilterAction = "FilterAction"
 )
 
 // MockPolicyManager is a mock for PolicyManager interface used in tests
@@ -112,6 +113,21 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 			respResult = append(respResult, policyManagerResult)
 		}
 
+	case "filter-dataset":
+		actionOnCols := taxonomy.Action{}
+		action := make(map[string]interface{})
+		action[nameKey] = FilterAction
+		filterAction := make(map[string]interface{})
+		filterAction["query"] = "Country == 'UK'"
+		action[FilterAction] = filterAction
+
+		err := deserializeToTaxonomyAction(action, &actionOnCols)
+		if err != nil {
+			log.Print("error in deserializeToTaxonomyAction for scenario filter-dataset:", err)
+			return nil, err
+		}
+		policyManagerResult.Action = actionOnCols
+		respResult = append(respResult, policyManagerResult)
 	default:
 		actionOnCols := taxonomy.Action{}
 		action := make(map[string]interface{})

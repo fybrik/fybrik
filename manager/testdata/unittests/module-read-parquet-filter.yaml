@@ -1,0 +1,28 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1alpha1
+kind: FybrikModule
+metadata:
+  name: read-parquet
+  namespace: fybrik-system
+spec:
+  chart:
+    name:  ghcr.io/fybrik/fybrik-template:0.1.0
+  type: service
+  capabilities:
+    - capability: read
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: read-path.{{ .Release.Name}}.{{ .Release.Namespace }}
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+      - source:
+          protocol: s3
+          dataformat: parquet
+      actions:
+      - name: FilterAction
