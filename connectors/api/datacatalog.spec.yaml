@@ -123,4 +123,8 @@ paths:
                   $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/UpdateAssetResponse"
           '400':
             description: Bad request - server cannot process the request due to client error
+          '404':
+            description: id not found
+          '401':
+            description: Unauthorized
 

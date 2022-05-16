@@ -202,9 +202,9 @@ func (r *Handler) updateAsset(c *gin.Context) {
 		return
 	}
 
-	errString := "Error during update asset! Error:"
 	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
 	if err != nil {
+		errString := "Error obtaining a secret with credentials."
 		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
 		return
 	}
