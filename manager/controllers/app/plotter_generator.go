@@ -276,8 +276,8 @@ func (p *PlotterGenerator) handleNewAsset(item *optimizer.DataInfo, selection *o
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item *optimizer.DataInfo, application *v1alpha1.FybrikApplication, selection *optimizer.Solution,
-	plotterSpec *v1alpha1.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *optimizer.DataInfo, application *v1alpha1.FybrikApplication,
+	selection *optimizer.Solution, plotterSpec *v1alpha1.PlotterSpec) error {
 	var err error
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
 	datasetID := item.Context.DataSetID
