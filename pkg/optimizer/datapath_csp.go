@@ -472,9 +472,12 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 		if goalVarname == "" {
 			continue
 		}
-		floatWeight, err := strconv.ParseFloat(weight, 64)
-		if err != nil {
-			return err
+		floatWeight := 1.
+		if weight != "" {
+			floatWeight, err = strconv.ParseFloat(weight, 64)
+			if err != nil {
+				return err
+			}
 		}
 		goalVarnames = append(goalVarnames, goalVarname)
 		weights = append(weights, strconv.Itoa(int(floatWeight*floatToIntRatio)))
@@ -494,7 +497,7 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 // Returns the variable containing the goal's value and its relative weight (as a string)
 func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimization, pathLen int) (string, string, error) {
 	weight := goal.Weight
-	if goal.Directive == adminconfig.Maximize {
+	if goal.Directive == adminconfig.Maximize && weight != "" {
 		weight = "-" + weight
 	}
 
@@ -550,7 +553,10 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 		for _, sa := range dpc.env.StorageAccounts {
 			infraElement := dpc.env.AttributeManager.GetAttribute(attr, sa.Name)
 			if infraElement == nil {
-				return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+				infraElement = dpc.env.AttributeManager.GetAttribute(attr, sa.GenerateName)
+				if infraElement == nil {
+					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+				}
 			}
 			resArray = append(resArray, infraElement.Value)
 		}
