@@ -78,18 +78,15 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 
 	dpCSP.fzModel.AddHeaderComment("Encoding of interfaces:")
 	for intfc, intfcIdx := range dpCSP.interfaceIdx {
-		comment = fmt.Sprintf("%d - Protocol: %s, DataFormat: %s", intfcIdx, intfc.Protocol, intfc.DataFormat)
-		dpCSP.fzModel.AddHeaderComment(comment)
+		dpCSP.fzModel.AddHeaderComment(encodingComment(intfcIdx, fmt.Sprintf("%v", intfc)))
 	}
 	dpCSP.fzModel.AddHeaderComment("Encoding of clusters:")
 	for clusterIdx, cluster := range dpCSP.env.Clusters {
-		comment = fmt.Sprintf("%d - %s", clusterIdx+1, cluster.Name)
-		dpCSP.fzModel.AddHeaderComment(comment)
+		dpCSP.fzModel.AddHeaderComment(encodingComment(clusterIdx+1, cluster.Name))
 	}
 	dpCSP.fzModel.AddHeaderComment("Encoding of storage accounts:")
 	for saIdx, sa := range dpCSP.env.StorageAccounts {
-		comment = fmt.Sprintf("%d - %s", saIdx+1, sa.Name)
-		dpCSP.fzModel.AddHeaderComment(comment)
+		dpCSP.fzModel.AddHeaderComment(encodingComment(saIdx+1, sa.Name))
 	}
 	return &dpCSP
 }
@@ -474,7 +471,7 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 		}
 		floatWeight := 1.
 		if weight != "" {
-			floatWeight, err = strconv.ParseFloat(weight, 64)
+			floatWeight, err = strconv.ParseFloat(weight, 64) //nolint:revive,gomnd // Ignore magic number 64
 			if err != nil {
 				return err
 			}
@@ -662,6 +659,10 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 }
 
 // ----- helper functions -----
+
+func encodingComment(index int, encodedVal string) string {
+	return fmt.Sprintf("%d - %s", index, encodedVal)
+}
 
 func getActionVarname(action taxonomy.Action) string {
 	return fmt.Sprintf(actionVarname, action.Name)
