@@ -65,6 +65,7 @@ test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: pre-test
 	go test -v ./...
+	CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools go test -v ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

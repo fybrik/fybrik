@@ -41,6 +41,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/optimizer"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
@@ -370,9 +371,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	var requirements []DataInfo
+	var requirements []optimizer.DataInfo
 	for _, dataset := range applicationContext.Application.Spec.Data {
-		req := DataInfo{
+		req := optimizer.DataInfo{
 			Context:             dataset.DeepCopy(),
 			DataDetails:         &datacatalog.GetAssetResponse{},
 			StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
@@ -422,7 +423,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	return ctrl.Result{}, nil
 }
 
-func (r *FybrikApplicationReconciler) Environment() (*Environment, error) {
+func (r *FybrikApplicationReconciler) Environment() (*optimizer.Environment, error) {
 	// get deployed modules
 	moduleMap, err := r.GetAllModules()
 	if err != nil {
@@ -443,7 +444,7 @@ func (r *FybrikApplicationReconciler) Environment() (*Environment, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Environment{
+	return &optimizer.Environment{
 		Modules:          moduleMap,
 		Clusters:         clusters,
 		StorageAccounts:  accounts,
@@ -496,8 +497,8 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 		datasetID, allErrs)
 }
 
-func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContext ApplicationContext,
-	workloadCluster multicluster.Cluster, env *Environment) error {
+func (r *FybrikApplicationReconciler) constructDataInfo(req *optimizer.DataInfo, appContext ApplicationContext,
+	workloadCluster multicluster.Cluster, env *optimizer.Environment) error {
 	// Call the DataCatalog service to get info about the dataset
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
@@ -555,7 +556,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 }
 
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
-	req *DataInfo, appContext ApplicationContext, env *Environment) error {
+	req *optimizer.DataInfo, appContext ApplicationContext, env *optimizer.Environment) error {
 	var err error
 	switch configEvaluatorInput.Request.Usage {
 	case taxonomy.WriteFlow:
@@ -804,8 +805,8 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	return true, nil
 }
 
-func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *Environment,
-	requirements []DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
+func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *optimizer.Environment,
+	requirements []optimizer.DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
 	plotterGen := &PlotterGenerator{
 		Client:             r.Client,
 		Log:                applicationContext.Log,

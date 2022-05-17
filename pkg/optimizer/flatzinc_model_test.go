@@ -4,19 +4,25 @@
 package optimizer
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
 
 func TestWriteModel(t *testing.T) {
 	myWriter := NewFlatZincModel()
-	myWriter.AddParam(1, "pi", "float", "3.1415")
-	myWriter.AddParam(7, "fib", "int", "[1, 1, 2, 3, 5, 8, 13]")
-	myWriter.AddVariable(1, "y", "int", "")
-	myWriter.AddVariable(3, "y3", "int", "", "mip2", "mip3")
+	myWriter.AddHeaderComment("hello")
+	myWriter.AddHeaderComment("this is a test")
+	myWriter.AddParam("pi", "float", "3.1415")
+	myWriter.AddParamArray("fib", "int", 7, "[1, 1, 2, 3, 5, 8, 13]")
+	myWriter.AddVariable("y", "int", false, false)
+	myWriter.AddVariableArray("y3", "int", 3, false, true)
 	myWriter.AddConstraint("int_le", []string{"0", "x"}, "domain")
 	myWriter.SetSolveTarget(Minimize, "x", "int_search(xs, input_order, indomain_min, complete)")
-	err := myWriter.Dump("test.fzn")
+	fileName, err := myWriter.Dump()
+	if fileName != "" {
+		os.Remove(fileName)
+	}
 	if err != nil {
 		t.Errorf("Failed writing FlatZinc file: %s ", err)
 	}
@@ -43,7 +49,7 @@ var test1SolutionExpected = []CPSolution{
 
 func TestReadingResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadSolutions("testdata/test1.fzn_solution")
+	res, err := myReader.ReadSolutionsFromFile("testdata/test1.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -54,7 +60,7 @@ func TestReadingResults(t *testing.T) {
 
 func TestReadingBestResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadBestSolution("testdata/test1.fzn_solution")
+	res, err := myReader.ReadBestSolutionFromFile("testdata/test1.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -66,7 +72,7 @@ func TestReadingBestResults(t *testing.T) {
 
 func TestReadingUNSATResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadSolutions("testdata/unsat.fzn_solution")
+	res, err := myReader.ReadSolutionsFromFile("testdata/unsat.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -77,7 +83,7 @@ func TestReadingUNSATResults(t *testing.T) {
 
 func TestReadingBestUNSATResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	res, err := myReader.ReadBestSolution("testdata/unsat.fzn_solution")
+	res, err := myReader.ReadBestSolutionFromFile("testdata/unsat.fzn_solution")
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -88,7 +94,7 @@ func TestReadingBestUNSATResults(t *testing.T) {
 
 func TestReadingUnknownResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("testdata/unknown.fzn_solution")
+	_, err := myReader.ReadSolutionsFromFile("testdata/unknown.fzn_solution")
 	if err == nil {
 		t.Errorf("Expecting an error when result is unknown")
 	}
@@ -96,7 +102,7 @@ func TestReadingUnknownResults(t *testing.T) {
 
 func TestReadingBadResults(t *testing.T) {
 	myReader := NewFlatZincModel()
-	_, err := myReader.ReadSolutions("testdata/bad.fzn_solution")
+	_, err := myReader.ReadSolutionsFromFile("testdata/bad.fzn_solution")
 	if err == nil {
 		t.Errorf("Expected a parse error on an ill-formatted file")
 	}
