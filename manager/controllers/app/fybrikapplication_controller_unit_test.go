@@ -965,8 +965,11 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
 	g.Expect(application.Status.ProvisionedStorage).To(gomega.BeEmpty())
-	// check errors
-	g.Expect(getErrorMessages(application)).NotTo(gomega.BeEmpty())
+	// Expect Deny condition
+	cond := application.Status.AssetStates[assetName].Conditions[DenyConditionIndex]
+	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
+	g.Expect(cond.Message).To(gomega.ContainSubstring(v1alpha1.WriteNotAllowed))
+	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
 
 // This test checks the ingest scenario

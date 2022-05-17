@@ -611,6 +611,13 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			return err
 		}
 	}
+	// write is denied to all accounts, return Deny for write and copy flows
+	if len(req.StorageRequirements) == 0 {
+		if (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
+			(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow) {
+			return errors.New(api.WriteNotAllowed)
+		}
+	}
 	return nil
 }
 
