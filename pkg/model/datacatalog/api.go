@@ -55,13 +55,12 @@ type DeleteAssetResponse struct {
 }
 
 type UpdateAssetRequest struct {
-	// The destination asset id in which the asset will be updated based on the information provided
+	// The id of the dataset to be updated based on the information provided
 	// in ResourceMetadata and ResourceDetails field
-	// Asset ID of the to-be updated asset
 	AssetID taxonomy.AssetID `json:"assetID"`
-	// Source asset metadata like asset name, owner, geography, etc
+	// Asset metadata like asset name, owner, geography, etc
 	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`
-	// Source asset details like connection and data format
+	// Asset details like connection and data format
 	Details ResourceDetails `json:"details"`
 	// +kubebuilder:validation:Optional
 	// The vault plugin path where the destination data credentials will be stored as kubernetes secrets

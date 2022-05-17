@@ -183,7 +183,7 @@
       "properties": {
         "assetID": {
           "$ref": "taxonomy.json#/definitions/AssetID",
-          "description": "The destination asset id in which the asset will be updated based on the information provided in ResourceMetadata and ResourceDetails field Asset ID of the to-be updated asset"
+          "description": "The id of the dataset to be updated based on the information provided in ResourceMetadata and ResourceDetails field"
         },
         "credentials": {
           "description": "The vault plugin path where the destination data credentials will be stored as kubernetes secrets",
@@ -191,11 +191,11 @@
         },
         "details": {
           "$ref": "#/definitions/ResourceDetails",
-          "description": "Source asset details like connection and data format"
+          "description": "Asset details like connection and data format"
         },
         "resourceMetadata": {
           "$ref": "#/definitions/ResourceMetadata",
-          "description": "Source asset metadata like asset name, owner, geography, etc"
+          "description": "Asset metadata like asset name, owner, geography, etc"
         }
       }
     },
