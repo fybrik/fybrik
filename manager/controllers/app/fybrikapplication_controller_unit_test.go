@@ -63,17 +63,16 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 	log := logging.LogInit("test", "ConfigPolicyEvaluator")
 	// environment: cluster-metadata configmap
 	_ = cl.Create(context.Background(), createClusterMetadata())
-	query, err := adminconfig.PrepareQuery()
-	if err != nil {
-		log.Error().Err(err).Msg("could not compile a query")
-		return nil
-	}
 	infrastructureManager, err := infrastructure.NewAttributeManager()
 	if err != nil {
 		log.Error().Err(err).Msg("unable to get infrastructure attributes")
 		return nil
 	}
-
+	evaluator, err := adminconfig.NewRegoPolicyEvaluator()
+	if err != nil {
+		log.Error().Err(err).Msg("unable to compile policies")
+		return nil
+	}
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	return &FybrikApplicationReconciler{
 		Client:        cl,
@@ -87,7 +86,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 		},
 		ClusterManager:  &mockup.ClusterLister{},
 		Provision:       &storage.ProvisionTest{},
-		ConfigEvaluator: adminconfig.NewRegoPolicyEvaluator(query),
+		ConfigEvaluator: evaluator,
 		Infrastructure:  infrastructureManager,
 	}
 }
