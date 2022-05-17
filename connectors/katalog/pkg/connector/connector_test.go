@@ -374,6 +374,7 @@ func TestCreateAndUpdateAsset(t *testing.T) {
 	response := &datacatalog.CreateAssetResponse{}
 	err = json.Unmarshal(w.Body.Bytes(), response)
 	g.Expect(err).To(BeNil())
+	g.Expect(response.AssetID).ShouldNot(BeEmpty())
 	g.Expect(len(response.AssetID)).To(SatisfyAll(
 		BeNumerically(">", len(destAssetName))))
 	t.Log("response.AssetID: ", response.AssetID)
