@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-	emperror "emperror.dev/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,7 +42,9 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.GetAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		errString := "Error during ShouldBindJSON in getAssetInfo "
+		r.log.Info().Msg(errString + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": errString})
 		return
 	}
 
@@ -57,7 +58,9 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errString := "Error during ShouldBindJSON in getAssetInfo "
+		r.log.Info().Msg(errString + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errString})
 		return
 	}
 
@@ -91,21 +94,25 @@ func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in createAsset"+err.Error())
+		errString := "Error during ShouldBindJSON in createAsset."
+		r.log.Info().Msg(errString + err.Error())
+		r.reportError(c, http.StatusBadRequest, errString)
 		return
 	}
 
 	logging.LogStructure("CreateAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
 
 	if request.DestinationCatalogID == "" {
-		r.reportError(c, http.StatusBadRequest, "Invalid DestinationCatalogID in request")
+		errString := "Invalid DestinationCatalogID in request."
+		r.log.Info().Msg(errString)
+		r.reportError(c, http.StatusBadRequest, errString)
 		return
 	}
 
-	errString := "Error during create asset! Error:"
 	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
 	if err != nil {
-		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
+		r.log.Info().Msg("Error getting kube secret from vaultpath: " + err.Error())
+		r.reportError(c, http.StatusInternalServerError, "Error getting kube secret from vaultpath")
 		return
 	}
 
@@ -127,7 +134,8 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	err = r.client.Create(context.Background(), asset)
 	if err != nil {
-		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
+		r.log.Info().Msg("Error getting creating asset: " + err.Error())
+		r.reportError(c, http.StatusInternalServerError, "Error during create asset.")
 		return
 	}
 	logging.LogStructure("Created Asset: ", asset, &r.log, zerolog.DebugLevel, false, false)
@@ -146,7 +154,9 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.DeleteAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in deleteAsset"+err.Error())
+		errString := "Error during ShouldBindJSON in deleteAsset "
+		r.log.Info().Msg(errString + err.Error())
+		r.reportError(c, http.StatusBadRequest, errString+err.Error())
 		return
 	}
 	logging.LogStructure("DeleteAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
@@ -161,12 +171,14 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.log.Info().Msg("Error getting asset information: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting asset information"})
 		return
 	}
 
 	if err := r.client.Delete(context.Background(), asset); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.log.Info().Msg("Error deleting asset: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error during deleting asset"})
 		return
 	}
 	response := datacatalog.DeleteAssetResponse{
@@ -183,10 +195,12 @@ func (r *Handler) updateAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.UpdateAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.reportError(c, http.StatusBadRequest, "Error during ShouldBindJSON in updateAsset"+err.Error())
+		errString := "Error during ShouldBindJSON in updateAsset"
+		r.log.Info().Msg(errString + err.Error())
+		r.reportError(c, http.StatusBadRequest, errString)
 		return
 	}
-	logging.LogStructure("UpdateAssetRequest object received:", request, &r.log, zerolog.DebugLevel, false, false)
+	logging.LogStructure("UpdateAssetRequest received:", request, &r.log, zerolog.DebugLevel, false, false)
 
 	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
 	if len(splittedID) != 2 {
@@ -198,14 +212,17 @@ func (r *Handler) updateAsset(c *gin.Context) {
 
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		errString := "Error during getting asset information during update asset"
+		r.log.Info().Msg(errString + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errString})
 		return
 	}
 
 	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
 	if err != nil {
 		errString := "Error obtaining a secret with credentials."
-		r.reportError(c, http.StatusInternalServerError, emperror.Wrap(err, errString).Error())
+		r.log.Info().Msg(errString + err.Error())
+		r.reportError(c, http.StatusInternalServerError, errString)
 		return
 	}
 
@@ -214,7 +231,8 @@ func (r *Handler) updateAsset(c *gin.Context) {
 	asset.Spec.SecretRef = v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace}
 
 	if err := r.client.Update(context.Background(), asset); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.log.Info().Msg("Error updating asset: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error during updating asset"})
 		return
 	}
 	response := datacatalog.UpdateAssetResponse{

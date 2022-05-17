@@ -55,7 +55,7 @@ type DeleteAssetResponse struct {
 }
 
 type UpdateAssetRequest struct {
-	// The destination catalog id in which the asset will be updated based on the information provided
+	// The destination asset id in which the asset will be updated based on the information provided
 	// in ResourceMetadata and ResourceDetails field
 	// Asset ID of the to-be updated asset
 	AssetID taxonomy.AssetID `json:"assetID"`
