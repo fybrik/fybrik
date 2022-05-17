@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -58,7 +59,13 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
-		errString := "Error during ShouldBindJSON in getAssetInfo "
+		if errors.IsNotFound(err) {
+			errString := "Error: Asset Not Found during getAssetInfo"
+			r.log.Info().Msg(errString + err.Error())
+			c.JSON(http.StatusNotFound, gin.H{"error": errString})
+			return
+		}
+		errString := "Error during getAssetInfo"
 		r.log.Info().Msg(errString + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": errString})
 		return
@@ -212,6 +219,12 @@ func (r *Handler) updateAsset(c *gin.Context) {
 
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
+		if errors.IsNotFound(err) {
+			errString := "Error: Asset Not Found during updateAsset"
+			r.log.Info().Msg(errString + err.Error())
+			c.JSON(http.StatusNotFound, gin.H{"error": errString})
+			return
+		}
 		errString := "Error during getting asset information during update asset"
 		r.log.Info().Msg(errString + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": errString})
