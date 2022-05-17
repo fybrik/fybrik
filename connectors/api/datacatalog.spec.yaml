@@ -98,7 +98,7 @@ paths:
 
   /updateAsset:
       put:
-        summary: This REST API updates data asset information to the data catalog configured in fybrik
+        summary: This REST API updates data asset information in the data catalog configured in fybrik
         operationId: updateAsset
         parameters:
           - in: header
