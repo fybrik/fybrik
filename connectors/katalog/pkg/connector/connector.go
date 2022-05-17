@@ -218,7 +218,7 @@ func (r *Handler) updateAsset(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Error: Asset Not Found during updateAsset"})
 			return
 		}
-		errString := "Error during getting asset information during update asset"
+		errString := "Error reading asset information"
 		r.log.Info().Msg(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": errString})
 		return
