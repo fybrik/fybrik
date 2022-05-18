@@ -45,7 +45,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: pre-test
-pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig
 	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
