@@ -1,6 +1,18 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+/*
+	This package is for finding optimal data-path under constraints
+	Its main Optimizer class takes data-path and infrastructure metadata, restrictions and optimization goals.
+	Optimizer.Solve() returns a valid and optimal data path from a single DataSet to Workload (if such a path exists).
+	Note that currently only a single dataset is considered in a given optimization problem.
+	Also, more complex data-planes (e.g., DAG shaped) are not yet supported.
+
+	All relevant data gets translated into a Constraint Satisfaction Problem (CSP) in the FlatZinc format
+	(see https://www.minizinc.org/doc-latest/en/fzn-spec.html)
+	Any FlatZinc-supporting CSP solver can then be called to get an optimal solution.
+*/
+
 package optimizer
 
 import (
@@ -13,11 +25,6 @@ const (
 	MaxDataPathDepth = 4
 )
 
-// The main class for finding optimal data-path under constraints
-// Takes data-path parameters, restrictions and optimization goals and returns a valid and optimal data path
-// (if such a path exists)
-// Translates all relevant data into a Constraint Satisfaction Problem (CSP) and calls a CSP solver to get an optimal solution
-// Attempts short data-paths first, and gradually increases data-path length.
 type Optimizer struct {
 	dpc         *DataPathCSP
 	problemData *DataInfo
@@ -48,6 +55,7 @@ func (opt *Optimizer) getSolution(pathLength int) (string, error) {
 }
 
 // The main method to call for finding a legal and optimal data path
+// Attempts short data-paths first, and gradually increases data-path length.
 func (opt *Optimizer) Solve() (Solution, error) {
 	for pathLen := 1; pathLen <= MaxDataPathDepth; pathLen++ {
 		solverSolution, err := opt.getSolution(pathLen)
