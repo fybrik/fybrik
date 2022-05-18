@@ -6,11 +6,15 @@ package optimizer
 import (
 	"os"
 	"testing"
+
+	"fybrik.io/fybrik/pkg/logging"
 )
+
+var testLog = logging.LogInit("Optimizer", "Test")
 
 func TestOptimizer(t *testing.T) {
 	env := getTestEnv()
-	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("ABSTOOLBIN")+"/fzn-or-tools")
+	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("ABSTOOLBIN")+"/fzn-or-tools", &testLog)
 	solution, err := opt.Solve()
 	if err != nil {
 		t.Fatalf("Failed solving constraint problem: %s", err)

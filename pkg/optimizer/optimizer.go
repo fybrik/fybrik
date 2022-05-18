@@ -19,6 +19,10 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+
+	"github.com/rs/zerolog"
+
+	"fybrik.io/fybrik/pkg/logging"
 )
 
 const (
@@ -30,10 +34,12 @@ type Optimizer struct {
 	problemData *DataInfo
 	env         *Environment
 	solverPath  string
+	log         *zerolog.Logger
 }
 
-func NewOptimizer(env *Environment, problemData *DataInfo, solverPath string) *Optimizer {
-	opt := Optimizer{dpc: NewDataPathCSP(problemData, env), problemData: problemData, env: env, solverPath: solverPath}
+func NewOptimizer(env *Environment, problemData *DataInfo, solverPath string, log *zerolog.Logger) *Optimizer {
+	opt := Optimizer{dpc: NewDataPathCSP(problemData, env), problemData: problemData,
+		env: env, solverPath: solverPath, log: log}
 	return &opt
 }
 
@@ -71,5 +77,8 @@ func (opt *Optimizer) Solve() (Solution, error) {
 		}
 	}
 	msg := "Data path cannot be constructed given the deployed modules and the active restrictions"
+	opt.log.Error().Str(logging.DATASETID, opt.problemData.Context.DataSetID).Msg(msg)
+	logging.LogStructure("Data Item Context", opt.problemData, opt.log, zerolog.TraceLevel, true, true)
+	logging.LogStructure("Module Map", opt.env.Modules, opt.log, zerolog.TraceLevel, true, true)
 	return Solution{}, errors.New(msg + " for " + opt.problemData.Context.DataSetID)
 }
