@@ -26,6 +26,7 @@ const (
 	PrettyLoggingKey                  string = "PRETTY_LOGGING"
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
+	UseCSPKey                         string = "USE_CSP"
 	CSPPathKey                        string = "CSP_PATH"
 )
 
@@ -69,7 +70,12 @@ func GetDataPathMaxSize() (int, error) {
 	return limit, nil
 }
 
-// GetCSPPath returns the path of the CSP solver to use when generating a plotter, or "" if no CSP solver should be used
+// UseCSP return true if a CSP solver should be used when generating a plotter
+func UseCSP() bool {
+	return os.Getenv(UseCSPKey) == "true"
+}
+
+// GetCSPPath returns the path of the CSP solver to use when generating a plotter, or "" if no CSP solver is defined
 func GetCSPPath() string {
 	return os.Getenv(CSPPathKey)
 }

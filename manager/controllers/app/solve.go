@@ -15,7 +15,7 @@ import (
 // with respect to the optimization strategy
 func solve(env *optimizer.Environment, datasetInfo *optimizer.DataInfo, log *zerolog.Logger) (optimizer.Solution, error) {
 	cspPath := utils.GetCSPPath()
-	if cspPath != "" {
+	if utils.UseCSP() && cspPath != "" {
 		cspOptimizer := optimizer.NewOptimizer(env, datasetInfo, cspPath, log)
 		return cspOptimizer.Solve()
 	}
