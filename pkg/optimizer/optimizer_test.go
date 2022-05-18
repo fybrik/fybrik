@@ -17,8 +17,8 @@ func TestOptimizer(t *testing.T) {
 	}
 
 	solutionLen := len(solution.DataPath)
-	if solutionLen < 1 {
-		t.Error("Solution is too short")
+	if solutionLen < 2 {
+		t.Errorf("Solution is too short: %d", solutionLen)
 	} else if solutionLen > 3 {
 		t.Errorf("Solution is too long: %d", solutionLen)
 	}
