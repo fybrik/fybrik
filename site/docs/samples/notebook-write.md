@@ -120,15 +120,15 @@ Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to forbid t
 Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
-      package dataapi.authz
+package dataapi.authz
 
-      rule[{"policy": description}] {
-        description := "Forbid to write sensitive data"
-        input.action.actionType == "write"
-        input.action.destination != "theshire"
-        input.action.destination != "neverland"
-        input.resource.metadata.columns[i].tags.sensitive
-      }
+rule[{"policy": description}] {
+  description := "Forbid to write sensitive data"
+  input.action.actionType == "write"
+  input.action.destination != "theshire"
+  input.action.destination != "neverland"
+  input.resource.metadata.columns[i].tags.sensitive
+}
 ```
 
 Copy the policy to a file named `sample-policy-write.rego` and then run:
@@ -219,14 +219,14 @@ To write the new data a new policy should be defined.
 Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `sensitive` in datasets tagged with `finance` when writing data. It also denies the write to object store in `neverland`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
-      package dataapi.authz
+package dataapi.authz
 
-      rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
-        description := "Redact written columns tagged as sensitive in datasets tagged with finance = true"
-        input.action.actionType == "write"
-        input.action.destination != "neverland"
-        column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
-      }
+rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
+  description := "Redact written columns tagged as sensitive in datasets tagged with finance = true"
+  input.action.actionType == "write"
+  input.action.destination != "neverland"
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
+}
 ```
 
 Copy the policy to a file named `sample-policy-write.rego` and then run:
