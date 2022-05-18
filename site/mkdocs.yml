@@ -11,7 +11,8 @@ nav:
 - About: index.md
 - Get Started:
   - get-started/quickstart.md
-  - samples/notebook.md
+  - samples/notebook-read.md
+  - samples/notebook-write.md
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md

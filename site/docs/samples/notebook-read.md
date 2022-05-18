@@ -1,4 +1,4 @@
-# Notebook sample
+# Notebook sample for read flow
 
 This sample shows how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
 It demonstrates how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
