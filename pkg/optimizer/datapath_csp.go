@@ -15,7 +15,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
-// Names of the primary variables on which we need to take decisions
+// Names of the primary variables on which we need to make decisions
 // Each variable is an array of ints. The i-th cell in the array represents a decision for the i-th Node/Edge in the data path
 const (
 	modCapVarname    = "moduleCapability"      // Var's value says which capability of which module to use (on each Edge)
@@ -142,7 +142,7 @@ func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	// Variables to select the cluster we allocate to each module on the path
 	moduleClusterVarType := fznRangeVarType(1, len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray(clusterVarname, moduleClusterVarType, pathLength, false, true)
-	// Variables to select the source and sink interface for each module on the path
+	// Variables to select the source and sink interface for each module on the path (0 means nil interface)
 	moduleInterfaceVarType := fznRangeVarType(0, len(dpc.interfaceIdx)-1)
 	dpc.fzModel.AddVariableArray(srcIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
 	dpc.fzModel.AddVariableArray(sinkIntfcVarname, moduleInterfaceVarType, pathLength, false, true)
@@ -344,6 +344,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 	}
 }
 
+// Returns a variable which holds the OR of all boolean variables in indicatorArray
 func (dpc *DataPathCSP) orOfIndicators(indicatorArray string) string {
 	bigOrVarname := indicatorArray + "_OR"
 	dpc.fzModel.AddVariable(bigOrVarname, BoolType, true, false)
@@ -385,7 +386,7 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 	// First, make sure interface selection matches module-capability selection
 	dpc.modCapSupportsIntfc(pathLength)
 
-	// Now, ensure interfaces match along the datapath from dataset to workload
+	// Now, ensure interfaces match along the data-path from dataset to workload
 	startIntfcIndexes := fznCompoundLiteral(dpc.getMatchingInterfaces(dpc.reverseIntfcMap[1]), true)
 	endIntfcIndexes := fznCompoundLiteral(dpc.getMatchingInterfaces(dpc.problemData.Context.Requirements.Interface), true)
 	if dpc.problemData.Context.Flow == taxonomy.WriteFlow {
@@ -683,6 +684,7 @@ func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interf
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }
 
+// returns whether an interface supported by a module (at source or at sink) matches another interface
 func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
 	if moduleIntfc == nil {
 		moduleIntfc = &taxonomy.Interface{}
@@ -694,7 +696,6 @@ func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
 		return false
 	}
 
-	// an empty DataFormat value is not checked
-	// either a module supports any format, or any format can be selected (no requirements)
+	// an empty DataFormat in the module's interface means it supports all formats
 	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
 }
