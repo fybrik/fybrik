@@ -649,11 +649,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 	}
 
 	if dpc.problemData.Context.Flow == taxonomy.WriteFlow { // reverse solution
-		for elementInd := 0; elementInd < len(solution.DataPath)/2; elementInd++ {
-			reversedInd := len(solution.DataPath) - elementInd - 1
-			solution.DataPath[elementInd], solution.DataPath[reversedInd] =
-				solution.DataPath[reversedInd], solution.DataPath[elementInd]
-		}
+		solution.Reverse()
 	}
 
 	return solution, nil

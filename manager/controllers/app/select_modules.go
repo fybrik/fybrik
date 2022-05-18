@@ -65,11 +65,7 @@ func (p *PathBuilder) FindPaths() []optimizer.Solution {
 		solutions = p.findPathsWithinLimit(nodeFromAppRequirements, nodeFromAssetMetadata, bound)
 		// reverse each solution to start with the application requirements, e.g. workload
 		for ind := range solutions {
-			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
-				reversedInd := len(solutions[ind].DataPath) - elementInd - 1
-				solutions[ind].DataPath[elementInd], solutions[ind].DataPath[reversedInd] =
-					solutions[ind].DataPath[reversedInd], solutions[ind].DataPath[elementInd]
-			}
+			solutions[ind].Reverse()
 		}
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability

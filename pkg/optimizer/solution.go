@@ -44,3 +44,11 @@ func (re *ResolvedEdge) String() string {
 	return fmt.Sprintf("Source: %v, Sink: %v, Module:%v, CapIndex: %v, Actions: %v, Cluster: %v, SA: %v",
 		re.Source, re.Sink, re.Module.Name, re.CapabilityIndex, re.Actions, re.Cluster, re.StorageAccount)
 }
+
+func (solution *Solution) Reverse() {
+	for elementInd := 0; elementInd < len(solution.DataPath)/2; elementInd++ {
+		reversedInd := len(solution.DataPath) - elementInd - 1
+		solution.DataPath[elementInd], solution.DataPath[reversedInd] =
+			solution.DataPath[reversedInd], solution.DataPath[elementInd]
+	}
+}
