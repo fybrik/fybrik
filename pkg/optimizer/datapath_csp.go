@@ -20,7 +20,7 @@ import (
 const (
 	modCapVarname    = "moduleCapability"      // Var's value says which capability of which module to use (on each Edge)
 	clusterVarname   = "moduleCluster"         // Var's value says which of the available clusters to use (on each Edge)
-	saVarname        = "storageAccount"        // Var's value says which storage account to use (0 means no sa)
+	saVarname        = "storageAccount"        // Var's value says which storage account to use
 	srcIntfcVarname  = "moduleSourceInterface" // Var's value says which interface to use as source
 	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
 	actionVarname    = "action_%s"             // Vars for each required action, say whether the action was applied
@@ -46,6 +46,7 @@ type DataPathCSP struct {
 	interfaceIdx        map[taxonomy.Interface]int  // gives an index for each unique interface
 	reverseIntfcMap     map[int]*taxonomy.Interface // The reverse mapping (needed when decoding the solution)
 	fzModel             *FlatZincModel
+	noStorageAccountVal int
 }
 
 // The ctor also enumerates all available (module x capabilities) and all available interfaces
@@ -88,6 +89,8 @@ func NewDataPathCSP(problemData *DataInfo, env *Environment) *DataPathCSP {
 	for saIdx, sa := range dpCSP.env.StorageAccounts {
 		dpCSP.fzModel.AddHeaderComment(encodingComment(saIdx+1, sa.Name))
 	}
+	dpCSP.noStorageAccountVal = len(dpCSP.env.StorageAccounts) + 1
+	dpCSP.fzModel.AddHeaderComment(encodingComment(dpCSP.noStorageAccountVal, "No storage account"))
 	return &dpCSP
 }
 
@@ -130,14 +133,14 @@ func (dpc *DataPathCSP) addInterface(intfc *taxonomy.Interface) {
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // Returns a file name where the model was dumped
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
-//       The two exceptions are storage accounts, where a value of 0 means no storage account and interfaces (0 means nil)
+//       The only exception is with interfaces (0 means nil)
 func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
 	moduleCapabilityVarType := fznRangeVarType(1, len(dpc.modulesCapabilities))
 	dpc.fzModel.AddVariableArray(modCapVarname, moduleCapabilityVarType, pathLength, false, true)
-	// Variables to select storage-accounts to place on each data-path location (the value 0 means no storage account)
-	saTypeVarType := fznRangeVarType(0, len(dpc.env.StorageAccounts))
+	// Variables to select storage-accounts to place on each data-path location (last value means no storage account)
+	saTypeVarType := fznRangeVarType(1, dpc.noStorageAccountVal)
 	dpc.fzModel.AddVariableArray(saVarname, saTypeVarType, pathLength, false, true)
 	// Variables to select the cluster we allocate to each module on the path
 	moduleClusterVarType := fznRangeVarType(1, len(dpc.env.Clusters))
@@ -401,6 +404,10 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 
 	// Finally, make sure a storage account is assigned iff there is a sink interface and it is non-virtual
 	if dpc.problemData.Context.Flow == taxonomy.WriteFlow && !dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
+		for pathPos := 1; pathPos <= pathLength; pathPos++ {
+			dpc.fzModel.AddConstraint(IntEqConstraint,
+				[]string{varAtPos(saVarname, pathPos), strconv.Itoa(dpc.noStorageAccountVal), TrueValue})
+		}
 		return // no need to allocate storage, write destination is known
 	}
 
@@ -411,7 +418,7 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 		}
 	}
 	noSaRequiredVarName := dpc.addSetInIndicator(modCapVarname, noSaRequiredModCaps, pathLength)
-	realSA := dpc.addEqualityIndicator(saVarname, 0, pathLength, false) // a value >0 means a storage account is allocated
+	realSA := dpc.addEqualityIndicator(saVarname, dpc.noStorageAccountVal, pathLength, false)
 	for pathPos := 1; pathPos <= pathLength; pathPos++ {
 		noSaRequiredAtPos := varAtPos(noSaRequiredVarName, pathPos)
 		realSAAtPos := varAtPos(realSA, pathPos)
@@ -436,9 +443,9 @@ func (dpc *DataPathCSP) modCapSupportsIntfc(pathLength int) {
 		for modCapIdx, modCap := range dpc.modulesCapabilities {
 			modcapSupportsIntfcSrc := false
 			modcapSupportsIntfcSink := false
-			for _, modifc := range modCap.capability.SupportedInterfaces {
-				modcapSupportsIntfcSrc = modcapSupportsIntfcSrc || interfacesMatch(modifc.Source, &intfc)
-				modcapSupportsIntfcSink = modcapSupportsIntfcSink || interfacesMatch(modifc.Sink, &intfc)
+			for _, modIntfc := range modCap.capability.SupportedInterfaces {
+				modcapSupportsIntfcSrc = modcapSupportsIntfcSrc || interfacesMatch(modIntfc.Source, &intfc)
+				modcapSupportsIntfcSink = modcapSupportsIntfcSink || interfacesMatch(modIntfc.Sink, &intfc)
 			}
 			if modCap.virtualSource || modCap.virtualSink {
 				capAPI := modCap.capability.API
@@ -558,6 +565,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			}
 			resArray = append(resArray, infraElement.Value)
 		}
+		resArray = append(resArray, "0") // Assuming attribute == 0 if no storage account is set
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
@@ -587,7 +595,7 @@ func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weigh
 	weights = append(weights, "-1")
 	dpc.fzModel.AddConstraint(
 		IntLinEqConstraint,
-		[]string{fznCompoundLiteral(weights, false), fznCompoundLiteral(arrayToSum, false), "0"},
+		[]string{fznCompoundLiteral(weights, false), fznCompoundLiteral(arrayToSum, false), strconv.Itoa(0)},
 		GetDefinesVarAnnotation(sumVarname),
 	)
 }
@@ -632,7 +640,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
 		sa := appApi.FybrikStorageAccountSpec{}
-		if saIdx > 0 { // recall that a value of 0 means no storage account
+		if saIdx != dpc.noStorageAccountVal {
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}
 		sinkIntfcIdx, _ := strconv.Atoi(sinkIntfcSolution[pathPos])
@@ -648,7 +656,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		srcNode = sinkNode
 	}
 
-	if dpc.problemData.Context.Flow == taxonomy.WriteFlow { // reverse solution
+	if dpc.problemData.Context.Flow == taxonomy.WriteFlow {
 		solution.Reverse()
 	}
 
