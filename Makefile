@@ -63,9 +63,10 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
 test: pre-test
 	go test -v ./...
-	USE_CSP=true CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools go test -v ./manager/controllers/app -count 1
+	USE_CSP=true go test -v ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

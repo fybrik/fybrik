@@ -14,7 +14,7 @@ var testLog = logging.LogInit("Optimizer", "Test")
 
 func TestOptimizer(t *testing.T) {
 	env := getTestEnv()
-	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("ABSTOOLBIN")+"/fzn-or-tools", &testLog)
+	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("CSP_PATH"), &testLog)
 	solution, err := opt.Solve()
 	if err != nil {
 		t.Fatalf("Failed solving constraint problem: %s", err)
