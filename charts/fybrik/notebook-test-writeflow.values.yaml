@@ -1,0 +1,25 @@
+# Default values for Fybrik.
+# This is a YAML-formatted file.
+# It overrides values that are different from the default values.yaml
+
+# Global configuration applies to multiple components installed by this chart
+global:
+  hub: localhost:5000/fybrik-system
+  tag: "0.0.0"
+  imagePullPolicy: "Always"
+
+  prettyLogging: false
+  # zerolog verbosity level
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
+
+# Manager component
+manager:
+  # Set to true to enable socat in the manager pod to forward
+  # traffic from a localhost registry. Used only for development and integration tests.
+  socat: true
+
+# S3 mock service installed in fybrik namespace
+s3mock:
+  enabled: true
+
