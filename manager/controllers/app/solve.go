@@ -7,13 +7,14 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/optimizer"
 )
 
 // find a solution for a data path
 // satisfying governance and admin policies
 // with respect to the optimization strategy
-func solve(env *optimizer.Environment, datasetInfo *optimizer.DataInfo, log *zerolog.Logger) (optimizer.Solution, error) {
+func solve(env *datapath.Environment, datasetInfo *datapath.DataInfo, log *zerolog.Logger) (datapath.Solution, error) {
 	cspPath := utils.GetCSPPath()
 	if utils.UseCSP() && cspPath != "" {
 		cspOptimizer := optimizer.NewOptimizer(env, datasetInfo, cspPath, log)

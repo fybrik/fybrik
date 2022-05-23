@@ -22,6 +22,7 @@ import (
 
 	"github.com/rs/zerolog"
 
+	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/logging"
 )
 
@@ -31,13 +32,13 @@ const (
 
 type Optimizer struct {
 	dpc         *DataPathCSP
-	problemData *DataInfo
-	env         *Environment
+	problemData *datapath.DataInfo
+	env         *datapath.Environment
 	solverPath  string
 	log         *zerolog.Logger
 }
 
-func NewOptimizer(env *Environment, problemData *DataInfo, solverPath string, log *zerolog.Logger) *Optimizer {
+func NewOptimizer(env *datapath.Environment, problemData *datapath.DataInfo, solverPath string, log *zerolog.Logger) *Optimizer {
 	opt := Optimizer{dpc: NewDataPathCSP(problemData, env), problemData: problemData,
 		env: env, solverPath: solverPath, log: log}
 	return &opt
@@ -62,15 +63,15 @@ func (opt *Optimizer) getSolution(pathLength int) (string, error) {
 
 // The main method to call for finding a legal and optimal data path
 // Attempts short data-paths first, and gradually increases data-path length.
-func (opt *Optimizer) Solve() (Solution, error) {
+func (opt *Optimizer) Solve() (datapath.Solution, error) {
 	for pathLen := 1; pathLen <= MaxDataPathDepth; pathLen++ {
 		solverSolution, err := opt.getSolution(pathLen)
 		if err != nil {
-			return Solution{}, err
+			return datapath.Solution{}, err
 		}
 		solution, err := opt.dpc.decodeSolverSolution(solverSolution, pathLen)
 		if err != nil {
-			return Solution{}, err
+			return datapath.Solution{}, err
 		}
 		if len(solution.DataPath) > 0 {
 			return solution, nil
@@ -80,5 +81,5 @@ func (opt *Optimizer) Solve() (Solution, error) {
 	opt.log.Error().Str(logging.DATASETID, opt.problemData.Context.DataSetID).Msg(msg)
 	logging.LogStructure("Data Item Context", opt.problemData, opt.log, zerolog.TraceLevel, true, true)
 	logging.LogStructure("Module Map", opt.env.Modules, opt.log, zerolog.TraceLevel, true, true)
-	return Solution{}, errors.New(msg + " for " + opt.problemData.Context.DataSetID)
+	return datapath.Solution{}, errors.New(msg + " for " + opt.problemData.Context.DataSetID)
 }

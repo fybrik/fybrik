@@ -11,6 +11,7 @@ import (
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -19,7 +20,7 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
-func getTestEnv() *Environment {
+func getTestEnv() *datapath.Environment {
 	s3CSVInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "csv"}
 	s3ParquetInterface := taxonomy.Interface{Protocol: "s3", DataFormat: "parquet"}
 	db2ParquetInterface := taxonomy.Interface{Protocol: "db2", DataFormat: "parquet"}
@@ -62,11 +63,11 @@ func getTestEnv() *Environment {
 	storageAccounts := []*appApi.FybrikStorageAccount{&sa1}
 	infra := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost}}
 	attrManager := infrastructure.AttributeManager{Infrastructure: infra}
-	env := Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
+	env := datapath.Environment{Modules: moduleMap, Clusters: clusters, StorageAccounts: storageAccounts, AttributeManager: &attrManager}
 	return &env
 }
 
-func getDataInfo(env *Environment) *DataInfo {
+func getDataInfo(env *datapath.Environment) *datapath.DataInfo {
 	actions := []taxonomy.Action{
 		{Name: "Reduct", AdditionalProperties: serde.Properties{}},
 		{Name: "Encrypt", AdditionalProperties: serde.Properties{}},
@@ -82,7 +83,7 @@ func getDataInfo(env *Environment) *DataInfo {
 	dataSetConnection := taxonomy.Connection{Name: "s3"}
 	resourceDetails := datacatalog.ResourceDetails{Connection: dataSetConnection, DataFormat: "parquet"}
 	dataDetails := datacatalog.GetAssetResponse{Details: resourceDetails}
-	dataInfo := DataInfo{
+	dataInfo := datapath.DataInfo{
 		DataDetails:         &dataDetails,
 		Context:             &appContext,
 		Configuration:       evalOutput,

@@ -11,19 +11,19 @@ import (
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	"fybrik.io/fybrik/pkg/optimizer"
 )
 
 var testLog = logging.LogInit("Solver", "Test")
 
-func newEnvironment() *optimizer.Environment {
-	return &optimizer.Environment{
+func newEnvironment() *datapath.Environment {
+	return &datapath.Environment{
 		Clusters:        []multicluster.Cluster{},
 		Modules:         map[string]*v1alpha1.FybrikModule{},
 		StorageAccounts: []*v1alpha1.FybrikStorageAccount{},
@@ -34,25 +34,25 @@ func newEnvironment() *optimizer.Environment {
 	}
 }
 
-func addCluster(env *optimizer.Environment, cluster multicluster.Cluster) {
+func addCluster(env *datapath.Environment, cluster multicluster.Cluster) {
 	env.Clusters = append(env.Clusters, cluster)
 }
 
-func addModule(env *optimizer.Environment, module *v1alpha1.FybrikModule) {
+func addModule(env *datapath.Environment, module *v1alpha1.FybrikModule) {
 	env.Modules[module.Name] = module
 }
 
-func addStorageAccount(env *optimizer.Environment, account *v1alpha1.FybrikStorageAccount) {
+func addStorageAccount(env *datapath.Environment, account *v1alpha1.FybrikStorageAccount) {
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
-func addAttribute(env *optimizer.Environment, attribute *taxonomy.InfrastructureElement) {
+func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureElement) {
 	env.AttributeManager.Infrastructure.Items = append(env.AttributeManager.Infrastructure.Items, *attribute)
 }
 
 // default: S3, csv
-func createReadRequest() *optimizer.DataInfo {
-	return &optimizer.DataInfo{
+func createReadRequest() *datapath.DataInfo {
+	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
 			Connection: taxonomy.Connection{Name: v1alpha1.S3},
 			DataFormat: v1alpha1.CSV,
@@ -79,8 +79,8 @@ func createReadRequest() *optimizer.DataInfo {
 }
 
 // copy flow s3,csv -> s3,csv
-func createCopyRequest() *optimizer.DataInfo {
-	return &optimizer.DataInfo{
+func createCopyRequest() *datapath.DataInfo {
+	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
 			Connection: taxonomy.Connection{Name: v1alpha1.S3},
 			DataFormat: v1alpha1.CSV,
@@ -107,8 +107,8 @@ func createCopyRequest() *optimizer.DataInfo {
 	}
 }
 
-func createWriteNewAssetRequest() *optimizer.DataInfo {
-	return &optimizer.DataInfo{
+func createWriteNewAssetRequest() *datapath.DataInfo {
+	return &datapath.DataInfo{
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
 		Context: &v1alpha1.DataContext{
@@ -131,8 +131,8 @@ func createWriteNewAssetRequest() *optimizer.DataInfo {
 	}
 }
 
-func createUpdateRequest() *optimizer.DataInfo {
-	return &optimizer.DataInfo{
+func createUpdateRequest() *datapath.DataInfo {
+	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
 			Connection: taxonomy.Connection{Name: v1alpha1.S3},
 			DataFormat: v1alpha1.CSV,
@@ -159,8 +159,8 @@ func createUpdateRequest() *optimizer.DataInfo {
 	}
 }
 
-func createDeleteRequest() *optimizer.DataInfo {
-	return &optimizer.DataInfo{
+func createDeleteRequest() *datapath.DataInfo {
+	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
 			Connection: taxonomy.Connection{Name: v1alpha1.S3},
 			DataFormat: v1alpha1.CSV,
