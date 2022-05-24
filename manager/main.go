@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	"github.com/fsnotify/fsnotify"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -34,6 +35,7 @@ import (
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/monitor"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
@@ -134,13 +136,11 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			}
 		}()
 
-		// pre-compiling config policy files
-		query, err := adminconfig.PrepareQuery()
+		evaluator, err := adminconfig.NewRegoPolicyEvaluator()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to compile configuration policies")
 			return 1
 		}
-		evaluator := adminconfig.NewRegoPolicyEvaluator(query)
 		infrastructureManager, err := infrastructure.NewAttributeManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to get infrastructure attributes")
@@ -158,21 +158,43 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			evaluator,
 			infrastructureManager,
 		)
-		if err := applicationController.SetupWithManager(mgr); err != nil {
+		if err = applicationController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create controller")
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err := (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err := (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}
 		}
 
+		// monitor changes in config policies and attributes
+		fileMonitor := &monitor.FileMonitor{Subsciptions: []monitor.Subscription{}, Log: setupLog}
+		if err = fileMonitor.Subscribe(evaluator); err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor policy changes")
+		}
+		if err = fileMonitor.Subscribe(infrastructureManager); err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to monitor attribute changes")
+		}
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			setupLog.Err(err).Msg("error creating a file system watcher")
+			return 1
+		}
+		defer watcher.Close()
+		// watch /tmp/adminconfig directory for changes
+		err = watcher.Add(adminconfig.RegoPolicyDirectory)
+		if err != nil {
+			setupLog.Err(err).Msg("error adding a directory to monitor")
+			return 1
+		}
+
+		fileMonitor.Run(watcher)
 		// Initiate the FybrikModule Controller
 		moduleController := app.NewFybrikModuleReconciler(
 			mgr,

@@ -5,6 +5,7 @@ package adminconfig
 
 import (
 	"context"
+	"sync"
 
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
@@ -13,36 +14,76 @@ import (
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/monitor"
 )
 
 // RegoPolicyEvaluator implements EvaluatorInterface
 type RegoPolicyEvaluator struct {
 	Log   zerolog.Logger
 	Query rego.PreparedEvalQuery
+	Mux   *sync.RWMutex
 }
 
 // NewRegoPolicyEvaluator constructs a new RegoPolicyEvaluator object
-func NewRegoPolicyEvaluator(query rego.PreparedEvalQuery) *RegoPolicyEvaluator {
+func NewRegoPolicyEvaluator() (*RegoPolicyEvaluator, error) {
+	logger := logging.LogInit(logging.CONTROLLER, "ConfigPolicyEvaluator")
+	// pre-compiling config policy files
+	query, err := PrepareQuery()
+	if err != nil {
+		return nil, err
+	}
+
+	return &RegoPolicyEvaluator{
+		Log:   logger,
+		Query: query,
+		Mux:   &sync.RWMutex{},
+	}, nil
+}
+
+func NewRegoPolicyEvaluatorWithQuery(query rego.PreparedEvalQuery) *RegoPolicyEvaluator {
 	return &RegoPolicyEvaluator{
 		Log:   logging.LogInit(logging.CONTROLLER, "ConfigPolicyEvaluator"),
 		Query: query,
+		Mux:   &sync.RWMutex{},
 	}
+}
+
+func (r *RegoPolicyEvaluator) OnError(err error) {
+	r.Log.Error().Err(err).Msg("Error compiling the policies")
+}
+
+// Options for file monitor including the monitored directory and the relevant file extension
+func (r *RegoPolicyEvaluator) GetOptions() monitor.FileMonitorOptions {
+	return monitor.FileMonitorOptions{Path: RegoPolicyDirectory, Extension: ".rego"}
+}
+
+// notification event: policy files have been changed
+func (r *RegoPolicyEvaluator) OnNotify() {
+	query, err := PrepareQuery()
+	if err != nil {
+		r.OnError(err)
+	}
+	r.Mux.Lock()
+	r.Query = query
+	r.Mux.Unlock()
 }
 
 // Evaluate method evaluates the rego files based on the dynamic input object
 func (r *RegoPolicyEvaluator) Evaluate(in *EvaluatorInput) (EvaluatorOutput, error) {
-	log := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
+	logger := r.Log.With().Str(utils.FybrikAppUUID, in.Workload.UUID).Logger()
 	input, err := r.prepareInputForOPA(in)
 
 	if err != nil {
 		return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to prepare an input for OPA")
 	}
 	// Run the evaluation with the new input
+	r.Mux.RLock()
 	rs, err := r.Query.Eval(context.Background(), rego.EvalInput(input))
+	r.Mux.RUnlock()
 	if err != nil {
 		return EvaluatorOutput{Valid: false}, errors.Wrap(err, "failed to evaluate a query")
 	}
-	logging.LogStructure("Admin policy evaluation", &rs, &log, zerolog.DebugLevel, false, true)
+	logging.LogStructure("Admin policy evaluation", &rs, &logger, zerolog.DebugLevel, false, true)
 	// merge decisions and build an output object for the manager
 	out := EvaluatorOutput{
 		DatasetID:       in.Request.DatasetID,

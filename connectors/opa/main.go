@@ -7,13 +7,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
-	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/environment"
 )
 
@@ -62,27 +60,8 @@ func RunCmd() *cobra.Command {
 				return errors.New("server URL for OPA server must have http or https schema")
 			}
 
-			catalogConnectorAddress, err := environment.MustGetEnv(envCatalogConnectorURL)
-			if err != nil {
-				return errors.Wrap(err, "failed to retrieve URL for communicating with data catalog")
-			}
-
-			catalogProviderName, err := environment.MustGetEnv(envCatalogProviderName)
-			if err != nil {
-				return errors.Wrap(err, "failed to get catalog provider name from the environment")
-			}
-
-			timeout := environment.GetEnvAsInt(envConnectionTimeout, envDefaultConnectionTimeout)
-			connectionTimeout := time.Duration(timeout) * time.Second
-
-			// Create data catalog client
-			catalogClient, err := clients.NewDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
-			if err != nil {
-				return errors.Wrap(err, "failed to create a data catalog client")
-			}
-
 			// Create and start connector
-			controller := NewConnectorController(opaServerURL, catalogClient)
+			controller := NewConnectorController(opaServerURL)
 			router := NewRouter(controller)
 			router.Use(gin.Logger())
 
