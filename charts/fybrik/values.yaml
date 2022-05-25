@@ -164,6 +164,9 @@ manager:
     runAsNonRoot: true
 
   securityContext:
+     runAsUser: 10001
+     seccompProfile:
+       type: RuntimeDefault
      readOnlyRootFilesystem: true
      privileged: false
      allowPrivilegeEscalation: false
@@ -232,16 +235,9 @@ opaServer:
 
   podAnnotations: {}
 
-  podSecurityContext:
-    runAsNonRoot: true
+  securityContext: {}
 
-  securityContext:
-    readOnlyRootFilesystem: true
-    privileged: false
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-      - ALL
+  podSecurityContext: {}
 
   service:
     type: ClusterIP
@@ -311,16 +307,9 @@ katalogConnector:
 
   podAnnotations: {}
 
-  podSecurityContext:
-    runAsNonRoot: true
+  podSecurityContext: {}
 
-  securityContext:
-    readOnlyRootFilesystem: true
-    privileged: false
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-      - ALL
+  securityContext: {}
 
   service:
     type: ClusterIP
@@ -381,16 +370,9 @@ opaConnector:
 
   podAnnotations: {}
 
-  podSecurityContext:
-    runAsNonRoot: true
+  securityContext: {}
 
-  securityContext:
-    readOnlyRootFilesystem: true
-    privileged: false
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-      - ALL
+  podSecurityContext: {}
 
   service:
     type: ClusterIP
