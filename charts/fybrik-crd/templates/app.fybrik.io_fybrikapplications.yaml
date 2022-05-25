@@ -98,6 +98,41 @@ spec:
                                 ID from the catalog will be provided in the FybrikApplication
                                 Status after a new catalog entry is created.
                               type: boolean
+                            metadata:
+                              description: Source asset metadata like asset name,
+                                owner, geography, etc Relevant when writing new asset.
+                              properties:
+                                columns:
+                                  description: Columns associated with the asset
+                                  items:
+                                    description: ResourceColumn represents a column
+                                      in a tabular resource
+                                    properties:
+                                      name:
+                                        description: Name of the column
+                                        type: string
+                                      tags:
+                                        description: Tags associated with the column
+                                        type: object
+                                        x-kubernetes-preserve-unknown-fields: true
+                                    required:
+                                    - name
+                                    type: object
+                                  type: array
+                                geography:
+                                  description: Geography of the resource
+                                  type: string
+                                name:
+                                  description: Name of the resource
+                                  type: string
+                                owner:
+                                  description: Owner of the resource
+                                  type: string
+                                tags:
+                                  description: Tags associated with the asset
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                              type: object
                             storageEstimate:
                               description: Storage estimate indicates the estimated
                                 amount of storage in MB, GB, TB required when writing

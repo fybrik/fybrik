@@ -41,6 +41,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
+	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
@@ -217,9 +218,22 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				setErrorCondition(applicationContext, assetID, err.Error())
 				continue
 			}
+			reqResource := dataCtx.Requirements.FlowParams.ResourceMetadata
+			if reqResource != nil {
+				// we assume to have only the geography field set at this point
+				// in the provisionedBucket ResourceMetadata
+				geo := provisionedBucketRef.ResourceMetadata.Geography
+				if reqResource.Geography != "" && geo != reqResource.Geography {
+					// log conflict in Geography field
+					applicationContext.Log.Warn().Msg("Geography field from application flow requirements " +
+						"does not match provisioned bucket Geography and thus ignored")
+				}
+				provisionedBucketRef.ResourceMetadata = reqResource.DeepCopy()
+				provisionedBucketRef.ResourceMetadata.Geography = geo
+			}
 			// register the asset
-			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog, &provisionedBucketRef,
-				applicationContext.Application); err == nil {
+			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
+				&provisionedBucketRef, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -514,6 +528,9 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *DataInfo, appContex
 		}
 		logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
 		response.DeepCopyInto(req.DataDetails)
+	} else if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
+		// Fill req.DataDetails with the metadata from the fybrikapplication
+		req.DataDetails.ResourceMetadata = *req.Context.Requirements.FlowParams.ResourceMetadata
 	}
 	configEvaluatorInput := &adminconfig.EvaluatorInput{}
 	configEvaluatorInput.Workload.UUID = utils.GetFybrikApplicationUUID(input)
@@ -550,7 +567,8 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 				Destination:        req.DataDetails.ResourceMetadata.Geography,
 				ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 			}
-			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+				r.PolicyManager, appContext, &reqAction)
 		}
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
 		reqAction := policymanager.RequestAction{
@@ -558,15 +576,25 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
 		return err
 	}
+	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
-	// not relevant for new datasets
 	if req.Context.Requirements.FlowParams.IsNewDataSet {
-		return nil
+		if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
+			resMetadata = req.Context.Requirements.FlowParams.ResourceMetadata
+		} else {
+			resMetadata = &datacatalog.ResourceMetadata{
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
+			}
+		}
+	} else {
+		// Use the existsing resource metadata if the asset is not new
+		resMetadata = &req.DataDetails.ResourceMetadata
 	}
 	for accountInd := range env.StorageAccounts {
 		region := env.StorageAccounts[accountInd].Spec.Region
@@ -575,11 +603,19 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        string(region),
 			ProcessingLocation: region,
 		}
-		actions, err := LookupPolicyDecisions(req.Context.DataSetID, r.PolicyManager, appContext, &reqAction)
+
+		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[region] = actions
 		} else if err.Error() != api.WriteNotAllowed {
 			return err
+		}
+	}
+	// write is denied to all accounts, return Deny for write and copy flows
+	if len(req.StorageRequirements) == 0 {
+		if (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
+			(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow) {
+			return errors.New(api.WriteNotAllowed)
 		}
 	}
 	return nil

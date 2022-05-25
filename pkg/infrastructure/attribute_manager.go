@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -17,6 +18,7 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/monitor"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
@@ -32,6 +34,7 @@ const ValidationPath string = "/tmp/taxonomy/infraattributes.json#/definitions/I
 type AttributeManager struct {
 	Log            zerolog.Logger
 	Infrastructure infraattributes.Infrastructure
+	Mux            *sync.RWMutex
 }
 
 func NewAttributeManager() (*AttributeManager, error) {
@@ -39,9 +42,36 @@ func NewAttributeManager() (*AttributeManager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &AttributeManager{Log: logging.LogInit(logging.CONTROLLER, "FybrikApplication"), Infrastructure: content}, nil
+	return &AttributeManager{
+		Log:            logging.LogInit(logging.CONTROLLER, "FybrikApplication"),
+		Infrastructure: content,
+		Mux:            &sync.RWMutex{},
+	}, nil
 }
 
+// notification from the file system monitor about an error while getting access to the infrastructure file
+func (m *AttributeManager) OnError(err error) {
+	m.Log.Error().Err(err).Msg("Error reading infrastructure attributes")
+}
+
+// Options for file monitor including the monitored directory and the relevant file extension
+func (m *AttributeManager) GetOptions() monitor.FileMonitorOptions {
+	return monitor.FileMonitorOptions{Path: RegoPolicyDirectory, Extension: ".json"}
+}
+
+// notification from the file monitor on change in the infrastructure json file
+func (m *AttributeManager) OnNotify() {
+	content, err := readInfrastructure()
+	if err != nil {
+		m.OnError(err)
+	}
+	m.Mux.Lock()
+	m.Infrastructure = content
+	m.Mux.Unlock()
+}
+
+// read the infrastructure file and store attribute details in-memory
+// The attribute structure is validated with respect to the generated schema (based on taxonomy)
 func readInfrastructure() (infraattributes.Infrastructure, error) {
 	infrastructureFile := RegoPolicyDirectory + InfrastructureInfo
 	attributes := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{}}
@@ -53,7 +83,7 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	if err != nil {
 		return attributes, err
 	}
-	if err := validateStructure(content, ValidationPath); err != nil {
+	if err := validateStructure(content); err != nil {
 		return attributes, err
 	}
 	if err := json.Unmarshal(content, &attributes); err != nil {
@@ -62,8 +92,8 @@ func readInfrastructure() (infraattributes.Infrastructure, error) {
 	return attributes, nil
 }
 
-func validateStructure(bytes []byte, taxonomySchema string) error {
-	allErrs, err := validate.TaxonomyCheck(bytes, taxonomySchema)
+func validateStructure(bytes []byte) error {
+	allErrs, err := validate.TaxonomyCheck(bytes, ValidationPath)
 	if err != nil {
 		return err
 	}
@@ -76,9 +106,10 @@ func validateStructure(bytes []byte, taxonomySchema string) error {
 
 // GetAttribute returns an infrastructure attribute based on the attribute and instance names
 func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *taxonomy.InfrastructureElement {
-	for i, element := range m.Infrastructure.Items {
+	for i := range m.Infrastructure.Items {
+		element := &m.Infrastructure.Items[i]
 		if element.Attribute == name && element.Instance == instance {
-			return &m.Infrastructure.Items[i]
+			return element
 		}
 	}
 	return nil
@@ -88,8 +119,9 @@ func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string
 // TODO: validate that there is only one instance type associated with the given attribute
 func (m *AttributeManager) GetInstanceType(name taxonomy.Attribute) *taxonomy.InstanceType {
 	for i := range m.Infrastructure.Items {
-		if m.Infrastructure.Items[i].Attribute == name {
-			return &m.Infrastructure.Items[i].Object
+		element := &m.Infrastructure.Items[i]
+		if element.Attribute == name {
+			return &element.Object
 		}
 	}
 	return nil

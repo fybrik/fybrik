@@ -192,6 +192,7 @@ func TestS3Notebook(t *testing.T) {
 	}, timeout, interval).Should(gomega.Succeed())
 
 	g.Expect(asset.Spec.Metadata.Geography).To(gomega.Equal("theshire"))
+	g.Expect(writeApplication.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Name).ToNot(gomega.BeEmpty())
 	// Forward port of arrow flight service to local port
 	connection := writeApplication.Status.AssetStates["fybrik-notebook-sample/data-csv"].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
@@ -397,6 +398,7 @@ func TestS3Notebook(t *testing.T) {
 		g.Expect(record.ColumnName(0)).To(gomega.Equal("step"))
 		g.Expect(record.ColumnName(1)).To(gomega.Equal("type"))
 		g.Expect(record.ColumnName(3)).To(gomega.Equal("nameOrig"))
+		g.Expect(record.ColumnName(4)).To(gomega.Equal("oldbalanceOrg"))
 		column := record.Column(3) // Check out the third 4th column that should be nameOrig and redacted
 
 		// Check that data of nameOrig column is the correct size and all records are redacted
@@ -405,6 +407,17 @@ func TestS3Notebook(t *testing.T) {
 		g.Expect(dt.ID()).To(gomega.Equal(arrow.STRING))
 		g.Expect(dt.Name()).To(gomega.Equal((&arrow.StringType{}).Name()))
 		data := array.NewStringData(column.Data())
+		for i := 0; i < data.Len(); i++ {
+			g.Expect(data.Value(i)).To(gomega.Equal("XXXXX"))
+		}
+		column = record.Column(4) // Check out the third 5th column that should be oldbalanceOrg and redacted
+
+		// Check that data of nameOrig column is the correct size and all records are redacted
+		dt = column.Data().DataType()
+		g.Expect(column.Data().Len()).To(gomega.Equal(100))
+		g.Expect(dt.ID()).To(gomega.Equal(arrow.STRING))
+		g.Expect(dt.Name()).To(gomega.Equal((&arrow.StringType{}).Name()))
+		data = array.NewStringData(column.Data())
 		for i := 0; i < data.Len(); i++ {
 			g.Expect(data.Value(i)).To(gomega.Equal("XXXXX"))
 		}

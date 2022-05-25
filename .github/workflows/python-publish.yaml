@@ -2,9 +2,12 @@ name: python-publish
 on:
   workflow_dispatch:
     inputs:
-      library-version:
+      logging-version:
         required: true
-        default: '0.1.0'
+        default: 'do-not-publish'
+      vault-version:
+        required: true
+        default: 'do-not-publish'
       pypi-repository-url:
         required: true
         default: 'https://upload.pypi.org/legacy/'
@@ -25,9 +28,21 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Build logging package
-      run: VERSION=${{ github.event.inputs.library-version }} python -m build ./python/logging --outdir ./dist
+      run: |
+        if [ ${{ github.event.inputs.logging-version }} == "do-not-publish" ]
+        then
+          echo "do not publish logging library"
+        else
+          VERSION=${{ github.event.inputs.logging-version }} python -m build ./python/logging --outdir ./dist
+        fi
     - name: Build vault package
-      run: VERSION=${{ github.event.inputs.library-version }} python -m build ./python/vault --outdir ./dist
+      run: |
+        if [ ${{ github.event.inputs.vault-version }} == "do-not-publish" ]
+        then
+          echo "do not publish vault library"
+        else
+          VERSION=${{ github.event.inputs.vault-version }} python -m build ./python/vault --outdir ./dist
+        fi
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

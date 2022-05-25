@@ -13,9 +13,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/rs/zerolog"
 
-	"fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
-	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
@@ -25,16 +25,16 @@ const (
 )
 
 type ConnectorController struct {
-	OpaServerURL  string
-	OpaClient     *retryablehttp.Client
-	CatalogClient clients.DataCatalog
+	OpaServerURL string
+	OpaClient    *retryablehttp.Client
+	Log          zerolog.Logger
 }
 
-func NewConnectorController(opaServerURL string, catalogClient clients.DataCatalog) *ConnectorController {
+func NewConnectorController(opaServerURL string) *ConnectorController {
 	return &ConnectorController{
-		OpaServerURL:  opaServerURL,
-		OpaClient:     retryablehttp.NewClient(),
-		CatalogClient: catalogClient,
+		OpaServerURL: opaServerURL,
+		OpaClient:    retryablehttp.NewClient(),
+		Log:          logging.LogInit(logging.CONNECTOR, "opa-connector"),
 	}
 }
 
@@ -45,21 +45,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Get asset metadata from catalog connector
-	requestToCatalog := &datacatalog.GetAssetRequest{
-		AssetID:       request.Resource.ID,
-		OperationType: datacatalog.READ,
-	}
-	assetInfo, err := r.CatalogClient.GetAssetInfo(requestToCatalog, c.GetHeader(headerCredentials))
-	if err != nil {
-		// TODO: better error propagation
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Enrich request with catalog information
-	request.Resource.Metadata = &assetInfo.ResourceMetadata
-
+	logging.LogStructure("GetPoliciesDecisions object received:", request, &r.Log, zerolog.DebugLevel, false, false)
 	// Add "input" hierarchy
 	inputStruct := map[string]interface{}{"input": &request}
 	// Marshal request as JSON
@@ -97,6 +83,8 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	r.Log.Info().Msg(
+		"Sending response from opa connector with created asset ID: " + string(request.Resource.ID))
 
 	c.JSON(http.StatusOK, response)
 }

@@ -19,7 +19,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -28,16 +27,14 @@ const (
 	PolicyManagerTaxonomy = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 )
 
-func ConstructOpenAPIReq(datasetID string, input *app.FybrikApplication,
+func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
 		Action:  *operation,
 		Resource: policymanager.Resource{
-			ID: taxonomy.AssetID(datasetID),
-			Metadata: &datacatalog.ResourceMetadata{
-				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{}}},
-			},
+			ID:       taxonomy.AssetID(datasetID),
+			Metadata: resourceMetadata.DeepCopy(),
 		},
 	}
 }
@@ -68,10 +65,11 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
-func LookupPolicyDecisions(datasetID string, policyManager connectors.PolicyManager, appContext ApplicationContext,
+func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.ResourceMetadata,
+	policyManager connectors.PolicyManager, appContext ApplicationContext,
 	op *policymanager.RequestAction) ([]taxonomy.Action, error) {
 	// call external policy manager to get governance instructions for this operation
-	openapiReq := ConstructOpenAPIReq(datasetID, appContext.Application, op)
+	openapiReq := ConstructOpenAPIReq(datasetID, resourceMetadata, appContext.Application, op)
 	output := render.AsCode(openapiReq)
 	appContext.Log.Debug().Str(logging.DATASETID, datasetID).Msgf("request: %s", output)
 

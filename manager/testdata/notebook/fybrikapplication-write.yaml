@@ -28,6 +28,16 @@ spec:
         flowParams:
           isNewDataSet: true
           catalog: fybrik-notebook-sample
+          metadata:
+            tags:
+              finance: true
+            columns:
+            - name: nameOrig
+              tags:
+                PII: true
+            - name: oldbalanceOrg
+              tags:
+                sensitive: true
         interface:
           protocol: fybrik-arrow-flight
 
