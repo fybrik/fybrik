@@ -27,6 +27,7 @@ const (
 	CatalogProviderNameKey            string = "CATALOG_PROVIDER_NAME"
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 	UseCSPKey                         string = "USE_CSP"
+	CSPPathKey                        string = "CSP_PATH"
 )
 
 // GetSystemNamespace returns the namespace of control plane
@@ -69,9 +70,14 @@ func GetDataPathMaxSize() (int, error) {
 	return limit, nil
 }
 
-// UseCSP returns a boolean indicator for using a CSP solver when generating a plotter
+// UseCSP return true if a CSP solver should be used when generating a plotter
 func UseCSP() bool {
 	return os.Getenv(UseCSPKey) == "true"
+}
+
+// GetCSPPath returns the path of the CSP solver to use when generating a plotter, or "" if no CSP solver is defined
+func GetCSPPath() string {
+	return os.Getenv(CSPPathKey)
 }
 
 // GetDataCatalogServiceAddress returns the address where data catalog is running
