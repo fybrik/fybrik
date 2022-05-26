@@ -34,7 +34,7 @@ spec:
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
       {{- if not .Values.global.openshift }}
       securityContext:
-        {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+        {{- mergeOverwrite .Values.global.podSecurityContext .Values.manager.podSecurityContext | toYaml | nindent 8 }}
       {{- end }}
       containers:
         {{- if .Values.manager.socat }}
@@ -124,7 +124,7 @@ spec:
             {{- end }}
           {{- if not .Values.global.openshift }}
           securityContext:
-            {{- toYaml .Values.manager.containerSecurityContext | nindent 12 }}
+            {{- mergeOverwrite .Values.global.containerSecurityContext .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
