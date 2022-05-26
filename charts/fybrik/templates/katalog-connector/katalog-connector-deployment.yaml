@@ -33,13 +33,13 @@ spec:
       serviceAccountName: {{ .Values.katalogConnector.serviceAccount.name }}
       {{- if not .Values.global.openshift }}
       securityContext:
-        {{- mergeOverwrite .Values.global.podSecurityContext .Values.katalogConnector.podSecurityContext | toYaml | nindent 8 }}
+        {{- mergeOverwrite (deepCopy .Values.global.podSecurityContext) .Values.katalogConnector.podSecurityContext | toYaml | nindent 8 }}
       {{- end }}
       containers:
         - name: katalog-connector
           {{- if not .Values.global.openshift }}
           securityContext:
-            {{- mergeOverwrite .Values.global.containerSecurityContext .Values.katalogConnector.containerSecurityContext | toYaml | nindent 12 }}
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.katalogConnector.containerSecurityContext | toYaml | nindent 12 }}
           {{- end }}
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
