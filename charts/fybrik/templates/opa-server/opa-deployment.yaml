@@ -34,8 +34,10 @@ spec:
       volumes:
         - name: bootstrap
           emptyDir: {}
+      {{- if not .Values.global.openshift }}
       securityContext:
         {{- toYaml (deepCopy .Values.manager.podSecurityContext | merge .Values.opaServer.podSecurityContext) | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: initpolicy
           image: {{ .Values.opaServer.kubemgmt.image }}
@@ -62,8 +64,10 @@ spec:
               mountPath: /bootstrap
       containers:
         - name: opa
+          {{- if not .Values.global.openshift }}
           securityContext:
             {{- toYaml (deepCopy .Values.manager.containerSecurityContext | merge .Values.opaServer.containerSecurityContext) | nindent 12 }}
+          {{- end }}
           image: {{ .Values.opaServer.image }}
           imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:

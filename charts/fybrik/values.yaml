@@ -50,6 +50,8 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
+  # If deploying to OpenShift
+  openshift: false
 
 # Cluster metadata values
 cluster:

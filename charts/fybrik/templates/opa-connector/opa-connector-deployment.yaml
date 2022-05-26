@@ -31,12 +31,16 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ .Values.opaConnector.serviceAccount.name }}
+      {{- if not .Values.global.openshift }}
       securityContext:
         {{- toYaml (deepCopy .Values.manager.podSecurityContext | merge .Values.opaConnector.podSecurityContext) | nindent 8 }}
+      {{- end }}
       containers:
         - name: opa-connector
+          {{- if not .Values.global.openshift }}
           securityContext:
             {{- toYaml (deepCopy .Values.manager.containerSecurityContext | merge .Values.opaConnector.containerSecurityContext) | nindent 12 }}
+          {{- end }}
           image: {{ include "fybrik.image" ( tuple $ .Values.opaConnector ) }}
           imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
