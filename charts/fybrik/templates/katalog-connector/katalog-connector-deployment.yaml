@@ -36,7 +36,7 @@ spec:
       containers:
         - name: katalog-connector
           securityContext:
-            {{- toYaml (deepCopy .Values.manager.securityContext | merge .Values.katalogConnector.securityContext) | nindent 12 }}
+            {{- toYaml (deepCopy .Values.manager.containerSecurityContext | merge .Values.katalogConnector.containerSecurityContext) | nindent 12 }}
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:

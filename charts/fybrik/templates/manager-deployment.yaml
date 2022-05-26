@@ -121,7 +121,7 @@ spec:
               name: charts
             {{- end }}
           securityContext:
-            {{- toYaml .Values.manager.securityContext | nindent 12 }}
+            {{- toYaml .Values.manager.containerSecurityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10
