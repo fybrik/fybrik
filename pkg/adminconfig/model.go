@@ -4,6 +4,12 @@
 package adminconfig
 
 import (
+	"reflect"
+	"strconv"
+	"strings"
+
+	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
@@ -27,7 +33,7 @@ type Restriction struct {
 	Range    *taxonomy.RangeType `json:"range,omitempty"`
 }
 
-// DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable desciption
+// DecisionPolicy is a justification for a policy that consists of a unique id, id of a policy set and a human readable description
 type DecisionPolicy struct {
 	ID          string `json:"ID"`
 	PolicySetID string `json:"policySetID,omitempty"`
@@ -93,4 +99,83 @@ type EvaluationOutputStructure struct {
 	Config RuleDecisionList `json:"config"`
 	// +optional
 	Optimize []OptimizationStrategy `json:"optimize,omitempty"`
+}
+
+// Validation of an object with respect to the admin config restriction
+//nolint:gocyclo
+func (restrict Restriction) SatisfiedByResource(attrManager *infrastructure.AttributeManager, spec interface{}, instanceName string) bool {
+	details, err := utils.StructToMap(spec)
+	if err != nil {
+		return false
+	}
+
+	var value interface{}
+	var found bool
+	// infrastructure attribute or a property in the spec?
+	attributeObj := attrManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
+	if attributeObj != nil {
+		value = attributeObj.Value
+		found = true
+	} else {
+		fields := strings.Split(restrict.Property, ".")
+		value, found, err = NestedFieldNoCopy(details, fields...)
+	}
+	if err != nil || !found {
+		return false
+	}
+	if restrict.Range != nil {
+		var numericVal int
+		switch value := value.(type) {
+		case int64:
+			numericVal = int(value)
+		case float64:
+			numericVal = int(value)
+		case int:
+			numericVal = value
+		case string:
+			if numericVal, err = strconv.Atoi(value); err != nil {
+				return false
+			}
+		}
+		if restrict.Range.Max > 0 && numericVal > restrict.Range.Max {
+			return false
+		}
+		if restrict.Range.Min > 0 && numericVal < restrict.Range.Min {
+			return false
+		}
+	} else if len(restrict.Values) != 0 {
+		if !utils.HasString(value.(string), restrict.Values) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func NestedFieldNoCopy(obj map[string]interface{}, fields ...string) (interface{}, bool, error) {
+	var val interface{} = obj
+
+	for _, field := range fields {
+		if val == nil {
+			return nil, false, nil
+		}
+		if reflect.TypeOf(val).Kind() == reflect.Slice {
+			s := reflect.ValueOf(val)
+			i, err := strconv.Atoi(field)
+			if err != nil {
+				return nil, false, nil
+			}
+			val = s.Index(i).Interface()
+			continue
+		}
+		if m, ok := val.(map[string]interface{}); ok {
+			val, ok = m[field]
+			if !ok {
+				return nil, false, nil
+			}
+		} else {
+			return nil, false, nil
+		}
+	}
+	return val, true, nil
 }
