@@ -97,7 +97,7 @@ paths:
             description: Unauthorized
 
   /updateAsset:
-      put:
+      patch:
         summary: This REST API updates data asset information in the data catalog configured in fybrik
         operationId: updateAsset
         parameters:

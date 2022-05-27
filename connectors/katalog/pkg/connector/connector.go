@@ -211,6 +211,8 @@ func (r *Handler) updateAsset(c *gin.Context) {
 	}
 	namespace, name := splittedID[0], splittedID[1]
 
+	r.log.Info().Msg("Looking up asset: Namespace: " + namespace + ", name: " + name)
+
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		if errors.IsNotFound(err) {
@@ -224,18 +226,14 @@ func (r *Handler) updateAsset(c *gin.Context) {
 		return
 	}
 
-	secretName, secretNamespace, err := vault.GetKubeSecretDetailsFromVaultPath(request.Credentials)
-	if err != nil {
-		r.log.Info().Msg(err.Error())
-		r.reportError(c, http.StatusInternalServerError, "Error obtaining a secret with credentials.")
-		return
-	}
+	// A merge patch will preserve other fields modified at runtime.
+	patch := kclient.MergeFrom(asset.DeepCopy())
+	asset.Spec.Metadata.Name = request.Name
+	asset.Spec.Metadata.Owner = request.Owner
+	asset.Spec.Metadata.Tags = request.Tags
+	asset.Spec.Metadata.Columns = request.Columns
 
-	asset.Spec.Metadata = request.ResourceMetadata
-	asset.Spec.Details = request.Details
-	asset.Spec.SecretRef = v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace}
-
-	if err := r.client.Update(context.Background(), asset); err != nil {
+	if err := r.client.Patch(context.Background(), asset, patch); err != nil {
 		r.log.Info().Msg(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{" Error ": "Error while updating asset"})
 		return

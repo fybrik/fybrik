@@ -381,43 +381,40 @@ func TestCreateAndUpdateAsset(t *testing.T) {
 	createdAssetID := response.AssetID
 	t.Log("createdAssetID: ", createdAssetID)
 
-	s3ConnectionModified := taxonomy.Connection{
-		Name: "s3",
-		AdditionalProperties: serde.Properties{
-			Items: map[string]interface{}{
-				"s3": map[string]interface{}{
-					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
-					"bucket":     "fybrik-test-bucket-changed",
-					"object_key": "small.csv",
-				},
-			},
-		},
-	}
+	// s3ConnectionModified := taxonomy.Connection{
+	// 	Name: "s3",
+	// 	AdditionalProperties: serde.Properties{
+	// 		Items: map[string]interface{}{
+	// 			"s3": map[string]interface{}{
+	// 				"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+	// 				"bucket":     "fybrik-test-bucket-changed",
+	// 				"object_key": "small.csv",
+	// 			},
+	// 		},
+	// 	},
+	// }
 	// Create a fake request to Katalog connector
 	updateAssetReq := &datacatalog.UpdateAssetRequest{
 		AssetID: taxonomy.AssetID(destCatalogID + "/" + createdAssetID),
-		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name: destCatalogID + "/" + createdAssetID,
-			Columns: []datacatalog.ResourceColumn{
-				{
-					Name: "nameDest",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"PII": true,
-					}}},
-				},
-				{
-					Name: "nameOrig",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"SPI": true,
-					}}},
-				},
+		Name:    destCatalogID + "/" + "newname",
+		Owner:   "newowner",
+		Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+			"finance-modified": true,
+		}}},
+		Columns: []datacatalog.ResourceColumn{
+			{
+				Name: "nameDest-modified",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"PII-modified": true,
+				}}},
+			},
+			{
+				Name: "nameOrig-modified",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"SPI-modified": true,
+				}}},
 			},
 		},
-		Details: datacatalog.ResourceDetails{
-			Connection: s3ConnectionModified,
-			DataFormat: csvFormat,
-		},
-		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
 	}
 	t.Log("updateAssetReq:", updateAssetReq)
 	w = httptest.NewRecorder()
@@ -444,8 +441,10 @@ func TestCreateAndUpdateAsset(t *testing.T) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		g.Expect(&updateAssetReq.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
-		g.Expect(&updateAssetReq.Details).To(BeEquivalentTo(&asset.Spec.Details))
+		g.Expect(&updateAssetReq.Name).To(BeEquivalentTo(&asset.Spec.Metadata.Name))
+		g.Expect(&updateAssetReq.Owner).To(BeEquivalentTo(&asset.Spec.Metadata.Owner))
+		g.Expect(&updateAssetReq.Columns).To(BeEquivalentTo(&asset.Spec.Metadata.Columns))
+		g.Expect(&updateAssetReq.Tags).To(BeEquivalentTo(&asset.Spec.Metadata.Tags))
 
 		// just for logging - start
 		b, err := json.Marshal(asset)

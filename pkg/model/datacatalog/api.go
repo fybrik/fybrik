@@ -58,13 +58,14 @@ type UpdateAssetRequest struct {
 	// The id of the dataset to be updated based on the information provided
 	// in ResourceMetadata and ResourceDetails field
 	AssetID taxonomy.AssetID `json:"assetID"`
-	// Asset metadata like asset name, owner, geography, etc
-	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`
-	// Asset details like connection and data format
-	Details ResourceDetails `json:"details"`
-	// +kubebuilder:validation:Optional
-	// The vault plugin path where the destination data credentials will be stored as kubernetes secrets
-	Credentials string `json:"credentials"`
+	// New name of the resource
+	Name string `json:"name,omitempty"`
+	// New owner of the resource
+	Owner string `json:"owner,omitempty"`
+	// New tags associated with the asset
+	Tags *taxonomy.Tags `json:"tags,omitempty"`
+	// New columns associated with the asset
+	Columns []ResourceColumn `json:"columns,omitempty"`
 }
 
 type UpdateAssetResponse struct {

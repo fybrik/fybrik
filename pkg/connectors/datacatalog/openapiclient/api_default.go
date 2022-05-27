@@ -18,11 +18,6 @@ import (
 	"net/url"
 )
 
-// Linger please
-var (
-	_ context.Context
-)
-
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
@@ -410,7 +405,7 @@ func (r ApiUpdateAssetRequest) Execute() (*UpdateAssetResponse, *http.Response, 
 }
 
 /*
-UpdateAsset This REST API updates data asset information to the data catalog configured in fybrik
+UpdateAsset This REST API updates data asset information in the data catalog configured in fybrik
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiUpdateAssetRequest
@@ -426,7 +421,7 @@ func (a *DefaultApiService) UpdateAsset(ctx context.Context) ApiUpdateAssetReque
 //  @return UpdateAssetResponse
 func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (*UpdateAssetResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPut
+		localVarHTTPMethod  = http.MethodPatch
 		localVarPostBody    interface{}
 		formFiles           []formFile
 		localVarReturnValue *UpdateAssetResponse
