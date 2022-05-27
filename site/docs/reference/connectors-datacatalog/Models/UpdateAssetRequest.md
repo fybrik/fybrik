@@ -4,9 +4,10 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **assetID** | String |  | [default: null]
-**credentials** | String | The vault plugin path where the destination data credentials will be stored as kubernetes secrets | [optional] [default: null]
-**details** | [Details](../Details) |  | [default: null]
-**resourceMetadata** | [ResourceMetadata](../ResourceMetadata) |  | [default: null]
+**columns** | List | New columns associated with the asset | [optional] [default: null]
+**name** | String | New name of the resource | [optional] [default: null]
+**owner** | String | New owner of the resource | [optional] [default: null]
+**tags** | Map |  | [optional] [default: null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to API-Specification]](../README.md)
 

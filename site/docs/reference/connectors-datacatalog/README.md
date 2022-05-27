@@ -10,7 +10,7 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**createAsset**](Apis/DefaultApi.md#createasset) | **POST** /createAsset | This REST API writes data asset information to the data catalog configured in fybrik
 *DefaultApi* | [**deleteAsset**](Apis/DefaultApi.md#deleteasset) | **DELETE** /deleteAsset | This REST API deletes data asset
 *DefaultApi* | [**getAssetInfo**](Apis/DefaultApi.md#getassetinfo) | **POST** /getAssetInfo | This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
-*DefaultApi* | [**updateAsset**](Apis/DefaultApi.md#updateasset) | **PUT** /updateAsset | This REST API updates data asset information in the data catalog configured in fybrik
+*DefaultApi* | [**updateAsset**](Apis/DefaultApi.md#updateasset) | **PATCH** /updateAsset | This REST API updates data asset information in the data catalog configured in fybrik
 
 
 <a name="documentation-for-models"></a>
