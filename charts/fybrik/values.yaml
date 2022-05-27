@@ -50,17 +50,19 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
-  # If deploying to OpenShift
+  # True if the target deployment is OpenShift. Otherwise false. Default value is false.
   openshift: false
-  # Pod Security Context
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # Pod Security Context. This is the default setting for all pods, and can be
+  # overwritten by a specific podSecurityContext settings.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext:
     runAsNonRoot: true
     runAsUser: 10001
     seccompProfile:
       type: RuntimeDefault
-  # Container Security Context to be set on the controller component container
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # Container Security Context. This is the default setting for all containers, and can be
+  # overwritten by a specific containerSecurityContext settings.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext:
     readOnlyRootFilesystem: true
     privileged: false
@@ -178,8 +180,14 @@ manager:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
 
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext:
     readOnlyRootFilesystem: false
 
@@ -244,8 +252,14 @@ opaServer:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
 
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
   service:
@@ -316,8 +330,14 @@ katalogConnector:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
 
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
   service:
@@ -379,8 +399,14 @@ opaConnector:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
 
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
   service:
