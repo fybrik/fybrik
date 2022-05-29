@@ -77,6 +77,7 @@ run-integration-tests:
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) -C pkg/optimizer docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) -C charts test
 	$(MAKE) deploy
@@ -86,6 +87,11 @@ run-integration-tests:
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
+	$(TOOLBIN)/helm uninstall fybrik
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) --set "manager.solver.enabled=true" \
+               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
+	$(MAKE) -C manager run-integration-tests
+	
 
 .PHONY: run-notebook-tests
 run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000

@@ -34,6 +34,20 @@ spec:
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
       securityContext:
         {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+      {{- if .Values.manager.solver.image }}
+      initContainers:
+        - name: init-solver
+          image: {{ include "fybrik.image" ( tuple $ .Values.manager.solver ) }}
+          imagePullPolicy: {{ .Values.manager.solver.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          command:
+          - cp 
+          - -rf
+          - "/data/tools"
+          - "/tmp/solver/"
+          volumeMounts:
+            - name: solver-volume
+              mountPath: /tmp/solver  
+      {{- end }}
       containers:
         {{- if .Values.manager.socat }}
         - name: integration-tests
@@ -92,6 +106,9 @@ spec:
             - name: MODULES_NAMESPACE
               value: {{ include "fybrik.getModulesNamespace" . }}
 
+            - name: CSP_PATH
+              value: "/tmp/solver/tools/bin/solver"
+
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
@@ -120,6 +137,10 @@ spec:
             - mountPath: /opt/fybrik/
               name: charts
             {{- end }}
+            {{- if .Values.manager.solver.image }}
+            - mountPath: /tmp/solver
+              name: solver-volume
+            {{- end }}
           securityContext:
             {{- toYaml .Values.manager.securityContext | nindent 12 }}
           resources:
@@ -131,6 +152,10 @@ spec:
           secret:
             defaultMode: 420
             secretName: webhook-server-cert
+        {{- end }}
+        {{- if .Values.manager.solver.image }}
+        - name: solver-volume
+          emptyDir: {}
         {{- end }}
         - name: fybrik-taxonomy
           configMap:
