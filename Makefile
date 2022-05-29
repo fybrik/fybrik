@@ -86,8 +86,7 @@ run-integration-tests:
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
-	$(TOOLBIN)/helm uninstall fybrik
-	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) --set "manager.solver.enabled=true" \
+	$(TOOLBIN)/helm upgrade fybrik charts/fybrik --values $(VALUES_FILE) --set "manager.solver.enabled=true" \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 	$(MAKE) -C manager run-integration-tests
 	
