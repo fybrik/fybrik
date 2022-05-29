@@ -9,5 +9,5 @@ When you’re finished experimenting with the notebook sample, clean it up:
     ```
 3. Delete the policy created on fybrik-system namespace:
     ```bash
-    NS=`fybrik-system`; kubectl -n $NS get configmap | awk '/sample/{print $1}' | xargs  kubectl delete -n $NS configmap
+    NS="fybrik-system"; kubectl -n $NS get configmap | awk '/sample/{print $1}' | xargs  kubectl delete -n $NS configmap
     ```

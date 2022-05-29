@@ -10,7 +10,7 @@ In this sample you play multiple roles:
 ## Create an account in object storage 
 
 Create an account in object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
-Make a note of the service endpoint, bucket name, and access credentials. You will need them later.
+Make a note of the service endpoint and access credentials. You will need them later.
 
 ??? tip "Setup localstack"
 
@@ -44,7 +44,7 @@ Deploy [Datashim](https://github.com/datashim-io/datashim):
 kubectl apply -f https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/datashim/dlf.yaml
 ```
 
-For more deployment options of Datashim based on your environment please refer to the [datashim site](https://github.com/datashim-io/datashim)
+For more deployment options of Datashim based on your environment please refer to the [datashim site](https://github.com/datashim-io/datashim).
 
 Register the credentials required for accessing the object storage. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
@@ -63,7 +63,7 @@ stringData:
   secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
-Then, register two storage accounts. Replace the values for `region` and `endpoint` with values from the object storage services that you used and run:
+Then, register two storage accounts: one in `theshire` and one in `neverland`. Replace the value for `endpoint` with value from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -93,6 +93,8 @@ spec:
   secretRef:  bucket-creds
 EOF
 ```
+
+Note that for evaluation purposes the same object store is used for different regions in the storage accounts.
 
 ## Scenarios one: write is forbidden due to governance restrictions
 
@@ -225,6 +227,10 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 while [[ $(kubectl get cm sample-policy-write -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 ```
 
+### Deploy a Jupyter notebook
+
+In this sample a Jupyter notebook is used as the user workload and its business logic requires writing the new asset. Deploy a notebook to your cluster: execute the instructions from `Deploy a Jupyter notebook` section in the [notebook sample for the read flow](notebook-read.md) to deploy a Jupyter notebook.
+
 ### Create a `FybrikApplication` resource for the notebook
 
 Re-apply `FybrikApplication` resource from scenarios one section.
@@ -241,10 +247,6 @@ Run the following command to extract the new cataloged asset id from fybrikappli
 ```bash
 CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset'})
 ```
-
-### Deploy a Jupyter notebook
-
-Execute the instructions from the section `Deploy a Jupyter notebook` from the [notebook sample for the read flow](notebook-read.md) to deploy a Jupyter notebook.
 
 ### Write the data from the notebook
 
