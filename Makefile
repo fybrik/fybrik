@@ -77,7 +77,6 @@ run-integration-tests:
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
-	$(MAKE) -C pkg/optimizer docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) -C charts test
 	$(MAKE) deploy
@@ -143,11 +142,13 @@ docker-minimal-it:
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C manager docker-build
+	$(MAKE) -C pkg/optimizer docker-build
 	$(MAKE) -C connectors docker-build
 
 .PHONY: docker-push
 docker-push:
 	$(MAKE) -C manager docker-push
+	$(MAKE) -C pkg/optimizer docker-push
 	$(MAKE) -C connectors docker-push
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
