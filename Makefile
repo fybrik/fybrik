@@ -157,7 +157,8 @@ DOCKER_PUBLIC_TAGNAME ?= master
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	katalog-connector \
-	opa-connector
+	opa-connector \
+	optimizer
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
