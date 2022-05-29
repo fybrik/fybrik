@@ -3,6 +3,6 @@ ENV HOME=/tmp
 WORKDIR /tmp
 
 COPY datacatalog /
-USER 1001
+USER 10001
 
 ENTRYPOINT ["/datacatalog"]
