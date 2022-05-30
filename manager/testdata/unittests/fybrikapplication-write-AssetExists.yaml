@@ -8,6 +8,7 @@ metadata:
   namespace: default
   labels:
     app: notebook
+    app.fybrik.io/modules-namespace: "test-modules-namespace"
 spec:
   selector:
     clusterName: thegreendragon

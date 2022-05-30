@@ -1560,6 +1560,9 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("18")
+	labels := make(map[string]string)
+	labels["app.fybrik.io/modules-namespace"] = "test-modules-namespace"
+	application.SetLabels(labels)
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,
@@ -1616,8 +1619,12 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	plotter := &v1alpha1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
+	plotterLabels := plotter.GetObjectMeta().GetLabels()
+	g.Expect(plotterLabels).ToNot(gomega.BeEmpty())
+	g.Expect(plotterLabels[utils.FybrikModuleNamespace]).To(gomega.Equal("test-modules-namespace"))
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates: one for read and one for write
+	g.Expect(plotter.Spec.ModulesNamespace).To(gomega.Equal("test-modules-namespace"))
 }
 
 func TestWriteAndTransform(t *testing.T) {

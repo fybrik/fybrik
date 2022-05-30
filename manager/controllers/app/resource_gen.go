@@ -99,6 +99,11 @@ func (c *PlotterInterface) CreateOrUpdateResource(owner, ref *app.ResourceRefere
 			plotter.Annotations = make(map[string]string)
 			plotter.Annotations[utils.FybrikAppUUID] = uuid // For logging
 		}
+		modulesNamespace := utils.GetFybrikModuleNamespaceFromLabels(labels)
+		if plotter.Labels == nil && modulesNamespace != "" {
+			plotter.Labels = make(map[string]string)
+			plotter.Labels[utils.FybrikModuleNamespace] = modulesNamespace
+		}
 		return nil
 	}); err != nil {
 		return err

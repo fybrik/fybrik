@@ -134,6 +134,16 @@ func Intersection(set1, set2 []string) []string {
 }
 
 const FybrikAppUUID = "app.fybrik.io/app-uuid"
+const FybrikModuleNamespace = "app.fybrik.io/modules-namespace"
+
+// GetFybrikModuleNamespaceFromLabels returns the moduleNamespace passed to the resource in its labels
+func GetFybrikModuleNamespaceFromLabels(labels map[string]string) string {
+	moduleNs, foundmoduleNs := labels[FybrikModuleNamespace]
+	if !foundmoduleNs {
+		return ""
+	}
+	return moduleNs
+}
 
 // GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
 // It must be unique over time and across clusters, even after the instance has been deleted,
