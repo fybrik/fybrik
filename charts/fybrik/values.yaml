@@ -37,9 +37,9 @@ global:
   # If no value is set, the chart's appVersion will be used.
   tag: ""
   # Default image pull policy for Fybrik images
-  # Default behavior: latest images will be Always else IfNotPresent.
+  # Default behavior: Always.
   # ref: https://kubernetes.io/docs/concepts/containers/images/#updating-images
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
   # Reference to one or more secrets to be used when pulling images.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
@@ -228,7 +228,7 @@ opaServer:
   image: "openpolicyagent/opa:0.36.0"
   
   # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   args:
   - "run"
@@ -315,7 +315,7 @@ katalogConnector:
   image: "katalog-connector"
 
   # Overrides global.imagePullPolicy
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   # Used if autoscaling is not enabled 
   replicaCount: 1
@@ -384,7 +384,7 @@ opaConnector:
   image: "opa-connector"
 
   # Overrides `.global.imagePullPolicy`
-  imagePullPolicy: ""
+  imagePullPolicy: "Always"
 
   # Used if autoscaling is not enabled 
   replicaCount: 1

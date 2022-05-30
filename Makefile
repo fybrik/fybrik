@@ -45,7 +45,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: pre-test
-pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
 	mkdir -p /tmp/taxonomy
 	mkdir -p /tmp/adminconfig
 	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
@@ -63,8 +63,10 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
 test: pre-test
 	go test -v ./...
+	USE_CSP=true go test -v ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
