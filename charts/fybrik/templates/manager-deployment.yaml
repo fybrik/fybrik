@@ -105,9 +105,11 @@ spec:
 
             - name: MODULES_NAMESPACE
               value: {{ include "fybrik.getModulesNamespace" . }}
-
+              
+            {{- if .Values.manager.solver.image }}
             - name: CSP_PATH
               value: "/tmp/solver/tools/bin/solver"
+            {{- end }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE
