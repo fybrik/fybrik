@@ -14,7 +14,11 @@ clusterScoped: true
 
 # The namespace where Fybrik deploys data path components (modules)
 modulesNamespace:
-  # The Fybrik namespace name, if not defined, default "fybrik-blueprints" is used
+# The Fybrik namespace name, if not defined, default "fybrik-blueprints" is used.
+# If `app.fybrik.io/modules-namespace` label is set in FybrikApplication resource then
+# it takes precedence over other values defined. In this case, it is assumed that Fybrik
+# is not responsible to create this namespace and remove it when Fybrik is uninstalled.
+# Moreover, it is a user responsibility to give Fybrik the permissions to deploy modules in this namespace.
   name: ""
   # if it is true, Fybrik, during its deployment, creates this namespace and removes it when Fybrik is uninstalled.
   # Otherwise, it is a user responsibility to create this namespace, before Fybrik deployment.

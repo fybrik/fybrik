@@ -145,6 +145,19 @@ func GetFybrikModuleNamespaceFromLabels(labels map[string]string) string {
 	return moduleNs
 }
 
+// GetFybrikModuleNamespace returns the moduleNamespace
+// The order of resolving the moduleNamespace is as follows:
+// If `app.fybrik.io/modules-namespace` label is set, it must be given precedence over
+// other value defined by an environment variable or a default value if the latter
+// is not set.
+func GetFybrikModuleNamespace(labels map[string]string) string {
+	moduleNs := GetFybrikModuleNamespaceFromLabels(labels)
+	if moduleNs == "" {
+		moduleNs = GetDefaultModulesNamespace()
+	}
+	return moduleNs
+}
+
 // GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
 // It must be unique over time and across clusters, even after the instance has been deleted,
 // because this ID will be used for logging purposes.
