@@ -72,6 +72,7 @@ test: pre-test
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-integration-tests: export HELM_SETTINGS="manager.solver.enabled=true"
 run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
@@ -85,9 +86,6 @@ run-integration-tests:
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C samples/rest-server test
-	$(MAKE) -C manager run-integration-tests
-	$(TOOLBIN)/helm upgrade fybrik charts/fybrik --values $(VALUES_FILE) --set "manager.solver.enabled=true" \
-               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 	$(MAKE) -C manager run-integration-tests
 	
 
