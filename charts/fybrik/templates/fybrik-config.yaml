@@ -9,7 +9,9 @@ data:
   
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
+  {{- if .Values.manager.solver.image }}
   USE_CSP: {{ .Values.manager.solver.enabled | quote }}
+  {{- end }}
   CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "http://%s-connector:80" .Values.coordinator.catalog) | quote }}

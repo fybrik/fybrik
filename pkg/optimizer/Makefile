@@ -14,9 +14,7 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 docker-build: 	
 	mkdir solver-tools
 	mkdir solver-tools/bin
-	mkdir solver-tools/lib
 	cp ${ABSTOOLBIN}/fzn-or-tools solver-tools/bin/solver
-	cp ${ABSTOOLBIN}/../lib/libfz.so solver-tools/lib/
-	cp ${ABSTOOLBIN}/../lib/libortools.so solver-tools/lib/
+	cp -r ${ABSTOOLBIN}/../lib solver-tools
 	docker build . -t ${IMG} -f Dockerfile
 	rm -rf solver-tools
