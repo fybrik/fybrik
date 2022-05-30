@@ -72,7 +72,7 @@ test: pre-test
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
-run-integration-tests: export HELM_SETTINGS="manager.solver.enabled=true"
+run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
 run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
