@@ -1331,18 +1331,42 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <summary>Install latest development version from GitHub</summary>
 <p>The published Helm charts are only available for released versions. 
 To install the <code>dev</code> version install the charts from the source code.
-For example:
+For example:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Kubernetes</label><label for="__tabbed_3_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
 helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait
-</code></pre></div></p>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span> fybrik
+helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.openshift<span class="o">=</span><span class="nb">true</span> --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait
+</code></pre></div>
+</div>
+</div>
+</div>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
 Install the Fybrik release with a built-in data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Kubernetes</label><label for="__tabbed_4_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version master --wait
 helm install fybrik fybrik-charts/fybrik -n fybrik-system --version master  --wait
 </code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version master --wait
+helm install fybrik fybrik-charts/fybrik --set global.openshift<span class="o">=</span><span class="nb">true</span> -n fybrik-system --version master  --wait
+</code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
 <summary>Install latest development version from GitHub</summary>
