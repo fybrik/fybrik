@@ -52,3 +52,37 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
+
+1. Alternatively, one can access the `userdata` dataset from a Jupyter notebook, as described in the [notebook sample](https://fybrik.io/v0.6/samples/notebook/#read-the-dataset-from-the-notebook). To determine the virtual endpoint from which to access the data set, run:
+   ```bash
+   ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.scheme})
+   ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.hostname})
+   ENDPOINT_PORT=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.port})
+   printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+   ```
+
+   Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this transparent to the user.
+
+   Insert a new notebook cell to install pandas and pyarrow packages:
+   ```bash
+   %pip install pandas pyarrow
+   ```
+
+   Finally, given the endpoint value determined above, insert the following to a new notebook cell:
+   ```bash
+   import json
+   import pyarrow.flight as fl
+
+   # Create a Flight client
+   client = fl.connect('<ENDPOINT>')
+
+   # Prepare the request
+   request = {
+       "asset": "fybrik-notebook-sample/userdata",
+   }
+
+   # Send request and fetch result as a pandas DataFrame
+   info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
+   reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)
+   print(reader.read_pandas())
+   ```
