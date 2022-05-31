@@ -53,3 +53,23 @@ type DeleteAssetResponse struct {
 	// The deletion status
 	Status string `json:"status,omitempty"`
 }
+
+type UpdateAssetRequest struct {
+	// The id of the dataset to be updated based on the information provided
+	// in ResourceMetadata and ResourceDetails field
+	AssetID taxonomy.AssetID `json:"assetID"`
+	// New name of the resource
+	Name string `json:"name,omitempty"`
+	// New owner of the resource
+	Owner string `json:"owner,omitempty"`
+	// New tags associated with the asset
+	Tags *taxonomy.Tags `json:"tags,omitempty"`
+	// New columns associated with the asset
+	Columns []ResourceColumn `json:"columns,omitempty"`
+}
+
+type UpdateAssetResponse struct {
+	// +kubebuilder:validation:Optional
+	// The updation status
+	Status string `json:"status,omitempty"`
+}
