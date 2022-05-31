@@ -12,7 +12,6 @@ nav:
 - Get Started:
   - get-started/quickstart.md
   - Notebook samples:
-    - samples/tools.md
     - Before we begin: samples/pre-steps.md
     - samples/notebook-read.md
     - samples/notebook-write.md

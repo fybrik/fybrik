@@ -1,7 +1,12 @@
 # Notebook sample for the read flow
 
-This sample shows how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
-It demonstrates how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
+This sample demonstrates the following:
+
+- how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
+
+- how [arrow-flight module](https://github.com/fybrik/arrow-flight-module) is used for reading and transforming data.
+
+- how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
 
 In this sample you play multiple roles:
 
