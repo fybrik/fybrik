@@ -95,3 +95,36 @@ paths:
             description: id not found
           '401':
             description: Unauthorized
+
+  /updateAsset:
+      patch:
+        summary: This REST API updates data asset information in the data catalog configured in fybrik
+        operationId: updateAsset
+        parameters:
+          - in: header
+            name: X-Request-Datacatalog-Update-Cred
+            description: This header carries credential information related to accessing the relevant destination catalog.
+            schema:
+              type: string
+            required: true
+        requestBody:
+          description: Update Asset Request
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/UpdateAssetRequest"
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/UpdateAssetResponse"
+          '400':
+            description: Bad request - server cannot process the request due to client error
+          '404':
+            description: id not found
+          '401':
+            description: Unauthorized
+

@@ -68,6 +68,15 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 	return resp, nil
 }
 
+func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
+	resp, _, err := m.client.DefaultApi.UpdateAsset(
+		context.Background()).XRequestDatacatalogUpdateCred(creds).UpdateAssetRequest(*in).Execute()
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("update asset info from %s failed", m.name))
+	}
+	return resp, nil
+}
+
 func (m *openAPIDataCatalog) Close() error {
 	return nil
 }
