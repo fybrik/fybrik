@@ -1561,7 +1561,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	application.SetGeneration(1)
 	application.SetUID("18")
 	labels := make(map[string]string)
-	labels["app.fybrik.io/modules-namespace"] = "test-modules-namespace"
+	labels[utils.FybrikModuleNamespace] = "test-modules-namespace"
 	application.SetLabels(labels)
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
