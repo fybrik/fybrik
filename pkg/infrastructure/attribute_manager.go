@@ -15,6 +15,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -23,12 +24,12 @@ import (
 )
 
 // A directory containing rego files that define admin config policies
-const RegoPolicyDirectory string = "/tmp/adminconfig/"
+var RegoPolicyDirectory = utils.DataRootDir + "adminconfig/"
 
 // A json file containing the infrastructure information
 const InfrastructureInfo string = "infrastructure.json"
 
-const ValidationPath string = "/tmp/taxonomy/infraattributes.json#/definitions/Infrastructure"
+var ValidationPath = utils.DataRootDir + "/taxonomy/infraattributes.json#/definitions/Infrastructure"
 
 // AttributeManager provides access to infrastructure attributes
 type AttributeManager struct {

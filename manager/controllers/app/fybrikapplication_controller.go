@@ -69,9 +69,10 @@ type ApplicationContext struct {
 	UUID        string
 }
 
+var ApplicationTaxonomy = utils.DataRootDir + "/taxonomy/fybrik_application.json"
+var DataCatalogTaxonomy = utils.DataRootDir + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+
 const (
-	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
-	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
 	FybrikApplicationKind = "FybrikApplication"
 	Interval              = 10
 )

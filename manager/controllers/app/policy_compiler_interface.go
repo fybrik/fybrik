@@ -23,9 +23,7 @@ import (
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-const (
-	PolicyManagerTaxonomy = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
-)
+var PolicyManagerTaxonomy = utils.DataRootDir + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
 func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {

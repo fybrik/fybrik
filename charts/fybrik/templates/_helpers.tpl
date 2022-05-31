@@ -119,3 +119,11 @@ Get modules namespace
 {{- .Values.modulesNamespace.name | default "fybrik-blueprints" -}}
 {{- end -}}
 
+{{/*
+Print sub-directory in /data directory.
+*/}}
+{{- define "fybrik.printDataSubdir" -}}
+{{- $dir := toString (first .) -}}
+{{- printf "/data/%s/" $dir }}
+{{- end }}
+

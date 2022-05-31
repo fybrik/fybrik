@@ -30,6 +30,9 @@ const (
 	CSPPathKey                        string = "CSP_PATH"
 )
 
+// DataRootDir is the root path of the data directory.
+const DataRootDir = "/data"
+
 // GetSystemNamespace returns the namespace of control plane
 func GetSystemNamespace() string {
 	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {

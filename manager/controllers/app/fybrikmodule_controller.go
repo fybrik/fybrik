@@ -31,8 +31,9 @@ type FybrikModuleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+var ModuleTaxonomy = utils.DataRootDir + "/taxonomy/fybrik_module.json"
+
 const (
-	ModuleTaxonomy                 = "/tmp/taxonomy/fybrik_module.json"
 	ModuleValidationConditionIndex = 0
 	FybrikModuleKind               = "FybrikModule"
 )

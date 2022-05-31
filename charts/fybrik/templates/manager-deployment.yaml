@@ -114,9 +114,11 @@ spec:
               name: cert
               readOnly: true  
             {{- end }}     
-            - mountPath: /tmp/taxonomy
+            - name: tmp
+              mountPath: /tmp
+            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
-            - mountPath: /tmp/adminconfig
+            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "adminconfig" ) }}
               name: fybrik-adminconfig
             {{- if .Values.manager.chartVolume }}
             - mountPath: /opt/fybrik/
@@ -136,6 +138,8 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
         {{- end }}
+        - name: tmp
+          emptyDir: {}
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config

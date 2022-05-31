@@ -187,7 +187,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		defer watcher.Close()
-		// watch /tmp/adminconfig directory for changes
+		// watch /data/adminconfig directory for changes
 		err = watcher.Add(adminconfig.RegoPolicyDirectory)
 		if err != nil {
 			setupLog.Err(err).Msg("error adding a directory to monitor")

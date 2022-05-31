@@ -50,7 +50,7 @@ func (m *FileMonitor) Subscribe(subscriber Subscriber) error {
 	return nil
 }
 
-// Run activates a go routine that calls Monitor() upon changes in /tmp/adminconfig directory
+// Run activates a go routine that calls Monitor() upon changes in /data/adminconfig directory
 func (m *FileMonitor) Run(watcher *fsnotify.Watcher) {
 	go func() {
 		for {
