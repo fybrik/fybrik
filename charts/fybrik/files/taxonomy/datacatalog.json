@@ -172,6 +172,46 @@
           "description": "Tags associated with the asset"
         }
       }
+    },
+    "UpdateAssetRequest": {
+      "type": "object",
+      "required": [
+        "assetID"
+      ],
+      "properties": {
+        "assetID": {
+          "$ref": "taxonomy.json#/definitions/AssetID",
+          "description": "The id of the dataset to be updated based on the information provided in ResourceMetadata and ResourceDetails field"
+        },
+        "columns": {
+          "description": "New columns associated with the asset",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResourceColumn"
+          }
+        },
+        "name": {
+          "description": "New name of the resource",
+          "type": "string"
+        },
+        "owner": {
+          "description": "New owner of the resource",
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "taxonomy.json#/definitions/Tags",
+          "description": "New tags associated with the asset"
+        }
+      }
+    },
+    "UpdateAssetResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "The updation status",
+          "type": "string"
+        }
+      }
     }
   }
 }

@@ -4,6 +4,6 @@ ENV HOME=/tmp
 WORKDIR /tmp
 
 COPY serverpolicymanager /
-USER 1001
+USER 10001
 
 ENTRYPOINT ["/serverpolicymanager"]
