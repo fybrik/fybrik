@@ -1,40 +1,18 @@
-# Notebook sample
+# Notebook sample for the read flow
 
-This sample shows how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
-It demonstrates how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
+This sample demonstrates the following:
+
+- how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.
+
+- how [arrow-flight module](https://github.com/fybrik/arrow-flight-module) is used for reading and transforming data.
+
+- how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.
 
 In this sample you play multiple roles:
 
-1. As a data owner you upload a dataset and register it in a data catalog
-2. As a data steward you setup data governance policies
-3. As a data user you specify your data usage requirements and use a notebook to consume the data
-
-Tools used by the actors:
-
-1. The data owner would typically register the dataset in a proprietary or open source catalog.  We have provided [katalog](../reference/katalog.md) - a thin layer acting as a replacement for the data catalog for evaluation purposes. This simplifies the sample deployment.
-2. The data owner stores credentials for accessing the dataset in kubernetes secrets.
-3. Proprietary and open source data governance systems are available either as part of a data catalog or as stand-alone systems.  This sample uses the open source [OpenPolicyAgent](https://www.openpolicyagent.org/).  The data steward writes the policies in OPA's [rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language.
-4. Any editor can be used to write the FybrikApplication.yaml via which the data user expresses the data usage requirements.
-5. A jupyter notebook is the workload from which the data is consumed by the data user.
-
-## Before you begin
-
-Typically this would be done by an IT administrator.
-
-- Install Fybrik using the [Quick Start](../get-started/quickstart.md) guide.
-  This sample assumes the use of the built-in catalog, Open Policy Agent (OPA) and flight module.
-- A web browser.
-
-## Create a namespace for the sample
-
-Create a new Kubernetes namespace and set it as the active namespace:
-
-```bash
-kubectl create namespace fybrik-notebook-sample
-kubectl config set-context --current --namespace=fybrik-notebook-sample
-```
-
-This enables easy [cleanup](#cleanup) once you're done experimenting with the sample.
+- As a data owner you upload a dataset and register it in a data catalog
+- As a data steward you setup data governance policies
+- As a data user you specify your data usage requirements and use a notebook to consume the data
 
 ## Prepare a dataset to be accessed by the notebook
 
@@ -286,18 +264,3 @@ The next steps use the endpoint to read the data in a python notebook
   df
   ```
 5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
-
-
-## Cleanup
-
-When you’re finished experimenting with the notebook sample, clean it up:
-
-1. Stop `kubectl port-forward` processes (e.g., using `pkill kubectl`)
-1. Delete the namespace created for this sample:
-    ```bash
-    kubectl delete namespace fybrik-notebook-sample
-    ```
-1. Delete the policy created on fybrik-system namespace:
-    ```bash
-    kubectl -n fybrik-system delete configmap sample-policy
-    ```
