@@ -1225,6 +1225,47 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#updateasset" class="md-nav__link">
+    updateAsset
+  </a>
+  
+    <nav class="md-nav" aria-label="updateAsset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#return-type_3" class="md-nav__link">
+    Return type
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authorization_3" class="md-nav__link">
+    Authorization
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-request-headers_3" class="md-nav__link">
+    HTTP request headers
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1268,6 +1309,11 @@
 <td><a href="./#getAssetInfo"><strong>getAssetInfo</strong></a></td>
 <td><strong>POST</strong> /getAssetInfo</td>
 <td>This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml</td>
+</tr>
+<tr>
+<td><a href="./#updateAsset"><strong>updateAsset</strong></a></td>
+<td><strong>PATCH</strong> /updateAsset</td>
+<td>This REST API updates data asset information in the data catalog configured in fybrik</td>
 </tr>
 </tbody>
 </table>
@@ -1389,6 +1435,47 @@
 <h3 id="authorization_2">Authorization</h3>
 <p>No authorization required</p>
 <h3 id="http-request-headers_2">HTTP request headers</h3>
+<ul>
+<li><strong>Content-Type</strong>: application/json</li>
+<li><strong>Accept</strong>: application/json</li>
+</ul>
+<p><a href="../../">[Back to API-Specification]</a> </p>
+<p><a name="updateAsset"></a></p>
+<h2 id="updateasset"><strong>updateAsset</strong></h2>
+<blockquote>
+<p>UpdateAssetResponse updateAsset(X-Request-Datacatalog-Update-CredUpdateAssetRequest)</p>
+</blockquote>
+<p>This REST API updates data asset information in the data catalog configured in fybrik</p>
+<h3 id="parameters_3">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>X-Request-Datacatalog-Update-Cred</strong></td>
+<td><strong>String</strong></td>
+<td>This header carries credential information related to accessing the relevant destination catalog.</td>
+<td>[default to null]</td>
+</tr>
+<tr>
+<td><strong>UpdateAssetRequest</strong></td>
+<td><strong>UpdateAssetRequest</strong></td>
+<td>Update Asset Request</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="return-type_3">Return type</h3>
+<p><a href="../../Models/UpdateAssetResponse/"><strong>UpdateAssetResponse</strong></a></p>
+<h3 id="authorization_3">Authorization</h3>
+<p>No authorization required</p>
+<h3 id="http-request-headers_3">HTTP request headers</h3>
 <ul>
 <li><strong>Content-Type</strong>: application/json</li>
 <li><strong>Accept</strong>: application/json</li>
