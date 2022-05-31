@@ -125,7 +125,7 @@ rule[{"policy": description}] {
 }
 ```
 
-For more details on OPA policies please refer to [OPA documentation](https://www.openpolicyagent.org/docs/latest/policy-language/) in particulate to [the basics](https://www.openpolicyagent.org/docs/latest/policy-language/#the-basics) section which explains how a rule is evaluated.
+For more details on OPA policies please refer to [Using OPA for Data Governance](https://fybrik.io/dev/tasks/using-opa/) task.
 
 Copy the policy to a file named `sample-policy-write.rego` and then run:
 
