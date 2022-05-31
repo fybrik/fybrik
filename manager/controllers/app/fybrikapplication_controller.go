@@ -815,7 +815,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 
-	modulesNamespace := utils.GetFybrikModuleNamespace(applicationContext.Application.GetLabels())
+	modulesNamespace := utils.GetModuleNamespace(applicationContext.Application.GetLabels())
 
 	plotterSpec := &api.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,

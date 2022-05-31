@@ -136,23 +136,14 @@ func Intersection(set1, set2 []string) []string {
 const FybrikAppUUID = "app.fybrik.io/app-uuid"
 const FybrikModuleNamespace = "app.fybrik.io/modules-namespace"
 
-// GetFybrikModuleNamespaceFromLabels returns the moduleNamespace passed to the resource in its labels
-func GetFybrikModuleNamespaceFromLabels(labels map[string]string) string {
-	moduleNs, foundmoduleNs := labels[FybrikModuleNamespace]
-	if !foundmoduleNs {
-		return ""
-	}
-	return moduleNs
-}
-
-// GetFybrikModuleNamespace returns the moduleNamespace
+// GetModuleNamespace returns the moduleNamespace
 // The order of resolving the moduleNamespace is as follows:
 // If `app.fybrik.io/modules-namespace` label is set, it must be given precedence over
 // other value defined by an environment variable or a default value if the latter
 // is not set.
-func GetFybrikModuleNamespace(labels map[string]string) string {
-	moduleNs := GetFybrikModuleNamespaceFromLabels(labels)
-	if moduleNs == "" {
+func GetModuleNamespace(labels map[string]string) string {
+	moduleNs, foundmoduleNs := labels[FybrikModuleNamespace]
+	if !foundmoduleNs {
 		moduleNs = GetDefaultModulesNamespace()
 	}
 	return moduleNs

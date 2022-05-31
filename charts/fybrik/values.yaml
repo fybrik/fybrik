@@ -22,6 +22,7 @@ modulesNamespace:
   name: ""
   # if it is true, Fybrik, during its deployment, creates this namespace and removes it when Fybrik is uninstalled.
   # Otherwise, it is a user responsibility to create this namespace, before Fybrik deployment.
+  # Relevant only for namespace defined in .Values.modulesNamespace field.
   managedByFybrik: true
 
 # Define a specific namespace, if Fybrik should watch for FybrikApplication from a specific namespace only,

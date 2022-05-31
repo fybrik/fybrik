@@ -361,7 +361,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope v1alpha1.Capabil
 		instanceName = utils.CreateStepName(moduleName, assetID)
 	}
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-	releaseNamespace := utils.GetFybrikModuleNamespace(appContext.GetLabels())
+	releaseNamespace := utils.GetModuleNamespace(appContext.GetLabels())
 
 	type Release struct {
 		Name      string `json:"Name"`
