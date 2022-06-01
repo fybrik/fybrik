@@ -34,10 +34,8 @@ spec:
       volumes:
         - name: bootstrap
           emptyDir: {}
-      {{- if not .Values.global.openshift }}
       securityContext:
-        {{- mergeOverwrite (deepCopy .Values.global.podSecurityContext) .Values.opaServer.podSecurityContext | toYaml | nindent 8 }}
-      {{- end }}
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.opaServer.podSecurityContext) | nindent 8 }}
       initContainers:
         - name: initpolicy
           image: {{ .Values.opaServer.kubemgmt.image }}
@@ -64,10 +62,8 @@ spec:
               mountPath: /bootstrap
       containers:
         - name: opa
-          {{- if not .Values.global.openshift }}
           securityContext:
             {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.opaServer.containerSecurityContext | toYaml | nindent 12 }}
-          {{- end }}
           image: {{ .Values.opaServer.image }}
           imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:
