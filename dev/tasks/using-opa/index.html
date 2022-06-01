@@ -1318,6 +1318,7 @@
 <h1 id="using-opa-for-data-governance">Using OPA for Data Governance</h1>
 <p><a href="https://www.openpolicyagent.org/">Open Policy Agent</a> may be used as a data governance policy engine with Fybrik via the <a href="https://fybrik.io/dev/concepts/connectors/">connector</a> mechanism.</p>
 <p>When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.</p>
+<p>For more details on OPA policies please refer to <a href="https://www.openpolicyagent.org/docs/latest/policy-language/">OPA documentation</a> in particulate to <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#the-basics">the basics</a> section which explains how a policy is evaluated.</p>
 <h2 id="fybrik-default-policies">Fybrik Default Policies</h2>
 <p>Fybrik <strong><em>denys by default</em></strong> any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:</p>
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span><span class="w"></span>
