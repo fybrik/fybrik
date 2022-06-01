@@ -32,8 +32,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
+      {{- if not .Values.global.openshift }}
       securityContext:
-        {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+        {{- mergeOverwrite (deepCopy .Values.global.podSecurityContext) .Values.manager.podSecurityContext | toYaml | nindent 8 }}
+      {{- end }}
       {{- if .Values.manager.solver.image }}
       initContainers:
         - name: init-solver
@@ -135,16 +137,18 @@ spec:
               name: fybrik-taxonomy
             - mountPath: /tmp/adminconfig
               name: fybrik-adminconfig
-            {{- if .Values.manager.chartVolume }}
-            - mountPath: /opt/fybrik/
-              name: charts
-            {{- end }}
             {{- if .Values.manager.solver.image }}
             - mountPath: /tmp/solver
               name: solver-volume
             {{- end }}
+            {{- if .Values.manager.chartVolume }}
+            - mountPath: /opt/fybrik/
+              name: charts
+            {{- end }}
+          {{- if not .Values.global.openshift }}
           securityContext:
-            {{- toYaml .Values.manager.securityContext | nindent 12 }}
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10

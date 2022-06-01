@@ -50,6 +50,26 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
+  # True if the target deployment is OpenShift. Otherwise false. Default value is false.
+  openshift: false
+  # Pod Security Context. This is the default setting for all pods, and can be
+  # overwritten by a specific podSecurityContext settings.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  # Container Security Context. This is the default setting for all containers, and can be
+  # overwritten by a specific containerSecurityContext settings.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    privileged: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
 
 # Cluster metadata values
 cluster:
@@ -160,16 +180,16 @@ manager:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
-    # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -241,16 +261,15 @@ opaServer:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
-    # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext: {}
 
   service:
     type: ClusterIP
@@ -320,16 +339,15 @@ katalogConnector:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
-    # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext: {}
 
   service:
     type: ClusterIP
@@ -390,16 +408,15 @@ opaConnector:
 
   podAnnotations: {}
 
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
-    # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext: {}
 
   service:
     type: ClusterIP
