@@ -15,12 +15,15 @@ The `NetworkPolicy` is always created. However, your Kubernetes cluster must hav
 If Istio is installed in the cluster then you can use [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) to encrypt the traffic to the connectors.
 
 Follow these steps to enable mutual TLS:
+
 - Ensure that Istio 1.6 or above is installed.
+
 - Enable Istio sidecar injection in the `fybrik-system` namespace:
+
     ```bash
     kubectl label namespace fybrik-system istio-injection=enabled
     ```
-- Create Istio `PeerAuthentication` resource to enable mutual TLS between contains with Istio sidecars:
+- Create Istio `PeerAuthentication` resource to enable mutual TLS between containers with Istio sidecars:
     ```bash
     cat << EOF | kubectl apply -f -
     apiVersion: "security.istio.io/v1beta1"

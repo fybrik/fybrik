@@ -6,6 +6,6 @@ ENV HOME=/tmp
 WORKDIR /tmp
 
 COPY datauserserver /
-USER 1001
+USER 10001
 
 ENTRYPOINT ["/datauserserver"]
