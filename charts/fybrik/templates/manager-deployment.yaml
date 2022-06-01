@@ -32,10 +32,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
-      {{- if not .Values.global.openshift }}
       securityContext:
-        {{- mergeOverwrite (deepCopy .Values.global.podSecurityContext) .Values.manager.podSecurityContext | toYaml | nindent 8 }}
-      {{- end }}
+        {{- include "fybrik.processSecurityContextKeys" (dict "context" . "podSecurityContext" .Values.manager.podSecurityContext) | nindent 8 }}
       containers:
         {{- if .Values.manager.socat }}
         - name: integration-tests
@@ -122,10 +120,8 @@ spec:
             - mountPath: /opt/fybrik/
               name: charts
             {{- end }}
-          {{- if not .Values.global.openshift }}
           securityContext:
-            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
-          {{- end }}
+          {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10

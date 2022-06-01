@@ -119,3 +119,22 @@ Get modules namespace
 {{- .Values.modulesNamespace.name | default "fybrik-blueprints" -}}
 {{- end -}}
 
+{{/*
+processSecurityContextKeys does the following:
+- skips certain keys in Values.global.SecurityContext map if running on openshift
+- merges Values.global.SecurityContext with specific podSecurityContext settings
+  that is passed as a parameter to this function, giving preference to the values in the
+  latter map.
+*/}}
+{{- define "fybrik.processSecurityContextKeys" }}
+{{- $globalContext := deepCopy .context.Values.global.podSecurityContext  }}
+{{- $podSecurityContext := .podSecurityContext }}
+{{- if .context.Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+  {{- range $k, $v := .context.Values.global.podSecurityContext }}
+    {{- if or (eq $k "runAsUser") (eq $k "seccompProfile") }}
+      {{- $_ := unset $globalContext $k }}
+    {{- end }}
+   {{- end }}
+{{- end }}
+{{ mergeOverwrite $globalContext $podSecurityContext | toYaml }}
+{{- end }}
