@@ -32,7 +32,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.katalogConnector.serviceAccount.name }}
       securityContext:
-      {{- include "fybrik.processSecurityContextKeys" (dict "context" . "podSecurityContext" .Values.katalogConnector.podSecurityContext) | nindent 8 }}
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.katalogConnector.podSecurityContext) | nindent 8 }}
       containers:
         - name: katalog-connector
           securityContext:

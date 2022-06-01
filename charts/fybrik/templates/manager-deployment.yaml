@@ -33,7 +33,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
       securityContext:
-        {{- include "fybrik.processSecurityContextKeys" (dict "context" . "podSecurityContext" .Values.manager.podSecurityContext) | nindent 8 }}
+        {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.manager.podSecurityContext) | nindent 8 }}
       containers:
         {{- if .Values.manager.socat }}
         - name: integration-tests

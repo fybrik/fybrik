@@ -120,13 +120,13 @@ Get modules namespace
 {{- end -}}
 
 {{/*
-processSecurityContextKeys does the following:
-- skips certain keys in Values.global.SecurityContext map if running on openshift
-- merges Values.global.SecurityContext with specific podSecurityContext settings
+processPodSecurityContext does the following:
+- skips certain keys in Values.global.podSecurityContext map if running on openshift
+- merges Values.global.podSecurityContext with specific podSecurityContext settings
   that is passed as a parameter to this function, giving preference to the values in the
   latter map.
 */}}
-{{- define "fybrik.processSecurityContextKeys" }}
+{{- define "fybrik.processPodSecurityContext" }}
 {{- $globalContext := deepCopy .context.Values.global.podSecurityContext  }}
 {{- $podSecurityContext := .podSecurityContext }}
 {{- if .context.Capabilities.APIVersions.Has "security.openshift.io/v1" }}

@@ -35,7 +35,7 @@ spec:
         - name: bootstrap
           emptyDir: {}
       securityContext:
-      {{- include "fybrik.processSecurityContextKeys" (dict "context" . "podSecurityContext" .Values.opaServer.podSecurityContext) | nindent 8 }}
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.opaServer.podSecurityContext) | nindent 8 }}
       initContainers:
         - name: initpolicy
           image: {{ .Values.opaServer.kubemgmt.image }}
