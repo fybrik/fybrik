@@ -214,3 +214,43 @@ config[{"capability": "copy", "decision": decision}] {
 }
 ```
 Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
+
+## Taking infrastructure metrics into consideration
+
+When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
+For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
+Infrastructure attributes and metrics are stored in `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik.
+
+### How to define infrastructure attributes
+
+An infrastructure attribute is defined by a JSON object including the following fields:
+
+- `attribute` - name of the infrastructure attribute, should be defined in the taxonomy
+- `description` 
+- `type` - value type(can be numeric, string or boolean)
+- `value` - the actual value of the metric
+- `units` - measurement units, defined in the taxonomy 
+- `object` - a resource the attribute relates to (storageaccount, module, cluster)
+- `instance` - a reference to the resource instance, e.g. storage account name
+- `scale` - a scale of values (minimum and maximum) when applicable
+
+For example, the attribute above defines the storage cost of the "account-theshire" storage account. 
+
+```
+{
+    "attribute": "storage-cost",
+    "description": "theshire object store",
+    "value": "90",
+    "type": "numeric",
+    "units": "US Dollar per TB per month",
+    "object": "storageaccount",
+    "instance": "account-theshire"
+}
+```
+
+### Add a new attribute definition to the taxonomy
+
+See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example of defining an attribute and the corresponding measurement units. 
+ 
+### Usage of infrastructure attributes in policies
+
