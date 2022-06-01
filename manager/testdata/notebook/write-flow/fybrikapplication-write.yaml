@@ -17,12 +17,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: 'fybrik-notebook-sample/data-csv'
-      flow: read
-      requirements:
-        interface:
-          protocol: fybrik-arrow-flight
-    - dataSetID: 'new-data-parquet'
+    - dataSetID: 'new-data'
       flow: write
       requirements:
         flowParams:
@@ -32,12 +27,11 @@ spec:
             tags:
               finance: true
             columns:
-            - name: nameOrig
-              tags:
-                PII: true
-            - name: oldbalanceOrg
-              tags:
-                sensitive: true
+              - name: nameOrig
+                tags:
+                  PII: true
+              - name: oldbalanceOrg
+                tags:
+                  sensitive: true
         interface:
           protocol: fybrik-arrow-flight
-
