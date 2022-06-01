@@ -87,11 +87,11 @@ run-integration-tests:
 	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
 
-.PHONY: run-notebook-tests
-run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-notebook-tests: export VALUES_FILE=charts/fybrik/notebook-tests.values.yaml
-run-notebook-tests:
+.PHONY: run-notebook-readflow-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
@@ -99,7 +99,21 @@ run-notebook-tests:
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C manager run-notebook-tests
+	$(MAKE) -C manager run-notebook-readflow-tests
+
+.PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-writeflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
+run-notebook-writeflow-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-notebook-writeflow-tests
 
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
