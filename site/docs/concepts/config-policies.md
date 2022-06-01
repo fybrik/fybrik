@@ -254,3 +254,16 @@ See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infras
  
 ### Usage of infrastructure attributes in policies
 
+An infrastructure attribute can be used as the `property` value in configuration policies. For example, the policy above restricts 
+the storage accont selection using the `storage-cost` infrastructure attribute:
+```
+# restrict storage for copy
+config[{"capability": "copy", "decision": decision}] {
+    input.request.usage == "copy"
+    input.request.dataset.geography != input.workload.cluster.metadata.region
+    account_restrict := {"property": "storage-cost", "range": {"max": 95}}
+    policy := {"ID": "copy-restrict-storage", "description":"Use cheaper storage", "version": "0.1"}
+    decision := {"policy": policy, "restrictions": {"storageaccounts": [account_restrict]}}
+}
+```
+
