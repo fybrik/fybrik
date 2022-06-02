@@ -219,11 +219,11 @@ Note that an empty ConfigDecisions map will be returned if the expiration date i
 
 When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
 For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
-Infrastructure attributes and metrics are stored in `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik.
+Infrastructure attributes and metrics are stored in the `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.
 
 ### How to define infrastructure attributes
 
-An infrastructure attribute is defined by a JSON object including the following fields:
+An infrastructure attribute is defined by a JSON object that includes the following fields:
 
 - `attribute` - name of the infrastructure attribute, should be defined in the taxonomy
 - `description` 
@@ -234,7 +234,9 @@ An infrastructure attribute is defined by a JSON object including the following 
 - `instance` - a reference to the resource instance, e.g. storage account name
 - `scale` - a scale of values (minimum and maximum) when applicable
 
-For example, the attribute above defines the storage cost of the "account-theshire" storage account. 
+The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the `cluster-metadata` config map). The valid values for the attribute `object` field are `storageaccount`, `module` and `cluster`, respectively.
+
+For example, the following attribute defines the storage cost of the "account-theshire" storage account. 
 
 ```
 {
@@ -250,14 +252,14 @@ For example, the attribute above defines the storage cost of the "account-theshi
 
 ### Add a new attribute definition to the taxonomy
 
-See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example of defining an attribute and the corresponding measurement units. 
+See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example how to define an attribute and the corresponding measurement units. 
  
 ### Usage of infrastructure attributes in policies
 
-An infrastructure attribute can be used as the `property` value in configuration policies. For example, the policy above restricts 
-the storage accont selection using the `storage-cost` infrastructure attribute:
+An infrastructure attribute can be used as the `property` value in configuration policies. For example, the following policy restricts 
+the storage account selection using the `storage-cost` infrastructure attribute:
 ```
-# restrict storage for copy
+# restrict storage costs to a maximum of $95 when copying the data
 config[{"capability": "copy", "decision": decision}] {
     input.request.usage == "copy"
     input.request.dataset.geography != input.workload.cluster.metadata.region
