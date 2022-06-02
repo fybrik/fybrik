@@ -211,6 +211,15 @@ manager:
 
   prometheus: false
 
+  # CSP solver for data plane optimization
+  solver:
+    # image of the container with solver binary and libs
+    # when specified, the solver will be deployed in the manager pod
+    image: "optimizer"
+    imagePullPolicy: "Always"
+    # Set to true to enable the use of the solver by Fybrik
+    enabled: false
+
   chartVolume: ""
     # Specify a persistent volume claim, to be mounted by the manager, that can contain
     # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart
