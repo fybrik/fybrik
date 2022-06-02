@@ -721,6 +721,40 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#taking-infrastructure-metrics-into-consideration" class="md-nav__link">
+    Taking infrastructure metrics into consideration
+  </a>
+  
+    <nav class="md-nav" aria-label="Taking infrastructure metrics into consideration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-define-infrastructure-attributes" class="md-nav__link">
+    How to define infrastructure attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-attribute-definition-to-the-taxonomy" class="md-nav__link">
+    Add a new attribute definition to the taxonomy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-of-infrastructure-attributes-in-policies" class="md-nav__link">
+    Usage of infrastructure attributes in policies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1339,6 +1373,40 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#taking-infrastructure-metrics-into-consideration" class="md-nav__link">
+    Taking infrastructure metrics into consideration
+  </a>
+  
+    <nav class="md-nav" aria-label="Taking infrastructure metrics into consideration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-define-infrastructure-attributes" class="md-nav__link">
+    How to define infrastructure attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-attribute-definition-to-the-taxonomy" class="md-nav__link">
+    Add a new attribute definition to the taxonomy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-of-infrastructure-attributes-in-policies" class="md-nav__link">
+    Usage of infrastructure attributes in policies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1533,6 +1601,48 @@ config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision
 }
 </code></pre></div>
 Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. </p>
+<h2 id="taking-infrastructure-metrics-into-consideration">Taking infrastructure metrics into consideration</h2>
+<p>When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
+For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
+Infrastructure attributes and metrics are stored in the <code>/tmp/adminconfig/infrastructure.json</code> directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.</p>
+<h3 id="how-to-define-infrastructure-attributes">How to define infrastructure attributes</h3>
+<p>An infrastructure attribute is defined by a JSON object that includes the following fields:</p>
+<ul>
+<li><code>attribute</code> - name of the infrastructure attribute, should be defined in the taxonomy</li>
+<li><code>description</code> </li>
+<li><code>type</code> - value type(can be numeric, string or boolean)</li>
+<li><code>value</code> - the actual value of the metric</li>
+<li><code>units</code> - measurement units, defined in the taxonomy </li>
+<li><code>object</code> - a resource the attribute relates to (storageaccount, module, cluster)</li>
+<li><code>instance</code> - a reference to the resource instance, e.g. storage account name</li>
+<li><code>scale</code> - a scale of values (minimum and maximum) when applicable</li>
+</ul>
+<p>The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the <code>cluster-metadata</code> config map). The valid values for the attribute <code>object</code> field are <code>storageaccount</code>, <code>module</code> and <code>cluster</code>, respectively.</p>
+<p>For example, the following attribute defines the storage cost of the "account-theshire" storage account. </p>
+<div class="highlight"><pre><span></span><code>{
+    &quot;attribute&quot;: &quot;storage-cost&quot;,
+    &quot;description&quot;: &quot;theshire object store&quot;,
+    &quot;value&quot;: &quot;90&quot;,
+    &quot;type&quot;: &quot;numeric&quot;,
+    &quot;units&quot;: &quot;US Dollar per TB per month&quot;,
+    &quot;object&quot;: &quot;storageaccount&quot;,
+    &quot;instance&quot;: &quot;account-theshire&quot;
+}
+</code></pre></div>
+<h3 id="add-a-new-attribute-definition-to-the-taxonomy">Add a new attribute definition to the taxonomy</h3>
+<p>See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example how to define an attribute and the corresponding measurement units. </p>
+<h3 id="usage-of-infrastructure-attributes-in-policies">Usage of infrastructure attributes in policies</h3>
+<p>An infrastructure attribute can be used as the <code>property</code> value in configuration policies. For example, the following policy restricts 
+the storage account selection using the <code>storage-cost</code> infrastructure attribute:
+<div class="highlight"><pre><span></span><code># restrict storage costs to a maximum of $95 when copying the data
+config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
+    input.request.usage == &quot;copy&quot;
+    input.request.dataset.geography != input.workload.cluster.metadata.region
+    account_restrict := {&quot;property&quot;: &quot;storage-cost&quot;, &quot;range&quot;: {&quot;max&quot;: 95}}
+    policy := {&quot;ID&quot;: &quot;copy-restrict-storage&quot;, &quot;description&quot;:&quot;Use cheaper storage&quot;, &quot;version&quot;: &quot;0.1&quot;}
+    decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;storageaccounts&quot;: [account_restrict]}}
+}
+</code></pre></div></p>
 
               
             </article>
