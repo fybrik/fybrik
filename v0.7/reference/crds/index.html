@@ -1,0 +1,6282 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A cloud-native platform to control data usage">
+      
+      
+      
+      <link rel="icon" href="../../static/logo.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.16">
+    
+    
+      
+        <title>API Reference - Fybrik</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1c3799f8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Fybrik" class="md-header__button md-logo" aria-label="Fybrik" data-md-component="logo">
+      
+  <img src="../../static/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Fybrik
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/fybrik/fybrik" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fybrik/fybrik
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      About
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../get-started/quickstart/" class="md-tabs__link">
+        Get Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
+        Concepts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tasks/control-plane-security/" class="md-tabs__link">
+        Tasks
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./" class="md-tabs__link md-tabs__link--active">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contribute/" class="md-tabs__link">
+        Contribute
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../publications/" class="md-tabs__link">
+      Publications
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Fybrik" class="md-nav__button md-logo" aria-label="Fybrik" data-md-component="logo">
+      
+  <img src="../../static/logo.png" alt="logo">
+
+    </a>
+    Fybrik
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/fybrik/fybrik" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fybrik/fybrik
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Get Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Get Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_2">
+          Notebook samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Notebook samples" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Notebook samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/pre-steps/" class="md-nav__link">
+        Before we begin
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/notebook-read/" class="md-nav__link">
+        Notebook sample for the read flow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/notebook-write/" class="md-nav__link">
+        Notebook sample for the write flow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../samples/cleanup/" class="md-nav__link">
+        Cleanup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Concepts
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Concepts" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Concepts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/introduction/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/taxonomy/" class="md-nav__link">
+        Taxonomy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_4">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
+        Connectors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/modules/" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/vault_plugins/" class="md-nav__link">
+        HashiCorp Vault plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/config-policies/" class="md-nav__link">
+        Configuration Policies
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Tasks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tasks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/control-plane-security/" class="md-nav__link">
+        Enable Control Plane Security
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/using-opa/" class="md-nav__link">
+        Using OPA for Data Governance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/multicluster/" class="md-nav__link">
+        Multicluster setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/custom-taxonomy/" class="md-nav__link">
+        Using a Custom Taxonomy for Resource Validation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/performance/" class="md-nav__link">
+        Performance
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        API Reference
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#appfybrikiov1alpha1" class="md-nav__link">
+    app.fybrik.io/v1alpha1
+  </a>
+  
+    <nav class="md-nav" aria-label="app.fybrik.io/v1alpha1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blueprint" class="md-nav__link">
+    Blueprint
+  </a>
+  
+    <nav class="md-nav" aria-label="Blueprint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspec" class="md-nav__link">
+    Blueprint.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskey" class="md-nav__link">
+    Blueprint.spec.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeychart" class="md-nav__link">
+    Blueprint.spec.modules[key].chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyarguments" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index].connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index].vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindextransformationsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].transformations[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplication" class="md-nav__link">
+    Blueprint.spec.application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplicationselector" class="md-nav__link">
+    Blueprint.spec.application.selector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplicationselectormatchexpressionsindex" class="md-nav__link">
+    Blueprint.spec.application.selector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatus" class="md-nav__link">
+    Blueprint.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatusmoduleskey" class="md-nav__link">
+    Blueprint.status.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatusobservedstate" class="md-nav__link">
+    Blueprint.status.observedState
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplication" class="md-nav__link">
+    FybrikApplication
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikApplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspec" class="md-nav__link">
+    FybrikApplication.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindex" class="md-nav__link">
+    FybrikApplication.spec.data[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirements" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparams" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsinterface" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselector" class="md-nav__link">
+    FybrikApplication.spec.selector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselectorworkloadselector" class="md-nav__link">
+    FybrikApplication.spec.selector.workloadSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex" class="md-nav__link">
+    FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatus" class="md-nav__link">
+    FybrikApplication.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskey" class="md-nav__link">
+    FybrikApplication.status.assetStates[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskeyconditionsindex" class="md-nav__link">
+    FybrikApplication.status.assetStates[key].conditions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskeyendpoint" class="md-nav__link">
+    FybrikApplication.status.assetStates[key].endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusgenerated" class="md-nav__link">
+    FybrikApplication.status.generated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekey" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetails" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details.vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].resourceMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].resourceMetadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeysecretref" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].secretRef
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodule" class="md-nav__link">
+    FybrikModule
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikModule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespec" class="md-nav__link">
+    FybrikModule.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexactionsindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].actions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexapi" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexapiconnection" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexpluginsindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].plugins[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsink" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index].sink
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsource" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index].source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecchart" class="md-nav__link">
+    FybrikModule.spec.chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecdependenciesindex" class="md-nav__link">
+    FybrikModule.spec.dependencies[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecstatusindicatorsindex" class="md-nav__link">
+    FybrikModule.spec.statusIndicators[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulestatus" class="md-nav__link">
+    FybrikModule.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulestatusconditionsindex" class="md-nav__link">
+    FybrikModule.status.conditions[index]
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccount" class="md-nav__link">
+    FybrikStorageAccount
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikStorageAccount">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccountspec" class="md-nav__link">
+    FybrikStorageAccount.spec
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotter" class="md-nav__link">
+    Plotter
+  </a>
+  
+    <nav class="md-nav" aria-label="Plotter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plotterspec" class="md-nav__link">
+    Plotter.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskey" class="md-nav__link">
+    Plotter.spec.assets[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetails" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindex" class="md-nav__link">
+    Plotter.spec.flows[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapiconnection" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskey" class="md-nav__link">
+    Plotter.spec.templates[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskeymodulesindex" class="md-nav__link">
+    Plotter.spec.templates[key].modules[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskeymodulesindexchart" class="md-nav__link">
+    Plotter.spec.templates[key].modules[index].chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselector" class="md-nav__link">
+    Plotter.spec.appSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselectorworkloadselector" class="md-nav__link">
+    Plotter.spec.appSelector.workloadSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselectorworkloadselectormatchexpressionsindex" class="md-nav__link">
+    Plotter.spec.appSelector.workloadSelector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatus" class="md-nav__link">
+    Plotter.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusassetskey" class="md-nav__link">
+    Plotter.status.assets[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskey" class="md-nav__link">
+    Plotter.status.blueprints[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatus" class="md-nav__link">
+    Plotter.status.blueprints[key].status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatusmoduleskey" class="md-nav__link">
+    Plotter.status.blueprints[key].status.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatusobservedstate" class="md-nav__link">
+    Plotter.status.blueprints[key].status.observedState
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusconditionsindex" class="md-nav__link">
+    Plotter.status.conditions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskey" class="md-nav__link">
+    Plotter.status.flows[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskeysubflowskey" class="md-nav__link">
+    Plotter.status.flows[key].subFlows[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskeystatus" class="md-nav__link">
+    Plotter.status.flows[key].status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusobservedstate" class="md-nav__link">
+    Plotter.status.observedState
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#katalogfybrikiov1alpha1" class="md-nav__link">
+    katalog.fybrik.io/v1alpha1
+  </a>
+  
+    <nav class="md-nav" aria-label="katalog.fybrik.io/v1alpha1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#asset" class="md-nav__link">
+    Asset
+  </a>
+  
+    <nav class="md-nav" aria-label="Asset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assetspec" class="md-nav__link">
+    Asset.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecdetails" class="md-nav__link">
+    Asset.spec.details
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecdetailsconnection" class="md-nav__link">
+    Asset.spec.details.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecmetadata" class="md-nav__link">
+    Asset.spec.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecmetadatacolumnsindex" class="md-nav__link">
+    Asset.spec.metadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecsecretref" class="md-nav__link">
+    Asset.spec.secretRef
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Connectors API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Connectors API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Connectors API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors-datacatalog/" class="md-nav__link">
+        Data catalog
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors-policymanager/" class="md-nav__link">
+        Policy manager
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_3">
+          Components
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Components" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ddc/" class="md-nav__link">
+        Data Distribution Controller
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../katalog/" class="md-nav__link">
+        Katalog
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Contribute
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contribute" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Contribute
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/environment/" class="md-nav__link">
+        Development Environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/build-test/" class="md-nav__link">
+        Build and Test
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/flow/" class="md-nav__link">
+        GitHub Workflow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/logging/" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_6">
+          Documentation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Documentation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_6">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/" class="md-nav__link">
+        Contribute Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/formatting/" class="md-nav__link">
+        Formatting Standards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/style/" class="md-nav__link">
+        Style Guide
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_7" type="checkbox" id="__nav_6_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_7">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_7">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/modules/" class="md-nav__link">
+        Module Development
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../publications/" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#appfybrikiov1alpha1" class="md-nav__link">
+    app.fybrik.io/v1alpha1
+  </a>
+  
+    <nav class="md-nav" aria-label="app.fybrik.io/v1alpha1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blueprint" class="md-nav__link">
+    Blueprint
+  </a>
+  
+    <nav class="md-nav" aria-label="Blueprint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspec" class="md-nav__link">
+    Blueprint.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskey" class="md-nav__link">
+    Blueprint.spec.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeychart" class="md-nav__link">
+    Blueprint.spec.modules[key].chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyarguments" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index].connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].args[index].vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecmoduleskeyargumentsassetsindextransformationsindex" class="md-nav__link">
+    Blueprint.spec.modules[key].arguments.assets[index].transformations[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplication" class="md-nav__link">
+    Blueprint.spec.application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplicationselector" class="md-nav__link">
+    Blueprint.spec.application.selector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintspecapplicationselectormatchexpressionsindex" class="md-nav__link">
+    Blueprint.spec.application.selector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatus" class="md-nav__link">
+    Blueprint.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatusmoduleskey" class="md-nav__link">
+    Blueprint.status.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blueprintstatusobservedstate" class="md-nav__link">
+    Blueprint.status.observedState
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplication" class="md-nav__link">
+    FybrikApplication
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikApplication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspec" class="md-nav__link">
+    FybrikApplication.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindex" class="md-nav__link">
+    FybrikApplication.spec.data[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirements" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparams" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecdataindexrequirementsinterface" class="md-nav__link">
+    FybrikApplication.spec.data[index].requirements.interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselector" class="md-nav__link">
+    FybrikApplication.spec.selector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselectorworkloadselector" class="md-nav__link">
+    FybrikApplication.spec.selector.workloadSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex" class="md-nav__link">
+    FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatus" class="md-nav__link">
+    FybrikApplication.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskey" class="md-nav__link">
+    FybrikApplication.status.assetStates[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskeyconditionsindex" class="md-nav__link">
+    FybrikApplication.status.assetStates[key].conditions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusassetstateskeyendpoint" class="md-nav__link">
+    FybrikApplication.status.assetStates[key].endpoint
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusgenerated" class="md-nav__link">
+    FybrikApplication.status.generated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekey" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetails" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].details.vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].resourceMetadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].resourceMetadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikapplicationstatusprovisionedstoragekeysecretref" class="md-nav__link">
+    FybrikApplication.status.provisionedStorage[key].secretRef
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodule" class="md-nav__link">
+    FybrikModule
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikModule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespec" class="md-nav__link">
+    FybrikModule.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexactionsindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].actions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexapi" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexapiconnection" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexpluginsindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].plugins[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsink" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index].sink
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsource" class="md-nav__link">
+    FybrikModule.spec.capabilities[index].supportedInterfaces[index].source
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecchart" class="md-nav__link">
+    FybrikModule.spec.chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecdependenciesindex" class="md-nav__link">
+    FybrikModule.spec.dependencies[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulespecstatusindicatorsindex" class="md-nav__link">
+    FybrikModule.spec.statusIndicators[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulestatus" class="md-nav__link">
+    FybrikModule.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikmodulestatusconditionsindex" class="md-nav__link">
+    FybrikModule.status.conditions[index]
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccount" class="md-nav__link">
+    FybrikStorageAccount
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikStorageAccount">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccountspec" class="md-nav__link">
+    FybrikStorageAccount.spec
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotter" class="md-nav__link">
+    Plotter
+  </a>
+  
+    <nav class="md-nav" aria-label="Plotter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plotterspec" class="md-nav__link">
+    Plotter.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskey" class="md-nav__link">
+    Plotter.spec.assets[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetails" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetailsconnection" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecassetskeyassetdetailsvaultkey" class="md-nav__link">
+    Plotter.spec.assets[key].assetDetails.vault[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindex" class="md-nav__link">
+    Plotter.spec.flows[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapiconnection" class="md-nav__link">
+    Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskey" class="md-nav__link">
+    Plotter.spec.templates[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskeymodulesindex" class="md-nav__link">
+    Plotter.spec.templates[key].modules[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspectemplateskeymodulesindexchart" class="md-nav__link">
+    Plotter.spec.templates[key].modules[index].chart
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselector" class="md-nav__link">
+    Plotter.spec.appSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselectorworkloadselector" class="md-nav__link">
+    Plotter.spec.appSelector.workloadSelector
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterspecappselectorworkloadselectormatchexpressionsindex" class="md-nav__link">
+    Plotter.spec.appSelector.workloadSelector.matchExpressions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatus" class="md-nav__link">
+    Plotter.status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusassetskey" class="md-nav__link">
+    Plotter.status.assets[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskey" class="md-nav__link">
+    Plotter.status.blueprints[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatus" class="md-nav__link">
+    Plotter.status.blueprints[key].status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatusmoduleskey" class="md-nav__link">
+    Plotter.status.blueprints[key].status.modules[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusblueprintskeystatusobservedstate" class="md-nav__link">
+    Plotter.status.blueprints[key].status.observedState
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusconditionsindex" class="md-nav__link">
+    Plotter.status.conditions[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskey" class="md-nav__link">
+    Plotter.status.flows[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskeysubflowskey" class="md-nav__link">
+    Plotter.status.flows[key].subFlows[key]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusflowskeystatus" class="md-nav__link">
+    Plotter.status.flows[key].status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plotterstatusobservedstate" class="md-nav__link">
+    Plotter.status.observedState
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#katalogfybrikiov1alpha1" class="md-nav__link">
+    katalog.fybrik.io/v1alpha1
+  </a>
+  
+    <nav class="md-nav" aria-label="katalog.fybrik.io/v1alpha1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#asset" class="md-nav__link">
+    Asset
+  </a>
+  
+    <nav class="md-nav" aria-label="Asset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assetspec" class="md-nav__link">
+    Asset.spec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecdetails" class="md-nav__link">
+    Asset.spec.details
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecdetailsconnection" class="md-nav__link">
+    Asset.spec.details.connection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecmetadata" class="md-nav__link">
+    Asset.spec.metadata
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecmetadatacolumnsindex" class="md-nav__link">
+    Asset.spec.metadata.columns[index]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assetspecsecretref" class="md-nav__link">
+    Asset.spec.secretRef
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/crds.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="api-reference">API Reference</h1>
+<p>Packages:</p>
+<ul>
+<li><a href="#appfybrikiov1alpha1">app.fybrik.io/v1alpha1</a></li>
+<li><a href="#katalogfybrikiov1alpha1">katalog.fybrik.io/v1alpha1</a></li>
+</ul>
+<h2 id="appfybrikiov1alpha1">app.fybrik.io/v1alpha1</h2>
+<p>Resource Types:</p>
+<ul>
+<li>
+<p><a href="#blueprint">Blueprint</a></p>
+</li>
+<li>
+<p><a href="#fybrikapplication">FybrikApplication</a></p>
+</li>
+<li>
+<p><a href="#fybrikmodule">FybrikModule</a></p>
+</li>
+<li>
+<p><a href="#fybrikstorageaccount">FybrikStorageAccount</a></p>
+</li>
+<li>
+<p><a href="#plotter">Plotter</a></p>
+</li>
+</ul>
+<h3 id="blueprint">Blueprint</h3>
+<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>Blueprint is the Schema for the blueprints API</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>Blueprint</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspec">Blueprint.spec</h4>
+<p><sup><sup><a href="#blueprint">↩ Parent</a></sup></sup></p>
+<p>BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path that run in a particular cluster. In a single cluster environment there is one blueprint per workload (FybrikApplication). In a multi-cluster environment there is one Blueprint per cluster per workload (FybrikApplication).</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Cluster indicates the cluster on which the Blueprint runs<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Modules is a map which contains modules that indicate the data path components that run in this cluster The map key is moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecapplication">application</a></b></td>
+        <td>object</td>
+        <td>
+          ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskey">Blueprint.spec.modules[key]</h4>
+<p><sup><sup><a href="#blueprintspec">↩ Parent</a></sup></sup></p>
+<p>BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary to instantiate a datapath component, including the parameters relevant for the particular workload.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeychart">chart</a></b></td>
+        <td>object</td>
+        <td>
+          Chart contains the location of the helm chart with info detailing how to deploy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the FybrikModule on which this is based<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyarguments">arguments</a></b></td>
+        <td>object</td>
+        <td>
+          Arguments are the input parameters for a specific instance of a module.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>assetIds</b></td>
+        <td>[]string</td>
+        <td>
+          assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeychart">Blueprint.spec.modules[key].chart</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskey">↩ Parent</a></sup></sup></p>
+<p>Chart contains the location of the helm chart with info detailing how to deploy</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>chartPullSecret</b></td>
+        <td>string</td>
+        <td>
+          Name of secret containing helm registry credentials<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyarguments">Blueprint.spec.modules[key].arguments</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskey">↩ Parent</a></sup></sup></p>
+<p>Arguments are the input parameters for a specific instance of a module.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindex">assets</a></b></td>
+        <td>[]object</td>
+        <td>
+          Assets define asset related arguments, such as data source, transformations, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindex">Blueprint.spec.modules[key].arguments.assets[index]</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyarguments">↩ Parent</a></sup></sup></p>
+<p>AssetContext defines the input parameters for modules that access an asset</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>assetID</b></td>
+        <td>string</td>
+        <td>
+          AssetID identifies the asset to be used for accessing the data when it is ready It is copied from the FybrikApplication resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Capability of the module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex">args</a></b></td>
+        <td>[]object</td>
+        <td>
+          List of datastores associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindextransformationsindex">transformations</a></b></td>
+        <td>[]object</td>
+        <td>
+          Transformations are different types of processing that may be done to the data as it is copied.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindexargsindex">Blueprint.spec.modules[key].arguments.assets[index].args[index]</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindex">↩ Parent</a></sup></sup></p>
+<p>DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindexargsindexconnection">Blueprint.spec.modules[key].arguments.assets[index].args[index].connection</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey">Blueprint.spec.modules[key].arguments.assets[index].args[index].vault[key]</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindex">↩ Parent</a></sup></sup></p>
+<p>Holds details for retrieving credentials from Vault store.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecmoduleskeyargumentsassetsindextransformationsindex">Blueprint.spec.modules[key].arguments.assets[index].transformations[index]</h4>
+<p><sup><sup><a href="#blueprintspecmoduleskeyargumentsassetsindex">↩ Parent</a></sup></sup></p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecapplication">Blueprint.spec.application</h4>
+<p><sup><sup><a href="#blueprintspec">↩ Parent</a></sup></sup></p>
+<p>ApplicationContext is a context of the origin FybrikApplication (labels, properties, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>context</b></td>
+        <td>object</td>
+        <td>
+          Application context such as intent, role, etc.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecapplicationselector">Blueprint.spec.application.selector</h4>
+<p><sup><sup><a href="#blueprintspecapplication">↩ Parent</a></sup></sup></p>
+<p>Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecapplicationselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintspecapplicationselectormatchexpressionsindex">Blueprint.spec.application.selector.matchExpressions[index]</h4>
+<p><sup><sup><a href="#blueprintspecapplicationselector">↩ Parent</a></sup></sup></p>
+<p>A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintstatus">Blueprint.status</h4>
+<p><sup><sup><a href="#blueprint">↩ Parent</a></sup></sup></p>
+<p>BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintstatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintstatusobservedstate">observedState</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>releases</b></td>
+        <td>map[string]integer</td>
+        <td>
+          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintstatusmoduleskey">Blueprint.status.modules[key]</h4>
+<p><sup><sup><a href="#blueprintstatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="blueprintstatusobservedstate">Blueprint.status.observedState</h4>
+<p><sup><sup><a href="#blueprintstatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h3 id="fybrikapplication">FybrikApplication</h3>
+<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>FybrikApplication provides information about the application whose data is being operated on, the nature of the processing, and the data sets chosen for processing by the application. The FybrikApplication controller obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Plotter which defines the secure runtime environment and all the components in it.  This runtime environment provides the application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from the credential management system.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikApplication</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikApplicationStatus defines the observed state of FybrikApplication.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspec">FybrikApplication.spec</h4>
+<p><sup><sup><a href="#fybrikapplication">↩ Parent</a></sup></sup></p>
+<p>FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>appInfo</b></td>
+        <td>object</td>
+        <td>
+          AppInfo contains information describing the reasons for the processing that will be done by the application.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindex">data</a></b></td>
+        <td>[]object</td>
+        <td>
+          Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecselector">selector</a></b></td>
+        <td>object</td>
+        <td>
+          Selector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindex">FybrikApplication.spec.data[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationspec">↩ Parent</a></sup></sup></p>
+<p>DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataSetID</b></td>
+        <td>string</td>
+        <td>
+          DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirements">requirements</a></b></td>
+        <td>object</td>
+        <td>
+          Requirements from the system<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>flow</b></td>
+        <td>enum</td>
+        <td>
+          Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirements">FybrikApplication.spec.data[index].requirements</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindex">↩ Parent</a></sup></sup></p>
+<p>Requirements from the system</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparams">flowParams</a></b></td>
+        <td>object</td>
+        <td>
+          FlowParams include the requirements for particular data flows<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsinterface">interface</a></b></td>
+        <td>object</td>
+        <td>
+          Interface indicates the protocol and format expected by the data user<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsflowparams">FybrikApplication.spec.data[index].requirements.flowParams</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirements">↩ Parent</a></sup></sup></p>
+<p>FlowParams include the requirements for particular data flows</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>catalog</b></td>
+        <td>string</td>
+        <td>
+          Catalog indicates that the data asset must be cataloged, and in which catalog to register it<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>isNewDataSet</b></td>
+        <td>boolean</td>
+        <td>
+          IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID. Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata">metadata</a></b></td>
+        <td>object</td>
+        <td>
+          Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>storageEstimate</b></td>
+        <td>integer</td>
+        <td>
+          Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsflowparamsmetadata">FybrikApplication.spec.data[index].requirements.flowParams.metadata</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirementsflowparams">↩ Parent</a></sup></sup></p>
+<p>Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsflowparamsmetadatacolumnsindex">FybrikApplication.spec.data[index].requirements.flowParams.metadata.columns[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirementsflowparamsmetadata">↩ Parent</a></sup></sup></p>
+<p>ResourceColumn represents a column in a tabular resource</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecdataindexrequirementsinterface">FybrikApplication.spec.data[index].requirements.interface</h4>
+<p><sup><sup><a href="#fybrikapplicationspecdataindexrequirements">↩ Parent</a></sup></sup></p>
+<p>Interface indicates the protocol and format expected by the data user</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>protocol</b></td>
+        <td>string</td>
+        <td>
+          Protocol defines the interface protocol used for data transactions<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataformat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat defines the data format type<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecselector">FybrikApplication.spec.selector</h4>
+<p><sup><sup><a href="#fybrikapplicationspec">↩ Parent</a></sup></sup></p>
+<p>Selector enables to connect the resource to the application Application labels should match the labels in the selector.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
+        <td>object</td>
+        <td>
+          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>clusterName</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecselectorworkloadselector">FybrikApplication.spec.selector.workloadSelector</h4>
+<p><sup><sup><a href="#fybrikapplicationspecselector">↩ Parent</a></sup></sup></p>
+<p>WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationspecselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationspecselectorworkloadselectormatchexpressionsindex">FybrikApplication.spec.selector.workloadSelector.matchExpressions[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationspecselectorworkloadselector">↩ Parent</a></sup></sup></p>
+<p>A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatus">FybrikApplication.status</h4>
+<p><sup><sup><a href="#fybrikapplication">↩ Parent</a></sup></sup></p>
+<p>FybrikApplicationStatus defines the observed state of FybrikApplication.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskey">assetStates</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          AssetStates provides a status per asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>errorMessage</b></td>
+        <td>string</td>
+        <td>
+          ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusgenerated">generated</a></b></td>
+        <td>object</td>
+        <td>
+          Generated resource identifier<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekey">provisionedStorage</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready is true if all specified assets are either ready to be used or are denied access.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validApplication</b></td>
+        <td>string</td>
+        <td>
+          ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>validatedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusassetstateskey">FybrikApplication.status.assetStates[key]</h4>
+<p><sup><sup><a href="#fybrikapplicationstatus">↩ Parent</a></sup></sup></p>
+<p>AssetState defines the observed state of an asset</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>catalogedAsset</b></td>
+        <td>string</td>
+        <td>
+          CatalogedAsset provides a new asset identifier after being registered in the enterprise catalog<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskeyconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions indicate the asset state (Ready, Deny, Error)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusassetstateskeyendpoint">endpoint</a></b></td>
+        <td>object</td>
+        <td>
+          Endpoint provides the endpoint spec from which the asset will be served to the application<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusassetstateskeyconditionsindex">FybrikApplication.status.assetStates[key].conditions[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusassetstateskey">↩ Parent</a></sup></sup></p>
+<p>Condition describes the state of a FybrikApplication at a certain point.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusassetstateskeyendpoint">FybrikApplication.status.assetStates[key].endpoint</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusassetstateskey">↩ Parent</a></sup></sup></p>
+<p>Endpoint provides the endpoint spec from which the asset will be served to the application</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusgenerated">FybrikApplication.status.generated</h4>
+<p><sup><sup><a href="#fybrikapplicationstatus">↩ Parent</a></sup></sup></p>
+<p>Generated resource identifier</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>appVersion</b></td>
+        <td>integer</td>
+        <td>
+          Version of FybrikApplication that has generated this resource<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>kind</b></td>
+        <td>string</td>
+        <td>
+          Kind of the resource (Blueprint, Plotter)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace of the resource<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekey">FybrikApplication.status.provisionedStorage[key]</h4>
+<p><sup><sup><a href="#fybrikapplicationstatus">↩ Parent</a></sup></sup></p>
+<p>DatasetDetails holds details of the provisioned storage</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>datasetRef</b></td>
+        <td>string</td>
+        <td>
+          Reference to a Dataset resource containing the request to provision storage<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">details</a></b></td>
+        <td>object</td>
+        <td>
+          Dataset information<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata">resourceMetadata</a></b></td>
+        <td>object</td>
+        <td>
+          Resource Metadata<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeysecretref">secretRef</a></b></td>
+        <td>object</td>
+        <td>
+          Reference to a secret where the credentials are stored<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeydetails">FybrikApplication.status.provisionedStorage[key].details</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekey">↩ Parent</a></sup></sup></p>
+<p>Dataset information</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeydetailsconnection">FybrikApplication.status.provisionedStorage[key].details.connection</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeydetailsvaultkey">FybrikApplication.status.provisionedStorage[key].details.vault[key]</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">↩ Parent</a></sup></sup></p>
+<p>Holds details for retrieving credentials from Vault store.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeyresourcemetadata">FybrikApplication.status.provisionedStorage[key].resourceMetadata</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekey">↩ Parent</a></sup></sup></p>
+<p>Resource Metadata</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeyresourcemetadatacolumnsindex">FybrikApplication.status.provisionedStorage[key].resourceMetadata.columns[index]</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekeyresourcemetadata">↩ Parent</a></sup></sup></p>
+<p>ResourceColumn represents a column in a tabular resource</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikapplicationstatusprovisionedstoragekeysecretref">FybrikApplication.status.provisionedStorage[key].secretRef</h4>
+<p><sup><sup><a href="#fybrikapplicationstatusprovisionedstoragekey">↩ Parent</a></sup></sup></p>
+<p>Reference to a secret where the credentials are stored</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Secret name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Secret Namespace<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h3 id="fybrikmodule">FybrikModule</h3>
+<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>FybrikModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikModule</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulestatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikModuleStatus defines the observed state of FybrikModule.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespec">FybrikModule.spec</h4>
+<p><sup><sup><a href="#fybrikmodule">↩ Parent</a></sup></sup></p>
+<p>FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindex">capabilities</a></b></td>
+        <td>[]object</td>
+        <td>
+          Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespecchart">chart</a></b></td>
+        <td>object</td>
+        <td>
+          Reference to a Helm chart that allows deployment of the resources required for this module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespecdependenciesindex">dependencies</a></b></td>
+        <td>[]object</td>
+        <td>
+          Other components that must be installed in order for this module to work<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>description</b></td>
+        <td>string</td>
+        <td>
+          An explanation of what this module does<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>pluginType</b></td>
+        <td>string</td>
+        <td>
+          Plugin type indicates the plugin technology used to invoke the capabilities Ex: vault, fybrik-wasm... Should be provided if type is plugin<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
+        <td>[]object</td>
+        <td>
+          StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindex">FybrikModule.spec.capabilities[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespec">↩ Parent</a></sup></sup></p>
+<p>Capability declares what this module knows how to do and the types of data it knows how to handle</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Capability declares what this module knows how to do - ex: read, write, transform...<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexactionsindex">actions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Actions are the data transformations that the module supports<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapi">api</a></b></td>
+        <td>object</td>
+        <td>
+          API indicates to the application how to access the capabilities provided by the module<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexpluginsindex">plugins</a></b></td>
+        <td>[]object</td>
+        <td>
+          Plugins enable the module to add libraries to perform actions rather than implementing them by itself<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>scope</b></td>
+        <td>enum</td>
+        <td>
+          Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex">supportedInterfaces</a></b></td>
+        <td>[]object</td>
+        <td>
+          Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated This field may not be required if not handling data<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexactionsindex">FybrikModule.spec.capabilities[index].actions[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindex">↩ Parent</a></sup></sup></p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Unique name of an action supported by the module<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexapi">FybrikModule.spec.capabilities[index].api</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindex">↩ Parent</a></sup></sup></p>
+<p>API indicates to the application how to access the capabilities provided by the module</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexapiconnection">FybrikModule.spec.capabilities[index].api.connection</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindexapi">↩ Parent</a></sup></sup></p>
+<p>Connection information</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexpluginsindex">FybrikModule.spec.capabilities[index].plugins[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindex">↩ Parent</a></sup></sup></p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat indicates the format of data the plugin knows how to process<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>pluginType</b></td>
+        <td>string</td>
+        <td>
+          PluginType indicates the technology used for the module and the plugin to interact The values supported should come from the module taxonomy Examples of such mechanisms are vault plugins, wasm, etc<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexsupportedinterfacesindex">FybrikModule.spec.capabilities[index].supportedInterfaces[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindex">↩ Parent</a></sup></sup></p>
+<p>ModuleInOut specifies the protocol and format of the data input and output by the module - if any</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsink">sink</a></b></td>
+        <td>object</td>
+        <td>
+          Sink specifies the output data protocol and format<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsource">source</a></b></td>
+        <td>object</td>
+        <td>
+          Source specifies the input data protocol and format<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsink">FybrikModule.spec.capabilities[index].supportedInterfaces[index].sink</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex">↩ Parent</a></sup></sup></p>
+<p>Sink specifies the output data protocol and format</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>protocol</b></td>
+        <td>string</td>
+        <td>
+          Protocol defines the interface protocol used for data transactions<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataformat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat defines the data format type<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespeccapabilitiesindexsupportedinterfacesindexsource">FybrikModule.spec.capabilities[index].supportedInterfaces[index].source</h4>
+<p><sup><sup><a href="#fybrikmodulespeccapabilitiesindexsupportedinterfacesindex">↩ Parent</a></sup></sup></p>
+<p>Source specifies the input data protocol and format</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>protocol</b></td>
+        <td>string</td>
+        <td>
+          Protocol defines the interface protocol used for data transactions<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataformat</b></td>
+        <td>string</td>
+        <td>
+          DataFormat defines the data format type<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespecchart">FybrikModule.spec.chart</h4>
+<p><sup><sup><a href="#fybrikmodulespec">↩ Parent</a></sup></sup></p>
+<p>Reference to a Helm chart that allows deployment of the resources required for this module</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>chartPullSecret</b></td>
+        <td>string</td>
+        <td>
+          Name of secret containing helm registry credentials<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespecdependenciesindex">FybrikModule.spec.dependencies[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespec">↩ Parent</a></sup></sup></p>
+<p>Dependency details another component on which this module relies - i.e. a pre-requisit</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name is the name of the dependent component<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>enum</td>
+        <td>
+          Type provides information used in determining how to instantiate the component<br/>
+          <br/>
+            <i>Enum</i>: module, connector, feature<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulespecstatusindicatorsindex">FybrikModule.spec.statusIndicators[index]</h4>
+<p><sup><sup><a href="#fybrikmodulespec">↩ Parent</a></sup></sup></p>
+<p>ResourceStatusIndicator is used to determine the status of an orchestrated resource</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>kind</b></td>
+        <td>string</td>
+        <td>
+          Kind provides information about the resource kind<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>successCondition</b></td>
+        <td>string</td>
+        <td>
+          SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>errorMessage</b></td>
+        <td>string</td>
+        <td>
+          ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>failureCondition</b></td>
+        <td>string</td>
+        <td>
+          FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulestatus">FybrikModule.status</h4>
+<p><sup><sup><a href="#fybrikmodule">↩ Parent</a></sup></sup></p>
+<p>FybrikModuleStatus defines the observed state of FybrikModule.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#fybrikmodulestatusconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions indicate the module states with respect to validation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikmodulestatusconditionsindex">FybrikModule.status.conditions[index]</h4>
+<p><sup><sup><a href="#fybrikmodulestatus">↩ Parent</a></sup></sup></p>
+<p>Condition describes the state of a FybrikApplication at a certain point.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h3 id="fybrikstorageaccount">FybrikStorageAccount</h3>
+<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikStorageAccount</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikstorageaccountspec">FybrikStorageAccount.spec</h4>
+<p><sup><sup><a href="#fybrikstorageaccount">↩ Parent</a></sup></sup></p>
+<p>FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>endpoint</b></td>
+        <td>string</td>
+        <td>
+          Endpoint for accessing the data<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>id</b></td>
+        <td>string</td>
+        <td>
+          Identification of a storage account<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>region</b></td>
+        <td>string</td>
+        <td>
+          Storage region<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          A name of k8s secret deployed in the control plane. This secret includes secretKey and accessKey credentials for S3 bucket<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h3 id="plotter">Plotter</h3>
+<p><sup><sup><a href="#appfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>Plotter is the Schema for the plotters API</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>Plotter</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspec">Plotter.spec</h4>
+<p><sup><sup><a href="#plotter">↩ Parent</a></sup></sup></p>
+<p>PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecassetskey">assets</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Assets is a map holding information about the assets The key is the assetID<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindex">flows</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>modulesNamespace</b></td>
+        <td>string</td>
+        <td>
+          ModulesNamespace is the namespace where modules should be allocated<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspectemplateskey">templates</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Templates is a map holding the templates used in this plotter steps The key is the template name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>appInfo</b></td>
+        <td>object</td>
+        <td>
+          Application context to be transferred to the modules<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecappselector">appSelector</a></b></td>
+        <td>object</td>
+        <td>
+          Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecassetskey">Plotter.spec.assets[key]</h4>
+<p><sup><sup><a href="#plotterspec">↩ Parent</a></sup></sup></p>
+<p>AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in fybrikapplication, AssetDetails list also contains assets that are allocated by the control-plane in order to serve fybrikapplication</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetails">assetDetails</a></b></td>
+        <td>object</td>
+        <td>
+          DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>advertisedAssetId</b></td>
+        <td>string</td>
+        <td>
+          AdvertisedAssetID links this asset to asset from fybrikapplication and is used by user facing services<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecassetskeyassetdetails">Plotter.spec.assets[key].assetDetails</h4>
+<p><sup><sup><a href="#plotterspecassetskey">↩ Parent</a></sup></sup></p>
+<p>DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>format</b></td>
+        <td>string</td>
+        <td>
+          Format represents data format (e.g. parquet) as received from catalog connectors<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecassetskeyassetdetailsvaultkey">vault</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecassetskeyassetdetailsconnection">Plotter.spec.assets[key].assetDetails.connection</h4>
+<p><sup><sup><a href="#plotterspecassetskeyassetdetails">↩ Parent</a></sup></sup></p>
+<p>Connection has the relevant details for accesing the data (url, table, ssl, etc.)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecassetskeyassetdetailsvaultkey">Plotter.spec.assets[key].assetDetails.vault[key]</h4>
+<p><sup><sup><a href="#plotterspecassetskeyassetdetails">↩ Parent</a></sup></sup></p>
+<p>Holds details for retrieving credentials from Vault store.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>address</b></td>
+        <td>string</td>
+        <td>
+          Address is Vault address<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>authPath</b></td>
+        <td>string</td>
+        <td>
+          AuthPath is the path to auth method i.e. kubernetes<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>role</b></td>
+        <td>string</td>
+        <td>
+          Role is the Vault role used for retrieving the credentials<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretPath</b></td>
+        <td>string</td>
+        <td>
+          SecretPath is the path of the secret holding the Credentials in Vault<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindex">Plotter.spec.flows[index]</h4>
+<p><sup><sup><a href="#plotterspec">↩ Parent</a></sup></sup></p>
+<p>Flows is the list of data flows driven from fybrikapplication: Each element in the list holds the flow of the data requested in fybrikapplication.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>assetId</b></td>
+        <td>string</td>
+        <td>
+          AssetID indicates the data set being used in this data flow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>flowType</b></td>
+        <td>enum</td>
+        <td>
+          Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the flow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindex">subFlows</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindex">Plotter.spec.flows[index].subFlows[index]</h4>
+<p><sup><sup><a href="#plotterspecflowsindex">↩ Parent</a></sup></sup></p>
+<p>Subflows is a list of data flows which are originated from the same data asset but are triggered differently (e.g., one upon init trigger and one upon workload trigger)</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>flowType</b></td>
+        <td>enum</td>
+        <td>
+          Type of the flow (e.g. read)<br/>
+          <br/>
+            <i>Enum</i>: read, write, delete, copy<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the SubFlow<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindex">steps</a></b></td>
+        <td>[][]object</td>
+        <td>
+          Steps defines a series of sequential/parallel data flow steps The first dimension represents parallel data flows. The second sequential components within the same parallel data flow.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>triggers</b></td>
+        <td>[]enum</td>
+        <td>
+          Triggers<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindex">Plotter.spec.flows[index].subFlows[index].steps[index][index]</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindex">↩ Parent</a></sup></sup></p>
+<p>DataFlowStep contains details on a single data flow step</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Name of the cluster this step is executed on<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the step<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>template</b></td>
+        <td>string</td>
+        <td>
+          Template is the name of the template to execute the step The full details of the template can be extracted from Plotter.spec.templates list field.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">parameters</a></b></td>
+        <td>object</td>
+        <td>
+          Step parameters TODO why not flatten the parameters into this data flow step<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparameters">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindex">↩ Parent</a></sup></sup></p>
+<p>Step parameters TODO why not flatten the parameters into this data flow step</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex">action</a></b></td>
+        <td>[]object</td>
+        <td>
+          Actions are the data transformations that the module supports<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">api</a></b></td>
+        <td>object</td>
+        <td>
+          ResourceDetails includes asset connection details<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex">args</a></b></td>
+        <td>[]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersactionindex">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.action[index]</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">↩ Parent</a></sup></sup></p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">↩ Parent</a></sup></sup></p>
+<p>ResourceDetails includes asset connection details</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersapiconnection">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.api.connection</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersapi">↩ Parent</a></sup></sup></p>
+<p>Connection information</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index]</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparameters">↩ Parent</a></sup></sup></p>
+<p>StepArgument describes a step: it could be assetID or an endpoint of another step</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi">api</a></b></td>
+        <td>object</td>
+        <td>
+          API holds information for accessing a module instance<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>assetId</b></td>
+        <td>string</td>
+        <td>
+          AssetID identifies the source asset of this step<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindex">↩ Parent</a></sup></sup></p>
+<p>API holds information for accessing a module instance</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapiconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapiconnection">Plotter.spec.flows[index].subFlows[index].steps[index][index].parameters.args[index].api.connection</h4>
+<p><sup><sup><a href="#plotterspecflowsindexsubflowsindexstepsindexindexparametersargsindexapi">↩ Parent</a></sup></sup></p>
+<p>Connection information</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspectemplateskey">Plotter.spec.templates[key]</h4>
+<p><sup><sup><a href="#plotterspec">↩ Parent</a></sup></sup></p>
+<p>Template contains basic information about the required modules to serve the fybrikapplication e.g., the module helm chart name.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspectemplateskeymodulesindex">modules</a></b></td>
+        <td>[]object</td>
+        <td>
+          Modules is a list of dependent modules. e.g., if a plugin module is used then the service module is used in should appear first in the modules list of the same template. If the modules list contains more than one module, the first module in the list is referred to as the "primary module" of which all the parameters to this template are sent to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the template<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspectemplateskeymodulesindex">Plotter.spec.templates[key].modules[index]</h4>
+<p><sup><sup><a href="#plotterspectemplateskey">↩ Parent</a></sup></sup></p>
+<p>ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>capability</b></td>
+        <td>string</td>
+        <td>
+          Module capability<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterspectemplateskeymodulesindexchart">chart</a></b></td>
+        <td>object</td>
+        <td>
+          Chart contains the information needed to use helm to install the capability<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>scope</b></td>
+        <td>enum</td>
+        <td>
+          Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset<br/>
+          <br/>
+            <i>Enum</i>: asset, workload, cluster<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspectemplateskeymodulesindexchart">Plotter.spec.templates[key].modules[index].chart</h4>
+<p><sup><sup><a href="#plotterspectemplateskeymodulesindex">↩ Parent</a></sup></sup></p>
+<p>Chart contains the information needed to use helm to install the capability</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of helm chart<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>chartPullSecret</b></td>
+        <td>string</td>
+        <td>
+          Name of secret containing helm registry credentials<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>map[string]string</td>
+        <td>
+          Values to pass to helm chart installation<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecappselector">Plotter.spec.appSelector</h4>
+<p><sup><sup><a href="#plotterspec">↩ Parent</a></sup></sup></p>
+<p>Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecappselectorworkloadselector">workloadSelector</a></b></td>
+        <td>object</td>
+        <td>
+          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>clusterName</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecappselectorworkloadselector">Plotter.spec.appSelector.workloadSelector</h4>
+<p><sup><sup><a href="#plotterspecappselector">↩ Parent</a></sup></sup></p>
+<p>WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterspecappselectorworkloadselectormatchexpressionsindex">matchExpressions</a></b></td>
+        <td>[]object</td>
+        <td>
+          matchExpressions is a list of label selector requirements. The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>matchLabels</b></td>
+        <td>map[string]string</td>
+        <td>
+          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterspecappselectorworkloadselectormatchexpressionsindex">Plotter.spec.appSelector.workloadSelector.matchExpressions[index]</h4>
+<p><sup><sup><a href="#plotterspecappselectorworkloadselector">↩ Parent</a></sup></sup></p>
+<p>A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>key</b></td>
+        <td>string</td>
+        <td>
+          key is the label key that the selector applies to.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>operator</b></td>
+        <td>string</td>
+        <td>
+          operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>values</b></td>
+        <td>[]string</td>
+        <td>
+          values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatus">Plotter.status</h4>
+<p><sup><sup><a href="#plotter">↩ Parent</a></sup></sup></p>
+<p>PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusassetskey">assets</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Assets is a map containing the status per asset. The key of this map is assetId<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusblueprintskey">blueprints</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusconditionsindex">conditions</a></b></td>
+        <td>[]object</td>
+        <td>
+          Conditions represent the possible error and failure conditions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusflowskey">flows</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          Flows is a map containing the status for each flow the key is the flow name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusobservedstate">observedState</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>readyTimestamp</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+          <br/>
+            <i>Format</i>: date-time<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusassetskey">Plotter.status.assets[key]</h4>
+<p><sup><sup><a href="#plotterstatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusblueprintskey">Plotter.status.blueprints[key]</h4>
+<p><sup><sup><a href="#plotterstatus">↩ Parent</a></sup></sup></p>
+<p>MetaBlueprint defines blueprint metadata (name, namespace) and status</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusblueprintskeystatus">Plotter.status.blueprints[key].status</h4>
+<p><sup><sup><a href="#plotterstatusblueprintskey">↩ Parent</a></sup></sup></p>
+<p>BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusmoduleskey">modules</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusblueprintskeystatusobservedstate">observedState</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>releases</b></td>
+        <td>map[string]integer</td>
+        <td>
+          Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusblueprintskeystatusmoduleskey">Plotter.status.blueprints[key].status.modules[key]</h4>
+<p><sup><sup><a href="#plotterstatusblueprintskeystatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusblueprintskeystatusobservedstate">Plotter.status.blueprints[key].status.observedState</h4>
+<p><sup><sup><a href="#plotterstatusblueprintskeystatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusconditionsindex">Plotter.status.conditions[index]</h4>
+<p><sup><sup><a href="#plotterstatus">↩ Parent</a></sup></sup></p>
+<p>Condition describes the state of a FybrikApplication at a certain point.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the condition<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>message</b></td>
+        <td>string</td>
+        <td>
+          Message contains the details of the current condition<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>observedGeneration</b></td>
+        <td>integer</td>
+        <td>
+          ObservedGeneration is the version of the resource for which the condition has been evaluated<br/>
+          <br/>
+            <i>Format</i>: int64<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>enum</td>
+        <td>
+          Status of the condition, one of (`True`, `False`, `Unknown`).<br/>
+          <br/>
+            <i>Enum</i>: True, False, Unknown<br/>
+            <i>Default</i>: Unknown<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusflowskey">Plotter.status.flows[key]</h4>
+<p><sup><sup><a href="#plotterstatus">↩ Parent</a></sup></sup></p>
+<p>FlowStatus includes information to be reported back to the FybrikApplication resource It holds the status per data flow</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#plotterstatusflowskeysubflowskey">subFlows</a></b></td>
+        <td>map[string]object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#plotterstatusflowskeystatus">status</a></b></td>
+        <td>object</td>
+        <td>
+          ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusflowskeysubflowskey">Plotter.status.flows[key].subFlows[key]</h4>
+<p><sup><sup><a href="#plotterstatusflowskey">↩ Parent</a></sup></sup></p>
+<p>ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusflowskeystatus">Plotter.status.flows[key].status</h4>
+<p><sup><sup><a href="#plotterstatusflowskey">↩ Parent</a></sup></sup></p>
+<p>ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="plotterstatusobservedstate">Plotter.status.observedState</h4>
+<p><sup><sup><a href="#plotterstatus">↩ Parent</a></sup></sup></p>
+<p>ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>error</b></td>
+        <td>string</td>
+        <td>
+          Error indicates that there has been an error to orchestrate the modules and provides the error message<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>ready</b></td>
+        <td>boolean</td>
+        <td>
+          Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h2 id="katalogfybrikiov1alpha1">katalog.fybrik.io/v1alpha1</h2>
+<p>Resource Types:</p>
+<ul>
+<li><a href="#asset">Asset</a></li>
+</ul>
+<h3 id="asset">Asset</h3>
+<p><sup><sup><a href="#katalogfybrikiov1alpha1">↩ Parent</a></sup></sup></p>
+<p>Asset defines an asset in the catalog</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>katalog.fybrik.io/v1alpha1</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>Asset</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#assetspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspec">Asset.spec</h4>
+<p><sup><sup><a href="#asset">↩ Parent</a></sup></sup></p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#assetspecdetails">details</a></b></td>
+        <td>object</td>
+        <td>
+          Asset details<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#assetspecmetadata">metadata</a></b></td>
+        <td>object</td>
+        <td>
+          Asset metadata<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b><a href="#assetspecsecretref">secretRef</a></b></td>
+        <td>object</td>
+        <td>
+          Reference to a Secret resource holding credentials for this asset<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspecdetails">Asset.spec.details</h4>
+<p><sup><sup><a href="#assetspec">↩ Parent</a></sup></sup></p>
+<p>Asset details</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#assetspecdetailsconnection">connection</a></b></td>
+        <td>object</td>
+        <td>
+          Connection information<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>dataFormat</b></td>
+        <td>string</td>
+        <td>
+          Data format<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspecdetailsconnection">Asset.spec.details.connection</h4>
+<p><sup><sup><a href="#assetspecdetails">↩ Parent</a></sup></sup></p>
+<p>Connection information</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          <br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspecmetadata">Asset.spec.metadata</h4>
+<p><sup><sup><a href="#assetspec">↩ Parent</a></sup></sup></p>
+<p>Asset metadata</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#assetspecmetadatacolumnsindex">columns</a></b></td>
+        <td>[]object</td>
+        <td>
+          Columns associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Geography of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>owner</b></td>
+        <td>string</td>
+        <td>
+          Owner of the resource<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the asset<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspecmetadatacolumnsindex">Asset.spec.metadata.columns[index]</h4>
+<p><sup><sup><a href="#assetspecmetadata">↩ Parent</a></sup></sup></p>
+<p>ResourceColumn represents a column in a tabular resource</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the column<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>tags</b></td>
+        <td>object</td>
+        <td>
+          Tags associated with the column<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="assetspecsecretref">Asset.spec.secretRef</h4>
+<p><sup><sup><a href="#assetspec">↩ Parent</a></sup></sup></p>
+<p>Reference to a Secret resource holding credentials for this asset</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>name</b></td>
+        <td>string</td>
+        <td>
+          Name of the Secret resource<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>namespace</b></td>
+        <td>string</td>
+        <td>
+          Namespace of the Secret resource. If it is empty then the asset namespace is used.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../tasks/performance/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Performance" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Performance
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../connectors-datacatalog/" class="md-footer__link md-footer__link--next" aria-label="Next: Data catalog" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Data catalog
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Made with ❤️ by Fybrik contributors.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/fybrik/fybrik" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.3a4b43e5.min.js"></script>
+      
+    
+  </body>
+</html>

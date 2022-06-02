@@ -1,0 +1,1646 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A cloud-native platform to control data usage">
+      
+      
+      
+      <link rel="icon" href="../../static/logo.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.16">
+    
+    
+      
+        <title>Notebook sample for the read flow - Fybrik</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1c3799f8.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#notebook-sample-for-the-read-flow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Fybrik" class="md-header__button md-logo" aria-label="Fybrik" data-md-component="logo">
+      
+  <img src="../../static/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Fybrik
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Notebook sample for the read flow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/fybrik/fybrik" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fybrik/fybrik
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      About
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../get-started/quickstart/" class="md-tabs__link md-tabs__link--active">
+        Get Started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
+        Concepts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tasks/control-plane-security/" class="md-tabs__link">
+        Tasks
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/crds/" class="md-tabs__link">
+        Reference
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contribute/" class="md-tabs__link">
+        Contribute
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../publications/" class="md-tabs__link">
+      Publications
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Fybrik" class="md-nav__button md-logo" aria-label="Fybrik" data-md-component="logo">
+      
+  <img src="../../static/logo.png" alt="logo">
+
+    </a>
+    Fybrik
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/fybrik/fybrik" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    fybrik/fybrik
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Get Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Get Started" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_2">
+          Notebook samples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Notebook samples" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Notebook samples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pre-steps/" class="md-nav__link">
+        Before we begin
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Notebook sample for the read flow
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Notebook sample for the read flow
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prepare-a-dataset-to-be-accessed-by-the-notebook" class="md-nav__link">
+    Prepare a dataset to be accessed by the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-data-access-policies" class="md-nav__link">
+    Define data access policies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploy-a-jupyter-notebook" class="md-nav__link">
+    Deploy a Jupyter notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-fybrikapplication-resource-for-the-notebook" class="md-nav__link">
+    Create a FybrikApplication resource for the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-the-dataset-from-the-notebook" class="md-nav__link">
+    Read the dataset from the notebook
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebook-write/" class="md-nav__link">
+        Notebook sample for the write flow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cleanup/" class="md-nav__link">
+        Cleanup
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Concepts
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Concepts" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Concepts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/introduction/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/taxonomy/" class="md-nav__link">
+        Taxonomy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_4">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
+        Connectors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/modules/" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/vault_plugins/" class="md-nav__link">
+        HashiCorp Vault plugins
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/config-policies/" class="md-nav__link">
+        Configuration Policies
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Tasks
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tasks" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Tasks
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/control-plane-security/" class="md-nav__link">
+        Enable Control Plane Security
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/using-opa/" class="md-nav__link">
+        Using OPA for Data Governance
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/multicluster/" class="md-nav__link">
+        Multicluster setup
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/custom-taxonomy/" class="md-nav__link">
+        Using a Custom Taxonomy for Resource Validation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tasks/performance/" class="md-nav__link">
+        Performance
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/crds/" class="md-nav__link">
+        API Reference
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_2">
+          Connectors API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Connectors API" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Connectors API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/connectors-datacatalog/" class="md-nav__link">
+        Data catalog
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/connectors-policymanager/" class="md-nav__link">
+        Policy manager
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5_3">
+          Components
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Components" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+          Components
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ddc/" class="md-nav__link">
+        Data Distribution Controller
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/katalog/" class="md-nav__link">
+        Katalog
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Contribute
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contribute" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Contribute
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/environment/" class="md-nav__link">
+        Development Environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/build-test/" class="md-nav__link">
+        Build and Test
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/flow/" class="md-nav__link">
+        GitHub Workflow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/logging/" class="md-nav__link">
+        Logging
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_6" type="checkbox" id="__nav_6_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_6">
+          Documentation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Documentation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_6">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/" class="md-nav__link">
+        Contribute Documentation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/formatting/" class="md-nav__link">
+        Formatting Standards
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/documentation/style/" class="md-nav__link">
+        Style Guide
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_7" type="checkbox" id="__nav_6_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_7">
+          Plugins
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Plugins" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_7">
+          <span class="md-nav__icon md-icon"></span>
+          Plugins
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribute/modules/" class="md-nav__link">
+        Module Development
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../publications/" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prepare-a-dataset-to-be-accessed-by-the-notebook" class="md-nav__link">
+    Prepare a dataset to be accessed by the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-data-access-policies" class="md-nav__link">
+    Define data access policies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploy-a-jupyter-notebook" class="md-nav__link">
+    Deploy a Jupyter notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-fybrikapplication-resource-for-the-notebook" class="md-nav__link">
+    Create a FybrikApplication resource for the notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-the-dataset-from-the-notebook" class="md-nav__link">
+    Read the dataset from the notebook
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/samples/notebook-read.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="notebook-sample-for-the-read-flow">Notebook sample for the read flow</h1>
+<p>This sample demonstrates the following:</p>
+<ul>
+<li>
+<p>how Fybrik enables a Jupyter notebook workload to access a cataloged dataset.</p>
+</li>
+<li>
+<p>how <a href="https://github.com/fybrik/arrow-flight-module">arrow-flight module</a> is used for reading and transforming data.</p>
+</li>
+<li>
+<p>how policies regarding the use of personal information are seamlessly applied when accessing a dataset containing financial data.</p>
+</li>
+</ul>
+<p>In this sample you play multiple roles:</p>
+<ul>
+<li>As a data owner you upload a dataset and register it in a data catalog</li>
+<li>As a data steward you setup data governance policies</li>
+<li>As a data user you specify your data usage requirements and use a notebook to consume the data</li>
+</ul>
+<h2 id="prepare-a-dataset-to-be-accessed-by-the-notebook">Prepare a dataset to be accessed by the notebook</h2>
+<p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
+<p>Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
+Make a note of the service endpoint, bucket name, and access credentials. You will need them later.</p>
+<details class="tip">
+<summary>Setup and upload to localstack</summary>
+<p>For experimentation you can install localstack to your cluster instead of using a cloud service.</p>
+<ol>
+<li>Define variables for access key and secret key
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
+<span class="nb">export</span> <span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
+</code></pre></div></li>
+<li>Install localstack to the currently active namespace and wait for it to be ready:
+  <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> --set service.type<span class="o">=</span>ClusterIP
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-notebook-sample --timeout<span class="o">=</span>120s
+</code></pre></div></li>
+<li>Create a port-forward to communicate with localstack server:
+  <div class="highlight"><pre><span></span><code>kubectl port-forward svc/localstack <span class="m">4566</span>:4566 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to upload the dataset to a new created bucket in the localstack server:
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:4566&quot;</span>
+<span class="nb">export</span> <span class="nv">BUCKET</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span>
+<span class="nb">export</span> <span class="nv">OBJECT_KEY</span><span class="o">=</span><span class="s2">&quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="nb">export</span> <span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;/path/to/PS_20174392719_1491204439457_log.csv&quot;</span>
+aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws configure <span class="nb">set</span> aws_secret_access_key <span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api create-bucket --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api put-object --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> --key <span class="si">${</span><span class="nv">OBJECT_KEY</span><span class="si">}</span> --body <span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span>
+</code></pre></div></li>
+</ol>
+</details>
+<h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
+<p>In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.</p>
+<p>Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Opaque</span><span class="w"></span>
+<span class="nt">stringData</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ACCESS_KEY}&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>Then, register the data asset itself in the data catalog <code>katalog</code> used for samples. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>object_key</code> with values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">katalog.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Asset</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="w">  </span><span class="nt">details</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dataFormat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="w">    </span><span class="nt">connection</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">      </span><span class="nt">s3</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">object_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Synthetic Financial Datasets For Fraud Detection</span><span class="w"></span>
+<span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">    </span><span class="nt">columns</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nameOrig</span><span class="w"></span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">PII</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oldbalanceOrg</span><span class="w"></span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">PII</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">newbalanceOrig</span><span class="w"></span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">PII</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
+<p>Notice the <code>metadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<p>For example, in the yaml above, the <code>geography</code> is set to <code>theshire</code>, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:</p>
+<div class="highlight"><pre><span></span><code>kubectl get configmap cluster-metadata -n fybrik-system -o <span class="s1">&#39;jsonpath={.data.Region}&#39;</span>
+</code></pre></div>
+<p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the yaml above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
+<h2 id="define-data-access-policies">Define data access policies</h2>
+<p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII</code> for datasets tagged with <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
+<div class="highlight"><pre><span></span><code>package dataapi.authz
+
+rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
+  description := &quot;Redact columns tagged as PII in datasets tagged with finance = true&quot;
+  input.action.actionType == &quot;read&quot;
+  input.resource.metadata.tags.finance
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+  count(column_names) &gt; 0
+}
+</code></pre></div>
+<p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span>sample-policy.rego
+kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n fybrik-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div>
+<p>You can similarly apply a directory holding multiple rego files.</p>
+<h2 id="deploy-a-jupyter-notebook">Deploy a Jupyter notebook</h2>
+<p>In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">JupyterLab</label><label for="__tabbed_1_2">Kubeflow</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<ol>
+<li>Deploy JupyterLab:
+    <div class="highlight"><pre><span></span><code>kubectl create deployment my-notebook --image<span class="o">=</span>jupyter/base-notebook --port<span class="o">=</span><span class="m">8888</span> -- start.sh jupyter lab --LabApp.token<span class="o">=</span><span class="s1">&#39;&#39;</span>
+kubectl <span class="nb">set</span> env deployment my-notebook <span class="nv">JUPYTER_ENABLE_LAB</span><span class="o">=</span>yes
+kubectl label deployment my-notebook app.kubernetes.io/name<span class="o">=</span>my-notebook
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available --timeout<span class="o">=</span>120s deployment/my-notebook
+kubectl expose deployment my-notebook --port<span class="o">=</span><span class="m">80</span> --target-port<span class="o">=</span><span class="m">8888</span>
+</code></pre></div></li>
+<li>Create a port-forward to communicate with JupyterLab:
+    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/my-notebook <span class="m">8080</span>:80 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
+<li>Create a new notebook in the server</li>
+</ol>
+</div>
+<div class="tabbed-block">
+<ol>
+<li>Ensure that <a href="https://www.kubeflow.org/">Kubeflow</a> is installed in your cluster</li>
+<li>Create a port-forward to communicate with Kubeflow:
+    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/istio-ingressgateway -n istio-system <span class="m">8080</span>:80 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
+<li>Click <strong>Start Setup</strong> and then <strong>Finish</strong> (use the <code>anonymous</code> namespace).</li>
+<li>Click <strong>Notebook Servers</strong> (in the left).</li>
+<li>In the notebooks page select in the top left the <code>anonymous</code> namespace and then click <strong>New Server</strong>.</li>
+<li>In the notebook server creation page, set <code>my-notebook</code> in the <strong>Name</strong> box and then click <strong>Launch</strong>. Wait for the server to become ready.</li>
+<li>Click <strong>Connect</strong> and create a new notebook in the server.</li>
+</ol>
+</div>
+</div>
+</div>
+<h2 id="create-a-fybrikapplication-resource-for-the-notebook">Create a <code>FybrikApplication</code> resource for the notebook</h2>
+<p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik: </p>
+<!-- TODO: role field removed but code still requires it -->
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt;EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-notebook</span><span class="w"></span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-notebook</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">workloadSelector</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-notebook</span><span class="w"></span>
+<span class="w">  </span><span class="nt">appInfo</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">intent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fraud Detection</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fybrik-notebook-sample/paysim-csv&quot;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requirements</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span>
+<span class="w">          </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>Notice that:</p>
+<ul>
+<li>The <code>selector</code> field matches the labels of our Jupyter notebook workload.</li>
+<li>The <code>data</code> field includes a <code>dataSetID</code> that matches the asset identifier in the catalog.</li>
+<li>The <code>protocol</code> indicates that the developer wants to consume the data using Apache Arrow Flight. For some protocols a <code>dataformat</code> can be specified as well (e.g., <code>s3</code> protocol and <code>parquet</code> format).</li>
+</ul>
+<p>Run the following command to wait until the <code>FybrikApplication</code> is ready:</p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for FybrikApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="s1">&#39;jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for fybrik-notebook-sample/paysim-csv asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div>
+<h2 id="read-the-dataset-from-the-notebook">Read the dataset from the notebook</h2>
+<p>In your <strong>terminal</strong>, run the following command to print the <a href="../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey">endpoint</a> to use for reading the data. It fetches the code from the <code>FybrikApplication</code> resource:
+<div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
+<span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+The next steps use the endpoint to read the data in a python notebook</p>
+<ol>
+<li>Insert a new notebook cell to install pandas and pyarrow packages:
+  <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span><span class="o">==</span><span class="mf">7.0</span><span class="o">.*</span>
+</code></pre></div></li>
+<li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>FybrikApplication</code> in the previous step:
+  <div class="highlight"><pre><span></span><code>import json
+import pyarrow.flight as fl
+import pandas as pd
+
+<span class="c1"># Create a Flight client</span>
+<span class="nv">client</span> <span class="o">=</span> fl.connect<span class="o">(</span><span class="s1">&#39;&lt;ENDPOINT&gt;&#39;</span><span class="o">)</span>
+
+<span class="c1"># Prepare the request</span>
+<span class="nv">request</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;fybrik-notebook-sample/paysim-csv&quot;</span>,
+    <span class="c1"># To request specific columns add to the request a &quot;columns&quot; key with a list of column names</span>
+    <span class="c1"># &quot;columns&quot;: [...]</span>
+<span class="o">}</span>
+
+<span class="c1"># Send request and fetch result as a pandas DataFrame</span>
+<span class="nv">info</span> <span class="o">=</span> client.get_flight_info<span class="o">(</span>fl.FlightDescriptor.for_command<span class="o">(</span>json.dumps<span class="o">(</span>request<span class="o">)))</span>
+reader: fl.FlightStreamReader <span class="o">=</span> client.do_get<span class="o">(</span>info.endpoints<span class="o">[</span><span class="m">0</span><span class="o">]</span>.ticket<span class="o">)</span>
+df: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o">()</span>
+</code></pre></div></li>
+<li>Insert a new notebook cell with the following command to visualize the result:
+  <div class="highlight"><pre><span></span><code>df
+</code></pre></div></li>
+<li>Execute all notebook cells and notice that the <code>nameOrig</code>, <code>oldbalanceOrg</code>and <code>newbalanceOrig</code> columns appear redacted.</li>
+</ol>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Created by NTNU and shared under the <strong><em>CC BY-SA 4.0</em></strong> license.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../pre-steps/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Before we begin" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Before we begin
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../notebook-write/" class="md-footer__link md-footer__link--next" aria-label="Next: Notebook sample for the write flow" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Notebook sample for the write flow
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Made with ❤️ by Fybrik contributors.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/fybrik/fybrik" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.3a4b43e5.min.js"></script>
+      
+    
+  </body>
+</html>
