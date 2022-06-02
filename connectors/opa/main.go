@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	envOPAServerURL             = "OPA_SERVER_URL"
-	commandPort                 = 8080
+	envOPAServerURL = "OPA_SERVER_URL"
+	commandPort     = 8080
 )
 
 // NewRouter returns a new router.
