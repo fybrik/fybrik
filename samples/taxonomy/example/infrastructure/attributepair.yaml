@@ -5,7 +5,7 @@ definitions:
           attribute:
             enum: [storage-cost]
           units:
-            enum: [US Dollar]
+            enum: [US Dollar per TB per month]
         required: [attribute, units]
       - properties:
           attribute:

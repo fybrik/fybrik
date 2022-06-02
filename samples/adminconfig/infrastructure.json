@@ -5,7 +5,7 @@
             "description": "neverland object store",
             "value": "100",
             "type": "numeric",
-            "units": "US Dollar",
+            "units": "US Dollar per TB per month",
             "object": "fybrikstorageaccount",
             "instance": "account-neverland"
         },
@@ -14,7 +14,7 @@
             "description": "theshire object store",
             "value": "90",
             "type": "numeric",
-            "units": "US Dollar",
+            "units": "US Dollar per TB per month",
             "object": "fybrikstorageaccount",
             "instance": "account-theshire"
         },
