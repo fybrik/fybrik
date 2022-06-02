@@ -50,14 +50,14 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
-  # True if the target deployment is OpenShift. Otherwise false. Default value is false.
-  openshift: false
   # Pod Security Context. This is the default setting for all pods, and can be
   # overwritten by a specific podSecurityContext settings.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext:
     runAsNonRoot: true
+    # Ignored on openshift. It can be set in a specific podSecurityContext settings.
     runAsUser: 10001
+    # Ignored on openshift. It can be set in a specific podSecurityContext settings.
     seccompProfile:
       type: RuntimeDefault
   # Container Security Context. This is the default setting for all containers, and can be
