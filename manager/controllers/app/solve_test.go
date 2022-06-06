@@ -4,12 +4,14 @@
 package app
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/onsi/gomega"
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
@@ -74,6 +76,7 @@ func createReadRequest() *datapath.DataInfo {
 				"write":  adminconfig.Decision{Deploy: adminconfig.StatusFalse},
 				"delete": adminconfig.Decision{Deploy: adminconfig.StatusFalse},
 			},
+			OptimizationStrategy: []adminconfig.AttributeOptimization{},
 		},
 	}
 }
@@ -597,4 +600,66 @@ func TestModuleSelection(t *testing.T) {
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(workloadLevelModule.Name))
+}
+
+// a read scenario
+// copy and read modules are deployed
+// transformations are required but not supported by the read module
+// 5 storage accounts exist: one is not allowed by governance, another needs a non-supported action
+// optimization goal is to select the cheapest storage
+func TestOptimalStorage(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addModule(env, copyModule)
+	clusterRegion := "theshire"
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: clusterRegion}})
+	asset := createReadRequest()
+	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
+		Attribute: taxonomy.Attribute("storage-cost"),
+		Directive: adminconfig.Minimize,
+		Weight:    "1.0",
+	}}
+	cost := 50
+	for i := 0; i < 5; i++ {
+		account := &v1alpha1.FybrikStorageAccount{
+			Spec: v1alpha1.FybrikStorageAccountSpec{
+				ID:        genName("account-", i),
+				SecretRef: genName("credentials-", i),
+				Region:    taxonomy.ProcessingLocation(genName("region", i)),
+				Endpoint:  "dummy-endpoint",
+			}}
+		account.Name = account.Spec.ID
+		addStorageAccount(env, account)
+		if i == 1 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{{Name: "AgeFilterAction"}}
+		} else if i >= 2 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+		}
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("storage-cost"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%d", cost),
+			Object:    taxonomy.StorageAccount,
+			Instance:  account.Name,
+		})
+		cost += 5
+	}
+	solution, err := solve(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
+	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
+}
+
+func genName(prefix string, ind int) string {
+	return fmt.Sprintf("%s%d", prefix, ind)
 }
