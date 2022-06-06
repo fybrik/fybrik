@@ -681,18 +681,18 @@ func TestGoalConflict(t *testing.T) {
 	readModule := &v1alpha1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
-	cost := 10.0
+	cost := 10
 	for i := 0; i < 5; i++ {
 		name := genName("cluster", i)
 		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
 		addAttribute(env, &taxonomy.InfrastructureElement{
 			Attribute: taxonomy.Attribute("cluster-cost"),
 			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%f", cost),
+			Value:     fmt.Sprintf("%d", cost),
 			Object:    taxonomy.Cluster,
 			Instance:  name,
 		})
-		cost -= 0.5
+		cost -= 1
 	}
 	asset := createReadRequest()
 	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
