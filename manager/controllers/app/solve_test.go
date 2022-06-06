@@ -669,3 +669,46 @@ func TestOptimalStorage(t *testing.T) {
 func genName(prefix string, ind int) string {
 	return fmt.Sprintf("%s%d", prefix, ind)
 }
+
+// Conflicting optimization goals
+// Read scenario, different clusters with costs
+// Conflicting goals: minimize and maximize cluster costs
+// Result: the module is deployed somewhere
+func TestGoalConflict(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	cost := 10.0
+	for i := 0; i < 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("cluster-cost"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%f", cost),
+			Object:    taxonomy.Cluster,
+			Instance:  name,
+		})
+		cost -= 0.5
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: taxonomy.Attribute("cluster-cost"),
+			Directive: adminconfig.Minimize,
+			Weight:    "0.2",
+		},
+		{
+			Attribute: taxonomy.Attribute("cluster-cost"),
+			Directive: adminconfig.Maximize,
+			Weight:    "0.8",
+		},
+	}
+	solution, err := solve(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.HavePrefix("cluster"))
+}
