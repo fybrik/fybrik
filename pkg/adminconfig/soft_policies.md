@@ -41,7 +41,7 @@ Attribute examples:
     "description": "theshire object store",
     "value": "90",
     "type": "numeric",
-    "units": "US Dollar",
+    "units": "US Dollar per TB per month",
     "object": "storageaccount",
     "instance": "account-theshire"
 }

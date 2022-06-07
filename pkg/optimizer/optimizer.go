@@ -16,9 +16,10 @@
 package optimizer
 
 import (
-	"errors"
 	"os"
 	"os/exec"
+
+	"emperror.dev/errors"
 
 	"github.com/rs/zerolog"
 
@@ -45,18 +46,20 @@ func NewOptimizer(env *datapath.Environment, problemData *datapath.DataInfo, sol
 }
 
 func (opt *Optimizer) getSolution(pathLength int) (string, error) {
+	opt.log.Debug().Msgf("finding solution of length %d", pathLength)
 	modelFile, err := opt.dpc.BuildFzModel(pathLength)
 	if len(modelFile) > 0 {
 		defer os.Remove(modelFile)
 	}
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error building a model")
 	}
 
 	// #nosec G204 -- Avoid "Subprocess launched with variable" error
+	opt.log.Debug().Msgf("Executing %s %s", opt.solverPath, modelFile)
 	solverSolution, err := exec.Command(opt.solverPath, modelFile).Output()
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "error executing %s %s", opt.solverPath, modelFile)
 	}
 	return string(solverSolution), nil
 }
