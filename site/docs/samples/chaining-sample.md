@@ -58,7 +58,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
-You should see the following output:
+   You should see the following output:
    ```bash
           registration_dttm      id first_name last_name  email  ...     country birthdate     salary                     title comments
    0    2016-02-03T13:36:39     1.0      XXXXX     XXXXX  XXXXX  ...   Indonesia     XXXXX  140249.37  Senior Financial Analyst         
