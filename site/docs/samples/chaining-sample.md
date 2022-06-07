@@ -58,6 +58,23 @@ You should see pods with names similar to:
    ./deploy_airbyte_module_client_pod.sh
    kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
    ```
+You should see the following output:
+   ```bash
+          registration_dttm      id first_name last_name  email  ...     country birthdate     salary                     title comments
+   0    2016-02-03T13:36:39     1.0      XXXXX     XXXXX  XXXXX  ...   Indonesia     XXXXX  140249.37  Senior Financial Analyst         
+   1    2016-02-03T00:22:28     2.0      XXXXX     XXXXX  XXXXX  ...       China     XXXXX        NaN                                   
+   2    2016-02-03T18:29:04     3.0      XXXXX     XXXXX  XXXXX  ...      France     XXXXX  236219.26                   Teacher         
+   3    2016-02-03T13:42:19     4.0      XXXXX     XXXXX  XXXXX  ...      Russia     XXXXX        NaN    Nuclear Power Engineer         
+   4    2016-02-03T00:15:29     5.0      XXXXX     XXXXX  XXXXX  ...      France     XXXXX   50210.02             Senior Editor         
+   ..                   ...     ...        ...       ...    ...  ...         ...       ...        ...                       ...      ...
+   995  2016-02-03T13:36:49   996.0      XXXXX     XXXXX  XXXXX  ...       China     XXXXX  185421.82                                  "
+   996  2016-02-03T04:39:01   997.0      XXXXX     XXXXX  XXXXX  ...    Malaysia     XXXXX  279671.68                                   
+   997  2016-02-03T00:33:54   998.0      XXXXX     XXXXX  XXXXX  ...      Poland     XXXXX  112275.78                                   
+   998  2016-02-03T00:15:08   999.0      XXXXX     XXXXX  XXXXX  ...  Kazakhstan     XXXXX   53564.76        Speech Pathologist         
+   999  2016-02-03T00:53:53  1000.0      XXXXX     XXXXX  XXXXX  ...     Nigeria     XXXXX  239858.70                                   
+   
+   [1000 rows x 13 columns]
+   ```
 
 1. Alternatively, one can access the `userdata` dataset from a Jupyter notebook, as described in the [notebook sample](https://fybrik.io/v0.6/samples/notebook/#read-the-dataset-from-the-notebook). To determine the virtual endpoint from which to access the data set, run:
    ```bash
