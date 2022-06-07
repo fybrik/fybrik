@@ -42,15 +42,15 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    ```
 
 1. After the FybrikApplication is applied, the Fybrik control plane attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the `fybrik-blueprints` namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
-```bash
-kubectl get pods -n fybrik-blueprints
-```
-You should see pods with names similar to:
-```bash
-NAME                                                              READY   STATUS    RESTARTS   AGE
-my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq   2/2     Running   0          43s
-my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   1/1     Running   0          43s
-```
+   ```bash
+   kubectl get pods -n fybrik-blueprints
+   ```
+   You should see pods with names similar to:
+   ```bash
+   NAME                                                              READY   STATUS    RESTARTS   AGE
+   my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq   2/2     Running   0          43s
+   my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   1/1     Running   0          43s
+   ```
 
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
