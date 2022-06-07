@@ -101,7 +101,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
 
    # Prepare the request
    request = {
-       "asset": "fybrik-notebook-sample/userdata",
+       "asset": "fybrik-airbyte-sample/userdata",
    }
 
    # Send request and fetch result as a pandas DataFrame
