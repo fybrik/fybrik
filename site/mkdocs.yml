@@ -15,6 +15,7 @@ nav:
     - Before we begin: samples/pre-steps.md
     - samples/notebook-read.md
     - samples/notebook-write.md
+    - samples/delete-sample.md
     - samples/cleanup.md
 - Concepts:
   - concepts/introduction.md
