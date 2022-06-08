@@ -40,7 +40,13 @@ For any module chosen by the control plane to be part of the data path, the cont
 
 The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilities.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
 
-Because the chart is installed by the control plane, the input `values` to the chart must match the relevant type of [arguments](../reference/crds.md#blueprintspecflowstepsindexarguments). 
+Because the chart is installed by the control plane, the input `values` to the chart will contain the following information:
+
+- [`.Values.assets`] (../reference/crds.md#blueprintspecflowstepsindexarguments)
+- [`.Values.selector`] (../reference/crds.md#blueprintspecapplicationselector)
+- [`.Values.context`] (../reference/crds.md#blueprintspecapplication)
+- `.Values.labels` - labels specified in `'FybrikApplication`
+- `.Values.uuid` - a unique id of `FybrikApplication` 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
 
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
