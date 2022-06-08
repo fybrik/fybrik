@@ -95,7 +95,7 @@ metadata:
   name: neverland-storage-account
   namespace: fybrik-system
 spec:
-  id: theshire-object-store
+  id: neverland-object-store
   region: neverland
   endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
