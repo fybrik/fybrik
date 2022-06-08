@@ -217,7 +217,7 @@ manager:
     # when specified, the solver will be deployed in the manager pod
     image: "ghcr.io/fybrik/optimizer:master"
     # Set to true to enable the use of the solver by Fybrik
-    enabled: true
+    enabled: false
 
   chartVolume: ""
     # Specify a persistent volume claim, to be mounted by the manager, that can contain
