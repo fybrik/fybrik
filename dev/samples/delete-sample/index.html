@@ -15,7 +15,7 @@
     
     
       
-        <title>Connectors - Fybrik</title>
+        <title>Sample for the delete flow - Fybrik</title>
       
     
     
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#connectors" class="md-skip">
+        <a href="#sample-for-the-delete-flow" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Connectors
+              Sample for the delete flow
             
           </span>
         </div>
@@ -188,13 +188,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../../get-started/quickstart/" class="md-tabs__link">
+      <a href="../../get-started/quickstart/" class="md-tabs__link md-tabs__link--active">
         Get Started
       </a>
     </li>
@@ -204,15 +206,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../introduction/" class="md-tabs__link md-tabs__link--active">
+      <a href="../../concepts/introduction/" class="md-tabs__link">
         Concepts
       </a>
     </li>
@@ -343,12 +343,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -383,12 +385,14 @@
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" checked>
       
       
       
@@ -411,7 +415,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../samples/pre-steps/" class="md-nav__link">
+      <a href="../pre-steps/" class="md-nav__link">
         Before we begin
       </a>
     </li>
@@ -425,7 +429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../samples/notebook-read/" class="md-nav__link">
+      <a href="../notebook-read/" class="md-nav__link">
         Notebook sample for the read flow
       </a>
     </li>
@@ -439,7 +443,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../samples/notebook-write/" class="md-nav__link">
+      <a href="../notebook-write/" class="md-nav__link">
         Notebook sample for the write flow
       </a>
     </li>
@@ -451,11 +455,87 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../samples/delete-sample/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Sample for the delete flow
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Sample for the delete flow
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-module" class="md-nav__link">
+    Install module
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prepare-dataset" class="md-nav__link">
+    Prepare dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-data-access-policy" class="md-nav__link">
+    Define data access policy
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-fybrikapplication-resource" class="md-nav__link">
+    Create a FybrikApplication resource
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ensure-the-object-is-deleted" class="md-nav__link">
+    Ensure the object is deleted
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -467,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../samples/cleanup/" class="md-nav__link">
+      <a href="../cleanup/" class="md-nav__link">
         Cleanup
       </a>
     </li>
@@ -494,14 +574,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -524,7 +602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../introduction/" class="md-nav__link">
+      <a href="../../concepts/introduction/" class="md-nav__link">
         Introduction
       </a>
     </li>
@@ -538,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
+      <a href="../../concepts/architecture/" class="md-nav__link">
         Architecture
       </a>
     </li>
@@ -552,7 +630,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../taxonomy/" class="md-nav__link">
+      <a href="../../concepts/taxonomy/" class="md-nav__link">
         Taxonomy
       </a>
     </li>
@@ -564,14 +642,12 @@
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_4" type="checkbox" id="__nav_3_4" >
       
       
       
@@ -592,86 +668,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Connectors
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../concepts/connectors/" class="md-nav__link">
         Connectors
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-are-connectors" class="md-nav__link">
-    What are connectors?
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#can-i-write-my-own-connectors" class="md-nav__link">
-    Can I write my own connectors?
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#connector-types" class="md-nav__link">
-    Connector types
-  </a>
-  
-    <nav class="md-nav" aria-label="Connector types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data-catalog" class="md-nav__link">
-    Data catalog
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#policy-manager" class="md-nav__link">
-    Policy manager
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -683,7 +684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../modules/" class="md-nav__link">
+      <a href="../../concepts/modules/" class="md-nav__link">
         Modules
       </a>
     </li>
@@ -697,7 +698,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../vault_plugins/" class="md-nav__link">
+      <a href="../../concepts/vault_plugins/" class="md-nav__link">
         HashiCorp Vault plugins
       </a>
     </li>
@@ -718,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../config-policies/" class="md-nav__link">
+      <a href="../../concepts/config-policies/" class="md-nav__link">
         Configuration Policies
       </a>
     </li>
@@ -1274,43 +1275,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-are-connectors" class="md-nav__link">
-    What are connectors?
+  <a href="#install-module" class="md-nav__link">
+    Install module
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#can-i-write-my-own-connectors" class="md-nav__link">
-    Can I write my own connectors?
+  <a href="#prepare-dataset" class="md-nav__link">
+    Prepare dataset
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#connector-types" class="md-nav__link">
-    Connector types
-  </a>
-  
-    <nav class="md-nav" aria-label="Connector types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data-catalog" class="md-nav__link">
-    Data catalog
+  <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
+    Register the dataset in a data catalog
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#policy-manager" class="md-nav__link">
-    Policy manager
+      
+        <li class="md-nav__item">
+  <a href="#define-data-access-policy" class="md-nav__link">
+    Define data access policy
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-fybrikapplication-resource" class="md-nav__link">
+    Create a FybrikApplication resource
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ensure-the-object-is-deleted" class="md-nav__link">
+    Ensure the object is deleted
+  </a>
   
 </li>
       
@@ -1326,38 +1328,169 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/concepts/connectors.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/samples/delete-sample.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
 
-<h1 id="connectors">Connectors</h1>
-<p>The project currently has two extension mechanisms, namely connectors and modules.
-This page describes what connectors are and what connectors are installed using the default Fybrik installation.</p>
-<h2 id="what-are-connectors">What are connectors?</h2>
-<p>Connectors are <a href="https://www.openapis.org/">Open API</a> services that the Fybrik control plane uses to connect to external systems. Specifically, the control plane needs connectors to a data catalog and a data governance policy manager. These connector services are deployed alongside the control plane.</p>
-<h2 id="can-i-write-my-own-connectors">Can I write my own connectors?</h2>
-<p>Yes. Fybrik provides some default connectors described in this page but anyone can develop their own connectors.</p>
-<p>A connector needs to implement one or more of the interfaces described in the <a href="../../reference/connectors-datacatalog/">API documentation</a>, depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.</p>
-<p>In addition, to benefit from the <a href="../../tasks/control-plane-security/">control plane security</a> feature ensure that the <code>Pods</code> 
-of your connector:</p>
+<h1 id="sample-for-the-delete-flow">Sample for the delete flow</h1>
+<p>This sample demonstrate how to delete an S3 object from a bucket.</p>
+<h2 id="install-module">Install module</h2>
+<p>To apply the latest development version of arrow-flight-module:
+<div class="highlight"><pre><span></span><code>kubectl apply -f -n fybrik-system https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml
+</code></pre></div></p>
+<h2 id="prepare-dataset">Prepare dataset</h2>
+<p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
+<p>Upload the CSV file to an object storage of your choice such as AWS S3, IBM Cloud Object Storage or Ceph.
+Make a note of the service endpoint, bucket name, and access credentials. You will need them later.</p>
+<details class="tip">
+<summary>Setup and upload to localstack</summary>
+<p>For experimentation you can install localstack to your cluster instead of using a cloud service.</p>
 <ol>
-<li>Have a <code>fybrik.io/componentType: connector</code> label </li>
-<li>Have a <code>sidecar.istio.io/inject: "true"</code> annotation</li>
+<li>Define variables for access key and secret key
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
+<span class="nb">export</span> <span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
+</code></pre></div></li>
+<li>Install localstack to the currently active namespace and wait for it to be ready:
+  <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> --set service.type<span class="o">=</span>ClusterIP
+kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-notebook-sample --timeout<span class="o">=</span>120s
+</code></pre></div></li>
+<li>Create a port-forward to communicate with localstack server:
+  <div class="highlight"><pre><span></span><code>kubectl port-forward svc/localstack <span class="m">4566</span>:4566 <span class="p">&amp;</span>
+</code></pre></div></li>
+<li>Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to upload the dataset to a new created bucket in the localstack server:
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:4566&quot;</span>
+<span class="nb">export</span> <span class="nv">BUCKET</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span>
+<span class="nb">export</span> <span class="nv">OBJECT_KEY</span><span class="o">=</span><span class="s2">&quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="nb">export</span> <span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;/path/to/PS_20174392719_1491204439457_log.csv&quot;</span>
+aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws configure <span class="nb">set</span> aws_secret_access_key <span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api create-bucket --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws --endpoint-url<span class="o">=</span><span class="si">${</span><span class="nv">ENDPOINT</span><span class="si">}</span> s3api put-object --bucket <span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> --key <span class="si">${</span><span class="nv">OBJECT_KEY</span><span class="si">}</span> --body <span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span>
+</code></pre></div></li>
 </ol>
-<h2 id="connector-types">Connector types</h2>
-<h3 id="data-catalog">Data catalog</h3>
-<p>Fybrik assumes the use of an enterprise data catalog. For example, to reference a required data asset in a <code>FybrikApplication</code> resource, you provide a link to the asset in the catalog.</p>
-<p>The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Fybrik uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making data governance policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.</p>
-<p>Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
-The default installation of Fybrik installs <a href="../../reference/katalog/">Katalog</a>, a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to <a href="https://www.odpi.org/projects/egeria">ODPi Egeria</a> is also available.</p>
-<h3 id="policy-manager">Policy manager</h3>
-<p>Data governance policies are defined externally in the data governance manager of choice. </p>
-<p>Enforcing data governance policies requires a Policy Decision Point (PDP) that dictates what enforcement actions need to take place.
-Fybrik supports a wide and extendable set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.</p>
-<p>A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
-Fybrik includes a PDP that is powered by <a href="https://www.openpolicyagent.org/">Open Policy Agent</a> (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. </p>
+</details>
+<p>Before we delete the object, we make sure it's been created.
+You can check with the object storage serive that you used or with <a href="https://aws.amazon.com/cli/">AWS CLI</a>:
+<div class="highlight"><pre><span></span><code>aws --endpoint-url=${ENDPOINT} s3api list-objects --bucket=${BUCKET}
+</code></pre></div>
+You should see the new created object:
+<div class="highlight"><pre><span></span><code>{
+    &quot;Contents&quot;: [
+        {
+            &quot;Key&quot;: &quot;PS_20174392719_1491204439457_log.csv&quot;,
+            &quot;LastModified&quot;: &quot;2022-06-06T07:12:16.000Z&quot;,
+            &quot;ETag&quot;: &quot;\&quot;9a34903326938d8c33c29f4a1170a7b1\&quot;&quot;,
+            &quot;Size&quot;: 6551,
+            &quot;StorageClass&quot;: &quot;STANDARD&quot;,
+            &quot;Owner&quot;: {
+                &quot;DisplayName&quot;: &quot;webfile&quot;,
+                &quot;ID&quot;: &quot;75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a&quot;
+            }
+        }
+    ]
+}
+</code></pre></div></p>
+<h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
+<p>In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.</p>
+<p>Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Opaque</span><span class="w"></span>
+<span class="nt">stringData</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ACCESS_KEY}&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>Then, register the data asset itself in the data catalog <code>katalog</code> used for samples. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>object_key</code> with values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">katalog.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Asset</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
+<span class="w">  </span><span class="nt">details</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dataFormat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<span class="w">    </span><span class="nt">connection</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
+<span class="w">      </span><span class="nt">s3</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
+<span class="w">        </span><span class="nt">object_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Synthetic Financial Datasets For Fraud Detection</span><span class="w"></span>
+<span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="nt">finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
+<p>Notice the <code>metadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<p>For example, in the yaml above, the <code>geography</code> is set to <code>theshire</code>, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:</p>
+<div class="highlight"><pre><span></span><code>kubectl get configmap cluster-metadata -n fybrik-system -o <span class="s1">&#39;jsonpath={.data.Region}&#39;</span>
+</code></pre></div>
+<p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the yaml above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
+<h2 id="define-data-access-policy">Define data access policy</h2>
+<p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy.
+In this sample we only specify the action taken.
+Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
+<div class="highlight"><pre><span></span><code>package dataapi.authz
+
+rule[{}] {
+  description := &quot;allow the delete operation&quot;
+  input.action.actionType == &quot;delete&quot;
+}
+</code></pre></div>
+<p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
+<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span>sample-policy.rego
+kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n fybrik-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div>
+<p>You can similarly apply a directory holding multiple rego files.</p>
+<h2 id="create-a-fybrikapplication-resource">Create a <code>FybrikApplication</code> resource</h2>
+<p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik:</p>
+<!-- TODO: check if works without role field -->
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt;EOF | kubectl apply -f -</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikApplication</span><span class="w"></span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete-app</span><span class="w"></span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-notebook-sample</span><span class="w"></span>
+<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w"></span>
+<span class="w">   </span><span class="nt">workloadSelector</span><span class="p">:</span><span class="w"></span>
+<span class="w">     </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
+<span class="w">  </span><span class="nt">appInfo</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">intent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fraud Detection</span><span class="w"></span>
+<span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Security</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;fybrik-notebook-sample/paysim-csv&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">flow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete</span><span class="w"></span>
+<span class="w">      </span><span class="nt">requirements</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+</code></pre></div>
+<p>Notice that the <code>data</code> field includes a <code>dataSetID</code> that matches the asset identifier in the catalog.</p>
+<p>Run the following command to wait until the <code>FybrikApplication</code> is ready:</p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication delete-app -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for FybrikApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication delete-app -o <span class="s1">&#39;jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for fybrik-notebook-sample/paysim-csv asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+</code></pre></div>
+<h2 id="ensure-the-object-is-deleted">Ensure the object is deleted</h2>
+<p>Now the object should be deleted. We can check again with <a href="https://aws.amazon.com/cli/">AWS CLI</a>:
+<div class="highlight"><pre><span></span><code>aws --endpoint-url=${ENDPOINT} s3api list-objects --bucket=${BUCKET}
+</code></pre></div>
+Now you should see that the object is no longer in the list (or no list at all if the bukcet is empty).</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Created by NTNU and shared under the <strong><em>CC BY-SA 4.0</em></strong> license.&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
               
             </article>
@@ -1373,7 +1506,7 @@ Fybrik includes a PDP that is powered by <a href="https://www.openpolicyagent.or
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../taxonomy/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Taxonomy" rel="prev">
+        <a href="../notebook-write/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Notebook sample for the write flow" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1382,20 +1515,20 @@ Fybrik includes a PDP that is powered by <a href="https://www.openpolicyagent.or
               <span class="md-footer__direction">
                 Previous
               </span>
-              Taxonomy
+              Notebook sample for the write flow
             </div>
           </div>
         </a>
       
       
         
-        <a href="../modules/" class="md-footer__link md-footer__link--next" aria-label="Next: Modules" rel="next">
+        <a href="../cleanup/" class="md-footer__link md-footer__link--next" aria-label="Next: Cleanup" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Modules
+              Cleanup
             </div>
           </div>
           <div class="md-footer__button md-icon">
