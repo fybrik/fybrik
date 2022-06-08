@@ -42,10 +42,10 @@ The names of the Kubernetes resources deployed by the module helm chart must con
 
 Because the chart is installed by the control plane, the input `values` to the chart will contain the following information:
 
-- [`.Values.assets`] (../reference/crds.md#blueprintspecflowstepsindexarguments)
-- [`.Values.selector`] (../reference/crds.md#blueprintspecapplicationselector)
-- [`.Values.context`] (../reference/crds.md#blueprintspecapplication)
-- `.Values.labels` - labels specified in `'FybrikApplication`
+- [`.Values.assets`](../reference/crds.md#blueprintspecflowstepsindexarguments)
+- [`.Values.selector`](../reference/crds.md#blueprintspecapplicationselector)
+- [`.Values.context`](../reference/crds.md#blueprintspecapplication)
+- `.Values.labels` - labels specified in `FybrikApplication`
 - `.Values.uuid` - a unique id of `FybrikApplication` 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
 
