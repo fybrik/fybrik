@@ -37,7 +37,7 @@ spec:
       {{- if .Values.manager.solver.image }}
       initContainers:
         - name: init-solver
-          image: {{ .Values.manager.solver }}
+          image: {{ .Values.manager.solver.image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command:
           - cp 
