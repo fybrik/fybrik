@@ -32,11 +32,11 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.katalogConnector.serviceAccount.name }}
       securityContext:
-        {{- toYaml .Values.katalogConnector.podSecurityContext | nindent 8 }}
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.katalogConnector.podSecurityContext) | nindent 8 }}
       containers:
         - name: katalog-connector
           securityContext:
-            {{- toYaml .Values.katalogConnector.securityContext | nindent 12 }}
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.katalogConnector.containerSecurityContext | toYaml | nindent 12 }}
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:

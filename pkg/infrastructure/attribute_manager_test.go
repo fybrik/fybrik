@@ -18,7 +18,7 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 			"description": "neverland object store",
 			"value": "100",
 			"type": "numeric",
-			"units": "US Dollar",
+			"units": "US Dollar per TB per month",
 			"instance": "account-neverland"
 		}]
 	}`

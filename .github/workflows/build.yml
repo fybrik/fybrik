@@ -120,8 +120,8 @@ jobs:
         path: images.tar
         retention-days: 1
 
-  notebook-sample:
-    name: Notebook sample
+  notebook-sample-read-flow:
+    name: Read flow notebook sample
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
@@ -145,16 +145,41 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
-    - name: Notebook tests old
+    - name: Read flow notebook tests old
       if: ${{ matrix.k8s_version == 'old' }}
       env:
         K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
-      run: make run-notebook-tests
-    - name: Notebook tests new
+      run: make run-notebook-readflow-tests
+    - name: Read flow notebook tests new
       if: ${{ matrix.k8s_version == 'new' }}
       env:
         K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
-      run: make run-notebook-tests
+      run: make run-notebook-readflow-tests
+ 
+  notebook-sample-write-flow:
+    name: Write flow notebook sample
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Write flow notebook tests
+      run: make run-notebook-writeflow-tests
 
   tekton-pipelines:
     name: Tekton Tests

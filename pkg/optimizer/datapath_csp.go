@@ -50,6 +50,7 @@ type DataPathCSP struct {
 	modulesCapabilities []moduleAndCapability       // An enumeration of allowed capabilities in all modules
 	interfaceIdx        map[taxonomy.Interface]int  // gives an index for each unique interface
 	reverseIntfcMap     map[int]*taxonomy.Interface // The reverse mapping (needed when decoding the solution)
+	requiredActions     map[string]taxonomy.Action  // A map from action variables to the actions they represent
 	fzModel             *FlatZincModel
 	noStorageAccountVal int
 }
@@ -58,6 +59,7 @@ type DataPathCSP struct {
 // The generated enumerations are listed at the header of the FlatZinc model
 func NewDataPathCSP(problemData *datapath.DataInfo, env *datapath.Environment) *DataPathCSP {
 	dpCSP := DataPathCSP{problemData: problemData, env: env, fzModel: NewFlatZincModel()}
+	dpCSP.requiredActions = map[string]taxonomy.Action{}
 	dpCSP.interfaceIdx = map[taxonomy.Interface]int{}
 	dpCSP.reverseIntfcMap = map[int]*taxonomy.Interface{}
 	dataSetIntfc := getAssetInterface(dpCSP.problemData.DataDetails)
@@ -329,7 +331,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 			BoolLinEqConstraint, []string{fznCompoundLiteral(allOnesArrayLiteral, false), actionVar, strconv.Itoa(1)})
 	}
 
-	if !dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
+	if dpc.problemData.Context.Flow != taxonomy.WriteFlow || dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
 		for saIdx, sa := range dpc.env.StorageAccounts {
 			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Region]
 			if !found { //
@@ -364,6 +366,7 @@ func (dpc *DataPathCSP) orOfIndicators(indicatorArray string) string {
 // Returns an *output* array of Booleans variable to mark whether the current action is applied at location i
 func (dpc *DataPathCSP) addActionIndicator(action taxonomy.Action, pathLength int) string {
 	actionVar := getActionVarname(action)
+	dpc.requiredActions[actionVar] = action
 	if _, found := dpc.fzModel.VarMap[actionVar]; found {
 		return actionVar
 	}
@@ -732,8 +735,7 @@ func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weigh
 // Returns which actions should be activated by the module at position pathPos (according to the solver's solution)
 func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathPos int) []taxonomy.Action {
 	actions := []taxonomy.Action{}
-	for _, action := range dpc.problemData.Actions {
-		actionVarname := getActionVarname(action)
+	for actionVarname, action := range dpc.requiredActions {
 		actionSolution := solverSolution[actionVarname]
 		if actionSolution[pathPos] == TrueValue {
 			actions = append(actions, action)
