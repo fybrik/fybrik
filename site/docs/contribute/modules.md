@@ -49,9 +49,45 @@ Because the chart is installed by the control plane, the input `values` to the c
 - `.Values.uuid` - a unique id of `FybrikApplication` 
 <!-- TODO: expand this when we support setting values in the FybrikModule YAML: https://github.com/fybrik/fybrik/pull/42 -->
 
+An example of values passed to a module(values.sample.yaml):
+```
+labels:
+  app.fybrik.io/app-name: my-notebook-read
+  namespace: fybrik-notebook-sample
+uuid: 12345678
+context:
+  intent: "Fraud Detection"
+selector:
+  matchLabels:
+    app: my-notebook
+assets:
+- args:
+  - connection:
+      name: s3
+      s3:
+        bucket: fybrik-test-bucket
+        endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+        object_key: test1.parquet
+    format: parquet
+    vault:
+      read:
+        address: http://vault.fybrik-system:8200
+        authPath: /v1/auth/kubernetes/login
+        role: module
+        secretPath: /v1/kubernetes-secrets/data-creds?namespace=fybrik-notebook-sample
+  assetID: "test1"
+  capability: read
+  transformations:
+  - name: "RedactAction"
+    RedactAction:
+      columns:
+      - col1
+      - col2
+```
+
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
-For a full example see the [Arrow Flight Module chart](https://github.com/fybrik/arrow-flight-module/tree/cd168bb6cdf666c2ec1df960395c0dc1c8feeaa9/helm/afm).
+For a full example see the [Arrow Flight Module chart](https://github.com/fybrik/arrow-flight-module/tree/master/helm/afm).
 
 ### Publishing the Helm Chart
 
