@@ -26,6 +26,10 @@ const (
 	sinkIntfcVarname = "moduleSinkInterface"   // Var's value says which interface to use as sink
 	actionVarname    = "action_%s"             // Vars for each required action, say whether the action was applied
 	jointGoalVarname = "jointGoal"             // Var's value indicates the quality of the data path w.r.t. optimization goals
+
+	minusOneStr = "-1"
+	zeroStr     = "0"
+	oneStr      = "1"
 )
 
 // Couples together a module and one of its capabilities
@@ -508,40 +512,54 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 	}
 
 	attribute := goal.Attribute
+	instanceType := dpc.env.AttributeManager.GetInstanceType(attribute)
+	if instanceType == nil {
+		return "", "", fmt.Errorf("no infrastructure data for attribute %s", attribute)
+	}
 	sanitizedAttr := sanitizeFznIdentifier(string(attribute))
 	goalVarname := fmt.Sprintf("goal%s", sanitizedAttr)
 	dpc.fzModel.AddVariableArray(goalVarname, IntType, pathLen, true, false)
 
-	goalVarNames := []string{}
-	selectorVar, paramArray, err := dpc.getAttributeMapping(attribute)
+	var err error
+	if *instanceType != "" {
+		err = dpc.setSimpleGoalVarArray(attribute, instanceType, goalVarname, pathLen)
+	} else { // Currently, this means the attribute is defined over region-pairs (simulating bandwidth)
+		err = dpc.setComplexGoalVarArray(attribute, goalVarname, pathLen)
+	}
 	if err != nil {
 		return "", "", err
 	}
-	if selectorVar == "" {
-		return "", "", nil // TODO: handle (this can be an attribute like bandwidth)
-	}
-	for pos := 1; pos <= pathLen; pos++ {
-		selectorVarAtPos := varAtPos(selectorVar, pos)
-		goalAtPos := varAtPos(goalVarname, pos)
-		goalVarNames = append(goalVarNames, goalAtPos)
-		definesAnnotation := GetDefinesVarAnnotation(goalAtPos)
-		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{selectorVarAtPos, paramArray, goalAtPos}, definesAnnotation)
-	}
 
+	goalVarNames := []string{}
+	for pos := 1; pos <= pathLen; pos++ {
+		goalVarNames = append(goalVarNames, varAtPos(goalVarname, pos))
+	}
 	goalSumVarname := fmt.Sprintf("goal%sSum", sanitizedAttr)
 	dpc.fzModel.AddVariable(goalSumVarname, IntType, true, false)
 	dpc.setVarAsWeightedSum(goalSumVarname, goalVarNames, arrayOfSameInt(1, pathLen))
 	return goalSumVarname, weight, nil
 }
 
-// This creates a param array with the values of the given attribute for each cluster/module/storage account instance
-// NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
-func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, string, error) {
-	instanceType := dpc.env.AttributeManager.GetInstanceType(attr)
-	if instanceType == nil {
-		return "", "", fmt.Errorf("there are no clusters, modules or storage accounts with an attribute %s", attr)
+// Sets the value of the goal variable for each path location, based on the given attribute
+func (dpc *DataPathCSP) setSimpleGoalVarArray(attr taxonomy.Attribute, instanceType *taxonomy.InstanceType,
+	goalVarname string, pathLen int) error {
+	selectorVar, paramArray, err := dpc.getAttributeMapping(attr, instanceType)
+	if err != nil {
+		return err
 	}
 
+	for pos := 1; pos <= pathLen; pos++ {
+		selectorVarAtPos := varAtPos(selectorVar, pos)
+		goalAtPos := varAtPos(goalVarname, pos)
+		definesAnnotation := GetDefinesVarAnnotation(goalAtPos)
+		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{selectorVarAtPos, paramArray, goalAtPos}, definesAnnotation)
+	}
+	return nil
+}
+
+// This creates a param array with the values of the given attribute for each cluster/module/storage account instance
+// NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
+func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute, instanceType *taxonomy.InstanceType) (string, string, error) {
 	resArray := []string{}
 	varName := ""
 	switch *instanceType {
@@ -566,7 +584,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			}
 			resArray = append(resArray, infraElement.Value)
 		}
-		resArray = append(resArray, "0") // Assuming attribute == 0 if no storage account is set
+		resArray = append(resArray, zeroStr) // Assuming attribute == 0 if no storage account is set
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
@@ -577,14 +595,124 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 			resArray = append(resArray, infraElement.Value)
 		}
 	default:
-		return "", "", nil // TODO: handle (this can be bandwidth for example)
+		return "", "", fmt.Errorf("unknown instance type %s", *instanceType)
 	}
-	if len(resArray) < 1 {
+	if len(resArray) < 1 { // e.g. if there are no storage accounts
 		return "", "", nil
 	}
 	paramName := varName + sanitizeFznIdentifier(string(attr))
 	dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
 	return varName, paramName, nil
+}
+
+func (dpc *DataPathCSP) setComplexGoalVarArray(attr taxonomy.Attribute, goalVarname string, pathLen int) error {
+	attrStr := sanitizeFznIdentifier(string(attr))
+	c2cParamName, err := dpc.getCluster2ClusterParamArray(attr, attrStr)
+	if err != nil {
+		return err
+	}
+	s2cParamName, err := dpc.getStorageToClusterParamArray(attr, attrStr)
+	if err != nil {
+		return err
+	}
+
+	c2cSelectorName := c2cParamName + "Selector" // The entry to select from the c2cParamArray
+	dpc.fzModel.AddVariableArray(c2cSelectorName, IntType, pathLen, true, false)
+	c2cSelectedValueName := c2cParamName + "SelectedValue" // The value selected from the c2cParamArray
+	// val at pos i is the attr value from cluster i to cluster i+1 (cluster pathLen+1 is the workload)
+	dpc.fzModel.AddVariableArray(c2cSelectedValueName, IntType, pathLen, true, false)
+	s2cSelectorName := s2cParamName + "Selector" // The entry to select from the s2cParamArray
+	dpc.fzModel.AddVariableArray(s2cSelectorName, IntType, pathLen+1, true, false)
+	s2cSelectedValueName := s2cParamName + "SelectedValue" // The value selected from the s2cParamArray
+	// val at pos i is the attr value from storage account i-1 to cluster i (storage account 0 is the dataset)
+	dpc.fzModel.AddVariableArray(s2cSelectedValueName, IntType, pathLen, true, false)
+
+	numClustersStr := strconv.Itoa(len(dpc.env.Clusters))
+	selectorWeights := []string{numClustersStr, oneStr, minusOneStr}
+	realSaLocationsVarName := "realSaLocations"
+	realSA := dpc.addEqualityIndicator(saVarname, dpc.noStorageAccountVal, pathLen, false)
+
+	dpc.fzModel.AddVariableArray(realSaLocationsVarName, IntType, pathLen, true, false)
+	for pos := 1; pos <= pathLen; pos++ {
+		c2cSelectorAtPos := varAtPos(c2cSelectorName, pos)
+		clusterAtPos := varAtPos(clusterVarname, pos)
+		clusterAtNextPos := varAtPos(clusterVarname, pos+1)
+		if pos == pathLen {
+			clusterAtNextPos = getWorkloadClusterIndex(dpc.problemData.WorkloadCluster, dpc.env.Clusters)
+		}
+		s2cSelectorAtPos := varAtPos(s2cSelectorName, pos)
+		saAtPos := varAtPos(saVarname, pos-1)
+		if pos == 1 {
+			saAtPos = zeroStr
+		}
+
+		dpc.setVarAsWeightedSum(c2cSelectorAtPos, []string{clusterAtPos, clusterAtNextPos, numClustersStr}, selectorWeights)
+		c2cSelectedValueAtPos := varAtPos(c2cSelectedValueName, pos)
+		c2cDefinesAnnotation := GetDefinesVarAnnotation(c2cSelectedValueAtPos)
+		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{c2cSelectorAtPos, c2cParamName, c2cSelectedValueAtPos}, c2cDefinesAnnotation)
+
+		dpc.setVarAsWeightedSum(s2cSelectorAtPos, []string{saAtPos, clusterAtPos, oneStr}, selectorWeights)
+		s2cSelectedValueAtPos := varAtPos(s2cSelectedValueName, pos)
+		s2cDefinesAnnotation := GetDefinesVarAnnotation(s2cSelectedValueAtPos)
+		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{s2cSelectorAtPos, s2cParamName, s2cSelectedValueAtPos}, s2cDefinesAnnotation)
+
+		realSAAtPos := varAtPos(realSA, pos)
+		realSaLocationsAtPos := varAtPos(realSaLocationsVarName, pos)
+		dpc.fzModel.AddConstraint(BoolLinEqConstraint,
+			[]string{fznCompoundLiteral([]string{strconv.Itoa(pos)}, false), fznCompoundLiteral([]string{realSAAtPos}, false), realSaLocationsAtPos})
+	}
+	maxRealSaVarName := "maxRealSA"
+	dpc.fzModel.AddVariable(maxRealSaVarName, IntType, true, false)
+	dpc.fzModel.AddConstraint(IntMaxConstraint, []string{maxRealSaVarName, realSaLocationsVarName})
+	return nil
+}
+
+// Produces a paramArray containing the attr value for each pair of clusters
+func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr taxonomy.Attribute, attrStr string) (string, error) {
+	c2cParamArray := []string{}
+	for _, cluster1 := range dpc.env.Clusters {
+		for _, cluster2 := range dpc.env.Clusters {
+			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
+			if infraElement == nil {
+				return "", fmt.Errorf("attribute %s is not defined for regions %s and %s",
+					attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
+			}
+			c2cParamArray = append(c2cParamArray, infraElement.Value)
+		}
+	}
+	c2cParamName := "cluster2cluster" + attrStr
+	dpc.fzModel.AddParamArray(c2cParamName, IntType, len(c2cParamArray), fznCompoundLiteral(c2cParamArray, false))
+	return c2cParamName, nil
+}
+
+// Produces a paramArray containing the attr value for each pair of storage-account and cluster
+// The first line of the resulting matrix describes the attr value of the dataset-region vs each cluster
+// The last line of the resulting matrix describes the attr value of no storage account vs each cluster (which is 0)
+func (dpc *DataPathCSP) getStorageToClusterParamArray(attr taxonomy.Attribute, attrStr string) (string, error) {
+	s2cParamArray := []string{}
+	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
+	for _, cluster := range dpc.env.Clusters {
+		infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, dataSetRegion, cluster.Metadata.Region)
+		if infraElement == nil {
+			return "", fmt.Errorf("attribute %s is not defined for regions %s and %s",
+				attr, dataSetRegion, cluster.Metadata.Region)
+		}
+		s2cParamArray = append(s2cParamArray, infraElement.Value)
+	}
+	for _, sa := range dpc.env.StorageAccounts {
+		for _, cluster := range dpc.env.Clusters {
+			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			if infraElement == nil {
+				return "", fmt.Errorf("attribute %s is not defined for regions %s and %s",
+					attr, sa.Spec.Region, cluster.Metadata.Region)
+			}
+			s2cParamArray = append(s2cParamArray, infraElement.Value)
+		}
+	}
+	s2cParamArray = append(s2cParamArray, arrayOfSameInt(0, len(dpc.env.Clusters))...) // Assuming attribute == 0 if no storage account is set
+	s2cParamName := "sa2cluster" + attrStr
+	dpc.fzModel.AddParamArray(s2cParamName, IntType, len(s2cParamArray), fznCompoundLiteral(s2cParamArray, false))
+	return s2cParamName, nil
 }
 
 // Sets the CSP int variable sumVarname to be the weighted sum of int elements in arrayToSum.
@@ -593,7 +721,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 // The trick is to use the dot-product constraint, add the summing var with weight -1 and force the result to be 0
 func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weights []string) {
 	arrayToSum = append(arrayToSum, sumVarname)
-	weights = append(weights, "-1")
+	weights = append(weights, minusOneStr)
 	dpc.fzModel.AddConstraint(
 		IntLinEqConstraint,
 		[]string{fznCompoundLiteral(weights, false), fznCompoundLiteral(arrayToSum, false), strconv.Itoa(0)},
@@ -687,6 +815,15 @@ func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interf
 		return taxonomy.Interface{Protocol: appApi.S3, DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
+}
+
+func getWorkloadClusterIndex(wlCluster multicluster.Cluster, clusters []multicluster.Cluster) string {
+	for i, cluster := range clusters {
+		if cluster.Name == wlCluster.Name {
+			return strconv.Itoa(i + 1)
+		}
+	}
+	return ""
 }
 
 // returns whether an interface supported by a module (at source or at sink) matches another interface

@@ -39,6 +39,7 @@ const (
 	SetInConstraint      = "set_in_reif"
 	IntLinEqConstraint   = "int_lin_eq"
 	ArrIntElemConstraint = "array_int_element"
+	IntMaxConstraint     = "array_int_maximum"
 
 	DefinedVarAnnotation = "is_defined_var"
 	DefinesVarAnnotation = "defines_var(%s)"
