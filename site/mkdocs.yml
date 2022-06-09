@@ -16,6 +16,7 @@ nav:
     - samples/notebook-read.md
     - samples/notebook-write.md
     - samples/delete-sample.md
+    - samples/chaining-sample.md
     - samples/cleanup.md
 - Concepts:
   - concepts/introduction.md
