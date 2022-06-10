@@ -53,13 +53,6 @@ type BlueprintReconciler struct {
 	Helmer helm.Interface
 }
 
-type ExtendedArguments struct {
-	fapp.ModuleArguments     `json:",inline"`
-	*fapp.ApplicationDetails `json:",inline"`
-	Labels                   map[string]string `json:"labels"`
-	UUID                     string            `json:"uuid"`
-}
-
 // Reconcile receives a Blueprint CRD
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	blueprint := fapp.Blueprint{}
@@ -332,14 +325,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
-		extendedArguments := ExtendedArguments{
+		helmValues := fapp.HelmValues{
 			ModuleArguments:    module.Arguments,
 			ApplicationDetails: blueprint.Spec.Application,
 			Labels:             blueprint.Labels,
 			UUID:               uuid,
 		}
 		var args map[string]interface{}
-		args, err := utils.StructToMap(&extendedArguments)
+		args, err := utils.StructToMap(&helmValues)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
