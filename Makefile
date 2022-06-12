@@ -153,13 +153,11 @@ docker-minimal-it:
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C manager docker-build
-	$(MAKE) -C pkg/optimizer docker-build
 	$(MAKE) -C connectors docker-build
 
 .PHONY: docker-push
 docker-push:
 	$(MAKE) -C manager docker-push
-	$(MAKE) -C pkg/optimizer docker-push
 	$(MAKE) -C connectors docker-push
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
@@ -169,8 +167,7 @@ DOCKER_PUBLIC_TAGNAME ?= master
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	katalog-connector \
-	opa-connector \
-	optimizer
+	opa-connector
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
