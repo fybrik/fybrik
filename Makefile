@@ -83,6 +83,8 @@ test: pre-test
 	USE_CSP=true go test -v ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
+run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
 run-integration-tests:
@@ -102,6 +104,8 @@ run-integration-tests:
 	
 
 .PHONY: run-notebook-readflow-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests:
 	$(MAKE) kind
@@ -126,6 +130,8 @@ run-notebook-readflow-bc-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-writeflow-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
 run-notebook-writeflow-tests:
 	$(MAKE) kind
@@ -138,6 +144,8 @@ run-notebook-writeflow-tests:
 	$(MAKE) -C manager run-notebook-writeflow-tests
 
 .PHONY: run-namescope-integration-tests
+run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-namescope-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
 run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-namescope-integration-tests:
