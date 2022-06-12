@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.3">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.4">
     
     
       
@@ -1728,7 +1728,7 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 <span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="s1">&#39;jsonpath={.status.assetStates.new-data.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for new-data asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
-<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset&#39;</span><span class="o">}</span><span class="k">)</span>
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
 </code></pre></div>
 <h3 id="write-the-data-from-the-notebook">Write the data from the notebook</h3>
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
@@ -1736,7 +1736,7 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 <div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.new-data.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
 <span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.new-data.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
 <span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.new-data.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
-<span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nb">printf</span> <span class="s2">&quot;\n</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">\n\n&quot;</span>
 </code></pre></div>
 The next steps use the endpoint to write the data in a python notebook</p>
 <ol>
@@ -1825,14 +1825,14 @@ kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/
 <div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
 <span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
 <span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
-<span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nb">printf</span> <span class="s2">&quot;\n</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">\n\n&quot;</span>
 </code></pre></div>
-The next steps use the endpoint to read the data in a python notebook</p>
+The next steps use the endpoint to read the data in a python notebook.</p>
 <ol>
 <li>Insert a new notebook cell to install pandas and pyarrow packages:
   <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span><span class="o">==</span><span class="mf">7.0</span><span class="o">.*</span>
 </code></pre></div></li>
-<li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>FybrikApplication</code> in the previous step:
+<li>Insert a new notebook cell to read the data. <strong>Notice</strong>: <code>ENDPOINT</code> and <code>CATALOGED_ASSET</code> should be replaced with the values extracted from the <code>FybrikApplication</code> as described in previous steps.
   <div class="highlight"><pre><span></span><code>import json
 import pyarrow.flight as fl
 import pandas as pd
@@ -1950,7 +1950,7 @@ df_read: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o"
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.b028fd86.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.85cb4492.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.f758a944.min.js"></script>
