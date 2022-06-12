@@ -215,7 +215,7 @@ manager:
   solver:
     # image of the container with solver binary and libs
     # when specified, the solver will be deployed in the manager pod
-    image: "ghcr.io/fybrik/optimizer:master"
+    image: "ghcr.io/fybrik/optimizer:0.1"
     # Set to true to enable the use of the solver by Fybrik
     enabled: false
 
