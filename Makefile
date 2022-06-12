@@ -53,7 +53,7 @@ deploy_old_CRD_version: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 
 	$(TOOLBIN)/helm repo add fybrik-charts $(FYBRIK_CHARTS)
 	$(TOOLBIN)/helm repo update
-	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
+	$(TOOLBIN)/helm install fybrik-crd fybrik-charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --version $(OLD_CRD_VERSION) --wait --timeout 120s
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
