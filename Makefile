@@ -1,6 +1,9 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
+# the latest backward compatible CRD version
+export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
+export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -41,6 +44,18 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
 	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
+               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
+
+.PHONY: deploy_latest_compatible_CRD_version
+deploy_latest_compatible_CRD_version: export VALUES_FILE?=charts/fybrik/values.yaml
+deploy_latest_compatible_CRD_version: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
+
+	$(TOOLBIN)/helm repo add fybrik-charts $(FYBRIK_CHARTS)
+	$(TOOLBIN)/helm repo update
+	$(TOOLBIN)/helm install fybrik-crd fybrik-charts/fybrik-crd  \
+               --namespace $(KUBE_NAMESPACE) --version $(LATEST_BACKWARD_SUPPORTED_CRD_VERSION) --wait --timeout 120s
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
@@ -100,6 +115,20 @@ run-notebook-readflow-tests:
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-notebook-readflow-tests
+
+.PHONY: run-notebook-readflow-bc-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-bc-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-bc-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) deploy_latest_compatible_CRD_version
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
