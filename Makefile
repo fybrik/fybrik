@@ -119,6 +119,8 @@ run-notebook-readflow-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-bc-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
 run-notebook-readflow-bc-tests:
 	$(MAKE) kind

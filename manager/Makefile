@@ -39,12 +39,16 @@ wait_for_manager: $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl wait --for=condition=available -n ${CONTROLLER_NAMESPACE} deployment/manager --timeout=120s
 
 .PHONY: run-integration-tests
+run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export DOCKER_TAGNAME?=master
 run-integration-tests: export USE_MOCKUP_CONNECTOR?=true
 run-integration-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
 
 .PHONY: run-notebook-readflow-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tests: export DOCKER_TAGNAME?=master
 run-notebook-readflow-tests: export USE_MOCKUP_CONNECTOR?=true
 run-notebook-readflow-tests: wait_for_manager
@@ -52,6 +56,8 @@ run-notebook-readflow-tests: wait_for_manager
 	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3NotebookReadFlow -count 1
 
 .PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-writeflow-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-writeflow-tests: export DOCKER_TAGNAME?=master
 run-notebook-writeflow-tests: export USE_MOCKUP_CONNECTOR?=true
 run-notebook-writeflow-tests: wait_for_manager
