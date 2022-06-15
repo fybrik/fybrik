@@ -55,8 +55,8 @@ func (opt *Optimizer) getSolution(pathLength int) (string, error) {
 		return "", errors.Wrap(err, "error building a model")
 	}
 
-	// #nosec G204 -- Avoid "Subprocess launched with variable" error
 	opt.log.Debug().Msgf("Executing %s %s", opt.solverPath, modelFile)
+	// #nosec G204 -- Avoid "Subprocess launched with variable" error
 	solverSolution, err := exec.Command(opt.solverPath, modelFile).Output()
 	if err != nil {
 		return "", errors.Wrapf(err, "error executing %s %s", opt.solverPath, modelFile)
