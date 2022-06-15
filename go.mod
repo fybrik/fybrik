@@ -56,7 +56,6 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
-	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20210826220005-b48c857c3a0e // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
@@ -100,7 +99,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/cel-go v0.9.0 // indirect
 	github.com/google/flatbuffers v2.0.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
@@ -184,7 +182,6 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
@@ -232,7 +229,6 @@ require (
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	oras.land/oras-go v0.4.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.30 // indirect
-	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
 	sigs.k8s.io/kustomize/api v0.8.11 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.11.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
@@ -242,4 +238,11 @@ replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.5.10
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	helm.sh/helm/v3 v3.7.2 => github.com/fybrik/helm/v3 v3.7.2-fybrik-update
+	k8s.io/api => k8s.io/api v0.22.4
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.22.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.22.4
+	k8s.io/apiserver => k8s.io/apiserver v0.22.4
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.22.4
+	k8s.io/client-go => k8s.io/client-go v0.22.4
+	k8s.io/component-base => k8s.io/component-base v0.22.4
 )
