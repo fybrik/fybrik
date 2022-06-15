@@ -95,7 +95,7 @@ metadata:
   name: neverland-storage-account
   namespace: fybrik-system
 spec:
-  id: theshire-object-store
+  id: neverland-object-store
   region: neverland
   endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
@@ -253,7 +253,7 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
 
 ```bash
-CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset'})
+CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
 ```
 
 ### Write the data from the notebook
@@ -267,7 +267,7 @@ In your **terminal**, run the following command to print the [endpoint](../../re
 ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-write -o jsonpath={.status.assetStates.new-data.endpoint.fybrik-arrow-flight.scheme})
 ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-write -o jsonpath={.status.assetStates.new-data.endpoint.fybrik-arrow-flight.hostname})
 ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-write -o jsonpath={.status.assetStates.new-data.endpoint.fybrik-arrow-flight.port})
-printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to write the data in a python notebook
 
@@ -377,15 +377,15 @@ In your **terminal**, run the following command to print the [endpoint](../../re
 ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.scheme})
 ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname})
 ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.port})
-printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
-The next steps use the endpoint to read the data in a python notebook
+The next steps use the endpoint to read the data in a python notebook.
 
 1. Insert a new notebook cell to install pandas and pyarrow packages:
   ```python
   %pip install pandas pyarrow==7.0.*
   ```
-2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
+2. Insert a new notebook cell to read the data. **Notice**: `ENDPOINT` and `CATALOGED_ASSET` should be replaced with the values extracted from the `FybrikApplication` as described in previous steps.
   ```bash
   import json
   import pyarrow.flight as fl
