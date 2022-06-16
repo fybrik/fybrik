@@ -1,4 +1,5 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+{{- if .Values.modulesNamespace.managedByFybrik }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -14,4 +15,5 @@ subjects:
 - kind: ServiceAccount
   name: {{ .Values.manager.serviceAccount.name | default "default" }}
   namespace: {{ .Release.Namespace }}
+{{- end }}
 {{- end }}
