@@ -4,6 +4,7 @@
 package helm
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -102,7 +103,9 @@ func TestHelmRegistry(t *testing.T) {
 	assert.Nil(t, err)
 	Log(t, "package chart", err)
 
-	err = impl.Pull(chartRef, pulledChartDestPath)
+	cfg, err := impl.GetConfig("", t.Logf)
+	assert.Nil(t, err)
+	err = impl.Pull(cfg, chartRef, pulledChartDestPath)
 	assert.Nil(t, err)
 	Log(t, "pull chart", err)
 
@@ -131,37 +134,41 @@ func TestHelmRelease(t *testing.T) {
 	var err error
 	origChart := buildTestChart()
 
-	_, _ = impl.Uninstall(kubeNamespace, releaseName)
+	cfg, err := impl.GetConfig(kubeNamespace, t.Logf)
+	assert.Nil(t, err)
+
+	_, _ = impl.Uninstall(cfg, releaseName)
 	vals := map[string]interface{}{
 		"data": map[string]interface{}{
 			"key": "value1",
 		},
 	}
-	_, err = impl.Install(origChart, kubeNamespace, releaseName, vals)
+	cntx := context.Background()
+	_, err = impl.Install(cntx, cfg, origChart, kubeNamespace, releaseName, vals)
 	assert.Nil(t, err)
 	Log(t, "install", err)
 
-	_, err = impl.Upgrade(origChart, kubeNamespace, releaseName, vals)
+	_, err = impl.Upgrade(cntx, cfg, origChart, kubeNamespace, releaseName, vals)
 	assert.Nil(t, err)
 	Log(t, "upgrade", err)
 
 	var rel *release.Release
 	assert.Eventually(t, func() bool {
-		rel, err = impl.Status(kubeNamespace, releaseName)
+		rel, err = impl.Status(cfg, releaseName)
 		assert.Nil(t, err)
 		return rel.Info.Status == release.StatusDeployed
 	}, time.Minute, time.Second)
 	Log(t, "status", err)
 
 	var resources []*unstructured.Unstructured
-	resources, err = impl.GetResources(kubeNamespace, releaseName)
+	resources, err = impl.GetResources(cfg, rel.Manifest)
 	assert.Nil(t, err)
 	assert.Len(t, resources, 1)
 	computedResult, _ := kstatus.Compute(resources[0])
 	assert.Equal(t, kstatus.CurrentStatus, computedResult.Status)
 	Log(t, "getResources", err)
 
-	_, err = impl.Uninstall(kubeNamespace, releaseName)
+	_, err = impl.Uninstall(cfg, releaseName)
 	assert.Nil(t, err)
 	Log(t, "uninstall", err)
 }

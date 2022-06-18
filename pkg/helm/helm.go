@@ -5,68 +5,47 @@ package helm
 
 import (
 	"bytes"
-	"errors"
+	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"emperror.dev/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/kube"
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
 )
 
-var (
-	debugOption = os.Getenv("HELM_DEBUG") == "true"
-)
-
-const chartsMountPath = "/opt/fybrik/charts/"
-
-func getConfig(kubeNamespace string) (*action.Configuration, error) {
-	actionConfig := new(action.Configuration)
-
-	if kubeNamespace == "" {
-		kubeNamespace = "default"
-	}
-
-	config := &genericclioptions.ConfigFlags{
-		Namespace: &kubeNamespace,
-	}
-	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), debugf)
-	if err != nil {
-		return nil, err
-	}
-
-	return actionConfig, err
-}
-
-func debugf(format string, v ...interface{}) {
-	if debugOption {
-		format = fmt.Sprintf("[debug] %s\n", format)
-		_ = log.Output(2, fmt.Sprintf(format, v...))
-	}
-}
+// TODO add configuration
+const TIMEOUT = 300 * time.Second
 
 // Interface of a helm chart
 type Interface interface {
-	Uninstall(kubeNamespace string, releaseName string) (*release.UninstallReleaseResponse, error)
-	Install(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
-	Upgrade(chart *chart.Chart, kubeNamespace string, releaseName string, vals map[string]interface{}) (*release.Release, error)
-	Status(kubeNamespace string, releaseName string) (*release.Release, error)
+	GetConfig(kubeNamespace string, log action.DebugLog) (*action.Configuration, error)
+
+	Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error)
+	Install(ctx context.Context, cfg *action.Configuration, chart *chart.Chart, kubeNamespace string,
+		releaseName string, vals map[string]interface{}) (*release.Release, error)
+	Upgrade(ctx context.Context, cfg *action.Configuration, chart *chart.Chart, kubeNamespace string,
+		releaseName string, vals map[string]interface{}) (*release.Release, error)
+	Status(cfg *action.Configuration, releaseName string) (*release.Release, error)
+	Pull(cfg *action.Configuration, ref string, destination string) error
+	IsInstalled(cfg *action.Configuration, releaseName string) (bool, error)
+
 	RegistryLogin(hostname string, username string, password string, insecure bool) error
 	RegistryLogout(hostname string) error
-	Pull(ref string, destination string) error
 	Load(ref string, chartPath string) (*chart.Chart, error)
 	Package(chartPath string, destinationPath string, version string) error
-	GetResources(kubeNamespace string, releaseName string) ([]*unstructured.Unstructured, error)
+	GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error)
 }
 
 // Fake implementation
@@ -75,15 +54,20 @@ type Fake struct {
 	resources []*unstructured.Unstructured
 }
 
+func (r *Fake) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Configuration, error) {
+	return nil, nil
+}
+
 // Uninstall helm release
-func (r *Fake) Uninstall(kubeNamespace, releaseName string) (*release.UninstallReleaseResponse, error) {
+func (r *Fake) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	res := &release.UninstallReleaseResponse{}
 	r.release = nil
 	return res, nil
 }
 
 // Install helm release
-func (r *Fake) Install(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Install(ctx context.Context, cfg *action.Configuration, chrt *chart.Chart, kubeNamespace,
+	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	r.release = &release.Release{
 		Name: releaseName,
 		Info: &release.Info{Status: release.StatusDeployed},
@@ -92,7 +76,8 @@ func (r *Fake) Install(chrt *chart.Chart, kubeNamespace, releaseName string, val
 }
 
 // Upgrade helm release
-func (r *Fake) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
+func (r *Fake) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *chart.Chart, kubeNamespace,
+	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	r.release = &release.Release{
 		Name: releaseName,
 		Info: &release.Info{Status: release.StatusDeployed},
@@ -101,8 +86,12 @@ func (r *Fake) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, val
 }
 
 // Status of helm release
-func (r *Fake) Status(kubeNamespace, releaseName string) (*release.Release, error) {
+func (r *Fake) Status(cfg *action.Configuration, releaseName string) (*release.Release, error) {
 	return r.release, nil
+}
+
+func (r *Fake) IsInstalled(cfg *action.Configuration, releaseName string) (bool, error) {
+	return r.release.Info.Status == release.StatusDeployed, nil
 }
 
 // RegistryLogin to docker registry v2
@@ -116,7 +105,7 @@ func (r *Fake) RegistryLogout(hostname string) error {
 }
 
 // ChartPull helm chart from repo
-func (r *Fake) Pull(ref, destination string) error {
+func (r *Fake) Pull(cfg *action.Configuration, ref, destination string) error {
 	return nil
 }
 
@@ -126,7 +115,7 @@ func (r *Fake) Load(ref, chartPath string) (*chart.Chart, error) {
 }
 
 // GetResources returns allocated resources for the specified release (their current state)
-func (r *Fake) GetResources(kubeNamespace, releaseName string) ([]*unstructured.Unstructured, error) {
+func (r *Fake) GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error) {
 	return r.resources, nil
 }
 
@@ -154,22 +143,13 @@ type Impl struct {
 }
 
 // Uninstall helm release
-func (r *Impl) Uninstall(kubeNamespace, releaseName string) (*release.UninstallReleaseResponse, error) {
-	cfg, err := getConfig(kubeNamespace)
-	if err != nil {
-		return nil, err
-	}
+func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	return uninstall.Run(releaseName)
 }
 
 // Load helm chart
 func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
-	// check for chart mounted in container
-	chrt, err := loader.Load(chartsMountPath + ref)
-	if err == nil {
-		return chrt, nil
-	}
 	// Construct the packed chart path
 	chartRef, err := parseReference(ref)
 	if err != nil {
@@ -182,36 +162,45 @@ func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
 }
 
 // Install helm release from packaged chart
-func (r *Impl) Install(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
-	cfg, err := getConfig(kubeNamespace)
-	if err != nil {
-		return nil, err
-	}
+func (r *Impl) Install(ctx context.Context, cfg *action.Configuration, chrt *chart.Chart, kubeNamespace,
+	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	return install.Run(chrt, vals)
+	install.Timeout = TIMEOUT
+	install.Wait = true
+	install.WaitForJobs = true
+
+	return install.RunWithContext(ctx, chrt, vals)
 }
 
 // Upgrade helm release
-func (r *Impl) Upgrade(chrt *chart.Chart, kubeNamespace, releaseName string, vals map[string]interface{}) (*release.Release, error) {
-	cfg, err := getConfig(kubeNamespace)
-	if err != nil {
-		return nil, err
-	}
+func (r *Impl) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *chart.Chart, kubeNamespace,
+	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	return upgrade.Run(releaseName, chrt, vals)
+	upgrade.Wait = true
+	upgrade.WaitForJobs = true
+	upgrade.Timeout = TIMEOUT
+
+	return upgrade.RunWithContext(ctx, releaseName, chrt, vals)
 }
 
 // Status of helm release
-func (r *Impl) Status(kubeNamespace, releaseName string) (*release.Release, error) {
-	cfg, err := getConfig(kubeNamespace)
-	if err != nil {
-		return nil, err
-	}
+func (r *Impl) Status(cfg *action.Configuration, releaseName string) (*release.Release, error) {
 	status := action.NewStatus(cfg)
 	return status.Run(releaseName)
+}
+
+func (r *Impl) IsInstalled(cfg *action.Configuration, releaseName string) (bool, error) {
+	histClient := action.NewHistory(cfg)
+	histClient.Max = 1
+
+	_, err := histClient.Run(releaseName)
+	if err == driver.ErrReleaseNotFound {
+		return false, nil
+	}
+	return true, err
 }
 
 // RegistryLogin to docker registry v2
@@ -254,17 +243,8 @@ func (r *Impl) Package(chartPath, destinationPath, version string) error {
 }
 
 // Pull helm chart from repo
-func (r *Impl) Pull(ref, destination string) error {
-	// if chart mounted in container, no need to pull
-	if _, err := os.Stat(chartsMountPath + ref); err == nil {
-		return nil
-	}
-
+func (r *Impl) Pull(cfg *action.Configuration, ref, destination string) error {
 	chartRef, err := parseReference(ref)
-	if err != nil {
-		return err
-	}
-	cfg, err := getConfig("")
 	if err != nil {
 		return err
 	}
@@ -286,23 +266,29 @@ func (r *Impl) Pull(ref, destination string) error {
 	return err
 }
 
-// GetResources returns allocated resources for the specified release (their current state)
-func (r *Impl) GetResources(kubeNamespace, releaseName string) ([]*unstructured.Unstructured, error) {
-	resources := make([]*unstructured.Unstructured, 0)
-	var rel *release.Release
-	var config *action.Configuration
-	var err error
-	var resourceList kube.ResourceList
-	config, err = getConfig(kubeNamespace)
-	if err != nil || config == nil {
-		return resources, err
+func (r *Impl) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Configuration, error) {
+	actionConfig := new(action.Configuration)
+
+	if kubeNamespace == "" {
+		kubeNamespace = "default"
 	}
-	status := action.NewStatus(config)
-	rel, err = status.Run(releaseName)
+
+	config := &genericclioptions.ConfigFlags{
+		Namespace: &kubeNamespace,
+	}
+	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
-		return resources, err
+		return nil, err
 	}
-	resourceList, err = config.KubeClient.Build(bytes.NewBufferString(rel.Manifest), false)
+
+	return actionConfig, err
+}
+
+// GetResources returns allocated resources for the specified by its manifest release (their current state)
+func (r *Impl) GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error) {
+	resources := make([]*unstructured.Unstructured, 0)
+
+	resourceList, err := cfg.KubeClient.Build(bytes.NewBufferString(manifest), false)
 	if err != nil {
 		return resources, err
 	}
