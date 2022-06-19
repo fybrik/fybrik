@@ -28,6 +28,9 @@ import (
 // TODO add configuration
 const TIMEOUT = 300 * time.Second
 
+// TODO add configuration
+const chartsMountPath = "/opt/fybrik/charts/"
+
 // Interface of a helm chart
 type Interface interface {
 	GetConfig(kubeNamespace string, log action.DebugLog) (*action.Configuration, error)
@@ -140,6 +143,12 @@ func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake
 
 // Impl implementation
 type Impl struct {
+	// if set, the "Load" and "pull" methods will try to check locally mounted charts
+	checkLocalMounts bool
+}
+
+func NewHelmerImpl(checkLMounts bool) *Impl {
+	return &Impl{checkLocalMounts: checkLMounts}
 }
 
 // Uninstall helm release
@@ -150,6 +159,14 @@ func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*releas
 
 // Load helm chart
 func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
+	if r.checkLocalMounts {
+		// check for chart mounted in container
+		chrt, err := loader.Load(chartsMountPath + ref)
+		if err == nil {
+			return chrt, nil
+		}
+	}
+
 	// Construct the packed chart path
 	chartRef, err := parseReference(ref)
 	if err != nil {
@@ -244,6 +261,13 @@ func (r *Impl) Package(chartPath, destinationPath, version string) error {
 
 // Pull helm chart from repo
 func (r *Impl) Pull(cfg *action.Configuration, ref, destination string) error {
+	if r.checkLocalMounts {
+		// if chart mounted in container, no need to pull
+		if _, err := os.Stat(chartsMountPath + ref); err == nil {
+			return nil
+		}
+	}
+
 	chartRef, err := parseReference(ref)
 	if err != nil {
 		return err

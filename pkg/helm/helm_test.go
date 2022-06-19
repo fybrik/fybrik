@@ -60,7 +60,7 @@ var (
 	password      = os.Getenv("DOCKER_PASSWORD")
 	insecure, _   = strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
 	chartRef      = ChartRef(hostname, namespace, chartName, tagName)
-	impl          = new(Impl)
+	impl          = NewHelmerImpl(true)
 )
 
 func ChartRef(hostname, namespace, name, tagname string) string {

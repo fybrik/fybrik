@@ -200,7 +200,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 }
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, releaseNameSpace, releaseName string, log *zerolog.Logger) (ctrl.Result, error) {
+	args map[string]interface{}, releaseNamespace, releaseName string, log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 
 	args = CopyMap(args)
@@ -214,12 +214,12 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	var err error
 	registrySuccessfulLogin, err = r.obtainSecrets(ctx, log, chartSpec)
 	if err != nil {
-		return ctrl.Result{}, err
+		return nil, err
 	}
 
 	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
 	defer func(log *zerolog.Logger) {
 		if err = os.RemoveAll(tmpDir); err != nil {
@@ -229,18 +229,18 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 
 	err = r.Helmer.Pull(cfg, chartSpec.Name, tmpDir)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
 	// if we logged into a registry, let us try to logout
 	if registrySuccessfulLogin != "" {
 		logoutErr := r.Helmer.RegistryLogout(registrySuccessfulLogin)
 		if logoutErr != nil {
-			return ctrl.Result{}, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
+			return nil, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
 		}
 	}
 	chart, err := r.Helmer.Load(chartSpec.Name, tmpDir)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart load")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg(fmt.Sprintf("check if release %s installed, return %t and error: %v",
@@ -248,18 +248,18 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	// TODO should we return err if it is not nil?
 	var rel *release.Release
 	if inst && err == nil {
-		rel, err = r.Helmer.Upgrade(ctx, cfg, chart, releaseNameSpace, releaseName, args)
+		rel, err = r.Helmer.Upgrade(ctx, cfg, chart, releaseNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
+			return nil, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(ctx, cfg, chart, releaseNameSpace, releaseName, args)
+		rel, err = r.Helmer.Install(ctx, cfg, chart, releaseNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
+			return nil, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
-	return ctrl.Result{}, nil
+	return rel, nil
 }
 
 // CopyMap copies a map
@@ -360,13 +360,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if _, err := r.applyChartResource(ctx, cfg, chart, args, blueprint.Spec.ModulesNamespace, releaseName, log); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint.Spec.ModulesNamespace, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
-		} else if rel.Info.Status == release.StatusDeployed {
+		}
+		if rel.Info.Status == release.StatusDeployed {
 			status, errMsg := r.checkReleaseStatus(cfg, rel.Manifest, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
@@ -391,13 +392,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	}
 	// check if all releases reached the ready state
 	if numReady == numReleases {
-		// all modules have been orhestrated successfully - the data is ready for use
+		// all modules have been orchestrated successfully - the data is ready for use
 		blueprint.Status.ObservedState.Ready = true
 		return ctrl.Result{}, nil
 	}
 
 	// the status is unknown yet - continue polling
 	if blueprint.Status.ObservedState.Error == "" {
+		log.Trace().Msg("blueprint.Status.ObservedState is not ready, will try again")
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
