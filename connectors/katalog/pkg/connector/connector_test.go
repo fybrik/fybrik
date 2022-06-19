@@ -304,3 +304,159 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 		// just for logging - end
 	})
 }
+
+func TestCreateAndUpdateAsset(t *testing.T) {
+	t.Parallel()
+	g := NewGomegaWithT(t)
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+	t.Log("Executing TestCreateUpdateAsset")
+
+	s3Connection := taxonomy.Connection{
+		Name: "s3",
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				"s3": map[string]interface{}{
+					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+					"bucket":     "fybrik-test-bucket",
+					"object_key": "small.csv",
+				},
+			},
+		},
+	}
+	var csvFormat taxonomy.DataFormat = "csv"
+	destAssetName := "new-paysim-csv"
+	destCatalogID := "fybrik-system"
+
+	// Create a fake request to Katalog connector
+	createAssetReq := &datacatalog.CreateAssetRequest{
+		DestinationCatalogID: destCatalogID,
+		DestinationAssetID:   destAssetName,
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name: destCatalogID + "/" + destAssetName,
+			Columns: []datacatalog.ResourceColumn{
+				{
+					Name: "nameDest",
+					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+						"PII": true,
+					}}},
+				},
+				{
+					Name: "nameOrig",
+					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+						"SPI": true,
+					}}},
+				},
+			},
+		},
+		Details: datacatalog.ResourceDetails{
+			Connection: s3Connection,
+			DataFormat: csvFormat,
+		},
+		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
+	}
+
+	// Create a fake client to mock API calls.
+	schema := runtime.NewScheme()
+	_ = v1alpha1.AddToScheme(schema)
+	client := fake.NewClientBuilder().WithScheme(schema).Build()
+	handler := NewHandler(client)
+
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	c, _ := gin.CreateTestContext(w)
+	requestBytes, err := json.Marshal(createAssetReq)
+	g.Expect(err).To(BeNil())
+	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
+
+	// Call createAsset with the fake request
+	handler.createAsset(c)
+	assert.Equal(t, 201, w.Code)
+	response := &datacatalog.CreateAssetResponse{}
+	err = json.Unmarshal(w.Body.Bytes(), response)
+	g.Expect(err).To(BeNil())
+	g.Expect(response.AssetID).ShouldNot(BeEmpty())
+	g.Expect(len(response.AssetID)).To(SatisfyAll(
+		BeNumerically(">", len(destAssetName))))
+	t.Log("response.AssetID: ", response.AssetID)
+	createdAssetID := response.AssetID
+	t.Log("createdAssetID: ", createdAssetID)
+
+	// s3ConnectionModified := taxonomy.Connection{
+	// 	Name: "s3",
+	// 	AdditionalProperties: serde.Properties{
+	// 		Items: map[string]interface{}{
+	// 			"s3": map[string]interface{}{
+	// 				"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
+	// 				"bucket":     "fybrik-test-bucket-changed",
+	// 				"object_key": "small.csv",
+	// 			},
+	// 		},
+	// 	},
+	// }
+	// Create a fake request to Katalog connector
+	updateAssetReq := &datacatalog.UpdateAssetRequest{
+		AssetID: taxonomy.AssetID(destCatalogID + "/" + createdAssetID),
+		Name:    destCatalogID + "/" + "newname",
+		Owner:   "newowner",
+		Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+			"finance-modified": true,
+		}}},
+		Columns: []datacatalog.ResourceColumn{
+			{
+				Name: "nameDest-modified",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"PII-modified": true,
+				}}},
+			},
+			{
+				Name: "nameOrig-modified",
+				Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+					"SPI-modified": true,
+				}}},
+			},
+		},
+	}
+	t.Log("updateAssetReq:", updateAssetReq)
+	w = httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	c, _ = gin.CreateTestContext(w)
+	requestBytes, err = json.Marshal(updateAssetReq)
+	g.Expect(err).To(BeNil())
+	c.Request = httptest.NewRequest(http.MethodPut, "http://localhost/", bytes.NewBuffer(requestBytes))
+
+	// Call updateAsset with the fake request
+	handler.updateAsset(c)
+
+	t.Run("updateAsset", func(t *testing.T) {
+		assert.Equal(t, 200, w.Code)
+		response := &datacatalog.UpdateAssetResponse{}
+		err = json.Unmarshal(w.Body.Bytes(), response)
+		t.Log("w.Body.String()", w.Body.String())
+		g.Expect(err).To(BeNil())
+
+		asset := &v1alpha1.Asset{}
+		if err := handler.client.Get(context.Background(),
+			types.NamespacedName{Namespace: destCatalogID, Name: createdAssetID}, asset); err != nil {
+			t.Log(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		g.Expect(&updateAssetReq.Name).To(BeEquivalentTo(&asset.Spec.Metadata.Name))
+		g.Expect(&updateAssetReq.Owner).To(BeEquivalentTo(&asset.Spec.Metadata.Owner))
+		g.Expect(&updateAssetReq.Columns).To(BeEquivalentTo(&asset.Spec.Metadata.Columns))
+		g.Expect(&updateAssetReq.Tags).To(BeEquivalentTo(&asset.Spec.Metadata.Tags))
+
+		// just for logging - start
+		b, err := json.Marshal(asset)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		t.Log("Updated Asset in TestCreateUpdateAsset : JSON format: ", string(b))
+		t.Log("Updated Asset in TestCreateUpdateAsset : ", asset)
+		output := render.AsCode(asset)
+		t.Log("Updated AssetID in TestCreateUpdateAsset - render as code output: ", output)
+		t.Log("Completed TestCreateUpdateAsset")
+		// just for logging - end
+	})
+}

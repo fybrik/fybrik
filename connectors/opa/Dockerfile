@@ -6,7 +6,7 @@ WORKDIR /tmp
 COPY opa-connector /
 
 EXPOSE 8080
-USER 1001
+USER 10001
 
 ENTRYPOINT ["/opa-connector"]
 CMD [ "run" ]

@@ -6,10 +6,9 @@ kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 # Create asset and secret
-kubectl -n fybrik-notebook-sample apply -f original-asset.yaml
-kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 kubectl -n fybrik-system apply -f bucket-creds.yaml
-kubectl -n fybrik-system apply -f storage-account.yaml
+kubectl -n fybrik-system apply -f theshire-storage-account.yaml
+kubectl -n fybrik-system apply -f neverland-storage-account.yaml
 
 # Avoid using webhooks in tests
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
