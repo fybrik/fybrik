@@ -26,6 +26,42 @@
     "Attribute": {
       "type": "string"
     },
+    "AttributeDefinition": {
+      "type": "object",
+      "required": [
+        "attribute",
+        "type"
+      ],
+      "properties": {
+        "attribute": {
+          "$ref": "#/definitions/Attribute",
+          "description": "Attribute name defined in the taxonomy"
+        },
+        "object": {
+          "$ref": "#/definitions/InstanceType",
+          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
+        },
+        "objects": {
+          "description": "Argument types for cross-object attributes",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstanceType"
+          }
+        },
+        "scale": {
+          "$ref": "#/definitions/RangeType",
+          "description": "A scale of values (minimum and maximum) when applicable"
+        },
+        "type": {
+          "$ref": "#/definitions/AttributeType",
+          "description": "Attribute type, e.g. numeric or string"
+        },
+        "units": {
+          "$ref": "#/definitions/Units",
+          "description": "Measurement units"
+        }
+      }
+    },
     "AttributeType": {
       "type": "string",
       "enum": [
@@ -68,7 +104,6 @@
       "type": "object",
       "required": [
         "attribute",
-        "type",
         "value"
       ],
       "properties": {
@@ -90,22 +125,6 @@
         "instance": {
           "description": "A reference to the resource instance, e.g. storage account name",
           "type": "string"
-        },
-        "object": {
-          "$ref": "#/definitions/InstanceType",
-          "description": "A resource defined by the attribute (\"storageaccount\",\"module\",\"cluster\")"
-        },
-        "scale": {
-          "$ref": "#/definitions/RangeType",
-          "description": "A scale of values (minimum and maximum) when applicable"
-        },
-        "type": {
-          "$ref": "#/definitions/AttributeType",
-          "description": "Attribute type, e.g. numeric or string"
-        },
-        "units": {
-          "$ref": "#/definitions/Units",
-          "description": "Measurement units"
         },
         "value": {
           "description": "Attribute value",

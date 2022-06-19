@@ -13,12 +13,16 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"definitions": [{
+			"attribute": "storage-cost",
+			"type": "numeric",
+			"units": "US Dollar per TB per month",
+			"object": "fybrikstorageaccount"
+		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
 			"description": "neverland object store",
 			"value": "100",
-			"type": "numeric",
-			"units": "US Dollar per TB per month",
 			"instance": "account-neverland"
 		}]
 	}`
@@ -30,12 +34,16 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"definitions": [{
+			"attribute": "storage-cost",
+			"type": "numeric",
+			"units": "USDollar",
+			"object": "fybrikstorageaccount"
+		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
 			"description": "neverland object store",
 			"value": "100",
-			"type": "numeric",
-			"units": "USDollar",
 			"instance": "account-neverland"
 		}]
 	}`
@@ -43,34 +51,39 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 	assert.Error(t, validateErr, "An error is expected")
 }
 
-func TestValidInfrastructureAttributeBW(t *testing.T) {
+func TestValidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"infrastructure":[{
-			"attribute": "bandwidth",
-			"description": "neverland object store",
-			"value": "100",
+		"definitions": [{
+			"attribute": "distance",
 			"type": "numeric",
-			"units": "GBps",
-			"instance": "account-neverland"
+			"units": "km",
+			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+		}],
+		"infrastructure":[{
+			"attribute": "distance",
+			"value": "1000",
+			"arguments": ["neverland","theshire"]
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))
 	assert.Nil(t, validateErr, "No error should be found")
 }
 
-func TestInvalidInfrastructureAttributeBW(t *testing.T) {
+func TestInvalidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"definitions": [{
+			"attribute": "distance",
+			"type": "object",
+			"units": "km",
+			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+		}],
 		"infrastructure":[{
-			"attribute": "bandwidth",
-			"description": "neverland object store",
+			"attribute": "distance",
 			"value": "100",
-			"type": "numeric",
-			"units": "GB",
-			"instance": "account-neverland"
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))

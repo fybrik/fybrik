@@ -1,45 +1,47 @@
 {
+    "definitions": [
+        {
+            "attribute": "storage-cost",
+            "type": "numeric",
+            "units": "US Dollar per TB per month",
+            "object": "fybrikstorageaccount"
+        },
+        {
+            "attribute": "distance",
+            "type": "numeric",
+            "units": "km",
+            "objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+        }
+    ],
     "infrastructure": [
         {
             "attribute": "storage-cost",
             "description": "neverland object store",
             "value": "100",
-            "type": "numeric",
-            "units": "US Dollar per TB per month",
-            "object": "fybrikstorageaccount",
             "instance": "account-neverland"
         },
         {
             "attribute": "storage-cost",
             "description": "theshire object store",
             "value": "90",
-            "type": "numeric",
-            "units": "US Dollar per TB per month",
-            "object": "fybrikstorageaccount",
             "instance": "account-theshire"
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between neverland and theshire",
-            "value": "5",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between neverland and theshire",
+            "value": "5000",
             "arguments": ["theshire","neverland"]
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between theshire and theshire",
-            "value": "1000",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between theshire and theshire",
+            "value": "0",
             "arguments": ["theshire","theshire"]
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between neverland and neverland",
-            "value": "800",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between neverland and neverland",
+            "value": "0",
             "arguments": ["neverland","neverland"]
         }
     ]

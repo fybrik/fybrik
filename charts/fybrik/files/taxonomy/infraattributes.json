@@ -4,9 +4,16 @@
     "Infrastructure": {
       "type": "object",
       "required": [
+        "definitions",
         "infrastructure"
       ],
       "properties": {
+        "definitions": {
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/AttributeDefinition"
+          }
+        },
         "infrastructure": {
           "type": "array",
           "items": {

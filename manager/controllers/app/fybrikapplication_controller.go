@@ -138,7 +138,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// check if reconcile is required
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
-	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
+	generationComplete := application.Status.Ready ||
+		(r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion))
 	if (!generationComplete) || (observedStatus.ObservedGeneration != appVersion) {
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
@@ -167,13 +168,11 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	errorMsg := getErrorMessages(application)
 	if errorMsg != "" {
 		log.Warn().Str(logging.ACTION, logging.UPDATE).Msg("Reconcile failed with errors")
+		// trigger a new reconcile if required (the fybrikapplication is not ready)
+		if !isReady(application) {
+			return ctrl.Result{RequeueAfter: Interval * time.Second}, nil
+		}
 	}
-
-	// trigger a new reconcile if required (the fybrikapplication is not ready)
-	if !isReady(application) {
-		return ctrl.Result{RequeueAfter: Interval * time.Second}, nil
-	}
-
 	return ctrl.Result{}, nil
 }
 
@@ -265,7 +264,6 @@ func (r *FybrikApplicationReconciler) reconcileFinalizers(ctx context.Context, a
 
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
-
 			if err := utils.UpdateFinalizers(ctx, r.Client, applicationContext.Application); err != nil {
 				return err
 			}

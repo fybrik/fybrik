@@ -14,7 +14,6 @@ import (
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
-	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -28,8 +27,9 @@ func newEnvironment() *datapath.Environment {
 		Modules:         map[string]*v1alpha1.FybrikModule{},
 		StorageAccounts: []*v1alpha1.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
-			Log:            testLog,
-			Infrastructure: infraattributes.Infrastructure{},
+			Log:         testLog,
+			Definitions: infrastructure.Dictionary{},
+			Attributes:  []taxonomy.InfrastructureElement{},
 		},
 	}
 }
@@ -46,8 +46,12 @@ func addStorageAccount(env *datapath.Environment, account *v1alpha1.FybrikStorag
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
+func addDefinition(env *datapath.Environment, definition *taxonomy.AttributeDefinition) {
+	env.AttributeManager.Definitions[definition.Attribute] = *definition
+}
+
 func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureElement) {
-	env.AttributeManager.Infrastructure.Items = append(env.AttributeManager.Infrastructure.Items, *attribute)
+	env.AttributeManager.Attributes = append(env.AttributeManager.Attributes, *attribute)
 }
 
 // default: S3, csv
@@ -430,18 +434,19 @@ func TestStorageCostRestrictictions(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 10}}}},
 	}
-	addAttribute(env, &taxonomy.InfrastructureElement{
+	addDefinition(env, &taxonomy.AttributeDefinition{
 		Attribute: taxonomy.Attribute("cost"),
 		Type:      taxonomy.Numeric,
-		Value:     "20",
 		Object:    taxonomy.StorageAccount,
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Attribute: taxonomy.Attribute("cost"),
+		Value:     "20",
 		Instance:  account1.Name,
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
 		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
 		Value:     "12",
-		Object:    taxonomy.StorageAccount,
 		Instance:  account2.Name,
 	})
 	_, err := solve(env, asset, &testLog)

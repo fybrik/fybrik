@@ -551,33 +551,33 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, st
 	case taxonomy.Cluster:
 		varName = clusterVarname
 		for _, cluster := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, cluster.Name)
-			if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
+			if !found {
 				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 	case taxonomy.StorageAccount:
 		varName = saVarname
 		for _, sa := range dpc.env.StorageAccounts {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, sa.Name)
-			if infraElement == nil {
-				infraElement = dpc.env.AttributeManager.GetAttribute(attr, sa.GenerateName)
-				if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
+			if !found {
+				infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
+				if !found {
 					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
 				}
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 		resArray = append(resArray, "0") // Assuming attribute == 0 if no storage account is set
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, modCap.module.Name)
-			if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
+			if !found {
 				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 	default:
 		return "", "", nil // TODO: handle (this can be bandwidth for example)

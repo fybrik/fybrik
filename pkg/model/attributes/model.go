@@ -8,5 +8,6 @@ import (
 )
 
 type Infrastructure struct {
-	Items []taxonomy.InfrastructureElement `json:"infrastructure"`
+	Definitions []taxonomy.AttributeDefinition   `json:"definitions"`
+	Items       []taxonomy.InfrastructureElement `json:"infrastructure"`
 }

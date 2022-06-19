@@ -31,23 +31,30 @@ type RangeType struct {
 	Max int `json:"max,omitempty"`
 }
 
+type AttributeDefinition struct {
+	// Attribute name defined in the taxonomy
+	Attribute Attribute `json:"attribute"`
+	// Attribute type, e.g. numeric or string
+	Type AttributeType `json:"type"`
+	// Measurement units
+	Units Units `json:"units,omitempty"`
+	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
+	Object InstanceType `json:"object,omitempty"`
+	// A scale of values (minimum and maximum) when applicable
+	Scale *RangeType `json:"scale,omitempty"`
+	// Argument types for cross-object attributes
+	ArgObjects []InstanceType `json:"objects,omitempty"`
+}
+
 type InfrastructureElement struct {
 	// Attribute name defined in the taxonomy
 	Attribute Attribute `json:"attribute"`
 	// Description
 	Description string `json:"description,omitempty"`
-	// Attribute type, e.g. numeric or string
-	Type AttributeType `json:"type"`
 	// Attribute value
 	Value string `json:"value"`
-	// Measurement units
-	Units Units `json:"units,omitempty"`
-	// A resource defined by the attribute ("storageaccount","module","cluster")
-	Object InstanceType `json:"object,omitempty"`
 	// A reference to the resource instance, e.g. storage account name
 	Instance string `json:"instance,omitempty"`
-	// A scale of values (minimum and maximum) when applicable
-	Scale *RangeType `json:"scale,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments []string `json:"arguments,omitempty"`
 }

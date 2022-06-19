@@ -112,11 +112,8 @@ func (restrict Restriction) SatisfiedByResource(attrManager *infrastructure.Attr
 	var value interface{}
 	var found bool
 	// infrastructure attribute or a property in the spec?
-	attributeObj := attrManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
-	if attributeObj != nil {
-		value = attributeObj.Value
-		found = true
-	} else {
+	value, found = attrManager.GetAttributeValue(taxonomy.Attribute(restrict.Property), instanceName)
+	if !found {
 		fields := strings.Split(restrict.Property, ".")
 		value, found, err = NestedFieldNoCopy(details, fields...)
 	}

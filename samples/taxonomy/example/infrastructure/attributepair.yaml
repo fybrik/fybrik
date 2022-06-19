@@ -1,5 +1,5 @@
 definitions:
-  InfrastructureElement:
+  AttributeDefinition:
     oneOf:
       - properties:
           attribute:
@@ -19,3 +19,9 @@ definitions:
           units:
             enum: [TB, GB, MB, KB]
         required: [attribute, units]
+      - properties:
+          attribute:
+            enum: [distance]
+          units:
+            enum: [m, km]
+        required: [attribute, units]        
