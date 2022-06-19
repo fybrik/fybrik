@@ -1560,9 +1560,6 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("18")
-	labels := make(map[string]string)
-	labels[utils.FybrikModuleNamespace] = "test-modules-namespace"
-	application.SetLabels(labels)
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
 		application,

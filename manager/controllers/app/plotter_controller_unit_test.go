@@ -223,6 +223,8 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	}
 
 	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
+	g.Expect(deployedBp.Spec.ModulesNamespace).To(gomega.Equal("test-modules-namespace"))
+	g.Expect(deployedBp.Labels[utils.FybrikModuleNamespace]).To(gomega.Equal("test-modules-namespace"))
 	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
 	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)

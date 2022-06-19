@@ -9,6 +9,7 @@ metadata:
   labels:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
+    app.fybrik.io/modules-namespace: "test-modules-namespace"
 spec:
   assets:
     "S3":
@@ -123,7 +124,7 @@ spec:
           template: read
       triggers:
       - workload
-  modulesNamespace: fybrik-blueprints
+  modulesNamespace: "test-modules-namespace"
   templates:
     read:
       modules:
