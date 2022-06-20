@@ -65,7 +65,8 @@
       "type": "object",
       "required": [
         "attribute",
-        "value"
+        "value",
+        "object"
       ],
       "properties": {
         "arguments": {
@@ -130,7 +131,8 @@
       "enum": [
         "fybrikmodule",
         "fybrikstorageaccount",
-        "cluster"
+        "cluster",
+        "inter-region"
       ]
     },
     "Interface": {

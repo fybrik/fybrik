@@ -43,6 +43,7 @@
             "description": "distance between neverland and theshire",
             "metricName": "distance",
             "value": "5000",
+            "object": "inter-region",
             "arguments": ["theshire","neverland"]
         },
         {
@@ -50,6 +51,7 @@
             "description": "distance between theshire and theshire",
             "metricName": "distance",
             "value": "0",
+            "object": "inter-region",
             "arguments": ["theshire","theshire"]
         },
         {
@@ -57,6 +59,7 @@
             "description": "distance between neverland and neverland",
             "metricName": "distance",
             "value": "0",
+            "object": "inter-region",
             "arguments": ["neverland","neverland"]
         }
     ]

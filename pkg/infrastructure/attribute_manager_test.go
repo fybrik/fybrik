@@ -66,6 +66,7 @@ func TestValidInfrastructureAttributeDist(t *testing.T) {
 			"attribute": "distance",
 			"metricName": "distance",
 			"value": "1000",
+			"object": "inter-region",
 			"arguments": ["neverland","theshire"]
 		}]
 	}`
@@ -85,6 +86,7 @@ func TestInvalidInfrastructureAttributeDist(t *testing.T) {
 		"infrastructure":[{
 			"attribute": "distance",
 			"metricName": "distance",
+            "object": "inter-region",
 			"value": "100"
 		}]
 	}`

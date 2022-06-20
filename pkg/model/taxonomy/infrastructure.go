@@ -15,7 +15,7 @@ const (
 	Bool    AttributeType = "bool"
 )
 
-// +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster
+// +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster;inter-region
 type InstanceType string
 
 // List of instance types
@@ -23,6 +23,7 @@ const (
 	Module         InstanceType = "fybrikmodule"
 	Cluster        InstanceType = "cluster"
 	StorageAccount InstanceType = "fybrikstorageaccount"
+	InterRegion    InstanceType = "inter-region"
 )
 
 type RangeType struct {
@@ -50,7 +51,7 @@ type InfrastructureElement struct {
 	// Attribute value
 	Value string `json:"value"`
 	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
-	Object InstanceType `json:"object,omitempty"`
+	Object InstanceType `json:"object"`
 	// A reference to the resource instance, e.g. storage account name
 	Instance string `json:"instance,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
