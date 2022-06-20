@@ -37,8 +37,8 @@ spec:
       {{- if .Values.manager.solver.image }}
       initContainers:
         - name: init-solver
-          image: {{ include "fybrik.image" ( tuple $ .Values.manager.solver ) }}
-          imagePullPolicy: {{ .Values.manager.solver.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          image: {{ .Values.manager.solver.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command:
           - cp 
           - -rf
@@ -118,6 +118,10 @@ spec:
 
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
+            {{- end }}
+            {{- if .Values.manager.chartVolume }}
+            - name: CHECK_LOCAL_CHARTS
+              value: "true"
             {{- end }}
           {{- if .Values.clusterScoped }} 
           ports:

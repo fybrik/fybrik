@@ -230,7 +230,7 @@ In your **terminal**, run the following command to print the [endpoint](../../re
 ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
 ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
 ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
-printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
+printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to read the data in a python notebook
 
