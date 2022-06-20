@@ -3,7 +3,6 @@
 
 package taxonomy
 
-type AttributeName string
 type Units string
 
 // +kubebuilder:validation:Enum=numeric;string;bool
@@ -43,7 +42,7 @@ type InfrastructureMetrics struct {
 
 type InfrastructureElement struct {
 	// Attribute name defined in the taxonomy
-	Name AttributeName `json:"attribute"`
+	Name string `json:"attribute"`
 	// Description
 	Description string `json:"description,omitempty"`
 	// Metrics

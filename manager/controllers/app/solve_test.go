@@ -440,14 +440,14 @@ func TestStorageCostRestrictictions(t *testing.T) {
 		Scale: &taxonomy.RangeType{Min: 0, Max: 200},
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Name:        taxonomy.AttributeName("storage-cost"),
+		Name:        "storage-cost",
 		MetricsName: "cost",
 		Value:       "20",
 		Object:      taxonomy.StorageAccount,
 		Instance:    account1.Name,
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Name:        taxonomy.AttributeName("storage-cost"),
+		Name:        "storage-cost",
 		MetricsName: "cost",
 		Value:       "12",
 		Object:      taxonomy.StorageAccount,

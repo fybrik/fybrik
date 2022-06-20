@@ -539,12 +539,11 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 
 // This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
-func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.AttributeName) (string, string, error) {
+func (dpc *DataPathCSP) getAttributeMapping(attr string) (string, string, error) {
 	instanceTypes := dpc.env.AttributeManager.GetInstanceTypes(attr)
 	if len(instanceTypes) == 0 {
 		return "", "", fmt.Errorf("there are no clusters, modules or storage accounts with an attribute %s", attr)
 	}
-
 	resArray := []string{}
 	varName := ""
 	for _, instanceType := range instanceTypes {

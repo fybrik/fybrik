@@ -122,7 +122,7 @@ func validateStructure(bytes []byte) error {
 }
 
 // GetAttributeValue returns the value of an infrastructure attribute based on the attribute and instance names
-func (m *AttributeManager) GetAttributeValue(name taxonomy.AttributeName, instance string) (string, bool) {
+func (m *AttributeManager) GetAttributeValue(name, instance string) (string, bool) {
 	for i := range m.Attributes {
 		element := &m.Attributes[i]
 		if element.Name == name && element.Instance == instance {
@@ -133,7 +133,7 @@ func (m *AttributeManager) GetAttributeValue(name taxonomy.AttributeName, instan
 }
 
 // GetInstanceType returns instance types associated with the attribute
-func (m *AttributeManager) GetInstanceTypes(name taxonomy.AttributeName) []taxonomy.InstanceType {
+func (m *AttributeManager) GetInstanceTypes(name string) []taxonomy.InstanceType {
 	instanceTypes := []taxonomy.InstanceType{}
 	for i := range m.Attributes {
 		element := &m.Attributes[i]

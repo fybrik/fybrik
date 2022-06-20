@@ -23,9 +23,6 @@
     "AssetID": {
       "type": "string"
     },
-    "AttributeName": {
-      "type": "string"
-    },
     "AttributeType": {
       "type": "string",
       "enum": [
@@ -86,8 +83,8 @@
           }
         },
         "attribute": {
-          "$ref": "#/definitions/AttributeName",
-          "description": "Attribute name defined in the taxonomy"
+          "description": "Attribute name defined in the taxonomy",
+          "type": "string"
         },
         "description": {
           "description": "Description",

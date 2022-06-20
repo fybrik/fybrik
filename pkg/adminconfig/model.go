@@ -79,7 +79,7 @@ const (
 type AttributeOptimization struct {
 	// Attribute name
 	// +required
-	Attribute taxonomy.AttributeName `json:"attribute"`
+	Attribute string `json:"attribute"`
 	// Optimization directive: minimize or maximize
 	// +required
 	Directive OptimizationDirective `json:"directive"`
@@ -112,7 +112,7 @@ func (restrict Restriction) SatisfiedByResource(attrManager *infrastructure.Attr
 	var value interface{}
 	var found bool
 	// infrastructure attribute or a property in the spec?
-	value, found = attrManager.GetAttributeValue(taxonomy.AttributeName(restrict.Property), instanceName)
+	value, found = attrManager.GetAttributeValue(restrict.Property, instanceName)
 	if !found {
 		fields := strings.Split(restrict.Property, ".")
 		value, found, err = NestedFieldNoCopy(details, fields...)
