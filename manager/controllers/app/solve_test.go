@@ -771,7 +771,7 @@ func TestMinMultipleGoals(t *testing.T) {
 }
 
 // Read scenario, different clusters with costs
-// Min & max goals with different weights: 9:1
+// Min & max goals with different weights: 6:4
 // Costs: (10,0), (4,0), (9,5), (3,5), (8,5)
 // cluster4 should be selected
 func TestMinMaxGoals(t *testing.T) {
