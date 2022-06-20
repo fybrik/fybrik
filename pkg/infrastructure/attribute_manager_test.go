@@ -22,7 +22,7 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 		"infrastructure":[{
 			"attribute": "storage-cost",
 			"description": "neverland object store",
-			"metricsName": "cost",
+			"metricName": "cost",
 			"value": "100",
 			"object": "fybrikstorageaccount",
 			"instance": "account-neverland"
@@ -43,7 +43,7 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
-			"metricsName": "cost",
+			"metricName": "cost",
 			"description": "neverland object store",
 			"value": "100",
 			"instance": "account-neverland"
@@ -64,7 +64,7 @@ func TestValidInfrastructureAttributeDist(t *testing.T) {
 		}],
 		"infrastructure":[{
 			"attribute": "distance",
-			"metricsName": "distance",
+			"metricName": "distance",
 			"value": "1000",
 			"arguments": ["neverland","theshire"]
 		}]
@@ -84,9 +84,8 @@ func TestInvalidInfrastructureAttributeDist(t *testing.T) {
 		}],
 		"infrastructure":[{
 			"attribute": "distance",
-			"metricsName": "distance",
-			"value": "100",
-			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+			"metricName": "distance",
+			"value": "100"
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))

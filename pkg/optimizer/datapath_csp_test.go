@@ -52,13 +52,13 @@ func getTestEnv() *datapath.Environment {
 	mod2.Name = "Reader"
 	moduleMap := map[string]*appApi.FybrikModule{mod1.Name: &mod1, mod2.Name: &mod2}
 	cluster1 := multicluster.Cluster{Name: "cluster1"}
-	cluster1Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "56", MetricsName: "cost",
+	cluster1Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "56", MetricName: "cost",
 		Object: taxonomy.Cluster, Instance: "cluster1"}
 	cluster2 := multicluster.Cluster{Name: "cluster2"}
-	cluster2Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "1", MetricsName: "cost",
+	cluster2Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "1", MetricName: "cost",
 		Object: taxonomy.Cluster, Instance: "cluster2"}
 	cluster3 := multicluster.Cluster{Name: "cluster3"}
-	cluster3Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "58", MetricsName: "cost",
+	cluster3Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "58", MetricName: "cost",
 		Object: taxonomy.Cluster, Instance: "cluster3"}
 	clusters := []multicluster.Cluster{cluster1, cluster2, cluster3}
 	sa1 := appApi.FybrikStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "sa1"}, Spec: appApi.FybrikStorageAccountSpec{Region: "us-south"}}

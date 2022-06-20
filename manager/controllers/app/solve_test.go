@@ -440,18 +440,18 @@ func TestStorageCostRestrictictions(t *testing.T) {
 		Scale: &taxonomy.RangeType{Min: 0, Max: 200},
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Name:        "storage-cost",
-		MetricsName: "cost",
-		Value:       "20",
-		Object:      taxonomy.StorageAccount,
-		Instance:    account1.Name,
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "20",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account1.Name,
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Name:        "storage-cost",
-		MetricsName: "cost",
-		Value:       "12",
-		Object:      taxonomy.StorageAccount,
-		Instance:    account2.Name,
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "12",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account2.Name,
 	})
 	_, err := solve(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())

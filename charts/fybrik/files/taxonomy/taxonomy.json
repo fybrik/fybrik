@@ -68,13 +68,6 @@
         "value"
       ],
       "properties": {
-        "argObjects": {
-          "description": "Argument types for cross-object attributes",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InstanceType"
-          }
-        },
         "arguments": {
           "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
           "type": "array",
@@ -94,8 +87,8 @@
           "description": "A reference to the resource instance, e.g. storage account name",
           "type": "string"
         },
-        "metricsName": {
-          "description": "Metrics",
+        "metricName": {
+          "description": "Name of the metric specified in the metrics section",
           "type": "string"
         },
         "object": {

@@ -45,16 +45,14 @@ type InfrastructureElement struct {
 	Name string `json:"attribute"`
 	// Description
 	Description string `json:"description,omitempty"`
-	// Metrics
-	MetricsName string `json:"metricsName,omitempty"`
+	// Name of the metric specified in the metrics section
+	MetricName string `json:"metricName,omitempty"`
 	// Attribute value
 	Value string `json:"value"`
 	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
 	Object InstanceType `json:"object,omitempty"`
 	// A reference to the resource instance, e.g. storage account name
 	Instance string `json:"instance,omitempty"`
-	// Argument types for cross-object attributes
-	ArgObjects []InstanceType `json:"argObjects,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments []string `json:"arguments,omitempty"`
 }
