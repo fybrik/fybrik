@@ -33,6 +33,7 @@ nav:
   - tasks/multicluster.md
   - tasks/custom-taxonomy.md
   - tasks/performance.md
+  - tasks/high-availability.md
 - Reference:
   - reference/crds.md
   - Connectors API:
