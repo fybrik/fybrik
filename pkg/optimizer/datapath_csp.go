@@ -185,12 +185,14 @@ func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	return dpc.fzModel.Dump()
 }
 
-// enforce restrictions from admin configuration decisions:
+// enforce restrictions from admin configuration decisions.
+// Note: module+capability that does not satisfy capability restrictions is already filtered from dpc.modulesCapabilities
 // a. cluster satisfies restrictions for the selected capability
 // b. storage account satisfies restrictions for the selected capability
-// c. cluster satisfies "transform" restrictions if a governance action is selected
-// d. storage account satisfies "transform" restrictions if a governance action is selected
-// e. capabilities that must be deployed are indeed deployed
+// c. module satisfies "transform" restrictions if a governance action is selected
+// d. cluster satisfies "transform" restrictions if a governance action is selected
+// e. storage account satisfies "transform" restrictions if a governance action is selected
+// f. capabilities that must be deployed are indeed deployed
 func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 	for decCapability := range dpc.problemData.Configuration.ConfigDecisions {
 		decision := dpc.problemData.Configuration.ConfigDecisions[decCapability]
@@ -205,6 +207,7 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 		}
 		if decCapability == "transform" {
 			for actionVar := range dpc.requiredActions {
+				dpc.enforceModuleRestrictions(decision.DeploymentRestrictions, actionVar, 1, pathLength)
 				dpc.enforceClusterRestrictions(decision.DeploymentRestrictions, actionVar, 1, pathLength)
 				dpc.enforceStorageRestrictions(decision.DeploymentRestrictions, actionVar, 1, pathLength)
 			}
@@ -217,6 +220,17 @@ func (dpc *DataPathCSP) addAdminConfigRestrictions(pathLength int) error {
 		}
 	}
 	return nil
+}
+
+// checks given restrictions on each moduleCapability, and if the restriction is violated for the given module,
+// blocks the assignment varToBlock==valueToBlock && modCapability==moduleCapabilityIndex
+func (dpc *DataPathCSP) enforceModuleRestrictions(restrictions adminconfig.Restrictions,
+	varToBlock string, valueToBlock, pathLen int) {
+	for modCapIdx := range dpc.modulesCapabilities {
+		if !dpc.modcapSatisfiesRestrictions(&dpc.modulesCapabilities[modCapIdx], restrictions.Modules) {
+			dpc.preventAssignments([]string{varToBlock, modCapVarname}, []int{valueToBlock, modCapIdx + 1}, pathLen)
+		}
+	}
 }
 
 // checks given restrictions on each cluster, and if the restriction is violated for a given cluster,
