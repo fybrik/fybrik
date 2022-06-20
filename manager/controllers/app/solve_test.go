@@ -719,6 +719,9 @@ func TestGoalConflict(t *testing.T) {
 // The second cluster should be selected
 func TestMinMultipleGoals(t *testing.T) {
 	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
 	readModule := &v1alpha1.FybrikModule{}
@@ -773,6 +776,9 @@ func TestMinMultipleGoals(t *testing.T) {
 // cluster4 should be selected
 func TestMinMaxGoals(t *testing.T) {
 	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
 	readModule := &v1alpha1.FybrikModule{}
