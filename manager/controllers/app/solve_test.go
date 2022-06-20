@@ -654,13 +654,13 @@ func TestOptimalStorage(t *testing.T) {
 		})
 		cost += 5
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
 	// change the optimization directive to MAX
 	asset.Configuration.OptimizationStrategy[0].Directive = adminconfig.Maximize
-	solution, err = solve(env, asset, &testLog)
+	solution, err = solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region4")))
@@ -707,7 +707,7 @@ func TestGoalConflict(t *testing.T) {
 			Weight:    "0.8",
 		},
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.HavePrefix("cluster"))
@@ -764,7 +764,7 @@ func TestMinMultipleGoals(t *testing.T) {
 			Weight:    "0.1",
 		},
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster2"))
@@ -821,7 +821,7 @@ func TestMinMaxGoals(t *testing.T) {
 			Weight:    "0.4",
 		},
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster4"))
