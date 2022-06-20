@@ -539,48 +539,50 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 
 // This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
-func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute) (string, string, error) {
-	instanceType := dpc.env.AttributeManager.GetInstanceType(attr)
-	if instanceType == nil {
+func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.AttributeName) (string, string, error) {
+	instanceTypes := dpc.env.AttributeManager.GetInstanceTypes(attr)
+	if len(instanceTypes) == 0 {
 		return "", "", fmt.Errorf("there are no clusters, modules or storage accounts with an attribute %s", attr)
 	}
 
 	resArray := []string{}
 	varName := ""
-	switch *instanceType {
-	case taxonomy.Cluster:
-		varName = clusterVarname
-		for _, cluster := range dpc.env.Clusters {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
-			}
-			resArray = append(resArray, infraElementValue)
-		}
-	case taxonomy.StorageAccount:
-		varName = saVarname
-		for _, sa := range dpc.env.StorageAccounts {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
-			if !found {
-				infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
+	for _, instanceType := range instanceTypes {
+		switch instanceType {
+		case taxonomy.Cluster:
+			varName = clusterVarname
+			for _, cluster := range dpc.env.Clusters {
+				infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
 				if !found {
-					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+					return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
 				}
+				resArray = append(resArray, infraElementValue)
 			}
-			resArray = append(resArray, infraElementValue)
-		}
-		resArray = append(resArray, "0") // Assuming attribute == 0 if no storage account is set
-	case taxonomy.Module:
-		varName = modCapVarname
-		for _, modCap := range dpc.modulesCapabilities {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
+		case taxonomy.StorageAccount:
+			varName = saVarname
+			for _, sa := range dpc.env.StorageAccounts {
+				infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
+				if !found {
+					infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
+					if !found {
+						return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+					}
+				}
+				resArray = append(resArray, infraElementValue)
 			}
-			resArray = append(resArray, infraElementValue)
+			resArray = append(resArray, "0") // Assuming attribute == 0 if no storage account is set
+		case taxonomy.Module:
+			varName = modCapVarname
+			for _, modCap := range dpc.modulesCapabilities {
+				infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
+				if !found {
+					return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
+				}
+				resArray = append(resArray, infraElementValue)
+			}
+		default:
+			return "", "", nil // TODO: handle (this can be bandwidth for example)
 		}
-	default:
-		return "", "", nil // TODO: handle (this can be bandwidth for example)
 	}
 	if len(resArray) < 1 {
 		return "", "", nil

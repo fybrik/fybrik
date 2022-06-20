@@ -4,20 +4,21 @@
     "Infrastructure": {
       "type": "object",
       "required": [
-        "definitions",
         "infrastructure"
       ],
       "properties": {
-        "definitions": {
-          "type": "array",
-          "items": {
-            "$ref": "taxonomy.json#/definitions/AttributeDefinition"
-          }
-        },
         "infrastructure": {
+          "description": "a list of infrastructure arguments",
           "type": "array",
           "items": {
             "$ref": "taxonomy.json#/definitions/InfrastructureElement"
+          }
+        },
+        "metrics": {
+          "description": "a list of infrastructure metrics including scale and units shared by various attributes",
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/InfrastructureMetrics"
           }
         }
       }

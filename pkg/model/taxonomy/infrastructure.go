@@ -3,7 +3,7 @@
 
 package taxonomy
 
-type Attribute string
+type AttributeName string
 type Units string
 
 // +kubebuilder:validation:Enum=numeric;string;bool
@@ -31,30 +31,31 @@ type RangeType struct {
 	Max int `json:"max,omitempty"`
 }
 
-type AttributeDefinition struct {
-	// Attribute name defined in the taxonomy
-	Attribute Attribute `json:"attribute"`
+type InfrastructureMetrics struct {
+	Name string `json:"name"`
 	// Attribute type, e.g. numeric or string
 	Type AttributeType `json:"type"`
 	// Measurement units
 	Units Units `json:"units,omitempty"`
-	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
-	Object InstanceType `json:"object,omitempty"`
 	// A scale of values (minimum and maximum) when applicable
 	Scale *RangeType `json:"scale,omitempty"`
-	// Argument types for cross-object attributes
-	ArgObjects []InstanceType `json:"objects,omitempty"`
 }
 
 type InfrastructureElement struct {
 	// Attribute name defined in the taxonomy
-	Attribute Attribute `json:"attribute"`
+	Name AttributeName `json:"attribute"`
 	// Description
 	Description string `json:"description,omitempty"`
+	// Metrics
+	MetricsName string `json:"metricsName,omitempty"`
 	// Attribute value
 	Value string `json:"value"`
+	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
+	Object InstanceType `json:"object,omitempty"`
 	// A reference to the resource instance, e.g. storage account name
 	Instance string `json:"instance,omitempty"`
+	// Argument types for cross-object attributes
+	ArgObjects []InstanceType `json:"argObjects,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments []string `json:"arguments,omitempty"`
 }

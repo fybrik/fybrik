@@ -13,16 +13,18 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"definitions": [{
-			"attribute": "storage-cost",
+		"metrics": [{
+			"name": "cost",
 			"type": "numeric",
 			"units": "US Dollar per TB per month",
-			"object": "fybrikstorageaccount"
+			"scale": {"min": 0, "max": 100}
 		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
 			"description": "neverland object store",
+			"metricsName": "cost",
 			"value": "100",
+			"object": "fybrikstorageaccount",
 			"instance": "account-neverland"
 		}]
 	}`
@@ -34,14 +36,14 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"definitions": [{
-			"attribute": "storage-cost",
+		"metrics": [{
+			"name": "cost",
 			"type": "numeric",
-			"units": "USDollar",
-			"object": "fybrikstorageaccount"
+			"units": "km"
 		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
+			"metricsName": "cost",
 			"description": "neverland object store",
 			"value": "100",
 			"instance": "account-neverland"
@@ -55,14 +57,14 @@ func TestValidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"definitions": [{
-			"attribute": "distance",
+		"metrics": [{
+			"name": "distance",
 			"type": "numeric",
-			"units": "km",
-			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+			"units": "km"
 		}],
 		"infrastructure":[{
 			"attribute": "distance",
+			"metricsName": "distance",
 			"value": "1000",
 			"arguments": ["neverland","theshire"]
 		}]
@@ -75,15 +77,16 @@ func TestInvalidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"definitions": [{
-			"attribute": "distance",
+		"metrics": [{
+			"name": "distance",
 			"type": "object",
-			"units": "km",
-			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+			"units": "m"
 		}],
 		"infrastructure":[{
 			"attribute": "distance",
+			"metricsName": "distance",
 			"value": "100",
+			"objects": ["fybrikstorageaccount","fybrikstorageaccount"]
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))

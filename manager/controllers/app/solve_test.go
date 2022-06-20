@@ -27,9 +27,9 @@ func newEnvironment() *datapath.Environment {
 		Modules:         map[string]*v1alpha1.FybrikModule{},
 		StorageAccounts: []*v1alpha1.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
-			Log:         testLog,
-			Definitions: infrastructure.Dictionary{},
-			Attributes:  []taxonomy.InfrastructureElement{},
+			Log:        testLog,
+			Metrics:    infrastructure.MetricsDictionary{},
+			Attributes: []taxonomy.InfrastructureElement{},
 		},
 	}
 }
@@ -46,8 +46,8 @@ func addStorageAccount(env *datapath.Environment, account *v1alpha1.FybrikStorag
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
-func addDefinition(env *datapath.Environment, definition *taxonomy.AttributeDefinition) {
-	env.AttributeManager.Definitions[definition.Attribute] = *definition
+func addMetrics(env *datapath.Environment, m *taxonomy.InfrastructureMetrics) {
+	env.AttributeManager.Metrics[m.Name] = *m
 }
 
 func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureElement) {
@@ -432,22 +432,26 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 10}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 10}}}},
 	}
-	addDefinition(env, &taxonomy.AttributeDefinition{
-		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
-		Object:    taxonomy.StorageAccount,
+	addMetrics(env, &taxonomy.InfrastructureMetrics{
+		Name:  "cost",
+		Type:  taxonomy.Numeric,
+		Scale: &taxonomy.RangeType{Min: 0, Max: 200},
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Value:     "20",
-		Instance:  account1.Name,
+		Name:        taxonomy.AttributeName("storage-cost"),
+		MetricsName: "cost",
+		Value:       "20",
+		Object:      taxonomy.StorageAccount,
+		Instance:    account1.Name,
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Value:     "12",
-		Instance:  account2.Name,
+		Name:        taxonomy.AttributeName("storage-cost"),
+		MetricsName: "cost",
+		Value:       "12",
+		Object:      taxonomy.StorageAccount,
+		Instance:    account2.Name,
 	})
 	_, err := solve(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -455,7 +459,7 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 15}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 15}}}},
 	}
 	solution, err := solve(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())

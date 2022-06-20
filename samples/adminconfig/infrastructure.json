@@ -1,47 +1,65 @@
 {
-    "definitions": [
+    "metrics": [
         {
-            "attribute": "storage-cost",
+            "name": "cost",
             "type": "numeric",
             "units": "US Dollar per TB per month",
-            "object": "fybrikstorageaccount"
+            "scale": 
+            {
+                "min": 0,
+                "max": 500
+            }
         },
         {
-            "attribute": "distance",
+            "name": "distance",
             "type": "numeric",
             "units": "km",
-            "objects": ["fybrikstorageaccount","fybrikstorageaccount"]
+            "scale":
+            {
+                "min": 0,
+                "max": 20000
+            }
         }
     ],
     "infrastructure": [
         {
             "attribute": "storage-cost",
             "description": "neverland object store",
+            "metricsName": "cost",
             "value": "100",
+            "object": "fybrikstorageaccount",
             "instance": "account-neverland"
         },
         {
             "attribute": "storage-cost",
             "description": "theshire object store",
+            "metricsName": "cost",
             "value": "90",
+            "object": "fybrikstorageaccount",
             "instance": "account-theshire"
         },
         {
             "attribute": "distance",
             "description": "distance between neverland and theshire",
+            "metricsName": "distance",
             "value": "5000",
+            "argObjects": ["fybrikstorageaccount","fybrikstorageaccount"],
             "arguments": ["theshire","neverland"]
         },
         {
             "attribute": "distance",
             "description": "distance between theshire and theshire",
+            "metricsName": "distance",
             "value": "0",
+            "argObjects": ["fybrikstorageaccount","fybrikstorageaccount"],
             "arguments": ["theshire","theshire"]
         },
         {
             "attribute": "distance",
             "description": "distance between neverland and neverland",
+            "metricsName": "distance",
             "value": "0",
+            "argObjects": ["fybrikstorageaccount","fybrikstorageaccount"],
             "arguments": ["neverland","neverland"]
         }
     ]

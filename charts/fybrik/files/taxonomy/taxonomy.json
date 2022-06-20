@@ -23,44 +23,8 @@
     "AssetID": {
       "type": "string"
     },
-    "Attribute": {
+    "AttributeName": {
       "type": "string"
-    },
-    "AttributeDefinition": {
-      "type": "object",
-      "required": [
-        "attribute",
-        "type"
-      ],
-      "properties": {
-        "attribute": {
-          "$ref": "#/definitions/Attribute",
-          "description": "Attribute name defined in the taxonomy"
-        },
-        "object": {
-          "$ref": "#/definitions/InstanceType",
-          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
-        },
-        "objects": {
-          "description": "Argument types for cross-object attributes",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InstanceType"
-          }
-        },
-        "scale": {
-          "$ref": "#/definitions/RangeType",
-          "description": "A scale of values (minimum and maximum) when applicable"
-        },
-        "type": {
-          "$ref": "#/definitions/AttributeType",
-          "description": "Attribute type, e.g. numeric or string"
-        },
-        "units": {
-          "$ref": "#/definitions/Units",
-          "description": "Measurement units"
-        }
-      }
     },
     "AttributeType": {
       "type": "string",
@@ -107,6 +71,13 @@
         "value"
       ],
       "properties": {
+        "argObjects": {
+          "description": "Argument types for cross-object attributes",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstanceType"
+          }
+        },
         "arguments": {
           "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
           "type": "array",
@@ -115,7 +86,7 @@
           }
         },
         "attribute": {
-          "$ref": "#/definitions/Attribute",
+          "$ref": "#/definitions/AttributeName",
           "description": "Attribute name defined in the taxonomy"
         },
         "description": {
@@ -126,9 +97,41 @@
           "description": "A reference to the resource instance, e.g. storage account name",
           "type": "string"
         },
+        "metricsName": {
+          "description": "Metrics",
+          "type": "string"
+        },
+        "object": {
+          "$ref": "#/definitions/InstanceType",
+          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
+        },
         "value": {
           "description": "Attribute value",
           "type": "string"
+        }
+      }
+    },
+    "InfrastructureMetrics": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "scale": {
+          "$ref": "#/definitions/RangeType",
+          "description": "A scale of values (minimum and maximum) when applicable"
+        },
+        "type": {
+          "$ref": "#/definitions/AttributeType",
+          "description": "Attribute type, e.g. numeric or string"
+        },
+        "units": {
+          "$ref": "#/definitions/Units",
+          "description": "Measurement units"
         }
       }
     },
