@@ -712,3 +712,111 @@ func TestGoalConflict(t *testing.T) {
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.HavePrefix("cluster"))
 }
+
+// Read scenario, different clusters with costs
+// Two minimize goals with different weights: 9:1
+// Costs: (10,0), (9,0), (8,10), (7,20), (6,30)
+// The second cluster should be selected
+func TestMinMultipleGoals(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	cpuCost := 10
+	errRate := 0
+	for i := 1; i <= 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%d", cpuCost),
+			Object:    taxonomy.Cluster,
+			Instance:  name,
+		})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("cluster-err-rate"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%d", errRate),
+			Object:    taxonomy.Cluster,
+			Instance:  name,
+		})
+		cpuCost -= 1
+		if i >= 2 {
+			errRate += 10
+		}
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Directive: adminconfig.Minimize,
+			Weight:    "0.9",
+		},
+		{
+			Attribute: taxonomy.Attribute("cluster-err-rate"),
+			Directive: adminconfig.Minimize,
+			Weight:    "0.1",
+		},
+	}
+	solution, err := solve(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster2"))
+}
+
+// Read scenario, different clusters with costs
+// Min & max goals with different weights: 9:1
+// Costs: (10,0), (4,0), (9,5), (3,5), (8,5)
+// cluster4 should be selected
+func TestMinMaxGoals(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	cpuCost := 10
+	stableRate := 0
+	for i := 1; i <= 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%d", cpuCost),
+			Object:    taxonomy.Cluster,
+			Instance:  name,
+		})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Attribute: taxonomy.Attribute("cluster-stability-rate"),
+			Type:      taxonomy.Numeric,
+			Value:     fmt.Sprintf("%d", stableRate),
+			Object:    taxonomy.Cluster,
+			Instance:  name,
+		})
+		cpuCost = 15 - cpuCost - i
+		if i == 2 {
+			stableRate += 5
+		}
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Directive: adminconfig.Minimize,
+			Weight:    "0.6",
+		},
+		{
+			Attribute: taxonomy.Attribute("cluster-stability-rate"),
+			Directive: adminconfig.Maximize,
+			Weight:    "0.4",
+		},
+	}
+	solution, err := solve(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster4"))
+}
