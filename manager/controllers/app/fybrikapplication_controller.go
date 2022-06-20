@@ -827,7 +827,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	paths, err := solve(env, requirements, applicationContext.Log)
 	if err != nil {
 		applicationContext.Application.Status.ErrorMessage = err.Error()
-		return plotterGen.ProvisionedStorage, plotterSpec, err
+		return plotterGen.ProvisionedStorage, plotterSpec, nil
 	}
 	if len(paths) != len(requirements) {
 		return plotterGen.ProvisionedStorage, plotterSpec, errors.New("Wrong number of data paths")
