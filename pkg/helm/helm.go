@@ -28,8 +28,8 @@ import (
 // TODO add configuration
 const TIMEOUT = 300 * time.Second
 
-// Relevant only when charts are loaded to
-// a persistence volume.
+// Relevant only when helm charts are placed in
+// local directory.
 const chartsDir = "/charts/"
 
 // Interface of a helm chart
@@ -270,9 +270,7 @@ func (r *Impl) Pull(cfg *action.Configuration, ref, destination string) error {
 		if _, err = os.Stat(r.localChartsMountPath + chartsDir + ref); err == nil {
 			return nil
 		}
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	chartRef, err := parseReference(ref)
