@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -60,7 +61,7 @@ var (
 	password      = os.Getenv("DOCKER_PASSWORD")
 	insecure, _   = strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
 	chartRef      = ChartRef(hostname, namespace, chartName, tagName)
-	impl          = NewHelmerImpl(true)
+	impl          = NewHelmerImpl("")
 )
 
 func ChartRef(hostname, namespace, name, tagname string) string {
@@ -124,6 +125,58 @@ func TestHelmRegistry(t *testing.T) {
 		assert.Nil(t, err)
 		Log(t, "registry logout", err)
 	}
+}
+
+// TestLocalChartsMount tests the case where the helm charts
+// are located in a local directory and thus there is no need
+// to retrive them from the registry.
+func TestLocalChartsMount(t *testing.T) {
+	tmpChart := os.Getenv("TMP_CHART")
+	var err error
+	if tmpChart == "" {
+		t.Skip("No chart path was defined as environment. Skipping test...")
+	}
+
+	rootPath := filepath.Dir(tmpChart)
+	// remove the "charts" suffix from the file path
+	impl = NewHelmerImpl(filepath.Dir(rootPath))
+
+	tmpDir, err := ioutil.TempDir("", "test-helm-")
+	if err != nil {
+		t.Errorf("Unable to create temporary directory: %s", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	pulledChartDestPath := path.Join(tmpDir, "pulledChartDir")
+	packedChartDir := path.Join(tmpDir, "packedChartDir")
+	err = os.Mkdir(pulledChartDestPath, 0700)
+	if err != nil {
+		t.Errorf("Unable to setup test temp charts directory: %s", err)
+	}
+	err = os.Mkdir(packedChartDir, 0700)
+	if err != nil {
+		t.Errorf("Unable to setup test temp charts directory: %s", err)
+	}
+
+	err = impl.Package(tmpChart, packedChartDir, tagName)
+	assert.Nil(t, err)
+	Log(t, "package chart", err)
+
+	cfg, err := impl.GetConfig("", t.Logf)
+	assert.Nil(t, err)
+	err = impl.Pull(cfg, chartName, pulledChartDestPath)
+	assert.Nil(t, err)
+	Log(t, "pull chart", err)
+
+	pulledChart, err := impl.Load(chartName, pulledChartDestPath)
+	assert.Nil(t, err)
+	Log(t, "load chart", err)
+
+	packagePath := packedChartDir + "/mychart-0.7.0.tgz"
+	packedChart, err := loader.Load(packagePath)
+	assert.Nil(t, err)
+
+	assert.Equal(t, packedChart.Metadata.Name, pulledChart.Metadata.Name, "expected loaded chart equals saved chart")
 }
 
 func TestHelmRelease(t *testing.T) {
