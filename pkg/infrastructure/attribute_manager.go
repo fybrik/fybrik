@@ -141,7 +141,21 @@ func (m *AttributeManager) GetInstanceTypes(name string) []taxonomy.InstanceType
 			instanceTypes = append(instanceTypes, element.Object)
 		}
 	}
+	logging.LogStructure("Instance types for "+name, instanceTypes, &m.Log, zerolog.DebugLevel, false, false)
 	return instanceTypes
+}
+
+// Returns an infrastructure attribute based on the attribute name and two arguments to match
+func (m *AttributeManager) GetAttrFromArguments(name, arg1, arg2 string) *taxonomy.InfrastructureElement {
+	for i := range m.Attributes {
+		element := &m.Attributes[i]
+		if element.Name == name && len(element.Arguments) == 2 &&
+			((element.Arguments[0] == arg1 && element.Arguments[1] == arg2) ||
+				(element.Arguments[0] == arg2 && element.Arguments[1] == arg1)) {
+			return element
+		}
+	}
+	return nil
 }
 
 func hasInstanceType(value taxonomy.InstanceType, values []taxonomy.InstanceType) bool {
