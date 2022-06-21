@@ -147,12 +147,7 @@ func TestLocalChartsMount(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	pulledChartDestPath := path.Join(tmpDir, "pulledChartDir")
 	packedChartDir := path.Join(tmpDir, "packedChartDir")
-	err = os.Mkdir(pulledChartDestPath, 0700)
-	if err != nil {
-		t.Errorf("Unable to setup test temp charts directory: %s", err)
-	}
 	err = os.Mkdir(packedChartDir, 0700)
 	if err != nil {
 		t.Errorf("Unable to setup test temp charts directory: %s", err)
@@ -164,11 +159,11 @@ func TestLocalChartsMount(t *testing.T) {
 
 	cfg, err := impl.GetConfig("", t.Logf)
 	assert.Nil(t, err)
-	err = impl.Pull(cfg, chartName, pulledChartDestPath)
+	err = impl.Pull(cfg, chartName, "")
 	assert.Nil(t, err)
 	Log(t, "pull chart", err)
 
-	pulledChart, err := impl.Load(chartName, pulledChartDestPath)
+	pulledChart, err := impl.Load(chartName, "")
 	assert.Nil(t, err)
 	Log(t, "load chart", err)
 
