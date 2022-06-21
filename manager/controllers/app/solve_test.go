@@ -347,6 +347,7 @@ func TestTransformInDataLocation(t *testing.T) {
 	addCluster(env, cluster2)
 	asset := createReadRequest()
 	asset.DataDetails.ResourceMetadata.Geography = remoteGeo
+	asset.WorkloadCluster = cluster1
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{Deploy: adminconfig.StatusFalse}
 	asset.Configuration.ConfigDecisions["read"] = adminconfig.Decision{
