@@ -115,6 +115,19 @@ func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string
 	return nil
 }
 
+// Returns an infrastructure attribute based on the attribute name and two arguments to match
+func (m *AttributeManager) GetAttrFromArguments(name taxonomy.Attribute, arg1, arg2 string) *taxonomy.InfrastructureElement {
+	for i := range m.Infrastructure.Items {
+		element := &m.Infrastructure.Items[i]
+		if element.Attribute == name && len(element.Arguments) == 2 &&
+			((element.Arguments[0] == arg1 && element.Arguments[1] == arg2) ||
+				(element.Arguments[0] == arg2 && element.Arguments[1] == arg1)) {
+			return element
+		}
+	}
+	return nil
+}
+
 // GetInstanceType returns the instance type associated with the attribute
 // TODO: validate that there is only one instance type associated with the given attribute
 func (m *AttributeManager) GetInstanceType(name taxonomy.Attribute) *taxonomy.InstanceType {
