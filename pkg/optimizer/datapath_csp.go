@@ -32,7 +32,6 @@ const (
 	realSaLocationsVarName           = "realSaLocations"           // Var at pos i is i if storageLocsVarname[i]>0, and 0 otherwise
 	maxRealSaVarName                 = "maxRealSA"                 // The maximal value in the realSaLocationsVarName vector
 	afterMaxRealSaVarName            = "afterMaxRealSA"            // Var at pos i is true if i >= maxRealSaVarName, and false otherwise
-	beforeMaxRealSaVarName           = "beforeMaxRealSA"           // Var at pos i is false if i < maxRealSaVarName, and true otherwise
 	c2cSelectorVarname               = "c2cSelector"               // Cluster-to-cluster entry to select from a goal's paramArray (at each pos)
 	s2cSelectorVarname               = "s2cSelector"               // The storage-to-cluster entry to select from the goals paramArrays
 	lastDataStoreVarname             = "lastDataStore"             // The last data store used in the data path
@@ -393,6 +392,32 @@ func (dpc *DataPathCSP) addSetInIndicator(variable string, valueSet []string, pa
 	return indicator
 }
 
+// Adds a Boolean indicator variable that is implied by either the given var or its negation
+func (dpc *DataPathCSP) addImpliedByIndicator(variable string, pathLen int, impliedByNegatedVar bool) string {
+	notStr := ""
+	if impliedByNegatedVar {
+		notStr = "not_"
+	}
+	indicator := fmt.Sprintf("ind_implied_by_%s%s", notStr, variable)
+	if _, defined := dpc.fzModel.VarMap[indicator]; defined {
+		return indicator
+	}
+	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLen, true, false)
+	for pathPos := 1; pathPos <= pathLen; pathPos++ {
+		variableAtPos := varAtPos(variable, pathPos)
+		indicatorAtPos := varAtPos(indicator, pathPos)
+		annotations := GetDefinesVarAnnotation(indicatorAtPos)
+		if impliedByNegatedVar {
+			arrayToOr := fznCompoundLiteral([]string{variableAtPos, indicatorAtPos}, false)
+			dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{arrayToOr, TrueValue}, annotations)
+		} else {
+			dpc.fzModel.AddConstraint(BoolLeConstraint, []string{variableAtPos, indicatorAtPos}, annotations)
+		}
+	}
+
+	return indicator
+}
+
 // Make sure that every required governance action is implemented exactly one time.
 func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 	allOnesArrayLiteral := arrayOfSameInt(1, pathLength)
@@ -706,11 +731,8 @@ func (dpc *DataPathCSP) setComplexGoalVarArray(attr taxonomy.Attribute, goalVarn
 		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{c2cSelectorAtPos, c2cParamName, c2cSelectedValueAtPos}, c2cDefinesAnnotation)
 
 		// goalVarname is set to the attr value from cluster i to cluster i+1 if i > maxRealSa, otherwise it is set to 0
-		afterMaxRealSaAtPos := varAtPos(afterMaxRealSaVarName, pos)
-		beforeMaxRealSaAtPos := varAtPos(beforeMaxRealSaVarName, pos)
-		goalAtPos := varAtPos(goalVarname, pos)
-		dpc.fzModel.AddConstraint(IntEqConstraint, []string{goalAtPos, c2cSelectedValueAtPos, afterMaxRealSaAtPos})
-		dpc.fzModel.AddConstraint(IntEqConstraint, []string{goalAtPos, zeroStr, beforeMaxRealSaAtPos})
+		dpc.assignWithSelector(goalVarname, afterMaxRealSaVarName,
+			arrayOfVarPositions(c2cSelectedValueName, pathLen), arrayOfSameInt(0, pathLen), pathLen)
 	}
 
 	// Finally, set goalVarname[pathLen+1] to be the attr value between the last data-store and the next cluster
@@ -726,7 +748,6 @@ func (dpc *DataPathCSP) setComplexGoalVarArray(attr taxonomy.Attribute, goalVarn
 //  s2cSelectorVarname is the selector variable for the s2cParamArray (),
 //                     that is the attribute value between which storage-account and cluster to take
 // afterMaxRealSaVarName[i] is true iff the cluster at position i is after the last data store
-// beforeMaxRealSaVarName[i] is not(afterMaxRealSaVarName[i])
 
 func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 	if _, defined := dpc.fzModel.VarMap[realSaLocationsVarName]; defined {
@@ -753,7 +774,6 @@ func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 	dpc.fzModel.AddConstraint(IntMaxConstraint, []string{maxRealSaVarName, realSaLocationsVarName})
 
 	dpc.fzModel.AddVariableArray(afterMaxRealSaVarName, BoolType, pathLen, true, false)
-	dpc.fzModel.AddVariableArray(beforeMaxRealSaVarName, BoolType, pathLen, true, false)
 	c2cSelectorType := fznRangeVarType(1, len(dpc.env.Clusters)*len(dpc.env.Clusters))
 	dpc.fzModel.AddVariableArray(c2cSelectorVarname, c2cSelectorType, pathLen, true, false)
 	numClustersStr := strconv.Itoa(len(dpc.env.Clusters))
@@ -761,12 +781,10 @@ func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 	for pos := 1; pos <= pathLen; pos++ {
 		// set afterMaxRealSA[pos] to true iff pos is after the last storage account on the pipe
 		afterMaxRealSaAtPos := varAtPos(afterMaxRealSaVarName, pos)
-		beforeMaxRealSaAtPos := varAtPos(beforeMaxRealSaVarName, pos)
 		c2cSelectorAtPos := varAtPos(c2cSelectorVarname, pos)
 		clusterAtPos := varAtPos(clusterVarname, pos)
 		clusterAtNextPos := varAtPos(clusterVarname, pos+1)
 		dpc.fzModel.AddConstraint(IntLeConstraint, []string{maxRealSaVarName, strconv.Itoa(pos), afterMaxRealSaAtPos})
-		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{afterMaxRealSaAtPos, beforeMaxRealSaAtPos})
 		dpc.setVarAsWeightedSum(c2cSelectorAtPos, []string{clusterAtPos, clusterAtNextPos, numClustersStr}, selectorWeights)
 	}
 
@@ -843,12 +861,21 @@ func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weigh
 // Sets the CSP int variable sumVarname to be the weighted sum of the elements in the variable array varArrayToSum.
 func (dpc *DataPathCSP) setVarAsWeightedSumOfVarArray(sumVarname, varArrayToSum string, weightsArray []string) {
 	arrayLen := dpc.fzModel.GetVariableSize(varArrayToSum)
-	arrayToSum := []string{}
-	for pos := 1; pos <= arrayLen; pos++ {
-		arrayToSum = append(arrayToSum, varAtPos(varArrayToSum, pos))
-	}
-
+	arrayToSum := arrayOfVarPositions(varArrayToSum, arrayLen)
 	dpc.setVarAsWeightedSum(sumVarname, arrayToSum, weightsArray)
+}
+
+// "varToAssign" gets assigned with "valIfTrue" if "selectorVar" is true, and with "valIfFalse" otherwise
+func (dpc *DataPathCSP) assignWithSelector(varToAssign, selectorVar string, valIfTrue, valIfFalse []string, pathLen int) {
+	impliedBySelector := dpc.addImpliedByIndicator(selectorVar, pathLen, true)
+	impliedByNotSelector := dpc.addImpliedByIndicator(selectorVar, pathLen, false)
+	for pos := 1; pos <= pathLen; pos++ {
+		varToAssignAtPos := varAtPos(varToAssign, pos)
+		impliedBySelectorAtPos := varAtPos(impliedBySelector, pos)
+		impliedByNotSelectorAtPos := varAtPos(impliedByNotSelector, pos)
+		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varToAssignAtPos, valIfTrue[pos-1], impliedBySelectorAtPos})
+		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varToAssignAtPos, valIfFalse[pos-1], impliedByNotSelectorAtPos})
+	}
 }
 
 // Returns which actions should be activated by the module at position pathPos (according to the solver's solution)
@@ -940,6 +967,14 @@ func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interf
 		return taxonomy.Interface{Protocol: appApi.S3, DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
+}
+
+func arrayOfVarPositions(variableArray string, arrayLen int) []string {
+	array := make([]string, arrayLen)
+	for i := 1; i <= arrayLen; i++ {
+		array[i-1] = varAtPos(variableArray, i)
+	}
+	return array
 }
 
 func getWorkloadClusterIndex(wlCluster multicluster.Cluster, clusters []multicluster.Cluster) string {
