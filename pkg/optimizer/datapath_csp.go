@@ -816,7 +816,7 @@ func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error
 	c2cParamArray := []string{}
 	for _, cluster1 := range dpc.env.Clusters {
 		for _, cluster2 := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, cluster1.Metadata.Region, cluster2.Metadata.Region, scale)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, cluster1.Metadata.Region, cluster2.Metadata.Region, scale)
 			if err != nil {
 				return "", err
 			}
@@ -839,7 +839,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	s2cParamArray := []string{}
 	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
 	for _, cluster := range dpc.env.Clusters {
-		value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, dataSetRegion, cluster.Metadata.Region, scale)
+		value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, dataSetRegion, cluster.Metadata.Region, scale)
 		if err != nil {
 			return "", err
 		}
@@ -847,7 +847,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, string(sa.Spec.Region), cluster.Metadata.Region, scale)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region, scale)
 			if err != nil {
 				return "", err
 			}

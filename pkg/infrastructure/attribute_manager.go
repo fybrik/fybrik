@@ -176,7 +176,7 @@ func (m *AttributeManager) GetAttrFromArguments(name, arg1, arg2 string) *taxono
 }
 
 // // returns the normalized-to-scale value of an infrastructure attribute based on the attribute and two arguments to match
-func (m *AttributeManager) GetNormalizedAttrValueFromArguments(name, arg1, arg2 string, scale *taxonomy.RangeType) (string, error) {
+func (m *AttributeManager) GetNormAttrValFromArgs(name, arg1, arg2 string, scale *taxonomy.RangeType) (string, error) {
 	element := m.GetAttrFromArguments(name, arg1, arg2)
 	if element == nil {
 		return "", fmt.Errorf("attribute %s is not defined for regions %s and %s", name, arg1, arg2)
