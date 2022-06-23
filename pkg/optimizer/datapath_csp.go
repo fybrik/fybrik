@@ -660,26 +660,31 @@ func (dpc *DataPathCSP) setSimpleGoalVarArray(attr string, instanceType taxonomy
 // This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
 func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.InstanceType) (string, string, error) {
+	scale, err := dpc.env.AttributeManager.GetScale(attr)
+	if err != nil {
+		return "", "", err
+	}
+
 	resArray := []string{}
 	varName := ""
 	switch instanceType {
 	case taxonomy.Cluster:
 		varName = clusterVarname
 		for _, cluster := range dpc.env.Clusters {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, cluster.Name, scale)
+			if err != nil {
+				return "", "", err
 			}
 			resArray = append(resArray, infraElementValue)
 		}
 	case taxonomy.StorageAccount:
 		varName = saVarname
 		for _, sa := range dpc.env.StorageAccounts {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
-			if !found {
-				infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
-				if !found {
-					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.Name, scale)
+			if err != nil {
+				infraElementValue, err = dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.GenerateName, scale)
+				if err != nil {
+					return "", "", err
 				}
 			}
 			resArray = append(resArray, infraElementValue)
@@ -688,9 +693,9 @@ func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.I
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, modCap.module.Name, scale)
+			if err != nil {
+				return "", "", err
 			}
 			resArray = append(resArray, infraElementValue)
 		}
@@ -803,14 +808,19 @@ func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 
 // Produces a paramArray containing the attr value for each pair of clusters
 func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error) {
+	scale, err := dpc.env.AttributeManager.GetScale(attr)
+	if err != nil {
+		return "", err
+	}
+
 	c2cParamArray := []string{}
 	for _, cluster1 := range dpc.env.Clusters {
 		for _, cluster2 := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
-			if infraElement == nil {
-				return "", undefinedAttrBetweenRegions(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, cluster1.Metadata.Region, cluster2.Metadata.Region, scale)
+			if err != nil {
+				return "", err
 			}
-			c2cParamArray = append(c2cParamArray, infraElement.Value)
+			c2cParamArray = append(c2cParamArray, value)
 		}
 	}
 	c2cParamName := "cluster2cluster" + sanitizeFznIdentifier(attr)
@@ -821,22 +831,27 @@ func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error
 // Produces a paramArray containing the attr value for each pair of storage-account and cluster
 // The first line of the resulting matrix describes the attr value of the dataset-region vs each cluster
 func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, error) {
+	scale, err := dpc.env.AttributeManager.GetScale(attr)
+	if err != nil {
+		return "", err
+	}
+
 	s2cParamArray := []string{}
 	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
 	for _, cluster := range dpc.env.Clusters {
-		infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, dataSetRegion, cluster.Metadata.Region)
-		if infraElement == nil {
-			return "", undefinedAttrBetweenRegions(attr, dataSetRegion, cluster.Metadata.Region)
+		value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, dataSetRegion, cluster.Metadata.Region, scale)
+		if err != nil {
+			return "", err
 		}
-		s2cParamArray = append(s2cParamArray, infraElement.Value)
+		s2cParamArray = append(s2cParamArray, value)
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, string(sa.Spec.Region), cluster.Metadata.Region)
-			if infraElement == nil {
-				return "", undefinedAttrBetweenRegions(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormalizedAttrValueFromArguments(attr, string(sa.Spec.Region), cluster.Metadata.Region, scale)
+			if err != nil {
+				return "", err
 			}
-			s2cParamArray = append(s2cParamArray, infraElement.Value)
+			s2cParamArray = append(s2cParamArray, value)
 		}
 	}
 
@@ -1001,9 +1016,4 @@ func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
 
 	// an empty DataFormat in the module's interface means it supports all formats
 	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
-}
-
-func undefinedAttrBetweenRegions(attr, region1, region2 string) error {
-	return fmt.Errorf("attribute %s is not defined for regions %s and %s",
-		attr, region1, region2)
 }
