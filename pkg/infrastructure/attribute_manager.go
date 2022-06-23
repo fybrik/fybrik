@@ -30,11 +30,16 @@ const InfrastructureInfo string = "infrastructure.json"
 
 const ValidationPath string = "/tmp/taxonomy/infraattributes.json#/definitions/Infrastructure"
 
+type MetricsDictionary map[string]taxonomy.InfrastructureMetrics
+
 // AttributeManager provides access to infrastructure attributes
 type AttributeManager struct {
-	Log            zerolog.Logger
-	Infrastructure infraattributes.Infrastructure
-	Mux            *sync.RWMutex
+	Log zerolog.Logger
+	// attribute specific values
+	Attributes []taxonomy.InfrastructureElement
+	// metrics
+	Metrics MetricsDictionary
+	Mux     *sync.RWMutex
 }
 
 func NewAttributeManager() (*AttributeManager, error) {
@@ -42,10 +47,12 @@ func NewAttributeManager() (*AttributeManager, error) {
 	if err != nil {
 		return nil, err
 	}
+	attributes, metrics := parseInfrastructureJSON(content)
 	return &AttributeManager{
-		Log:            logging.LogInit(logging.CONTROLLER, "FybrikApplication"),
-		Infrastructure: content,
-		Mux:            &sync.RWMutex{},
+		Log:        logging.LogInit(logging.CONTROLLER, "FybrikApplication"),
+		Attributes: attributes,
+		Metrics:    metrics,
+		Mux:        &sync.RWMutex{},
 	}, nil
 }
 
@@ -65,31 +72,41 @@ func (m *AttributeManager) OnNotify() {
 	if err != nil {
 		m.OnError(err)
 	}
+	attributes, metrics := parseInfrastructureJSON(content)
 	m.Mux.Lock()
-	m.Infrastructure = content
+	m.Attributes = attributes
+	m.Metrics = metrics
 	m.Mux.Unlock()
+}
+
+func parseInfrastructureJSON(content infraattributes.Infrastructure) ([]taxonomy.InfrastructureElement, MetricsDictionary) {
+	dict := MetricsDictionary{}
+	for ind := range content.Metrics {
+		dict[content.Metrics[ind].Name] = content.Metrics[ind]
+	}
+	return content.Attributes, dict
 }
 
 // read the infrastructure file and store attribute details in-memory
 // The attribute structure is validated with respect to the generated schema (based on taxonomy)
 func readInfrastructure() (infraattributes.Infrastructure, error) {
 	infrastructureFile := RegoPolicyDirectory + InfrastructureInfo
-	attributes := infraattributes.Infrastructure{Items: []taxonomy.InfrastructureElement{}}
+	infra := infraattributes.Infrastructure{Attributes: []taxonomy.InfrastructureElement{}, Metrics: []taxonomy.InfrastructureMetrics{}}
 	content, err := os.ReadFile(infrastructureFile)
 	if errors.Is(err, fs.ErrNotExist) {
 		// file does not exist - return an empty attribute list for backward compatibility
-		return attributes, nil
+		return infra, nil
 	}
 	if err != nil {
-		return attributes, err
+		return infra, err
 	}
 	if err := validateStructure(content); err != nil {
-		return attributes, err
+		return infra, err
 	}
-	if err := json.Unmarshal(content, &attributes); err != nil {
-		return attributes, errors.Wrap(err, "could not parse infrastructure json")
+	if err := json.Unmarshal(content, &infra); err != nil {
+		return infra, errors.Wrap(err, "could not parse infrastructure json")
 	}
-	return attributes, nil
+	return infra, nil
 }
 
 func validateStructure(bytes []byte) error {
@@ -104,22 +121,35 @@ func validateStructure(bytes []byte) error {
 	return nil
 }
 
-// GetAttribute returns an infrastructure attribute based on the attribute and instance names
-func (m *AttributeManager) GetAttribute(name taxonomy.Attribute, instance string) *taxonomy.InfrastructureElement {
-	for i := range m.Infrastructure.Items {
-		element := &m.Infrastructure.Items[i]
-		if element.Attribute == name && element.Instance == instance {
-			return element
+// GetAttributeValue returns the value of an infrastructure attribute based on the attribute and instance names
+func (m *AttributeManager) GetAttributeValue(name, instance string) (string, bool) {
+	for i := range m.Attributes {
+		element := &m.Attributes[i]
+		if element.Name == name && element.Instance == instance {
+			return element.Value, true
 		}
 	}
-	return nil
+	return "", false
+}
+
+// GetInstanceType returns instance types associated with the attribute
+func (m *AttributeManager) GetInstanceTypes(name string) []taxonomy.InstanceType {
+	instanceTypes := []taxonomy.InstanceType{}
+	for i := range m.Attributes {
+		element := &m.Attributes[i]
+		if element.Name == name && !hasInstanceType(element.Object, instanceTypes) {
+			instanceTypes = append(instanceTypes, element.Object)
+		}
+	}
+	logging.LogStructure("Instance types for "+name, instanceTypes, &m.Log, zerolog.DebugLevel, false, false)
+	return instanceTypes
 }
 
 // Returns an infrastructure attribute based on the attribute name and two arguments to match
-func (m *AttributeManager) GetAttrFromArguments(name taxonomy.Attribute, arg1, arg2 string) *taxonomy.InfrastructureElement {
-	for i := range m.Infrastructure.Items {
-		element := &m.Infrastructure.Items[i]
-		if element.Attribute == name && len(element.Arguments) == 2 &&
+func (m *AttributeManager) GetAttrFromArguments(name, arg1, arg2 string) *taxonomy.InfrastructureElement {
+	for i := range m.Attributes {
+		element := &m.Attributes[i]
+		if element.Name == name && len(element.Arguments) == 2 &&
 			((element.Arguments[0] == arg1 && element.Arguments[1] == arg2) ||
 				(element.Arguments[0] == arg2 && element.Arguments[1] == arg1)) {
 			return element
@@ -128,14 +158,11 @@ func (m *AttributeManager) GetAttrFromArguments(name taxonomy.Attribute, arg1, a
 	return nil
 }
 
-// GetInstanceType returns the instance type associated with the attribute
-// TODO: validate that there is only one instance type associated with the given attribute
-func (m *AttributeManager) GetInstanceType(name taxonomy.Attribute) *taxonomy.InstanceType {
-	for i := range m.Infrastructure.Items {
-		element := &m.Infrastructure.Items[i]
-		if element.Attribute == name {
-			return &element.Object
+func hasInstanceType(value taxonomy.InstanceType, values []taxonomy.InstanceType) bool {
+	for _, v := range values {
+		if v == value {
+			return true
 		}
 	}
-	return nil
+	return false
 }

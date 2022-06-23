@@ -23,9 +23,6 @@
     "AssetID": {
       "type": "string"
     },
-    "Attribute": {
-      "type": "string"
-    },
     "AttributeType": {
       "type": "string",
       "enum": [
@@ -68,8 +65,8 @@
       "type": "object",
       "required": [
         "attribute",
-        "type",
-        "value"
+        "value",
+        "object"
       ],
       "properties": {
         "arguments": {
@@ -80,8 +77,8 @@
           }
         },
         "attribute": {
-          "$ref": "#/definitions/Attribute",
-          "description": "Attribute name defined in the taxonomy"
+          "description": "Attribute name defined in the taxonomy",
+          "type": "string"
         },
         "description": {
           "description": "Description",
@@ -91,9 +88,29 @@
           "description": "A reference to the resource instance, e.g. storage account name",
           "type": "string"
         },
+        "metricName": {
+          "description": "Name of the metric specified in the metrics section",
+          "type": "string"
+        },
         "object": {
           "$ref": "#/definitions/InstanceType",
-          "description": "A resource defined by the attribute (\"storageaccount\",\"module\",\"cluster\")"
+          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
+        },
+        "value": {
+          "description": "Attribute value",
+          "type": "string"
+        }
+      }
+    },
+    "InfrastructureMetrics": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
         },
         "scale": {
           "$ref": "#/definitions/RangeType",
@@ -106,10 +123,6 @@
         "units": {
           "$ref": "#/definitions/Units",
           "description": "Measurement units"
-        },
-        "value": {
-          "description": "Attribute value",
-          "type": "string"
         }
       }
     },
@@ -118,7 +131,8 @@
       "enum": [
         "fybrikmodule",
         "fybrikstorageaccount",
-        "cluster"
+        "cluster",
+        "inter-region"
       ]
     },
     "Interface": {

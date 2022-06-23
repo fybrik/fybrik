@@ -613,20 +613,21 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 	}
 
 	attribute := goal.Attribute
-	instanceType := dpc.env.AttributeManager.GetInstanceType(attribute)
-	if instanceType == nil {
+	instanceTypes := dpc.env.AttributeManager.GetInstanceTypes(attribute)
+	if len(instanceTypes) == 0 {
 		return "", "", fmt.Errorf("no infrastructure data for attribute %s", attribute)
 	}
-	sanitizedAttr := sanitizeFznIdentifier(string(attribute))
+	instanceType := instanceTypes[0] // currently, multiple instance types per attribute are not supported
+	sanitizedAttr := sanitizeFznIdentifier(attribute)
 	goalVarname := fmt.Sprintf("goal%s", sanitizedAttr)
 	goalVarLength := pathLen
 
 	var err error
-	if *instanceType != "" {
-		err = dpc.setSimpleGoalVarArray(attribute, instanceType, goalVarname, pathLen)
-	} else { // Currently, this means the attribute is defined over region-pairs (e.g., bandwidth)
+	if instanceType == taxonomy.InterRegion { // Currently, this means the attribute is defined over region-pairs (e.g., bandwidth)
 		err = dpc.setComplexGoalVarArray(attribute, goalVarname, pathLen)
 		goalVarLength += 1 // we need one more location for the data-store->cluster attribute value
+	} else {
+		err = dpc.setSimpleGoalVarArray(attribute, instanceType, goalVarname, pathLen)
 	}
 	if err != nil {
 		return "", "", err
@@ -640,7 +641,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 }
 
 // Sets the value of the goal variable for each path location, based on the given attribute
-func (dpc *DataPathCSP) setSimpleGoalVarArray(attr taxonomy.Attribute, instanceType *taxonomy.InstanceType,
+func (dpc *DataPathCSP) setSimpleGoalVarArray(attr string, instanceType taxonomy.InstanceType,
 	goalVarname string, pathLen int) error {
 	selectorVar, paramArray, err := dpc.getAttributeMapping(attr, instanceType)
 	if err != nil {
@@ -658,48 +659,48 @@ func (dpc *DataPathCSP) setSimpleGoalVarArray(attr taxonomy.Attribute, instanceT
 
 // This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
-func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute, instanceType *taxonomy.InstanceType) (string, string, error) {
+func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.InstanceType) (string, string, error) {
 	resArray := []string{}
 	varName := ""
-	switch *instanceType {
+	switch instanceType {
 	case taxonomy.Cluster:
 		varName = clusterVarname
 		for _, cluster := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, cluster.Name)
-			if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
+			if !found {
 				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 	case taxonomy.StorageAccount:
 		varName = saVarname
 		for _, sa := range dpc.env.StorageAccounts {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, sa.Name)
-			if infraElement == nil {
-				infraElement = dpc.env.AttributeManager.GetAttribute(attr, sa.GenerateName)
-				if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
+			if !found {
+				infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
+				if !found {
 					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
 				}
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 		resArray = append(resArray, zeroStr) // Assuming attribute == 0 if no storage account is set
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
-			infraElement := dpc.env.AttributeManager.GetAttribute(attr, modCap.module.Name)
-			if infraElement == nil {
+			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
+			if !found {
 				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
 			}
-			resArray = append(resArray, infraElement.Value)
+			resArray = append(resArray, infraElementValue)
 		}
 	default:
-		return "", "", fmt.Errorf("unknown instance type %s", *instanceType)
+		return "", "", fmt.Errorf("unknown instance type %s", instanceType)
 	}
 	if len(resArray) < 1 { // e.g. if there are no storage accounts
 		return "", "", nil
 	}
-	paramName := varName + sanitizeFznIdentifier(string(attr))
+	paramName := varName + sanitizeFznIdentifier(attr)
 	dpc.fzModel.AddParamArray(paramName, IntType, len(resArray), fznCompoundLiteral(resArray, false))
 	return varName, paramName, nil
 }
@@ -708,7 +709,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr taxonomy.Attribute, instanceTyp
 // goalArray[i] is the attr value from cluster i to cluster i+1 (cluster pathLen+1 is the workload)
 // If i <= (the position of the last data-store), then goalArray[i] is 0
 // goalArray[pathLen+1] is the attr value from the last data-store on the pipe to the next cluster (or the workload)
-func (dpc *DataPathCSP) setComplexGoalVarArray(attr taxonomy.Attribute, goalVarname string, pathLen int) error {
+func (dpc *DataPathCSP) setComplexGoalVarArray(attr, goalVarname string, pathLen int) error {
 	dpc.setComplexGoalsCommonVars(pathLen)
 
 	c2cParamName, err := dpc.getCluster2ClusterParamArray(attr)
@@ -801,7 +802,7 @@ func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 }
 
 // Produces a paramArray containing the attr value for each pair of clusters
-func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr taxonomy.Attribute) (string, error) {
+func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error) {
 	c2cParamArray := []string{}
 	for _, cluster1 := range dpc.env.Clusters {
 		for _, cluster2 := range dpc.env.Clusters {
@@ -812,14 +813,14 @@ func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr taxonomy.Attribute) (s
 			c2cParamArray = append(c2cParamArray, infraElement.Value)
 		}
 	}
-	c2cParamName := "cluster2cluster" + sanitizeFznIdentifier(string(attr))
+	c2cParamName := "cluster2cluster" + sanitizeFznIdentifier(attr)
 	dpc.fzModel.AddParamArray(c2cParamName, IntType, len(c2cParamArray), fznCompoundLiteral(c2cParamArray, false))
 	return c2cParamName, nil
 }
 
 // Produces a paramArray containing the attr value for each pair of storage-account and cluster
 // The first line of the resulting matrix describes the attr value of the dataset-region vs each cluster
-func (dpc *DataPathCSP) getStorageToClusterParamArray(attr taxonomy.Attribute) (string, error) {
+func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, error) {
 	s2cParamArray := []string{}
 	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
 	for _, cluster := range dpc.env.Clusters {
@@ -839,7 +840,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr taxonomy.Attribute) (
 		}
 	}
 
-	s2cParamName := "sa2cluster" + sanitizeFznIdentifier(string(attr))
+	s2cParamName := "sa2cluster" + sanitizeFznIdentifier(attr)
 	dpc.fzModel.AddParamArray(s2cParamName, IntType, len(s2cParamArray), fznCompoundLiteral(s2cParamArray, false))
 	return s2cParamName, nil
 }
@@ -1002,7 +1003,7 @@ func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
 	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
 }
 
-func undefinedAttrBetweenRegions(attr taxonomy.Attribute, region1, region2 string) error {
+func undefinedAttrBetweenRegions(attr, region1, region2 string) error {
 	return fmt.Errorf("attribute %s is not defined for regions %s and %s",
 		attr, region1, region2)
 }

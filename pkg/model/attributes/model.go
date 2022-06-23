@@ -8,5 +8,9 @@ import (
 )
 
 type Infrastructure struct {
-	Items []taxonomy.InfrastructureElement `json:"infrastructure"`
+	// a list of infrastructure metrics including scale and units
+	// shared by various attributes
+	Metrics []taxonomy.InfrastructureMetrics `json:"metrics,omitempty"`
+	// a list of infrastructure arguments
+	Attributes []taxonomy.InfrastructureElement `json:"infrastructure"`
 }

@@ -16,7 +16,6 @@ import (
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
-	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -30,8 +29,9 @@ func newEnvironment() *datapath.Environment {
 		Modules:         map[string]*v1alpha1.FybrikModule{},
 		StorageAccounts: []*v1alpha1.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
-			Log:            testLog,
-			Infrastructure: infraattributes.Infrastructure{},
+			Log:        testLog,
+			Metrics:    infrastructure.MetricsDictionary{},
+			Attributes: []taxonomy.InfrastructureElement{},
 		},
 	}
 }
@@ -48,8 +48,12 @@ func addStorageAccount(env *datapath.Environment, account *v1alpha1.FybrikStorag
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
+func addMetrics(env *datapath.Environment, m *taxonomy.InfrastructureMetrics) {
+	env.AttributeManager.Metrics[m.Name] = *m
+}
+
 func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureElement) {
-	env.AttributeManager.Infrastructure.Items = append(env.AttributeManager.Infrastructure.Items, *attribute)
+	env.AttributeManager.Attributes = append(env.AttributeManager.Attributes, *attribute)
 }
 
 // default: S3, csv
@@ -432,21 +436,26 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 10}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 10}}}},
 	}
-	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
-		Value:     "20",
-		Object:    taxonomy.StorageAccount,
-		Instance:  account1.Name,
+	addMetrics(env, &taxonomy.InfrastructureMetrics{
+		Name:  "cost",
+		Type:  taxonomy.Numeric,
+		Scale: &taxonomy.RangeType{Min: 0, Max: 200},
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
-		Value:     "12",
-		Object:    taxonomy.StorageAccount,
-		Instance:  account2.Name,
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "20",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account1.Name,
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "12",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account2.Name,
 	})
 	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -454,7 +463,7 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 15}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 15}}}},
 	}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
@@ -626,10 +635,11 @@ func TestOptimalStorage(t *testing.T) {
 	asset := createReadRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
-		Attribute: taxonomy.Attribute("storage-cost"),
+		Attribute: "storage-cost",
 		Directive: adminconfig.Minimize,
 		Weight:    "1.0",
 	}}
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 50
 	for i := 0; i < 5; i++ {
 		account := &v1alpha1.FybrikStorageAccount{
@@ -647,11 +657,11 @@ func TestOptimalStorage(t *testing.T) {
 			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
 		}
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("storage-cost"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", cost),
-			Object:    taxonomy.StorageAccount,
-			Instance:  account.Name,
+			Name:       "storage-cost",
+			MetricName: "cost",
+			Value:      fmt.Sprintf("%d", cost),
+			Object:     taxonomy.StorageAccount,
+			Instance:   account.Name,
 		})
 		cost += 5
 	}
@@ -682,28 +692,29 @@ func TestGoalConflict(t *testing.T) {
 	readModule := &v1alpha1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 10
 	for i := 0; i < 5; i++ {
 		name := genName("cluster", i)
 		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("cluster-cost"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", cost),
-			Object:    taxonomy.Cluster,
-			Instance:  name,
+			Name:       "cluster-cost",
+			MetricName: "cost",
+			Value:      fmt.Sprintf("%d", cost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
 		})
 		cost -= 1
 	}
 	asset := createReadRequest()
 	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
 		{
-			Attribute: taxonomy.Attribute("cluster-cost"),
+			Attribute: "cluster-cost",
 			Directive: adminconfig.Minimize,
 			Weight:    "0.2",
 		},
 		{
-			Attribute: taxonomy.Attribute("cluster-cost"),
+			Attribute: "cluster-cost",
 			Directive: adminconfig.Maximize,
 			Weight:    "0.8",
 		},
@@ -728,24 +739,25 @@ func TestMinMultipleGoals(t *testing.T) {
 	readModule := &v1alpha1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
 	cpuCost := 10
 	errRate := 0
 	for i := 1; i <= 5; i++ {
 		name := genName("cluster", i)
 		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", cpuCost),
-			Object:    taxonomy.Cluster,
-			Instance:  name,
+			Name:       "cluster-cpu-cost",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", cpuCost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
 		})
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("cluster-err-rate"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", errRate),
-			Object:    taxonomy.Cluster,
-			Instance:  name,
+			Name:       "cluster-err-rate",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", errRate),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
 		})
 		cpuCost -= 1
 		if i >= 2 {
@@ -755,12 +767,12 @@ func TestMinMultipleGoals(t *testing.T) {
 	asset := createReadRequest()
 	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
 		{
-			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Attribute: "cluster-cpu-cost",
 			Directive: adminconfig.Minimize,
 			Weight:    "0.9",
 		},
 		{
-			Attribute: taxonomy.Attribute("cluster-err-rate"),
+			Attribute: "cluster-err-rate",
 			Directive: adminconfig.Minimize,
 			Weight:    "0.1",
 		},
@@ -785,24 +797,25 @@ func TestMinMaxGoals(t *testing.T) {
 	readModule := &v1alpha1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
 	cpuCost := 10
 	stableRate := 0
 	for i := 1; i <= 5; i++ {
 		name := genName("cluster", i)
 		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", cpuCost),
-			Object:    taxonomy.Cluster,
-			Instance:  name,
+			Name:       "cluster-cpu-cost",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", cpuCost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
 		})
 		addAttribute(env, &taxonomy.InfrastructureElement{
-			Attribute: taxonomy.Attribute("cluster-stability-rate"),
-			Type:      taxonomy.Numeric,
-			Value:     fmt.Sprintf("%d", stableRate),
-			Object:    taxonomy.Cluster,
-			Instance:  name,
+			Name:       "cluster-stability-rate",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", stableRate),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
 		})
 		cpuCost = 15 - cpuCost - i
 		if i == 2 {
@@ -812,12 +825,12 @@ func TestMinMaxGoals(t *testing.T) {
 	asset := createReadRequest()
 	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
 		{
-			Attribute: taxonomy.Attribute("cluster-cpu-cost"),
+			Attribute: "cluster-cpu-cost",
 			Directive: adminconfig.Minimize,
 			Weight:    "0.6",
 		},
 		{
-			Attribute: taxonomy.Attribute("cluster-stability-rate"),
+			Attribute: "cluster-stability-rate",
 			Directive: adminconfig.Maximize,
 			Weight:    "0.4",
 		},
