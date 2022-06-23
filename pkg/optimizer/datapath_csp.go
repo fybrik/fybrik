@@ -5,6 +5,7 @@ package optimizer
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -892,14 +893,15 @@ func (dpc *DataPathCSP) getSolutionActionsAtPos(solverSolution CPSolution, pathP
 }
 
 // Translates a solver's solution into a FybrikApplication Solution for a given data-path
+// Also returns the score of the solution (the smaller the better) if such exists, and NaN otherwise
 // TODO: better handle error messages
-func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen int) (datapath.Solution, error) {
+func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen int) (datapath.Solution, float64, error) {
 	solverSolution, err := dpc.fzModel.ReadBestSolution(solverSolutionStr)
 	if err != nil {
-		return datapath.Solution{}, err
+		return datapath.Solution{}, math.NaN(), err
 	}
 	if len(solverSolution) == 0 {
-		return datapath.Solution{}, nil // UNSAT
+		return datapath.Solution{}, math.NaN(), nil // UNSAT
 	}
 
 	modCapSolution := solverSolution[modCapVarname]
@@ -938,7 +940,15 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		solution.Reverse()
 	}
 
-	return solution, nil
+	score := math.NaN()
+	if scoreStr, found := solverSolution[jointGoalVarname]; found {
+		score, err = strconv.ParseFloat(scoreStr[0], 64) //nolint:revive,gomnd // Ignore magic number 64
+		if err != nil {
+			score = math.NaN()
+		}
+	}
+
+	return solution, score, nil
 }
 
 // ----- helper functions -----
