@@ -667,20 +667,20 @@ func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.I
 	case taxonomy.Cluster:
 		varName = clusterVarname
 		for _, cluster := range dpc.env.Clusters {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, cluster.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for cluster %s", attr, cluster.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, cluster.Name)
+			if err != nil {
+				return "", "", err
 			}
 			resArray = append(resArray, infraElementValue)
 		}
 	case taxonomy.StorageAccount:
 		varName = saVarname
 		for _, sa := range dpc.env.StorageAccounts {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, sa.Name)
-			if !found {
-				infraElementValue, found = dpc.env.AttributeManager.GetAttributeValue(attr, sa.GenerateName)
-				if !found {
-					return "", "", fmt.Errorf("attribute %s is not defined for storage account %s", attr, sa.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.Name)
+			if err != nil {
+				infraElementValue, err = dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.GenerateName)
+				if err != nil {
+					return "", "", err
 				}
 			}
 			resArray = append(resArray, infraElementValue)
@@ -689,9 +689,9 @@ func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.I
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
-			infraElementValue, found := dpc.env.AttributeManager.GetAttributeValue(attr, modCap.module.Name)
-			if !found {
-				return "", "", fmt.Errorf("attribute %s is not defined for module %s", attr, modCap.module.Name)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, modCap.module.Name)
+			if err != nil {
+				return "", "", err
 			}
 			resArray = append(resArray, infraElementValue)
 		}
@@ -807,11 +807,11 @@ func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error
 	c2cParamArray := []string{}
 	for _, cluster1 := range dpc.env.Clusters {
 		for _, cluster2 := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
-			if infraElement == nil {
-				return "", undefinedAttrBetweenRegions(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
+			if err != nil {
+				return "", err
 			}
-			c2cParamArray = append(c2cParamArray, infraElement.Value)
+			c2cParamArray = append(c2cParamArray, value)
 		}
 	}
 	c2cParamName := "cluster2cluster" + sanitizeFznIdentifier(attr)
@@ -825,19 +825,19 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	s2cParamArray := []string{}
 	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
 	for _, cluster := range dpc.env.Clusters {
-		infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, dataSetRegion, cluster.Metadata.Region)
-		if infraElement == nil {
-			return "", undefinedAttrBetweenRegions(attr, dataSetRegion, cluster.Metadata.Region)
+		value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, dataSetRegion, cluster.Metadata.Region)
+		if err != nil {
+			return "", err
 		}
-		s2cParamArray = append(s2cParamArray, infraElement.Value)
+		s2cParamArray = append(s2cParamArray, value)
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			infraElement := dpc.env.AttributeManager.GetAttrFromArguments(attr, string(sa.Spec.Region), cluster.Metadata.Region)
-			if infraElement == nil {
-				return "", undefinedAttrBetweenRegions(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			if err != nil {
+				return "", err
 			}
-			s2cParamArray = append(s2cParamArray, infraElement.Value)
+			s2cParamArray = append(s2cParamArray, value)
 		}
 	}
 
@@ -1011,9 +1011,4 @@ func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
 
 	// an empty DataFormat in the module's interface means it supports all formats
 	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
-}
-
-func undefinedAttrBetweenRegions(attr, region1, region2 string) error {
-	return fmt.Errorf("attribute %s is not defined for regions %s and %s",
-		attr, region1, region2)
 }

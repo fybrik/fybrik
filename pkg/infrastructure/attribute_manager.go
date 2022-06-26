@@ -5,8 +5,10 @@ package infrastructure
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -29,6 +31,8 @@ const RegoPolicyDirectory string = "/tmp/adminconfig/"
 const InfrastructureInfo string = "infrastructure.json"
 
 const ValidationPath string = "/tmp/taxonomy/infraattributes.json#/definitions/Infrastructure"
+
+const NormalizationFactor = 100
 
 type MetricsDictionary map[string]taxonomy.InfrastructureMetrics
 
@@ -122,14 +126,41 @@ func validateStructure(bytes []byte) error {
 }
 
 // GetAttributeValue returns the value of an infrastructure attribute based on the attribute and instance names
-func (m *AttributeManager) GetAttributeValue(name, instance string) (string, bool) {
+func (m *AttributeManager) GetAttribute(name, instance string) *taxonomy.InfrastructureElement {
 	for i := range m.Attributes {
 		element := &m.Attributes[i]
 		if element.Name == name && element.Instance == instance {
-			return element.Value, true
+			return element
 		}
 	}
-	return "", false
+	return nil
+}
+
+// GetAttributeValue returns the value of an infrastructure attribute based on the attribute and instance names
+func (m *AttributeManager) GetAttributeValue(name, instance string) (string, bool) {
+	element := m.GetAttribute(name, instance)
+	if element == nil {
+		return "", false
+	}
+	return element.Value, true
+}
+
+// returns the normalized-to-scale value of an infrastructure attribute based on the attribute and instance names
+func (m *AttributeManager) GetNormalizedAttributeValue(name, instance string) (string, error) {
+	element := m.GetAttribute(name, instance)
+	if element == nil {
+		return "", fmt.Errorf("attribute %s is not defined for instance %s", name, instance)
+	}
+
+	metric, found := m.Metrics[element.MetricName]
+	if !found {
+		return "", fmt.Errorf("undefined metric %s for attribute %s and instance %s", element.MetricName, name, instance)
+	}
+	value, err := normalizeToScale(element.Value, metric.Scale)
+	if err != nil {
+		return "", fmt.Errorf("bad %s attribute value (%s) for instance %s: %v", name, value, instance, err)
+	}
+	return value, nil
 }
 
 // GetInstanceType returns instance types associated with the attribute
@@ -158,6 +189,25 @@ func (m *AttributeManager) GetAttrFromArguments(name, arg1, arg2 string) *taxono
 	return nil
 }
 
+// // returns the normalized-to-scale value of an infrastructure attribute based on the attribute and two arguments to match
+func (m *AttributeManager) GetNormAttrValFromArgs(name, arg1, arg2 string) (string, error) {
+	element := m.GetAttrFromArguments(name, arg1, arg2)
+	if element == nil {
+		return "", fmt.Errorf("attribute %s is not defined for regions %s and %s", name, arg1, arg2)
+	}
+
+	metric, found := m.Metrics[element.MetricName]
+	if !found {
+		return "", fmt.Errorf("undefined metric %s for attribute %s and regions %s and %s", element.MetricName, name, arg1, arg2)
+	}
+
+	value, err := normalizeToScale(element.Value, metric.Scale)
+	if err != nil {
+		return "", fmt.Errorf("bad %s attribute value (%s) for regions %s and %s: %v", name, value, arg1, arg2, err)
+	}
+	return value, nil
+}
+
 func hasInstanceType(value taxonomy.InstanceType, values []taxonomy.InstanceType) bool {
 	for _, v := range values {
 		if v == value {
@@ -165,4 +215,14 @@ func hasInstanceType(value taxonomy.InstanceType, values []taxonomy.InstanceType
 		}
 	}
 	return false
+}
+
+// given a integer value (as string), normalizes this value to scale s.t. it is always between 0 and NormalizationFactor
+func normalizeToScale(valueStr string, scale *taxonomy.RangeType) (string, error) {
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		return "", err
+	}
+	normalizedValue := (value - scale.Min) * NormalizationFactor / (scale.Max - scale.Min)
+	return strconv.Itoa(normalizedValue), nil
 }
