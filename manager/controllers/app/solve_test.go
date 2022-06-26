@@ -669,12 +669,6 @@ func TestOptimalStorage(t *testing.T) {
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
-	// change the optimization directive to MAX
-	asset.Configuration.OptimizationStrategy[0].Directive = adminconfig.Maximize
-	solution, err = solveSingleDataset(env, asset, &testLog)
-	g.Expect(err).ToNot(gomega.HaveOccurred())
-	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region4")))
 }
 
 func genName(prefix string, ind int) string {
