@@ -660,18 +660,13 @@ func (dpc *DataPathCSP) setSimpleGoalVarArray(attr string, instanceType taxonomy
 // This creates a param array with the values of the given attribute for each cluster/module/storage account instance
 // NOTE: We currently assume all values are integers. Code should be changed if some values are floats.
 func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.InstanceType) (string, string, error) {
-	scale, err := dpc.env.AttributeManager.GetScale(attr)
-	if err != nil {
-		return "", "", err
-	}
-
 	resArray := []string{}
 	varName := ""
 	switch instanceType {
 	case taxonomy.Cluster:
 		varName = clusterVarname
 		for _, cluster := range dpc.env.Clusters {
-			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, cluster.Name, scale)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, cluster.Name)
 			if err != nil {
 				return "", "", err
 			}
@@ -680,9 +675,9 @@ func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.I
 	case taxonomy.StorageAccount:
 		varName = saVarname
 		for _, sa := range dpc.env.StorageAccounts {
-			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.Name, scale)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.Name)
 			if err != nil {
-				infraElementValue, err = dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.GenerateName, scale)
+				infraElementValue, err = dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, sa.GenerateName)
 				if err != nil {
 					return "", "", err
 				}
@@ -693,7 +688,7 @@ func (dpc *DataPathCSP) getAttributeMapping(attr string, instanceType taxonomy.I
 	case taxonomy.Module:
 		varName = modCapVarname
 		for _, modCap := range dpc.modulesCapabilities {
-			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, modCap.module.Name, scale)
+			infraElementValue, err := dpc.env.AttributeManager.GetNormalizedAttributeValue(attr, modCap.module.Name)
 			if err != nil {
 				return "", "", err
 			}
@@ -808,15 +803,10 @@ func (dpc *DataPathCSP) setComplexGoalsCommonVars(pathLen int) {
 
 // Produces a paramArray containing the attr value for each pair of clusters
 func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error) {
-	scale, err := dpc.env.AttributeManager.GetScale(attr)
-	if err != nil {
-		return "", err
-	}
-
 	c2cParamArray := []string{}
 	for _, cluster1 := range dpc.env.Clusters {
 		for _, cluster2 := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, cluster1.Metadata.Region, cluster2.Metadata.Region, scale)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, cluster1.Metadata.Region, cluster2.Metadata.Region)
 			if err != nil {
 				return "", err
 			}
@@ -831,15 +821,10 @@ func (dpc *DataPathCSP) getCluster2ClusterParamArray(attr string) (string, error
 // Produces a paramArray containing the attr value for each pair of storage-account and cluster
 // The first line of the resulting matrix describes the attr value of the dataset-region vs each cluster
 func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, error) {
-	scale, err := dpc.env.AttributeManager.GetScale(attr)
-	if err != nil {
-		return "", err
-	}
-
 	s2cParamArray := []string{}
 	dataSetRegion := dpc.problemData.DataDetails.ResourceMetadata.Geography
 	for _, cluster := range dpc.env.Clusters {
-		value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, dataSetRegion, cluster.Metadata.Region, scale)
+		value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, dataSetRegion, cluster.Metadata.Region)
 		if err != nil {
 			return "", err
 		}
@@ -847,7 +832,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region, scale)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region)
 			if err != nil {
 				return "", err
 			}
