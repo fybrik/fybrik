@@ -869,8 +869,8 @@ func (dpc *DataPathCSP) setVarAsWeightedSumOfVarArray(sumVarname, varArrayToSum 
 
 // "varToAssign" gets assigned with "valIfTrue" if "selectorVar" is true, and with "valIfFalse" otherwise
 func (dpc *DataPathCSP) assignWithSelector(varToAssign, selectorVar string, valIfTrue, valIfFalse []string, pathLen int) {
-	impliedBySelector := dpc.addImpliedByIndicator(selectorVar, pathLen, true)
-	impliedByNotSelector := dpc.addImpliedByIndicator(selectorVar, pathLen, false)
+	impliedBySelector := dpc.addImpliedByIndicator(selectorVar, pathLen, false)
+	impliedByNotSelector := dpc.addImpliedByIndicator(selectorVar, pathLen, true)
 	for pos := 1; pos <= pathLen; pos++ {
 		varToAssignAtPos := varAtPos(varToAssign, pos)
 		impliedBySelectorAtPos := varAtPos(impliedBySelector, pos)

@@ -79,6 +79,7 @@ func createReadRequest() *datapath.DataInfo {
 				"read":   adminconfig.Decision{Deploy: adminconfig.StatusTrue},
 				"write":  adminconfig.Decision{Deploy: adminconfig.StatusFalse},
 				"delete": adminconfig.Decision{Deploy: adminconfig.StatusFalse},
+				"copy":   adminconfig.Decision{Deploy: adminconfig.StatusUnknown},
 			},
 			OptimizationStrategy: []adminconfig.AttributeOptimization{},
 		},
@@ -833,4 +834,71 @@ func TestMinMaxGoals(t *testing.T) {
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster4"))
+}
+
+// a read scenario, data is in a remote location
+// copy and read modules are deployed
+// optimization goal is to minimize the distance
+// copy is expected to be deployed
+func TestMinDistance(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addModule(env, copyModule)
+	workloadCluster := "theshire"
+	remoteCluster := "neverland"
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: workloadCluster}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: remoteCluster}})
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
+		Attribute: "distance",
+		Directive: adminconfig.Minimize,
+		Weight:    "1.0",
+	}}
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "distance", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 20000}})
+	account := &v1alpha1.FybrikStorageAccount{
+		Spec: v1alpha1.FybrikStorageAccountSpec{
+			ID:        "account-theshire",
+			SecretRef: "credentials-theshire",
+			Region:    taxonomy.ProcessingLocation(workloadCluster),
+			Endpoint:  "dummy-endpoint",
+		}}
+	account.Name = account.Spec.ID
+	addStorageAccount(env, account)
+	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.WorkloadCluster = multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: workloadCluster}}
+	asset.DataDetails.ResourceMetadata.Geography = remoteCluster
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "2000",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"theshire", "neverland"},
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "0",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"neverland", "neverland"},
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "0",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"theshire", "theshire"},
+	})
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
+	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
 }
