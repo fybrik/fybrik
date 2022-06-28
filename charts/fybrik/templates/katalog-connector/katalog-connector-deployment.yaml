@@ -45,6 +45,11 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
+          env:
+            - name: PRETTY_LOGGING
+              value: {{ .Values.global.prettyLogging | quote }}
+            - name: LOGGING_VERBOSITY
+              value: {{ .Values.global.loggingVerbosity | quote }}
       {{- with .Values.katalogConnector.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
