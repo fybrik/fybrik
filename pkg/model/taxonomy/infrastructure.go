@@ -3,7 +3,6 @@
 
 package taxonomy
 
-type Attribute string
 type Units string
 
 // +kubebuilder:validation:Enum=numeric;string;bool
@@ -16,7 +15,7 @@ const (
 	Bool    AttributeType = "bool"
 )
 
-// +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster
+// +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster;inter-region
 type InstanceType string
 
 // List of instance types
@@ -24,6 +23,7 @@ const (
 	Module         InstanceType = "fybrikmodule"
 	Cluster        InstanceType = "cluster"
 	StorageAccount InstanceType = "fybrikstorageaccount"
+	InterRegion    InstanceType = "inter-region"
 )
 
 type RangeType struct {
@@ -31,23 +31,29 @@ type RangeType struct {
 	Max int `json:"max,omitempty"`
 }
 
-type InfrastructureElement struct {
-	// Attribute name defined in the taxonomy
-	Attribute Attribute `json:"attribute"`
-	// Description
-	Description string `json:"description,omitempty"`
+type InfrastructureMetrics struct {
+	Name string `json:"name"`
 	// Attribute type, e.g. numeric or string
 	Type AttributeType `json:"type"`
-	// Attribute value
-	Value string `json:"value"`
 	// Measurement units
 	Units Units `json:"units,omitempty"`
-	// A resource defined by the attribute ("storageaccount","module","cluster")
-	Object InstanceType `json:"object,omitempty"`
-	// A reference to the resource instance, e.g. storage account name
-	Instance string `json:"instance,omitempty"`
 	// A scale of values (minimum and maximum) when applicable
 	Scale *RangeType `json:"scale,omitempty"`
+}
+
+type InfrastructureElement struct {
+	// Attribute name defined in the taxonomy
+	Name string `json:"attribute"`
+	// Description
+	Description string `json:"description,omitempty"`
+	// Name of the metric specified in the metrics section
+	MetricName string `json:"metricName,omitempty"`
+	// Attribute value
+	Value string `json:"value"`
+	// A resource defined by the attribute ("fybrikstorageaccount","fybrikmodule","cluster")
+	Object InstanceType `json:"object"`
+	// A reference to the resource instance, e.g. storage account name
+	Instance string `json:"instance,omitempty"`
 	// A list of arguments defining a specific metric, e.g. regions for a bandwidth
 	Arguments []string `json:"arguments,omitempty"`
 }
