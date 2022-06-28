@@ -367,7 +367,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
 		}
-		if rel.Info.Status == release.StatusDeployed {
+		if rel != nil && rel.Info.Status == release.StatusDeployed {
 			status, errMsg := r.checkReleaseStatus(cfg, rel.Manifest, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
