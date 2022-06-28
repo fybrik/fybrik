@@ -4,10 +4,12 @@
 package app
 
 import (
+	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/optimizer"
 )
 
@@ -18,7 +20,23 @@ func solveSingleDataset(env *datapath.Environment, dataset *datapath.DataInfo, l
 	cspPath := utils.GetCSPPath()
 	if utils.UseCSP() && cspPath != "" {
 		cspOptimizer := optimizer.NewOptimizer(env, dataset, cspPath, log)
-		return cspOptimizer.Solve()
+		solution, err := cspOptimizer.Solve()
+		if err == nil {
+			if len(solution.DataPath) > 0 { // solver found a solution
+				return solution, nil
+			}
+			if len(solution.DataPath) == 0 { // solver returned UNSAT
+				msg := "Data path cannot be constructed given the deployed modules and the active restrictions"
+				log.Error().Str(logging.DATASETID, dataset.Context.DataSetID).Msg(msg)
+				logging.LogStructure("Data Item Context", dataset, log, zerolog.TraceLevel, true, true)
+				logging.LogStructure("Module Map", env.Modules, log, zerolog.TraceLevel, true, true)
+				return datapath.Solution{}, errors.New(msg + " for " + dataset.Context.DataSetID)
+			}
+		} else {
+			msg := "Error solving CSP. Fybrik will now search for a solution without considering optimization goals."
+			log.Error().Err(err).Str(logging.DATASETID, dataset.Context.DataSetID).Msg(msg)
+			// now fallback to finding a non-optimized solution
+		}
 	}
 	pathBuilder := PathBuilder{Log: log, Env: env, Asset: dataset}
 	return pathBuilder.solve()
