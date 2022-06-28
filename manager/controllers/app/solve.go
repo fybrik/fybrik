@@ -33,8 +33,8 @@ func solveSingleDataset(env *datapath.Environment, dataset *datapath.DataInfo, l
 				return datapath.Solution{}, errors.New(msg + " for " + dataset.Context.DataSetID)
 			}
 		} else {
-			log.Error().Msgf("Error solving CSP for %s: %v. "+
-				"Will search for a solution without considering optimization goals.", dataset.Context.DataSetID, err)
+			msg := "Error solving CSP. Fybrik will now search for a solution without considering optimization goals."
+			log.Error().Err(err).Str(logging.DATASETID, dataset.Context.DataSetID).Msg(msg)
 			// now fallback to finding a non-optimized solution
 		}
 	}
