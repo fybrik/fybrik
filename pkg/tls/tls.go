@@ -106,7 +106,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 	caSecretName, caSecretNamespace string, mtls bool) (*tls.Config, error) {
 	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
 	if err != nil {
-		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret")
+		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get ca cert")
 		return nil, err
 	}
 
@@ -123,7 +123,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 		clientLog.Info().Msg("Mutual is enabled")
 		clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 		if err != nil {
-			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret")
+			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
 			return nil, err
 		}
 		cert, err := tls.X509KeyPair(clientCertsData[tlsCert], clientCertsData[tlsKey])

@@ -13,8 +13,8 @@ const (
 	MTLSnabled            string = "MTLS_ENABLED"
 	CertSecretName        string = "CERT_SECRET_NAME"
 	CertSecretNamespace   string = "CERT_SECRET_NAMESPACE"
-	CACERTSecretName      string = "CACERT_SECRET_NAME"
-	CACERTSecretNamespace string = "CACERT_SECRET_NAMESPACE"
+	CACERTSecretName      string = "CACERT_SECRET_NAME"      //nolint:gosec
+	CACERTSecretNamespace string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
 )
 
 // GetCertSecretName returns the secret name which holds the

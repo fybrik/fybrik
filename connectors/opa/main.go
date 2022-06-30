@@ -88,10 +88,9 @@ func RunCmd() *cobra.Command {
 
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
 				return server.ListenAndServeTLS("", "")
-			} else {
-				controller.Log.Info().Msg("TLS is disabled")
-				return router.Run(bindAddress)
 			}
+			controller.Log.Info().Msg("connection between manager and connector is not using TLS")
+			return router.Run(bindAddress)
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")

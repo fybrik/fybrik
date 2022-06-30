@@ -9,7 +9,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -65,7 +64,7 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetTLSEnabled() {
-				handler.Log.Info().Msg("TLS is enabled")
+				handler.Log.Info().Msg("manager and connector uses TLS")
 				config, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
 					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
 				if err != nil {
@@ -74,11 +73,9 @@ func RunCmd() *cobra.Command {
 
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
 				return server.ListenAndServeTLS("", "")
-			} else {
-				log.Info().Msg("TLS is disabled")
-				return router.Run(bindAddress)
 			}
-
+			handler.Log.Info().Msg("connection between manager and connector is not using TLS")
+			return router.Run(bindAddress)
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")
