@@ -1,4 +1,5 @@
-# Using OpenAPI Generator to Generate Code for a Data Catalog Connector (in the Go Language)
+# Using OpenAPI Generator to Generate Code for a Data Catalog Connector 
+(in the Go Language)
 
 The Fybrik repository contains specification files that detail the data catalog connector API. These files include [datacatalog.spec.yaml](https://github.com/fybrik/fybrik/blob/master/connectors/api/datacatalog.spec.yaml) and [taxonomy.json](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/). They detail all the fields that the data catalog connector should expect for each of the supported operations: createAsset, getAssetInfo, deleteAsset, and updateAsset.
 
@@ -9,7 +10,7 @@ Here is a snippet of the Makefile used to automatically generate code:
 ```
 generate-code:
         git clone https://github.com/fybrik/fybrik/
-        cd fybrik && git checkout v0.7.0
+        cd fybrik && git checkout ${FYBRIK_VERSION}
         docker run --rm \
            -v ${PWD}:/local \
            -u "${USER_ID}:${GROUP_ID}" \
