@@ -14,6 +14,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/fsnotify/fsnotify"
+	"github.com/rs/zerolog"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -113,7 +114,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		setupLog.Trace().Msg("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
-		policyManager, err := newPolicyManager()
+		policyManager, err := newPolicyManager(setupLog)
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create policy manager facade")
 			return 1
@@ -293,7 +294,7 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 	)
 }
 
-func newPolicyManager() (pmclient.PolicyManager, error) {
+func newPolicyManager(setupLog zerolog.Logger) (pmclient.PolicyManager, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err

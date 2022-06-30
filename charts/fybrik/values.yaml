@@ -72,11 +72,11 @@ global:
       - ALL
   tls:
     # Specifies whether the connection between the manager and the connectors
-    # uses TLS.
-    enabled: true
+    # uses tls.
+    enabled: false
     # Specifies whether the connection between the manager and the connectors
-    # uses mutual TLS. Only relavent if tls.enabled is true.
-    mtlsEnabled: true
+    # uses mutual tls. Only relavent if tls.enabled is true.
+    mtlsEnabled: false
 
 
 # Cluster metadata values
@@ -101,7 +101,8 @@ coordinator:
 
   # Overrides the catalog connector URL.
   # Defaults to `http://<catalog>-connector:80`.
-  catalogConnectorURL: "https://katalog-connector:443"
+  # For tls connection use: "https://<catalog>-connector:443"
+  catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
   # Accepted values are "opa" or any meaningful name if a third party connector is used.
@@ -109,7 +110,8 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `http://<policyManager>-connector:80`.
-  policyManagerConnectorURL: "https://opa-connector:443"
+  # For tls connection use: "https://<policyManager>:443"
+  policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -173,21 +175,22 @@ manager:
 
   tls:
     # Relavent if the connection between the manager and the connectors
-    # uses TLS.
+    # uses tls.
     certs:
       # Name of kubernetes secret that holds the manager certificate.
-      # Relavent if mutual TLS is used.
+      # Relavent if mutual tls is used.
       # The secret should be of `kubernetes.io/tls` type.
-      clientCertSecretName: "manager-tls-secret"
-      # Name of kubernetes TLS secret namespace that holds the manager certificate.
-      # Relavent if mutual TLS is used.
-      clientCertSecretNamespace: "fybrik-system"
+      clientCertSecretName: ""
+      # Name of kubernetes tls secret namespace that holds the manager certificate.
+      # Relavent if mutual tls is used.
+      clientCertSecretNamespace: ""
       # Name of kubernetes secret that holds the CA certificates which are used by the manager
       # to validate the connection to the connectors.
-      cacertSecretName: "tls-ca"
+      # Relavent if tls is used.
+      cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the CA certificates
       # which are used by the manager to validate the connection to the connectors.
-      cacertSecretNamespace: "fybrik-system"
+      cacertSecretNamespace: ""
 
   # Extra environment variables to be set for manager container
   extraEnvs:
@@ -364,19 +367,20 @@ katalogConnector:
 
   tls:
     # Relavent if the connection between the manager and the connectors
-    # uses TLS.
+    # uses tls.
     certs:
-      # Name of kubernetes TLS secret that holds the katalog-connector certificates.
+      # Name of kubernetes tls secret that holds the katalog-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
-      serverCertSecretName: "katalog-connector-tls-secret"
-      # Name of kubernetes TLS secret namespace that holds the katalog-connector certificate.
-      serverCertSecretNamespace: "fybrik-system"
+      # Relavent if tls is used.
+      serverCertSecretName: ""
+      # Name of kubernetes tls secret namespace that holds the katalog-connector certificate.
+      serverCertSecretNamespace: ""
       # Name of kubernetes secret that holds the CA certificate which is used by katalog-connector
       # to validate the connection to the manager if mtls is enabled.
-      cacertSecretName: "tls-ca"
+      cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the CA certificate which
       # is used by the server to validate the connection to the client if mtls is enabled.
-      cacertSecretNamespace: "fybrik-system"
+      cacertSecretNamespace: ""
 
   podAnnotations: {}
 
@@ -392,7 +396,8 @@ katalogConnector:
 
   service:
     type: ClusterIP
-    port: 443
+    # For tls connection use port 443
+    port: 80
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -449,19 +454,20 @@ opaConnector:
 
   tls:
     # Relavent if the connection between the manager and the connectors
-    # uses TLS.
+    # uses tls.
     certs:
-      # Name of kubernetes TLS secret that holds opa-connector certificates.
+      # Name of kubernetes tls secret that holds opa-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
-      serverCertSecretName: "opa-connector-tls-secret"
-      # Name of kubernetes TLS secret namespace that holds opa-connector certificate.
-      serverCertSecretNamespace: "fybrik-system"
+      # Relavent if tls is used.
+      serverCertSecretName: ""
+      # Name of kubernetes tls secret namespace that holds opa-connector certificate.
+      serverCertSecretNamespace: ""
       # Name of kubernetes secret that holds the CA certificate which is used by opa-connector
       # to validate the connection to the manager if mtls is enabled.
-      cacertSecretName: "tls-ca"
+      cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the CA certificate which
       # is used by opa-connector to validate the connection to the manager if mtls is enabled.
-      cacertSecretNamespace: "fybrik-system"
+      cacertSecretNamespace: ""
 
   podAnnotations: {}
 
@@ -477,7 +483,8 @@ opaConnector:
 
   service:
     type: ClusterIP
-    port: 443
+    # For tls connection use port 443
+    port: 80
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

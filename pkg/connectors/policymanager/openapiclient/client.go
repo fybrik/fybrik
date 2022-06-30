@@ -36,12 +36,14 @@ import (
 	"time"
 	"unicode/utf8"
 
-	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"fybrik.io/fybrik/pkg/logging"
+	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
 var (
@@ -67,20 +69,8 @@ type service struct {
 // NewAPIClient creates a new API client. Requires a userAgent string describing your application.
 // optionally a custom http.Client to allow for advanced features such as caching.
 func NewAPIClient(cfg *Configuration) *APIClient {
+	setupLog := logging.LogInit(logging.SETUP, "policymanager client")
 	if cfg.HTTPClient == nil {
-		scheme := runtime.NewScheme()
-		err := corev1.AddToScheme(scheme)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil
-		}
-
-		client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil
-		}
-
 		tlsEnabled := os.Getenv("TLS_ENABLED")
 		mtls := false
 		if os.Getenv("MTLS_ENABLED") == "true" {
@@ -88,16 +78,30 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 		}
 
 		if tlsEnabled == "true" {
-			tlsConfig, err := fybrikTLS.GetClientTLSConfig(client, os.Getenv("CERT_SECRET_NAME"), os.Getenv("CERT_SECRET_NAMESPACE"),
+			scheme := runtime.NewScheme()
+			setupLog.Info().Msg("connection between manager and connectors uses TLS")
+			err := corev1.AddToScheme(scheme)
+			if err != nil {
+				fmt.Println(err.Error())
+				return nil
+			}
+
+			client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+			if err != nil {
+				fmt.Println(err.Error())
+				return nil
+			}
+			tlsConfig, err := fybrikTLS.GetClientTLSConfig(&setupLog, client, os.Getenv("CERT_SECRET_NAME"), os.Getenv("CERT_SECRET_NAMESPACE"),
 				os.Getenv("CACERT_SECRET_NAME"), os.Getenv("CACERT_SECRET_NAMESPACE"), mtls)
 			if err != nil {
 				return nil
 			}
 			transport := &http.Transport{TLSClientConfig: tlsConfig}
 			cfg.HTTPClient = &http.Client{Transport: transport}
+		} else {
+			setupLog.Info().Msg("TLS is disabled")
+			cfg.HTTPClient = http.DefaultClient
 		}
-	} else {
-		cfg.HTTPClient = http.DefaultClient
 	}
 	c := &APIClient{}
 	c.cfg = cfg

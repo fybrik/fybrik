@@ -11,7 +11,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -71,7 +70,7 @@ func RunCmd() *cobra.Command {
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetTLSEnabled() {
-				log.Info().Msg("TLS is enabled")
+				controller.Log.Info().Msg("TLS is enabled")
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)
 				if err != nil {
@@ -81,7 +80,7 @@ func RunCmd() *cobra.Command {
 				if err != nil {
 					return errors.Wrap(err, "failed to create a Kubernetes client")
 				}
-				config, err := fybrikTLS.GetServerTLSConfig(client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
+				config, err := fybrikTLS.GetServerTLSConfig(&controller.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
 					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
 				if err != nil {
 					return nil
@@ -90,7 +89,7 @@ func RunCmd() *cobra.Command {
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
 				return server.ListenAndServeTLS("", "")
 			} else {
-				log.Info().Msg("TLS is disabled")
+				controller.Log.Info().Msg("TLS is disabled")
 				return router.Run(bindAddress)
 			}
 		},

@@ -60,12 +60,13 @@ func RunCmd() *cobra.Command {
 			}
 
 			handler := connector.NewHandler(client)
+
 			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetTLSEnabled() {
-				log.Info().Msg("TLS is enabled")
-				config, err := fybrikTLS.GetServerTLSConfig(client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
+				handler.Log.Info().Msg("TLS is enabled")
+				config, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
 					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
 				if err != nil {
 					return nil
