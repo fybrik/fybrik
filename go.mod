@@ -9,7 +9,7 @@ require (
 	github.com/apache/arrow/go/v7 v7.0.0
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2
-	github.com/distribution/distribution v2.7.1+incompatible
+	github.com/distribution/distribution v2.8.1+incompatible
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gdexlab/go-render v1.0.1
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -27,7 +27,7 @@ require (
 	github.com/rs/zerolog v1.26.0
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.2
 	github.com/vdemeester/k8s-pkg-credentialprovider v1.22.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
@@ -72,7 +72,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v20.10.11+incompatible // indirect
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -228,7 +228,7 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiserver v0.23.5 // indirect
 	k8s.io/component-base v0.23.5 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect

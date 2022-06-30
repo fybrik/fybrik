@@ -219,8 +219,12 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	if enableBlueprintController {
 		// Initiate the Blueprint Controller
-		setupLog.Trace().Msg("creating Blueprint controller")
-		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", new(helm.Impl))
+		checkLocalMounts := false
+		if os.Getenv("CHECK_LOCAL_CHARTS") == "true" {
+			checkLocalMounts = true
+		}
+		setupLog.Trace().Str("check local charts", strconv.FormatBool(checkLocalMounts)).Msg("creating Blueprint controller")
+		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", helm.NewHelmerImpl(checkLocalMounts))
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Msg("unable to create controller " + blueprintController.Name)
 			return 1

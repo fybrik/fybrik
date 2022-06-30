@@ -131,6 +131,10 @@ spec:
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}
+            {{- if .Values.manager.chartVolume }}
+            - name: CHECK_LOCAL_CHARTS
+              value: "true"
+            {{- end }}
           {{- if .Values.clusterScoped }} 
           ports:
             - containerPort: 9443
