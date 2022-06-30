@@ -43,6 +43,20 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          env:
+            - name: TLS_ENABLED
+              value: {{ .Values.global.tls.enabled | quote | toString }}
+            - name: MTLS_ENABLED
+              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
+            - name: CERT_SECRET_NAME
+              value: {{ .Values.opaConnector.tls.certs.serverCertSecretName }}
+            - name: CERT_SECRET_NAMESPACE
+              value: {{ .Values.opaConnector.tls.certs.serverCertSecretNamespace }}
+            - name: CACERT_SECRET_NAME
+              value: {{ .Values.opaConnector.tls.certs.cacertSecretName }}
+            - name: CACERT_SECRET_NAMESPACE
+              value: {{ .Values.opaConnector.tls.certs.cacertSecretNamespace }}
+
           envFrom:
             - configMapRef:
                 name: opa-connector-config

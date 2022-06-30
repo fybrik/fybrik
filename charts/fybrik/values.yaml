@@ -70,6 +70,14 @@ global:
     capabilities:
       drop:
       - ALL
+  tls:
+    # Specifies whether the connection between the manager and the connectors
+    # uses TLS.
+    enabled: true
+    # Specifies whether the connection between the manager and the connectors
+    # uses mutual TLS. Only relavent if tls.enabled is true.
+    mtlsEnabled: true
+
 
 # Cluster metadata values
 cluster:
@@ -93,7 +101,7 @@ coordinator:
 
   # Overrides the catalog connector URL.
   # Defaults to `http://<catalog>-connector:80`.
-  catalogConnectorURL: ""
+  catalogConnectorURL: "https://katalog-connector:443"
 
   # Configures the policy manager system name to be used by the coordinator manager.
   # Accepted values are "opa" or any meaningful name if a third party connector is used.
@@ -101,7 +109,7 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `http://<policyManager>-connector:80`.
-  policyManagerConnectorURL: ""
+  policyManagerConnectorURL: "https://opa-connector:443"
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -162,6 +170,24 @@ manager:
 
   # Overrides arguments to be passed to manager container
   overrideArgs:
+
+  tls:
+    # Relavent if the connection between the manager and the connectors
+    # uses TLS.
+    certs:
+      # Name of kubernetes secret that holds the manager certificate.
+      # Relavent if mutual TLS is used.
+      # The secret should be of `kubernetes.io/tls` type.
+      clientCertSecretName: "manager-tls-secret"
+      # Name of kubernetes TLS secret namespace that holds the manager certificate.
+      # Relavent if mutual TLS is used.
+      clientCertSecretNamespace: "fybrik-system"
+      # Name of kubernetes secret that holds the CA certificates which are used by the manager
+      # to validate the connection to the connectors.
+      cacertSecretName: "tls-ca"
+      # Name of kubernetes secret namespace that holds the CA certificates
+      # which are used by the manager to validate the connection to the connectors.
+      cacertSecretNamespace: "fybrik-system"
 
   # Extra environment variables to be set for manager container
   extraEnvs:
@@ -336,6 +362,22 @@ katalogConnector:
     # The name of the service account to use
     name: katalog-connector
 
+  tls:
+    # Relavent if the connection between the manager and the connectors
+    # uses TLS.
+    certs:
+      # Name of kubernetes TLS secret that holds the katalog-connector certificates.
+      # The secret should be of `kubernetes.io/tls` type.
+      serverCertSecretName: "katalog-connector-tls-secret"
+      # Name of kubernetes TLS secret namespace that holds the katalog-connector certificate.
+      serverCertSecretNamespace: "fybrik-system"
+      # Name of kubernetes secret that holds the CA certificate which is used by katalog-connector
+      # to validate the connection to the manager if mtls is enabled.
+      cacertSecretName: "tls-ca"
+      # Name of kubernetes secret namespace that holds the CA certificate which
+      # is used by the server to validate the connection to the client if mtls is enabled.
+      cacertSecretNamespace: "fybrik-system"
+
   podAnnotations: {}
 
   # Pod Security Context. If set, the fields of podSecurityContext override
@@ -350,7 +392,7 @@ katalogConnector:
 
   service:
     type: ClusterIP
-    port: 80
+    port: 443
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -405,6 +447,22 @@ opaConnector:
     # The name of the service account to use
     name: opa-connector
 
+  tls:
+    # Relavent if the connection between the manager and the connectors
+    # uses TLS.
+    certs:
+      # Name of kubernetes TLS secret that holds opa-connector certificates.
+      # The secret should be of `kubernetes.io/tls` type.
+      serverCertSecretName: "opa-connector-tls-secret"
+      # Name of kubernetes TLS secret namespace that holds opa-connector certificate.
+      serverCertSecretNamespace: "fybrik-system"
+      # Name of kubernetes secret that holds the CA certificate which is used by opa-connector
+      # to validate the connection to the manager if mtls is enabled.
+      cacertSecretName: "tls-ca"
+      # Name of kubernetes secret namespace that holds the CA certificate which
+      # is used by opa-connector to validate the connection to the manager if mtls is enabled.
+      cacertSecretNamespace: "fybrik-system"
+
   podAnnotations: {}
 
   # Pod Security Context. If set, the fields of podSecurityContext override
@@ -419,7 +477,7 @@ opaConnector:
 
   service:
     type: ClusterIP
-    port: 80
+    port: 443
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

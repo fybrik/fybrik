@@ -96,6 +96,18 @@ spec:
                 name: razee-credentials
             {{- end }}
           env:
+            - name: TLS_ENABLED
+              value: {{ .Values.global.tls.enabled | quote | toString }}
+            - name: MTLS_ENABLED
+              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
+            - name: CERT_SECRET_NAME
+              value: {{ .Values.manager.tls.certs.clientCertSecretName }}
+            - name: CERT_SECRET_NAMESPACE
+              value: {{ .Values.manager.tls.certs.clientCertSecretNamespace }}
+            - name: CACERT_SECRET_NAME
+              value: {{ .Values.manager.tls.certs.cacertSecretName }}
+            - name: CACERT_SECRET_NAMESPACE
+              value: {{ .Values.manager.tls.certs.cacertSecretNamespace }}
             - name: ENABLE_WEBHOOKS
             {{- if .Values.clusterScoped }} 
               value: "true"

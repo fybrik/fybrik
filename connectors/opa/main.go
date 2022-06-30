@@ -5,14 +5,22 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
+	"fybrik.io/fybrik/connectors/opa/utils"
 	"fybrik.io/fybrik/pkg/environment"
+	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
 const (
@@ -62,7 +70,29 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			return router.Run(bindAddress)
+			if utils.GetTLSEnabled() {
+				log.Info().Msg("TLS is enabled")
+				scheme := runtime.NewScheme()
+				err = corev1.AddToScheme(scheme)
+				if err != nil {
+					return errors.Wrap(err, "unable to add corev1 to schema")
+				}
+				client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+				if err != nil {
+					return errors.Wrap(err, "failed to create a Kubernetes client")
+				}
+				config, err := fybrikTLS.GetServerTLSConfig(client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
+					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
+				if err != nil {
+					return nil
+				}
+
+				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
+				return server.ListenAndServeTLS("", "")
+			} else {
+				log.Info().Msg("TLS is disabled")
+				return router.Run(bindAddress)
+			}
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")

@@ -1,6 +1,7 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "katalog") }}
 {{- if include "fybrik.isEnabled" (tuple .Values.katalogConnector.enabled $autoFlag) }}
-# katalog-editor allows managing assets.
+# katalog-editor allows managing assets and secrets if the connection between
+# the manager and the katalog uses tls.
 apiVersion: rbac.authorization.k8s.io/v1
 {{- if .Values.clusterScoped }}
 kind: ClusterRole
@@ -16,4 +17,10 @@ rules:
 - apiGroups: ["katalog.fybrik.io"]
   resources: ["assets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+{{- if .Values.global.tls.enabled }}
+- apiGroups: [""]
+  resources:
+  - secrets
+  verbs: ["get"]
+{{- end }}
 {{- end }}

@@ -4,17 +4,22 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
+	"fybrik.io/fybrik/connectors/katalog/pkg/connector/utils"
+	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
 const CommandPort = 8080
@@ -44,6 +49,10 @@ func RunCmd() *cobra.Command {
 			if err != nil {
 				return errors.Wrap(err, "unable to add katalog v1alpha1 to schema")
 			}
+			err = corev1.AddToScheme(scheme)
+			if err != nil {
+				return errors.Wrap(err, "unable to add corev1 to schema")
+			}
 
 			client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 			if err != nil {
@@ -53,9 +62,22 @@ func RunCmd() *cobra.Command {
 			handler := connector.NewHandler(client)
 			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
-
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			return router.Run(bindAddress)
+			if utils.GetTLSEnabled() {
+				log.Info().Msg("TLS is enabled")
+				config, err := fybrikTLS.GetServerTLSConfig(client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
+					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
+				if err != nil {
+					return nil
+				}
+
+				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
+				return server.ListenAndServeTLS("", "")
+			} else {
+				log.Info().Msg("TLS is disabled")
+				return router.Run(bindAddress)
+			}
+
 		},
 	}
 	cmd.Flags().StringVar(&ip, "ip", ip, "IP address")

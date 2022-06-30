@@ -1,0 +1,22 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
+{{- if .Values.global.tls.enabled }}
+# opa-editor allows managing secrets.
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.clusterScoped }}
+kind: ClusterRole
+metadata:
+  name: {{ template "fybrik.fullname" . }}-opa-editor-cr
+{{- else }}
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-opa-editor-role
+  namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
+{{- end }}
+rules:
+- apiGroups: [""]
+  resources:
+  - secrets
+  verbs: ["get"]
+{{- end }}
+{{- end }}
