@@ -54,7 +54,7 @@ nav:
     - contribute/documentation/style.md
   - Plugins:
     - contribute/modules.md
-    - contribute/openapi.md
+    - Using OpenAPI Generator: contribute/openapi.md
 - Publications: publications.md
 
 
