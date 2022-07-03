@@ -9,7 +9,7 @@ require (
 	github.com/apache/arrow/go/v7 v7.0.0
 	github.com/aws/aws-sdk-go v1.40.37
 	github.com/c2h5oh/datasize v0.0.0-20200825124411-48ed595a09d2
-	github.com/distribution/distribution v2.7.1+incompatible
+	github.com/distribution/distribution v2.8.1+incompatible
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gdexlab/go-render v1.0.1
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -72,7 +72,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v20.10.11+incompatible // indirect
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
