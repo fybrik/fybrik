@@ -6,4 +6,6 @@ metadata:
   name: opa-connector-config
 data:
   OPA_SERVER_URL: {{ .Values.opaConnector.serverURL | default (printf "http://opa:%d" (int .Values.opaServer.service.port) ) | quote }}
+  PRETTY_LOGGING: {{ .Values.global.prettyLogging | quote }}
+  LOGGING_VERBOSITY: {{ .Values.global.loggingVerbosity | quote }}
 {{- end }}
