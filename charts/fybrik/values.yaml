@@ -110,7 +110,7 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `http://<policyManager>-connector:80`.
-  # For tls connection use: "https://<policyManager>:443"
+  # For tls connection use: "https://<policyManager>-connector:443"
   policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager

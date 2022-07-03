@@ -17,36 +17,38 @@ const (
 	CACERTSecretNamespace string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
 )
 
-// GetCertSecretName returns the secret name which holds the
-// server certficate
+// GetCertSecretName returns the name of the kubernetes secret which holds the
+// katalog-connector certficates.
 func GetCertSecretName() string {
 	return os.Getenv(CertSecretName)
 }
 
-// GetCertSecretNamespace returns the secret name which holds the
-// server certficate
+// GetCertSecretNamespace returns the namespace of the kubernetes secret which holds the
+// katalog-connector certficates.
 func GetCertSecretNamespace() string {
 	return os.Getenv(CertSecretNamespace)
 }
 
 // GetTLSEnabled returns true if the connection between
-// the manager and the katalog is using tls
+// the manager and the katalog is using tls.
 func GetTLSEnabled() bool {
 	return os.Getenv(TLSEnabled) == "true"
 }
 
-// GetTLSEnabled returns true if the connection between
-// the manager and the katalog is using mutual tls
+// GetMTLSEnabled returns true if the connection between
+// the manager and the katalog is using mutual tls authentication.
 func GetMTLSEnabled() bool {
 	return os.Getenv(MTLSnabled) == "true"
 }
 
-// GetCACERTSecretName return the secret name that holds the CA certificate which is used by the server
-// to validate the connection to the client if mtls is enabled.
+// GetCACERTSecretName returns the name of the kubernetes secret that holds the CA certificates
+// used by the katalog-connector server to validate the connection to the client if mtls is enabled.
 func GetCACERTSecretName() string {
 	return os.Getenv(CACERTSecretName)
 }
 
+// GetCACERTSecretNamespace returns the namespace of the kubernetes secret that holds the CA certificate
+// used by the katalog-connector server to validate the connection to the client if mtls is enabled.
 func GetCACERTSecretNamespace() string {
 	return os.Getenv(CACERTSecretNamespace)
 }

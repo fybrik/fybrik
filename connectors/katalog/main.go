@@ -59,9 +59,9 @@ func RunCmd() *cobra.Command {
 			}
 
 			handler := connector.NewHandler(client)
-
 			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
+
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetTLSEnabled() {
 				handler.Log.Info().Msg("manager and connector uses TLS")
