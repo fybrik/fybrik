@@ -186,6 +186,34 @@ jobs:
         LATEST_BACKWARD_SUPPORTED_AFM_VERSION: v${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
         LATEST_BACKWARD_SUPPORTED_CRD_VERSION: ${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
       run: make run-notebook-readflow-bc-tests
+
+  notebook-sample-read-flow-tls:
+    name: Read flow notebook sample with mutual tls authentication
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Read flow notebook tests with mutual tls authentication
+      env:
+        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
+      run: make run-notebook-readflow-tls-tests
+
   notebook-sample-write-flow:
     name: Write flow notebook sample
     runs-on: ubuntu-latest
