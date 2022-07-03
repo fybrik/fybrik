@@ -131,7 +131,7 @@ run-notebook-readflow-tls-tests:
 	$(MAKE) -C manager apply-tls-certificates
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C manager run-notebook-readflow-tls-tests
+	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests
 run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000

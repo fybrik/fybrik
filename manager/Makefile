@@ -50,15 +50,6 @@ run-integration-tests: wait_for_manager
 apply-tls-certificates: $(TOOLBIN)/kubectl
 	cd testdata/notebook/read-flow-tls && ./setup-certs.sh
 
-.PHONY: run-notebook-readflow-tls-tests
-run-notebook-readflow-tls-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-notebook-readflow-tls-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-notebook-readflow-tls-tests: export DOCKER_TAGNAME?=master
-run-notebook-readflow-tls-tests: export USE_MOCKUP_CONNECTOR?=true
-run-notebook-readflow-tls-tests: wait_for_manager
-	cd testdata/notebook/read-flow-tls && ./setup.sh
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3NotebookReadFlow -count 1
-
 .PHONY: run-notebook-readflow-tests
 run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
