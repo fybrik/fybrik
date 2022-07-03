@@ -46,6 +46,7 @@ spec:
           env:
             - name: TLS_ENABLED
               value: {{ .Values.global.tls.enabled | quote | toString }}
+            {{- if .Values.global.tls.enabled }}
             - name: MTLS_ENABLED
               value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
             - name: CERT_SECRET_NAME
@@ -56,7 +57,7 @@ spec:
               value: {{ .Values.opaConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
               value: {{ .Values.opaConnector.tls.certs.cacertSecretNamespace }}
-
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: opa-connector-config

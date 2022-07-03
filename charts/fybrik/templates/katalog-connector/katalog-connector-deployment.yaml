@@ -39,19 +39,6 @@ spec:
             {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.katalogConnector.containerSecurityContext | toYaml | nindent 12 }}
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
-          env:
-            - name: TLS_ENABLED
-              value: {{ .Values.global.tls.enabled | quote | toString }}
-            - name: MTLS_ENABLED
-              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
-            - name: CERT_SECRET_NAME
-              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretName }}
-            - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretNamespace }}
-            - name: CACERT_SECRET_NAME
-              value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
-            - name: CACERT_SECRET_NAMESPACE
-              value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
           ports:
             - name: http
               containerPort: 8080
@@ -63,6 +50,21 @@ spec:
               value: {{ .Values.global.prettyLogging | quote }}
             - name: LOGGING_VERBOSITY
               value: {{ .Values.global.loggingVerbosity | quote }}
+            - name: TLS_ENABLED
+              value: {{ .Values.global.tls.enabled | quote | toString }}
+            {{- if .Values.global.tls.enabled }}
+            - name: MTLS_ENABLED
+              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
+            - name: CERT_SECRET_NAME
+              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretName }}
+            - name: CERT_SECRET_NAMESPACE
+              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretNamespace }}
+            - name: CACERT_SECRET_NAME
+              value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
+            - name: CACERT_SECRET_NAMESPACE
+              value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
+            {{- end }}
+
       {{- with .Values.katalogConnector.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

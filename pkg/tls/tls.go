@@ -8,8 +8,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"strings"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,7 +19,7 @@ import (
 
 // GetCertificatesFromSecret reads the certificates from kubernetes
 // secret. Used when connection between manager and connectors uses tls.
-func GetCertificatesFromSecret(log *zerolog.Logger, client kclient.Client, secretName, secretNamespace string) (map[string][]byte, error) {
+func GetCertificatesFromSecret(client kclient.Client, secretName, secretNamespace string) (map[string][]byte, error) {
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: secretNamespace,
@@ -38,21 +40,20 @@ func GetCertificatesFromSecret(log *zerolog.Logger, client kclient.Client, secre
 
 const tlsCert = "tls.crt"
 const tlsKey = "tls.key"
+const certSuffix = ".crt"
 
 // GetServerTLSConfig returns the server tls config for tls connection between the manager and
 // the connectors based on the following params:
-// serverLog: log to use
-// client: kubernetes client
-// certSecretName:  name of a kubernetes secret which contains the server certificate
-// certSecretNamespace:  namespace of a kubernetes secret  which contains the server certificate
-// caSecretName: name of a kubernetes secret  which contains ca certificate used by the server to
+// certSecretName:  kubernetes secret name which contains the server certificate
+// certSecretNamespace:  kubernetes secret namespace which contains the server certificate
+// caSecretName: kubernetes secret name which contains ca certificate used by the server to
 // validate certificate or the client.  Used when mtls is true.
-// caSecretNamespace: namespace of a kubernetes secret which contains ca certificate used by the server to
+// caSecretNamespace: kubernetes secret namespace which contains ca certificate used by the server to
 // validate certificate or the client. Used when mtls is true.
 // mtls: true if mutual tls connection is used.
 func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSecretName, certSecretNamespace,
 	caSecretName, caSecretNamespace string, mtls bool) (*tls.Config, error) {
-	serverCertsData, err := GetCertificatesFromSecret(serverLog, client, certSecretName, certSecretNamespace)
+	serverCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 	if err != nil {
 		serverLog.Error().Msg(err.Error())
 		return nil, err
@@ -65,16 +66,20 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 	}
 	var config *tls.Config
 	if mtls {
-		serverLog.Info().Msg("MTLS is enabled")
-		CACertsData, err := GetCertificatesFromSecret(serverLog, client, caSecretName, caSecretNamespace)
+		serverLog.Info().Msg("MTLS authentication is enabled")
+		CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
 		if err != nil {
 			return nil, err
 		}
 		CACertPool := x509.NewCertPool()
-		for _, element := range CACertsData {
+		for key, element := range CACertsData {
+			// skip non cerificate keys like crt.key if exists in the secret
+			if !strings.HasSuffix(key, certSuffix) {
+				continue
+			}
 			if !CACertPool.AppendCertsFromPEM(element) {
-				serverLog.Error().Msg(err.Error())
-				return nil, errors.New("error in GetServerTLSConfig in AppendCertsFromPEM")
+				serverLog.Error().Err(err).Msg(err.Error())
+				return nil, errors.New("error in GetServerTLSConfig in AppendCertsFromPEM trying to lead key:" + key)
 			}
 		}
 
@@ -96,35 +101,37 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 
 // GetClientTLSConfig returns the client tls config for tls connection between the manager and
 // the connectors based on the following params:
-// clientLog: log to use
-// client: kubernetes client
-// certSecretName:  name of a kubernetes secret which contains the client certificate
-// certSecretNamespace:  namespace of a kubernetes secret which contains the client certificate
-// caSecretName: name of a kubernetes secret which contains ca certificate used by the client to
+// certSecretName:  kubernetes secret name which contains the client certificate
+// certSecretNamespace:  kubernetes secret namespace which contains the client certificate
+// caSecretName: kubernetes secret name which contains ca certificate used by the client to
 // validate certificate or the server.  Used when mtls is true.
-// caSecretNamespace: namespace of a kubernetes secret which contains ca certificate used by the client to
+// caSecretNamespace: kubernetes secret namespace which contains ca certificate used by the client to
 // validate certificate or the server. Used when mtls is true.
 // mtls: true if mutual tls connection is used.
 func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSecretName, certSecretNamespace,
 	caSecretName, caSecretNamespace string, mtls bool) (*tls.Config, error) {
-	CACertsData, err := GetCertificatesFromSecret(clientLog, client, caSecretName, caSecretNamespace)
+	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
 	if err != nil {
 		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get ca cert")
 		return nil, err
 	}
 
 	caCertPool := x509.NewCertPool()
-	for _, element := range CACertsData {
+	for key, element := range CACertsData {
+		// skip non cerificate keys like crt.key if exists in the secret
+		if !strings.HasSuffix(key, certSuffix) {
+			continue
+		}
 		if !caCertPool.AppendCertsFromPEM(element) {
-			clientLog.Error().Err(err).Msg("error in AppendCertsFromPEM")
-			return nil, errors.New("error in GetClientTLSConfig in AppendCertsFromPEM")
+			clientLog.Error().Err(err).Msg("error in AppendCertsFromPEM trying to load: " + key)
+			return nil, errors.New("error in GetClientTLSConfig in AppendCertsFromPEMtrying to load: " + key)
 		}
 	}
 
 	var tlsConfig *tls.Config
 	if mtls {
-		clientLog.Info().Msg("Mutual is enabled")
-		clientCertsData, err := GetCertificatesFromSecret(clientLog, client, certSecretName, certSecretNamespace)
+		clientLog.Info().Msg("Mutual authentication is enabled")
+		clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 		if err != nil {
 			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
 			return nil, err
