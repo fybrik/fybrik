@@ -92,7 +92,7 @@ func TestHelmRegistry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to setup test temp charts directory: %s", err)
 	}
-	var impl = NewHelmerImpl("")
+	impl := NewHelmerImpl("")
 
 	if username != "" && password != "" {
 		err = impl.RegistryLogin(hostname, username, password, insecure)
@@ -139,7 +139,7 @@ func TestLocalChartsMount(t *testing.T) {
 
 	rootPath := filepath.Dir(tmpChart)
 	// remove the "charts" suffix from the file path
-	var impl = NewHelmerImpl(filepath.Dir(rootPath))
+	impl := NewHelmerImpl(filepath.Dir(rootPath))
 
 	tmpDir, err := ioutil.TempDir("", "test-helm-")
 	if err != nil {
@@ -181,7 +181,7 @@ func TestHelmRelease(t *testing.T) {
 	}
 	var err error
 	origChart := buildTestChart()
-	var impl = NewHelmerImpl("")
+	impl := NewHelmerImpl("")
 	cfg, err := impl.GetConfig(kubeNamespace, t.Logf)
 	assert.Nil(t, err)
 
