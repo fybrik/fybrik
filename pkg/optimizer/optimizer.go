@@ -25,7 +25,6 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/pkg/datapath"
-	"fybrik.io/fybrik/pkg/logging"
 )
 
 const (
@@ -86,13 +85,6 @@ func (opt *Optimizer) Solve() (datapath.Solution, error) {
 			bestScore = score
 			bestSolution = solution
 		}
-	}
-	if len(bestSolution.DataPath) == 0 {
-		msg := "Data path cannot be constructed given the deployed modules and the active restrictions"
-		opt.log.Error().Str(logging.DATASETID, opt.problemData.Context.DataSetID).Msg(msg)
-		logging.LogStructure("Data Item Context", opt.problemData, opt.log, zerolog.TraceLevel, true, true)
-		logging.LogStructure("Module Map", opt.env.Modules, opt.log, zerolog.TraceLevel, true, true)
-		return datapath.Solution{}, errors.New(msg + " for " + opt.problemData.Context.DataSetID)
 	}
 	return bestSolution, nil
 }
