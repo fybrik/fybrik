@@ -12,7 +12,18 @@ The `NetworkPolicy` is always created. However, your Kubernetes cluster must hav
 
 ## Mutual TLS
 
-If Istio is installed in the cluster then you can use [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) to encrypt the traffic to the connectors.
+### Using Fybrik
+
+Fybrik can be configured to have the traffic between the manager and the connectors encrypted with mutual tls authentication.
+
+To enable it, a set of helm chart fields should be set upon Fybrik deployment:
+The fields contain information about the security level to use (non, TLS, or mutual TLS), and the Kubernetes secrets that contain the certificates of the manager (aka the client) and the servers (aka the data catalog and policy manager) as well as the certificates of the CAs which were used to sign the client/servers certificates.
+
+More information about the TLS-related fields is found in Fybrik helm chart [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) file.
+
+### Using Istio
+
+Alternatively, if Istio is installed in the cluster then you can use [automatic mutual TLS](https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls) to encrypt the traffic to the connectors.
 
 Follow these steps to enable mutual TLS:
 
