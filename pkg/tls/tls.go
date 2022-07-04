@@ -38,9 +38,10 @@ func GetCertificatesFromSecret(client kclient.Client, secretName, secretNamespac
 	return secret.Data, nil
 }
 
-const tlsCert = "tls.crt"
-const tlsKey = "tls.key"
-const certSuffix = ".crt"
+const (
+	// TLSCertKeySuffix is the key suffix for tls certificates in a kubernetes secret.
+	TLSCertKeySuffix = ".crt"
+)
 
 // GetServerTLSConfig returns the server tls config for tls connection between the manager and
 // the connectors based on the following params:
@@ -59,7 +60,7 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 		return nil, err
 	}
 
-	loadedCertServer, err := tls.X509KeyPair(serverCertsData[tlsCert], serverCertsData[tlsKey])
+	loadedCertServer, err := tls.X509KeyPair(serverCertsData[corev1.TLSCertKey], serverCertsData[corev1.TLSPrivateKeyKey])
 	if err != nil {
 		serverLog.Error().Msg(err.Error())
 		return nil, err
@@ -74,7 +75,7 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 		CACertPool := x509.NewCertPool()
 		for key, element := range CACertsData {
 			// skip non cerificate keys like crt.key if exists in the secret
-			if !strings.HasSuffix(key, certSuffix) {
+			if !strings.HasSuffix(key, TLSCertKeySuffix) {
 				continue
 			}
 			if !CACertPool.AppendCertsFromPEM(element) {
@@ -119,7 +120,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 	caCertPool := x509.NewCertPool()
 	for key, element := range CACertsData {
 		// skip non cerificate keys like crt.key if exists in the secret
-		if !strings.HasSuffix(key, certSuffix) {
+		if !strings.HasSuffix(key, TLSCertKeySuffix) {
 			continue
 		}
 		if !caCertPool.AppendCertsFromPEM(element) {
@@ -136,7 +137,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
 			return nil, err
 		}
-		cert, err := tls.X509KeyPair(clientCertsData[tlsCert], clientCertsData[tlsKey])
+		cert, err := tls.X509KeyPair(clientCertsData[corev1.TLSCertKey], clientCertsData[corev1.TLSPrivateKeyKey])
 		if err != nil {
 			clientLog.Error().Err(err).Msg("error in X509KeyPair")
 			return nil, err
