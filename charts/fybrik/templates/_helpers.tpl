@@ -138,3 +138,12 @@ processPodSecurityContext does the following:
 {{- end }}
 {{ mergeOverwrite $globalContext $podSecurityContext | toYaml }}
 {{- end }}
+
+{{/*
+localChartsMountPath returns the mount path of a persistent volume
+that can contain helm charts that can be referenced by the Fybrik module.
+Relevant only when .Values.chartsPersistentVolumeClaim is set.
+*/}}
+{{- define "fybrik.localChartsMountPath" }}
+{{- printf "/opt/fybrik" }}
+{{- end }}
