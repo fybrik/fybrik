@@ -44,19 +44,21 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
-            - name: TLS_ENABLED
-              value: {{ .Values.global.tls.enabled | quote | toString }}
-            {{- if .Values.global.tls.enabled }}
-            - name: MTLS_ENABLED
-              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
+            - name: POLICY_MANAGER_CONNECTOR_USE_TLS
+              value: {{ .Values.coordinator.tls.policyManagerConnectorUseTLS | quote | toString }}
+            {{- if .Values.coordinator.tls.policyManagerConnectorUseTLS }}
+            - name: POLICY_MANAGER_CONNECTOR_USE_MTLS
+              value: {{ .Values.coordinator.tls.policyManagerConnectorUseMTLS | quote | toString }}
             - name: CERT_SECRET_NAME
               value: {{ .Values.opaConnector.tls.certs.serverCertSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.opaConnector.tls.certs.serverCertSecretNamespace }}
+            {{- if .Values.coordinator.tls.policyManagerConnectorUseMTLS }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.opaConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
               value: {{ .Values.opaConnector.tls.certs.cacertSecretNamespace }}
+            {{- end }}
             {{- end }}
           envFrom:
             - configMapRef:

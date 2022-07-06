@@ -70,14 +70,6 @@ global:
     capabilities:
       drop:
       - ALL
-  tls:
-    # Specifies whether the connection between the manager and the connectors
-    # uses tls.
-    enabled: false
-    # Specifies whether the connection between the manager and the connectors
-    # uses mutual tls. Only relavent if tls.enabled is true.
-    mtlsEnabled: false
-
 
 # Cluster metadata values
 cluster:
@@ -112,6 +104,18 @@ coordinator:
   # Defaults to `http://<policyManager>-connector:80`.
   # For tls connection use: "https://<policyManager>-connector:443"
   policyManagerConnectorURL: ""
+
+  tls:
+    # Specifies whether the catalog connector communication should use tls.
+    catalogConnectorUseTLS: false
+    # Specifies whether the catalog connector should use mutual tls authentication.
+    catalogConnectorUseMTLS: false
+
+    # Specifies whether the policy manager communication should use tls.
+    policyManagerConnectorUseTLS: false
+    # Specifies whether the policy manager communication should use mutual tls authentication.
+    policyManagerConnectorUseMTLS: false
+
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -174,22 +178,22 @@ manager:
   overrideArgs:
 
   tls:
-    # Relavent if the connection between the manager and the connectors
+    # Relavent if the connection between the manager and one of the connectors
     # uses tls.
     certs:
       # Name of kubernetes secret that holds the manager certificate.
-      # Relavent if mutual tls is used.
+      # Relavent if mutual tls authentication is used.
       # The secret should be of `kubernetes.io/tls` type.
-      clientCertSecretName: ""
+      certSecretName: ""
       # Name of kubernetes tls secret namespace that holds the manager certificate.
-      # Relavent if mutual tls is used.
-      clientCertSecretNamespace: ""
-      # Name of kubernetes secret that holds the CA certificates which are used by the manager
-      # to validate the connection to the connectors.
+      # Relavent if mutual tls authentication is used.
+      certSecretNamespace: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by the manager to validate the connection to the connectors.
       # Relavent if tls is used.
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the CA certificates
-      # which are used by the manager to validate the connection to the connectors.
+      # Name of kubernetes secret namespace that holds the certificate authority (CA)
+      # certificates which are used by the manager to validate the connection to the connectors.
       cacertSecretNamespace: ""
 
   # Extra environment variables to be set for manager container
@@ -372,13 +376,13 @@ katalogConnector:
       # Name of kubernetes tls secret that holds the katalog-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
-      serverCertSecretName: ""
+      certSecretName: ""
       # Name of kubernetes tls secret namespace that holds the katalog-connector certificate.
-      serverCertSecretNamespace: ""
-      # Name of kubernetes secret that holds the CA certificate which is used by katalog-connector
-      # to validate the connection to the manager if mtls is enabled.
+      certSecretNamespace: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
+      # by katalog-connector to validate the connection to the manager if mtls is enabled.
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the CA certificate which
+      # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by the server to validate the connection to the client if mtls is enabled.
       cacertSecretNamespace: ""
 
@@ -459,13 +463,13 @@ opaConnector:
       # Name of kubernetes tls secret that holds opa-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
-      serverCertSecretName: ""
+      certSecretName: ""
       # Name of kubernetes tls secret namespace that holds opa-connector certificate.
-      serverCertSecretNamespace: ""
-      # Name of kubernetes secret that holds the CA certificate which is used by opa-connector
-      # to validate the connection to the manager if mtls is enabled.
+      certSecretNamespace: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
+      # by opa-connector to validate the connection to the manager if mtls is enabled.
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the CA certificate which
+      # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by opa-connector to validate the connection to the manager if mtls is enabled.
       cacertSecretNamespace: ""
 

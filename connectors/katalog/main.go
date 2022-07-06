@@ -17,7 +17,7 @@ import (
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
-	"fybrik.io/fybrik/connectors/katalog/pkg/connector/utils"
+	"fybrik.io/fybrik/pkg/connectors/utils"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
@@ -63,10 +63,10 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			if utils.GetTLSEnabled() {
+			if utils.GetCatalogConnectorUseTLS() {
 				handler.Log.Info().Msg("manager and connector uses TLS")
 				config, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
+					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetCatalogConnectorUseMTLS())
 				if err != nil {
 					return nil
 				}

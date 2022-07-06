@@ -17,7 +17,7 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"fybrik.io/fybrik/connectors/opa/utils"
+	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
@@ -69,7 +69,7 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			if utils.GetTLSEnabled() {
+			if utils.GetPolicyManagerUseTLS() {
 				controller.Log.Info().Msg("TLS is enabled")
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)
@@ -81,7 +81,7 @@ func RunCmd() *cobra.Command {
 					return errors.Wrap(err, "failed to create a Kubernetes client")
 				}
 				config, err := fybrikTLS.GetServerTLSConfig(&controller.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetMTLSEnabled())
+					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetPolicyManagerUseMTLS())
 				if err != nil {
 					return nil
 				}

@@ -8,10 +8,6 @@ global:
   tag: "0.0.0"
   imagePullPolicy: "Always"
 
-  tls: 
-    enabled: true
-    mtlsEnabled: true
-
   prettyLogging: false
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
@@ -20,6 +16,11 @@ global:
 coordinator:
   catalogConnectorURL: https://katalog-connector:443
   policyManagerConnectorURL: https://opa-connector:443
+  tls:
+    catalogConnectorUseTLS: true
+    catalogConnectorUseMTLS: true
+    policyManagerConnectorUseTLS: true
+    policyManagerConnectorUseMTLS: true
 
 # Manager component
 manager:

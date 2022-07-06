@@ -50,19 +50,21 @@ spec:
               value: {{ .Values.global.prettyLogging | quote }}
             - name: LOGGING_VERBOSITY
               value: {{ .Values.global.loggingVerbosity | quote }}
-            - name: TLS_ENABLED
-              value: {{ .Values.global.tls.enabled | quote | toString }}
-            {{- if .Values.global.tls.enabled }}
-            - name: MTLS_ENABLED
-              value: {{ .Values.global.tls.mtlsEnabled | quote | toString }}
+            - name: CATALOG_CONNECTOR_USE_TLS
+              value: {{ .Values.coordinator.tls.catalogConnectorUseTLS | quote | toString }}
+            {{- if .Values.coordinator.tls.catalogConnectorUseTLS }}
+            - name: CATALOG_CONNECTOR_USE_MTLS
+              value: {{ .Values.coordinator.tls.catalogConnectorUseMTLS | quote | toString }}
             - name: CERT_SECRET_NAME
               value: {{ .Values.katalogConnector.tls.certs.serverCertSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.katalogConnector.tls.certs.serverCertSecretNamespace }}
+            {{- if .Values.coordinator.tls.catalogConnectorUseMTLS }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
               value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
+            {{- end }}
             {{- end }}
 
       {{- with .Values.katalogConnector.nodeSelector }}

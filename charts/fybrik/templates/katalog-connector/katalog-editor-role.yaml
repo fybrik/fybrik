@@ -17,7 +17,7 @@ rules:
 - apiGroups: ["katalog.fybrik.io"]
   resources: ["assets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
-{{- if .Values.global.tls.enabled }}
+{{- if .Values.coordinator.tls.catalogConnectorUseTLS }}
 - apiGroups: [""]
   resources:
   - secrets
