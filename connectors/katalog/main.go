@@ -64,7 +64,7 @@ func RunCmd() *cobra.Command {
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetCatalogConnectorUseTLS() {
-				handler.Log.Info().Msg("manager and connector uses TLS")
+				handler.Log.Info().Msg(fybrikTLS.TLSEnabledMsg)
 				config, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
 					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetCatalogConnectorUseMTLS())
 				if err != nil {
@@ -74,7 +74,7 @@ func RunCmd() *cobra.Command {
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
 				return server.ListenAndServeTLS("", "")
 			}
-			handler.Log.Info().Msg("connection between manager and connector is not using TLS")
+			handler.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			return router.Run(bindAddress)
 		},
 	}

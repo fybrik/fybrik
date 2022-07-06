@@ -17,6 +17,13 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	TLSEnabledMsg   string = "TLS authentication is enabled"
+	TLSDisabledMsg  string = "TLS authentication is disabled"
+	MTLSEnabledMsg  string = "Mutual TLS authentication is enabled"
+	MTLSDisabledMsg string = "Mutual TLS authentication is disabled"
+)
+
 // GetCertificatesFromSecret reads the certificates from kubernetes
 // secret. Used when connection between manager and connectors uses tls.
 func GetCertificatesFromSecret(client kclient.Client, secretName, secretNamespace string) (map[string][]byte, error) {
@@ -67,7 +74,7 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 	}
 	var config *tls.Config
 	if mtls {
-		serverLog.Info().Msg("MTLS authentication is enabled")
+		serverLog.Info().Msg(MTLSEnabledMsg)
 		CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
 		if err != nil {
 			return nil, err
@@ -91,6 +98,7 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 			MinVersion:   tls.VersionTLS13,
 		}
 	} else {
+		serverLog.Info().Msg(MTLSDisabledMsg)
 		config = &tls.Config{
 			Certificates: []tls.Certificate{loadedCertServer},
 			ClientAuth:   tls.NoClientCert,
@@ -131,7 +139,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 
 	var tlsConfig *tls.Config
 	if mtls {
-		clientLog.Info().Msg("Mutual authentication is enabled")
+		clientLog.Info().Msg(MTLSEnabledMsg)
 		clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 		if err != nil {
 			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
@@ -148,6 +156,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 			MinVersion:   tls.VersionTLS13,
 		}
 	} else {
+		clientLog.Info().Msg(MTLSDisabledMsg)
 		tlsConfig = &tls.Config{
 			RootCAs:    caCertPool,
 			MinVersion: tls.VersionTLS13,

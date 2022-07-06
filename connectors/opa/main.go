@@ -70,7 +70,7 @@ func RunCmd() *cobra.Command {
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if utils.GetPolicyManagerUseTLS() {
-				controller.Log.Info().Msg("TLS is enabled")
+				controller.Log.Info().Msg(fybrikTLS.TLSEnabledMsg)
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)
 				if err != nil {
@@ -89,7 +89,7 @@ func RunCmd() *cobra.Command {
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
 				return server.ListenAndServeTLS("", "")
 			}
-			controller.Log.Info().Msg("connection between manager and connector is not using TLS")
+			controller.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			return router.Run(bindAddress)
 		},
 	}

@@ -88,7 +88,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 		}
 
 		if utils.GetCatalogConnectorUseTLS() {
-			setupLog.Info().Msg("data connector use tls")
+			setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
 			tlsConfig, err := fybrikTLS.GetClientTLSConfig(&setupLog, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
 				utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetCatalogConnectorUseMTLS())
 			if err != nil {
@@ -98,7 +98,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 			transport := &http.Transport{TLSClientConfig: tlsConfig}
 			cfg.HTTPClient = &http.Client{Transport: transport}
 		} else {
-			setupLog.Info().Msg("TLS is disabled")
+			setupLog.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			cfg.HTTPClient = http.DefaultClient
 		}
 		// end section

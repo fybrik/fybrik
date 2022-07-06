@@ -79,7 +79,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 
 		if utils.GetPolicyManagerUseTLS() {
 			scheme := runtime.NewScheme()
-			setupLog.Info().Msg("policy manager uses TLS")
+			setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
 			err := corev1.AddToScheme(scheme)
 			if err != nil {
 				setupLog.Error().Err(err)
@@ -100,7 +100,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 			transport := &http.Transport{TLSClientConfig: tlsConfig}
 			cfg.HTTPClient = &http.Client{Transport: transport}
 		} else {
-			setupLog.Info().Msg("TLS is disabled")
+			setupLog.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			cfg.HTTPClient = http.DefaultClient
 		}
 		//end section
