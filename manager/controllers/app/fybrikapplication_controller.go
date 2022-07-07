@@ -202,6 +202,15 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 			continue
 		}
 
+		if !isAssetReady(applicationContext, assetID) && dataCtx.Flow == taxonomy.DeleteFlow {
+			// handle deletion of an asset from the catalog
+			if err := r.DeleteAsset(assetID, applicationContext.Application); err != nil {
+				// log an error and make a new attempt to delete the asset
+				setErrorCondition(applicationContext, assetID, err.Error())
+				continue
+			}
+		}
+
 		// register assets if necessary if the ready state has been received
 		if dataCtx.Requirements.FlowParams.Catalog != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {

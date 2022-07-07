@@ -73,6 +73,10 @@ func setReadyCondition(appContext ApplicationContext, assetID string) {
 		Str(logging.DATASETID, assetID).Msg("Setting ready condition")
 }
 
+func isAssetReady(appContext ApplicationContext, assetID string) bool {
+	return (appContext.Application.Status.AssetStates[assetID].Conditions[ReadyConditionIndex].Status == corev1.ConditionTrue)
+}
+
 // determine if the application is ready
 func isReady(application *api.FybrikApplication) bool {
 	if len(application.Spec.Data) == 0 {

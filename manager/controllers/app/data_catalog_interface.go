@@ -7,10 +7,35 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/vault"
 
 	"github.com/rs/zerolog/log"
 )
+
+// DeleteAsset deletes an asset from a catalog
+// Input arguments:
+// - assetID: DataSetID as it appears in fybrik-application
+// - input: fybrik application
+// Returns:
+// - an error if happened
+func (r *FybrikApplicationReconciler) DeleteAsset(assetID string, input *app.FybrikApplication) error {
+	r.Log.Trace().Msg("DeleteAsset")
+	request := datacatalog.DeleteAssetRequest{
+		AssetID: taxonomy.AssetID(assetID),
+	}
+	credentialPath := ""
+	if utils.IsVaultEnabled() {
+		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	}
+	// ??? should response also be checked
+	if _, err := r.DataCatalog.DeleteAsset(&request, credentialPath); err != nil {
+		log.Error().Err(err).Msg("failed to receive the catalog connector response in DeleteAsset")
+		return err
+	}
+
+	return nil
+}
 
 // RegisterAsset registers a new asset in the specified catalog
 // Input arguments:
