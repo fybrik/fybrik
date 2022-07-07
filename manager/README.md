@@ -66,6 +66,7 @@ CATALOG_CONNECTOR_URL="http://localhost:49152"
 CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
+DATA="/tmp"
 ```
 
 If the manager works with a Razee service, you also need to add the following environment variables:
@@ -87,8 +88,8 @@ set -a; . .env; set +a
 
 ### Copy taxonomy JSON files and config policies locally
 ```bash
-cp -R ../charts/fybrik/files/taxonomy /data/
-cp -R ../charts/fybrik/files/adminconfig /data/
+cp -R ../charts/fybrik/files/taxonomy /tmp/
+cp -R ../charts/fybrik/files/adminconfig /tmp/
 ```
 
 ### Run the manager
