@@ -13,12 +13,14 @@ TARGET := main
 
 .PHONY: test
 test: $(ABSTOOLBIN)/helm
-	$(eval TMP := $(shell mktemp -d))
+	$(eval TMP1 := $(shell mktemp -d))
+	mkdir $(TMP1)/charts
+	$(eval TMP := $(TMP1)/charts)
 	cd $(TMP) && $(ABSTOOLBIN)/helm create $(CHART_NAME)
 	cd $(TMP) && $(ABSTOOLBIN)/helm package $(CHART_NAME) -d $(TMP)  --version $(VERSION)
 	cd $(TMP) && $(ABSTOOLBIN)/helm push $(TMP)/$(CHART_FILE_NAME) oci://localhost:5000/fybrik-system/
-	rm -rf $(TMP)/$(CHART_FILE_NAME)
 	TMP_CHART=$(TMP)/$(CHART_NAME) go test -v $(SOURCE)
+	rm -rf $(TMP)/$(CHART_FILE_NAME)
 
 .PHONY: build
 build:

@@ -18,6 +18,8 @@ env:
   # the oldest supported K8s version and its respective kind image
   OLD_K8S_VERSION: v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729
 
+  LATEST_BACKWARD_SUPPORTED_VERSION: 0.7.0
+
 jobs:
   verify:
     name: Verify
@@ -93,7 +95,7 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: Install tools
       run: make install-tools
-    - name: Namescope integration tests 
+    - name: Namescope integration tests
       if: ${{ matrix.k8s_version == 'new' }}
       env:
         K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
@@ -155,7 +157,35 @@ jobs:
       env:
         K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
       run: make run-notebook-readflow-tests
- 
+
+  notebook-backward-sample-read-flow:
+    name: Read flow notebook backward sample
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+    - name: Install tools
+      run: make install-tools
+    - name: Read flow notebook tests bc version
+      env:
+        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
+        LATEST_BACKWARD_SUPPORTED_AFM_VERSION: v${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
+        LATEST_BACKWARD_SUPPORTED_CRD_VERSION: ${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
+      run: make run-notebook-readflow-bc-tests
   notebook-sample-write-flow:
     name: Write flow notebook sample
     runs-on: ubuntu-latest
@@ -164,12 +194,12 @@ jobs:
       DOCKER_NAMESPACE: fybrik-system
     steps:
     - name: Install Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Cache dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod

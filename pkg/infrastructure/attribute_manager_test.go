@@ -13,12 +13,18 @@ func TestValidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"metrics": [{
+			"name": "cost",
+			"type": "numeric",
+			"units": "US Dollar per TB per month",
+			"scale": {"min": 0, "max": 100}
+		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
 			"description": "neverland object store",
+			"metricName": "cost",
 			"value": "100",
-			"type": "numeric",
-			"units": "US Dollar",
+			"object": "fybrikstorageaccount",
 			"instance": "account-neverland"
 		}]
 	}`
@@ -30,12 +36,16 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"metrics": [{
+			"name": "cost",
+			"type": "numeric",
+			"units": "km"
+		}],
 		"infrastructure":[{
 			"attribute": "storage-cost",
+			"metricName": "cost",
 			"description": "neverland object store",
 			"value": "100",
-			"type": "numeric",
-			"units": "USDollar",
 			"instance": "account-neverland"
 		}]
 	}`
@@ -43,34 +53,41 @@ func TestInvalidInfrastructureAttributeSC(t *testing.T) {
 	assert.Error(t, validateErr, "An error is expected")
 }
 
-func TestValidInfrastructureAttributeBW(t *testing.T) {
+func TestValidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
-		"infrastructure":[{
-			"attribute": "bandwidth",
-			"description": "neverland object store",
-			"value": "100",
+		"metrics": [{
+			"name": "distance",
 			"type": "numeric",
-			"units": "GBps",
-			"instance": "account-neverland"
+			"units": "km"
+		}],
+		"infrastructure":[{
+			"attribute": "distance",
+			"metricName": "distance",
+			"value": "1000",
+			"object": "inter-region",
+			"arguments": ["neverland","theshire"]
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))
 	assert.Nil(t, validateErr, "No error should be found")
 }
 
-func TestInvalidInfrastructureAttributeBW(t *testing.T) {
+func TestInvalidInfrastructureAttributeDist(t *testing.T) {
 	t.Parallel()
 
 	data := `{
+		"metrics": [{
+			"name": "distance",
+			"type": "object",
+			"units": "m"
+		}],
 		"infrastructure":[{
-			"attribute": "bandwidth",
-			"description": "neverland object store",
-			"value": "100",
-			"type": "numeric",
-			"units": "GB",
-			"instance": "account-neverland"
+			"attribute": "distance",
+			"metricName": "distance",
+            "object": "inter-region",
+			"value": "100"
 		}]
 	}`
 	validateErr := validateStructure([]byte(data))

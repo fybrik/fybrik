@@ -3,6 +3,8 @@
 
 When OPA is used for data governance, it is deployed as a stand-alone service.  Policies are defined in rego and uploaded to OPA.
 
+For more details on OPA policies please refer to [OPA documentation](https://www.openpolicyagent.org/docs/latest/policy-language/) in particulate to [the basics](https://www.openpolicyagent.org/docs/latest/policy-language/#the-basics) section which explains how a policy is evaluated.
+
 ## Fybrik Default Policies
 
 Fybrik ***denys by default*** any request if no rule is triggered. This behavior can be changed to ***allow by default*** by creating the following rule and upload it to OPA using methods described in this page:

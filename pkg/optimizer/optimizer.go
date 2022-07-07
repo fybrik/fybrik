@@ -16,14 +16,15 @@
 package optimizer
 
 import (
-	"errors"
+	"math"
 	"os"
 	"os/exec"
+
+	"emperror.dev/errors"
 
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/pkg/datapath"
-	"fybrik.io/fybrik/pkg/logging"
 )
 
 const (
@@ -45,18 +46,20 @@ func NewOptimizer(env *datapath.Environment, problemData *datapath.DataInfo, sol
 }
 
 func (opt *Optimizer) getSolution(pathLength int) (string, error) {
+	opt.log.Debug().Msgf("finding solution of length %d", pathLength)
 	modelFile, err := opt.dpc.BuildFzModel(pathLength)
 	if len(modelFile) > 0 {
 		defer os.Remove(modelFile)
 	}
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error building a model")
 	}
 
+	opt.log.Debug().Msgf("Executing %s %s", opt.solverPath, modelFile)
 	// #nosec G204 -- Avoid "Subprocess launched with variable" error
 	solverSolution, err := exec.Command(opt.solverPath, modelFile).Output()
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "error executing %s %s", opt.solverPath, modelFile)
 	}
 	return string(solverSolution), nil
 }
@@ -64,22 +67,24 @@ func (opt *Optimizer) getSolution(pathLength int) (string, error) {
 // The main method to call for finding a legal and optimal data path
 // Attempts short data-paths first, and gradually increases data-path length.
 func (opt *Optimizer) Solve() (datapath.Solution, error) {
+	bestScore := math.NaN()
+	bestSolution := datapath.Solution{}
 	for pathLen := 1; pathLen <= MaxDataPathDepth; pathLen++ {
 		solverSolution, err := opt.getSolution(pathLen)
 		if err != nil {
 			return datapath.Solution{}, err
 		}
-		solution, err := opt.dpc.decodeSolverSolution(solverSolution, pathLen)
+		solution, score, err := opt.dpc.decodeSolverSolution(solverSolution, pathLen)
 		if err != nil {
 			return datapath.Solution{}, err
 		}
-		if len(solution.DataPath) > 0 {
+		if len(solution.DataPath) > 0 && math.IsNaN(score) { // no optimization goal is specified. prefer shorter paths
 			return solution, nil
 		}
+		if !math.IsNaN(score) && (math.IsNaN(bestScore) || score < bestScore) {
+			bestScore = score
+			bestSolution = solution
+		}
 	}
-	msg := "Data path cannot be constructed given the deployed modules and the active restrictions"
-	opt.log.Error().Str(logging.DATASETID, opt.problemData.Context.DataSetID).Msg(msg)
-	logging.LogStructure("Data Item Context", opt.problemData, opt.log, zerolog.TraceLevel, true, true)
-	logging.LogStructure("Module Map", opt.env.Modules, opt.log, zerolog.TraceLevel, true, true)
-	return datapath.Solution{}, errors.New(msg + " for " + opt.problemData.Context.DataSetID)
+	return bestSolution, nil
 }

@@ -826,21 +826,25 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		Templates:        map[string]api.Template{},
 	}
 
+	paths, err := solve(env, requirements, applicationContext.Log)
+	if err != nil {
+		applicationContext.Application.Status.ErrorMessage = err.Error()
+		return plotterGen.ProvisionedStorage, plotterSpec, nil
+	}
+	if len(paths) != len(requirements) {
+		return plotterGen.ProvisionedStorage, plotterSpec, errors.New("Wrong number of data paths")
+	}
+
 	for ind := range requirements {
-		path, err := solve(env, &requirements[ind], applicationContext.Log)
-		if err != nil {
-			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
-			continue
-		}
 		// If the flag IsNewDataSet is true then a new asset must be allocated
 		if requirements[ind].Context.Requirements.FlowParams.IsNewDataSet {
-			err = plotterGen.handleNewAsset(&requirements[ind], &path)
+			err = plotterGen.handleNewAsset(&requirements[ind], &paths[ind])
 			if err != nil {
 				setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 				return plotterGen.ProvisionedStorage, plotterSpec, err
 			}
 		}
-		err = plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, &path, plotterSpec)
+		err = plotterGen.AddFlowInfoForAsset(&requirements[ind], applicationContext.Application, &paths[ind], plotterSpec)
 		if err != nil {
 			setErrorCondition(applicationContext, requirements[ind].Context.DataSetID, err.Error())
 			return plotterGen.ProvisionedStorage, plotterSpec, err

@@ -50,14 +50,14 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
-  # True if the target deployment is OpenShift. Otherwise false. Default value is false.
-  openshift: false
   # Pod Security Context. This is the default setting for all pods, and can be
   # overwritten by a specific podSecurityContext settings.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext:
     runAsNonRoot: true
+    # Ignored on openshift. It can be set in a specific podSecurityContext settings.
     runAsUser: 10001
+    # Ignored on openshift. It can be set in a specific podSecurityContext settings.
     seccompProfile:
       type: RuntimeDefault
   # Container Security Context. This is the default setting for all containers, and can be
@@ -210,12 +210,20 @@ manager:
 
   prometheus: false
 
-  chartVolume: ""
-    # Specify a persistent volume claim, to be mounted by the manager, that can contain
-    # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart
-    # is available on volume first, then try to pull from a Docker registry if it does not exist.
-    # To populate the volume, create a 'charts' directory at the root of the mount,
-    # and place helm charts within the charts directory.
+  # CSP solver for data plane optimization
+  solver:
+    # image of the container with solver binary and libs
+    # when specified, the solver will be deployed in the manager pod
+    image: "ghcr.io/fybrik/optimizer:0.0.1"
+    # Set to true to enable the use of the solver by Fybrik
+    enabled: false
+
+  # Specify a persistent volume claim, to be mounted by the manager, that can contain
+  # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart
+  # is available on volume first, then try to pull from a Docker registry if it does not exist.
+  # To populate the volume, create a 'charts' directory at the root of the mount,
+  # and place helm charts within the charts directory.
+  chartsPersistentVolumeClaim: ""
 
 # OPA server component
 opaServer:

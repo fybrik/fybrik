@@ -4,17 +4,18 @@
 package app
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/onsi/gomega"
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
-	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -28,8 +29,9 @@ func newEnvironment() *datapath.Environment {
 		Modules:         map[string]*v1alpha1.FybrikModule{},
 		StorageAccounts: []*v1alpha1.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
-			Log:            testLog,
-			Infrastructure: infraattributes.Infrastructure{},
+			Log:        testLog,
+			Metrics:    infrastructure.MetricsDictionary{},
+			Attributes: []taxonomy.InfrastructureElement{},
 		},
 	}
 }
@@ -46,8 +48,12 @@ func addStorageAccount(env *datapath.Environment, account *v1alpha1.FybrikStorag
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
+func addMetrics(env *datapath.Environment, m *taxonomy.InfrastructureMetrics) {
+	env.AttributeManager.Metrics[m.Name] = *m
+}
+
 func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureElement) {
-	env.AttributeManager.Infrastructure.Items = append(env.AttributeManager.Infrastructure.Items, *attribute)
+	env.AttributeManager.Attributes = append(env.AttributeManager.Attributes, *attribute)
 }
 
 // default: S3, csv
@@ -73,7 +79,9 @@ func createReadRequest() *datapath.DataInfo {
 				"read":   adminconfig.Decision{Deploy: adminconfig.StatusTrue},
 				"write":  adminconfig.Decision{Deploy: adminconfig.StatusFalse},
 				"delete": adminconfig.Decision{Deploy: adminconfig.StatusFalse},
+				"copy":   adminconfig.Decision{Deploy: adminconfig.StatusUnknown},
 			},
+			OptimizationStrategy: []adminconfig.AttributeOptimization{},
 		},
 	}
 }
@@ -188,7 +196,7 @@ func TestEmptyEnvironment(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	_, err := solve(env, createReadRequest(), &testLog)
+	_, err := solveSingleDataset(env, createReadRequest(), &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
@@ -208,13 +216,13 @@ func TestReadWithTransforms(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
 	asset := createReadRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	_, err := solve(env, asset, &testLog)
+	_, err := solveSingleDataset(env, asset, &testLog)
 	// only read is not enough
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
 	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 }
@@ -234,10 +242,10 @@ func TestReadModuleSource(t *testing.T) {
 	asset := createReadRequest()
 	asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDB2
 	asset.DataDetails.Details.DataFormat = ""
-	_, err := solve(env, asset, &testLog)
+	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, readModuleDB2)
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	logging.LogStructure("TestReadModuleSource", &solution, &testLog, zerolog.InfoLevel, false, false)
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
@@ -263,11 +271,11 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
 	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	_, err = solve(env, asset, &testLog)
+	_, err = solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
@@ -287,7 +295,7 @@ func TestReadAndTransformModules(t *testing.T) {
 	asset.DataDetails.Details.Connection.Name = v1alpha1.S3
 	asset.DataDetails.Details.DataFormat = v1alpha1.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(readModule.Name))
@@ -313,7 +321,7 @@ func TestReadAfterRead(t *testing.T) {
 	asset.DataDetails.Details.Connection.Name = v1alpha1.S3
 	asset.DataDetails.Details.DataFormat = v1alpha1.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(readModule.Name))
@@ -344,6 +352,7 @@ func TestTransformInDataLocation(t *testing.T) {
 	addCluster(env, cluster2)
 	asset := createReadRequest()
 	asset.DataDetails.ResourceMetadata.Geography = remoteGeo
+	asset.WorkloadCluster = cluster1
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{Deploy: adminconfig.StatusFalse}
 	asset.Configuration.ConfigDecisions["read"] = adminconfig.Decision{
@@ -358,11 +367,11 @@ func TestTransformInDataLocation(t *testing.T) {
 	}
 	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
 	asset.StorageRequirements[taxonomy.ProcessingLocation(remoteGeo)] = []taxonomy.Action{}
-	_, err := solve(env, asset, &testLog)
+	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	// remove restriction on copy
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{Deploy: adminconfig.StatusUnknown}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	// copy
@@ -394,10 +403,10 @@ func TestCopyFlow(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
 
 	asset := createCopyRequest()
-	_, err := solve(env, asset, &testLog)
+	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// copy
@@ -428,31 +437,36 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 10}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 10}}}},
 	}
-	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
-		Value:     "20",
-		Object:    taxonomy.StorageAccount,
-		Instance:  account1.Name,
+	addMetrics(env, &taxonomy.InfrastructureMetrics{
+		Name:  "cost",
+		Type:  taxonomy.Numeric,
+		Scale: &taxonomy.RangeType{Min: 0, Max: 200},
 	})
 	addAttribute(env, &taxonomy.InfrastructureElement{
-		Attribute: taxonomy.Attribute("cost"),
-		Type:      taxonomy.Numeric,
-		Value:     "12",
-		Object:    taxonomy.StorageAccount,
-		Instance:  account2.Name,
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "20",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account1.Name,
 	})
-	_, err := solve(env, asset, &testLog)
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "storage-cost",
+		MetricName: "cost",
+		Value:      "12",
+		Object:     taxonomy.StorageAccount,
+		Instance:   account2.Name,
+	})
+	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	// change the restriction to fit one of the accounts
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "cost", Range: &taxonomy.RangeType{Max: 15}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 15}}}},
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(account2.Spec.Region))
@@ -486,7 +500,7 @@ func TestWriteNewAsset(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "region", Values: adminconfig.StringList{string(account2.Spec.Region)}}}},
 	}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
@@ -517,7 +531,7 @@ func TestWriteExistingAsset(t *testing.T) {
 	asset := createUpdateRequest()
 	asset.StorageRequirements[account1.Spec.Region] = []taxonomy.Action{}
 	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
@@ -539,7 +553,7 @@ func TestWriteAndTransformModules(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createUpdateRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeModule.Name))
@@ -564,7 +578,7 @@ func TestDeleteFlow(t *testing.T) {
 	addModule(env, transformModule)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createDeleteRequest()
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(deleteModule.Name))
@@ -589,12 +603,379 @@ func TestModuleSelection(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{Modules: []adminconfig.Restriction{{
 			Property: "capabilities.scope",
 			Values:   adminconfig.StringList{"workload"}}}}}
-	_, err := solve(env, asset, &testLog)
+	_, err := solveSingleDataset(env, asset, &testLog)
 	// wrong scope
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, workloadLevelModule)
-	solution, err := solve(env, asset, &testLog)
+	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(workloadLevelModule.Name))
+}
+
+// a read scenario
+// copy and read modules are deployed
+// transformations are required but not supported by the read module
+// 5 storage accounts exist: one is not allowed by governance, another needs a non-supported action
+// optimization goal is to select the cheapest storage
+func TestOptimalStorage(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addModule(env, copyModule)
+	clusterRegion := "theshire"
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: clusterRegion}})
+	asset := createReadRequest()
+	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
+		Attribute: "storage-cost",
+		Directive: adminconfig.Minimize,
+		Weight:    "1.0",
+	}}
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
+	cost := 50
+	for i := 0; i < 5; i++ {
+		account := &v1alpha1.FybrikStorageAccount{
+			Spec: v1alpha1.FybrikStorageAccountSpec{
+				ID:        genName("account-", i),
+				SecretRef: genName("credentials-", i),
+				Region:    taxonomy.ProcessingLocation(genName("region", i)),
+				Endpoint:  "dummy-endpoint",
+			}}
+		account.Name = account.Spec.ID
+		addStorageAccount(env, account)
+		if i == 1 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{{Name: "AgeFilterAction"}}
+		} else if i >= 2 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+		}
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "storage-cost",
+			MetricName: "cost",
+			Value:      fmt.Sprintf("%d", cost),
+			Object:     taxonomy.StorageAccount,
+			Instance:   account.Name,
+		})
+		cost += 5
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
+	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
+}
+
+// a read scenario
+// copy and read modules are deployed
+// transformations are required but not supported by the read module
+// 5 storage accounts exist: one is not allowed by governance, another needs a non-supported action
+// 2 clusters exist: one is cheap and the other is expensive
+// optimization goal is to minimize the cost of both storage accounts and clusters
+func TestOptimalStorageAndClusterCost(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addModule(env, copyModule)
+	clusterRegion := "theshire"
+	addCluster(env, multicluster.Cluster{Name: "Cheap", Metadata: multicluster.ClusterMetadata{Region: clusterRegion}})
+	addCluster(env, multicluster.Cluster{Name: "Expensive", Metadata: multicluster.ClusterMetadata{Region: clusterRegion}})
+	asset := createReadRequest()
+	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
+		Attribute: "cost",
+		Directive: adminconfig.Minimize,
+		Weight:    "1.0",
+	}}
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
+	cost := 50
+	for i := 0; i < 5; i++ {
+		account := &v1alpha1.FybrikStorageAccount{
+			Spec: v1alpha1.FybrikStorageAccountSpec{
+				ID:        genName("account-", i),
+				SecretRef: genName("credentials-", i),
+				Region:    taxonomy.ProcessingLocation(genName("region", i)),
+				Endpoint:  "dummy-endpoint",
+			}}
+		account.Name = account.Spec.ID
+		addStorageAccount(env, account)
+		if i == 1 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{{Name: "AgeFilterAction"}}
+		} else if i >= 2 {
+			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+		}
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cost",
+			MetricName: "cost",
+			Value:      fmt.Sprintf("%d", cost),
+			Object:     taxonomy.StorageAccount,
+			Instance:   account.Name,
+		})
+		cost += 5
+	}
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "cost",
+		MetricName: "cost",
+		Value:      fmt.Sprintf("%d", 50),
+		Object:     taxonomy.Cluster,
+		Instance:   "Cheap",
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "cost",
+		MetricName: "cost",
+		Value:      fmt.Sprintf("%d", 200),
+		Object:     taxonomy.Cluster,
+		Instance:   "Expensive",
+	})
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
+	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("Cheap"))
+	g.Expect(solution.DataPath[1].Cluster).To(gomega.Equal("Cheap"))
+}
+
+func genName(prefix string, ind int) string {
+	return fmt.Sprintf("%s%d", prefix, ind)
+}
+
+// Conflicting optimization goals
+// Read scenario, different clusters with costs
+// Conflicting goals: minimize and maximize cluster costs
+// Result: the module is deployed somewhere
+func TestGoalConflict(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
+	cost := 10
+	for i := 0; i < 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cluster-cost",
+			MetricName: "cost",
+			Value:      fmt.Sprintf("%d", cost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
+		})
+		cost -= 1
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: "cluster-cost",
+			Directive: adminconfig.Minimize,
+			Weight:    "0.2",
+		},
+		{
+			Attribute: "cluster-cost",
+			Directive: adminconfig.Maximize,
+			Weight:    "0.8",
+		},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.HavePrefix("cluster"))
+}
+
+// Read scenario, different clusters with costs
+// Two minimize goals with different weights: 9:1
+// Costs: (10,0), (9,0), (8,10), (7,20), (6,30)
+// The second cluster should be selected
+func TestMinMultipleGoals(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
+	cpuCost := 10
+	errRate := 0
+	for i := 1; i <= 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cluster-cpu-cost",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", cpuCost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
+		})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cluster-err-rate",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", errRate),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
+		})
+		cpuCost -= 1
+		if i >= 2 {
+			errRate += 10
+		}
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: "cluster-cpu-cost",
+			Directive: adminconfig.Minimize,
+			Weight:    "0.9",
+		},
+		{
+			Attribute: "cluster-err-rate",
+			Directive: adminconfig.Minimize,
+			Weight:    "0.1",
+		},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster2"))
+}
+
+// Read scenario, different clusters with costs
+// Min & max goals with different weights: 6:4
+// Costs: (10,0), (4,0), (9,5), (3,5), (8,5)
+// cluster4 should be selected
+func TestMinMaxGoals(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
+	cpuCost := 10
+	stableRate := 0
+	for i := 1; i <= 5; i++ {
+		name := genName("cluster", i)
+		addCluster(env, multicluster.Cluster{Name: name, Metadata: multicluster.ClusterMetadata{Region: genName("region", i)}})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cluster-cpu-cost",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", cpuCost),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
+		})
+		addAttribute(env, &taxonomy.InfrastructureElement{
+			Name:       "cluster-stability-rate",
+			MetricName: "rate",
+			Value:      fmt.Sprintf("%d", stableRate),
+			Object:     taxonomy.Cluster,
+			Instance:   name,
+		})
+		cpuCost = 15 - cpuCost - i
+		if i == 2 {
+			stableRate += 5
+		}
+	}
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{
+		{
+			Attribute: "cluster-cpu-cost",
+			Directive: adminconfig.Minimize,
+			Weight:    "0.6",
+		},
+		{
+			Attribute: "cluster-stability-rate",
+			Directive: adminconfig.Maximize,
+			Weight:    "0.4",
+		},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster4"))
+}
+
+// a read scenario, data is in a remote location
+// copy and read modules are deployed
+// optimization goal is to minimize the distance
+// copy is expected to be deployed
+func TestMinDistance(t *testing.T) {
+	t.Parallel()
+	if !utils.UseCSP() {
+		t.Skip()
+	}
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &v1alpha1.FybrikModule{}
+	copyModule := &v1alpha1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	addModule(env, copyModule)
+	workloadCluster := "theshire"
+	remoteCluster := "neverland"
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: workloadCluster}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: remoteCluster}})
+	asset := createReadRequest()
+	asset.Configuration.OptimizationStrategy = []adminconfig.AttributeOptimization{{
+		Attribute: "distance",
+		Directive: adminconfig.Minimize,
+		Weight:    "1.0",
+	}}
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "distance", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 20000}})
+	account := &v1alpha1.FybrikStorageAccount{
+		Spec: v1alpha1.FybrikStorageAccountSpec{
+			ID:        "account-theshire",
+			SecretRef: "credentials-theshire",
+			Region:    taxonomy.ProcessingLocation(workloadCluster),
+			Endpoint:  "dummy-endpoint",
+		}}
+	account.Name = account.Spec.ID
+	addStorageAccount(env, account)
+	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.WorkloadCluster = multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: workloadCluster}}
+	asset.DataDetails.ResourceMetadata.Geography = remoteCluster
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "2000",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"theshire", "neverland"},
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "0",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"neverland", "neverland"},
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "distance",
+		MetricName: "distance",
+		Value:      "0",
+		Object:     taxonomy.InterRegion,
+		Arguments:  []string{"theshire", "theshire"},
+	})
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
+	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
 }

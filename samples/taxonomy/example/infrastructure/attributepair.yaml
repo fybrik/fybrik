@@ -1,21 +1,27 @@
 definitions:
-  InfrastructureElement:
+  InfrastructureMetrics:
     oneOf:
       - properties:
-          attribute:
-            enum: [storage-cost]
+          name:
+            enum: [cost, storage-cost]
           units:
-            enum: [US Dollar]
-        required: [attribute, units]
+            enum: [US Dollar per TB per month]
+        required: [name, units]
       - properties:
-          attribute:
+          name:
             enum: [bandwidth]
           units:
             enum: [Mbps, Gbps, Tbps, Kbps, MBps, GBps, TBps, KBps]
-        required: [attribute, units]
+        required: [name, units]
       - properties:
-          attribute:
+          name:
             enum: [size]
           units:
             enum: [TB, GB, MB, KB]
-        required: [attribute, units]
+        required: [name, units]
+      - properties:
+          name:
+            enum: [distance]
+          units:
+            enum: [m, km]
+        required: [name, units]        

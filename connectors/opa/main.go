@@ -16,12 +16,8 @@ import (
 )
 
 const (
-	envOPAServerURL             = "OPA_SERVER_URL"
-	envCatalogConnectorURL      = "CATALOG_CONNECTOR_URL"
-	envCatalogProviderName      = "CATALOG_PROVIDER_NAME"
-	envConnectionTimeout        = "CONNECTION_TIMEOUT"
-	envDefaultConnectionTimeout = 10
-	commandPort                 = 8080
+	envOPAServerURL = "OPA_SERVER_URL"
+	commandPort     = 8080
 )
 
 // NewRouter returns a new router.
