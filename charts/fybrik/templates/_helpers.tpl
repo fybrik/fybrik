@@ -120,10 +120,18 @@ Get modules namespace
 {{- end -}}
 
 {{/*
-Print sub-directory in /data directory.
+Print Data directory.
+*/}}
+{{- define "fybrik.printDataDir" -}}
+/data
+{{- end }}
+
+{{/*
+Print sub directory in /data directory. The sub directory is
+passed as parameter to the function.
 */}}
 {{- define "fybrik.printDataSubdir" -}}
 {{- $dir := toString (first .) -}}
-{{- printf "/data/%s/" $dir }}
+{{- printf "%s/%s/" (include "fybrik.printDataDir" .) $dir }}
 {{- end }}
 

@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/logging"
@@ -23,7 +24,7 @@ import (
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-var PolicyManagerTaxonomy = utils.DataRootDir + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
+var PolicyManagerTaxonomy = fappUtils.GetDataDir() + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
 func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {

@@ -1,6 +1,7 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
+export DATA ?= /tmp
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -45,13 +46,12 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
 .PHONY: pre-test
-pre-test: export DATA_ROOT_DIR=/data
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
-	mkdir -p $(DATA_ROOT_DIR)/taxonomy
-	mkdir -p $(DATA_ROOT_DIR)/adminconfig
-	cp charts/fybrik/files/taxonomy/*.json $(DATA_ROOT_DIR)/taxonomy/
-	cp charts/fybrik/files/adminconfig/* $(DATA_ROOT_DIR)/adminconfig/
-	cp samples/adminconfig/* $(DATA_ROOT_DIR)/adminconfig/
+	mkdir -p $(DATA)/taxonomy
+	mkdir -p $(DATA)/adminconfig
+	cp charts/fybrik/files/taxonomy/*.json $(DATA)/taxonomy/
+	cp charts/fybrik/files/adminconfig/* $(DATA)/adminconfig/
+	cp samples/adminconfig/* $(DATA)/adminconfig/
 	mkdir -p manager/testdata/unittests/basetaxonomy
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
@@ -59,7 +59,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
   	-b charts/fybrik/files/taxonomy/taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
-	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_ROOT_DIR)/taxonomy/taxonomy.json
+	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA)/taxonomy/taxonomy.json
 
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints

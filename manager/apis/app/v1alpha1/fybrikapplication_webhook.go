@@ -17,7 +17,7 @@ import (
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
-var taxonomyFilePath = utils.DataRootDir + "/taxonomy/fybrik_application.json"
+var taxonomyFilePath = utils.GetDataDir() + "/taxonomy/fybrik_application.json"
 
 func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).

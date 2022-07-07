@@ -18,6 +18,8 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
+
+	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
 )
 
 func buildTestChart() *chart.Chart {
@@ -75,7 +77,7 @@ func TestHelmRegistry(t *testing.T) {
 		t.Skip("No integration environment found. Skipping test...")
 	}
 
-	tmpDir, err := ioutil.TempDir("", "test-helm-")
+	tmpDir, err := ioutil.TempDir(fappUtils.GetDataDir(), "test-helm-")
 	if err != nil {
 		t.Errorf("Unable to create temporary directory: %s", err)
 	}

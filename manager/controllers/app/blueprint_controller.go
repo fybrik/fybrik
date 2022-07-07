@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
@@ -219,7 +220,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log *zerol
 		return ctrl.Result{}, err
 	}
 
-	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
+	tmpDir, err := ioutil.TempDir(fappUtils.GetDataDir(), "fybrik-helm-")
 	if err != nil {
 		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}

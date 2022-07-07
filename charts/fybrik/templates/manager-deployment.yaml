@@ -114,8 +114,8 @@ spec:
               name: cert
               readOnly: true  
             {{- end }}     
-            - name: tmp
-              mountPath: /tmp
+            - name: data
+              mountPath: /data
             - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
             - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "adminconfig" ) }}
@@ -138,7 +138,7 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
         {{- end }}
-        - name: tmp
+        - name: data
           emptyDir: {}
         - name: fybrik-taxonomy
           configMap:

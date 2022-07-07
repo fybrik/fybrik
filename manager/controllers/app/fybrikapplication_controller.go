@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -69,8 +70,8 @@ type ApplicationContext struct {
 	UUID        string
 }
 
-var ApplicationTaxonomy = utils.DataRootDir + "/taxonomy/fybrik_application.json"
-var DataCatalogTaxonomy = utils.DataRootDir + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var ApplicationTaxonomy = fappUtils.GetDataDir() + "/taxonomy/fybrik_application.json"
+var DataCatalogTaxonomy = fappUtils.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
 
 const (
 	FybrikApplicationKind = "FybrikApplication"

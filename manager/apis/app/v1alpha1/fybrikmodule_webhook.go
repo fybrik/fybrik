@@ -29,7 +29,7 @@ var _ webhook.Validator = &FybrikModule{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikModule) ValidateCreate() error {
-	taxonomyFile := utils.DataRootDir + "/taxonomy/fybrik_module.json"
+	taxonomyFile := utils.GetDataDir() + "/taxonomy/fybrik_module.json"
 	return r.ValidateFybrikModule(taxonomyFile)
 }
 

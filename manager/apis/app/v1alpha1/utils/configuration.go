@@ -3,4 +3,11 @@
 
 package utils
 
-const DataRootDir string = "/data"
+import (
+	"os"
+)
+
+// GetDataDir returns the directory where the data resides.
+func GetDataDir() string {
+	return os.Getenv("DATA")
+}
