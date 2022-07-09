@@ -45,7 +45,6 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
@@ -77,31 +76,28 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 		// This section was manually changed to handle tls communication
 		// start section
 		setupLog := logging.LogInit(logging.SETUP, "policymanager client")
+		scheme := runtime.NewScheme()
+		setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
+		err := corev1.AddToScheme(scheme)
+		if err != nil {
+			setupLog.Error().Err(err)
+			return nil
+		}
 
-		if utils.GetPolicyManagerUseTLS() {
-			scheme := runtime.NewScheme()
-			setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
-			err := corev1.AddToScheme(scheme)
-			if err != nil {
-				setupLog.Error().Err(err)
-				return nil
-			}
-
-			client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
-			if err != nil {
-				setupLog.Error().Err(err)
-				return nil
-			}
-			tlsConfig, err := fybrikTLS.GetClientTLSConfig(&setupLog, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-				utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetPolicyManagerUseMTLS())
-			if err != nil {
-				setupLog.Error().Err(err)
-				return nil
-			}
-			transport := &http.Transport{TLSClientConfig: tlsConfig}
+		client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+		if err != nil {
+			setupLog.Error().Err(err)
+			return nil
+		}
+		config, err := fybrikTLS.GetClientTLSConfig(&setupLog, client)
+		if err != nil {
+			setupLog.Error().Err(err)
+			return nil
+		}
+		if config != nil {
+			transport := &http.Transport{TLSClientConfig: config}
 			cfg.HTTPClient = &http.Client{Transport: transport}
 		} else {
-			setupLog.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			cfg.HTTPClient = http.DefaultClient
 		}
 		//end section

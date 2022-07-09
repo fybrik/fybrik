@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
@@ -18,10 +19,13 @@ import (
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
 	"fybrik.io/fybrik/pkg/connectors/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
-const CommandPort = 8080
+const (
+	envServicePort = "SERVICE_PORT"
+)
 
 // RootCmd defines the root cli command
 func RootCmd() *cobra.Command {
@@ -36,7 +40,14 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := CommandPort
+	portStr, err := environment.MustGetEnv(envServicePort)
+	if err != nil {
+		return nil
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil
+	}
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run the connector",
@@ -61,17 +72,14 @@ func RunCmd() *cobra.Command {
 			handler := connector.NewHandler(client)
 			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
-
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			if utils.GetCatalogConnectorUseTLS() {
-				handler.Log.Info().Msg(fybrikTLS.TLSEnabledMsg)
-				config, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetCatalogConnectorUseMTLS())
-				if err != nil {
-					return nil
-				}
 
-				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
+			if utils.GetisTLSPort() {
+				tlsConfig, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client)
+				if err != nil {
+					return errors.Wrap(err, "failed to get tls config")
+				}
+				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: tlsConfig}
 				return server.ListenAndServeTLS("", "")
 			}
 			handler.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)

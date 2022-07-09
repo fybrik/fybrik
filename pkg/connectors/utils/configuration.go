@@ -9,34 +9,22 @@ import (
 
 // Attributes that are defined in a config map or the runtime environment
 const (
-	CatalogConnectorUseTLS  string = "CATALOG_CONNECTOR_USE_TLS"
-	CatalogConnectorUseMTLS string = "CATALOG_CONNECTOR_USE_MTLS"
-	PolicyManagerUseTLS     string = "POLICY_MANAGER_CONNECTOR_USE_TLS"
-	PolicyManagerUseMTLS    string = "POLICY_MANAGER_CONNECTOR_USE_MTLS"
-	CertSecretName          string = "CERT_SECRET_NAME"
-	CertSecretNamespace     string = "CERT_SECRET_NAMESPACE"
-	CACERTSecretName        string = "CACERT_SECRET_NAME"      //nolint:gosec
-	CACERTSecretNamespace   string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
+	isTLSPort             string = "CONNECTOR_USE_TLS"
+	ConnectorUseMTLS      string = "CONNECTOR_USE_MTLS"
+	CertSecretName        string = "CERT_SECRET_NAME"
+	CertSecretNamespace   string = "CERT_SECRET_NAMESPACE"
+	CACERTSecretName      string = "CACERT_SECRET_NAME"      //nolint:gosec
+	CACERTSecretNamespace string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
 )
 
-// GetCatalogConnectorUseTLS returns true if data connector communication should use tls.
-func GetCatalogConnectorUseTLS() bool {
-	return os.Getenv(CatalogConnectorUseTLS) == "true"
+// isTLSPort returns true if the connector communication should use tls.
+func GetisTLSPort() bool {
+	return os.Getenv(isTLSPort) == "true"
 }
 
-// GetCatalogConnectorUseMTLS returns true if data connector communication should use mtls.
-func GetCatalogConnectorUseMTLS() bool {
-	return os.Getenv(CatalogConnectorUseMTLS) == "true"
-}
-
-// GetPolicyManagerUseTLS returns true if policy manager communication should use tls.
-func GetPolicyManagerUseTLS() bool {
-	return os.Getenv(PolicyManagerUseTLS) == "true"
-}
-
-// GetPolicyManagerUseTLS returns true if policy manager communication should use mtls.
-func GetPolicyManagerUseMTLS() bool {
-	return os.Getenv(PolicyManagerUseMTLS) == "true"
+// GetConnectorUseMTLS returns true if the connector communication should use mtls.
+func GetConnectorUseMTLS() bool {
+	return os.Getenv(ConnectorUseMTLS) == "true"
 }
 
 // GetCertSecretName returns the name of the kubernetes secret which holds the

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"strings"
 
+	"fybrik.io/fybrik/pkg/connectors/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	corev1 "k8s.io/api/core/v1"
@@ -50,17 +51,26 @@ const (
 	TLSCertKeySuffix = ".crt"
 )
 
-// GetServerTLSConfig returns the server tls config for tls connection between the manager and
-// the connectors based on the following params:
-// certSecretName:  kubernetes secret name which contains the server certificate
-// certSecretNamespace:  kubernetes secret namespace which contains the server certificate
-// caSecretName: kubernetes secret name which contains ca certificate used by the server to
-// validate certificate or the client.  Used when mtls is true.
-// caSecretNamespace: kubernetes secret namespace which contains ca certificate used by the server to
-// validate certificate or the client. Used when mtls is true.
-// mtls: true if mutual tls connection is used.
-func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSecretName, certSecretNamespace,
-	caSecretName, caSecretNamespace string, mtls bool) (*tls.Config, error) {
+// GetServerTLSConfig returns the server config for tls connection between the manager and
+// the connectors.
+func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
+	// certSecretName is kubernetes secret name which contains the server certificate
+	certSecretName := utils.GetCertSecretName()
+	// certSecretNamespace is kubernetes secret namespace which contains the server certificate
+	certSecretNamespace := utils.GetCertSecretNamespace()
+	// caSecretName is kubernetes secret name which contains ca certificate used by the server to
+	// validate certificate or the client.  Used when mutual tls is used.
+	caSecretName := utils.GetCACERTSecretName()
+	//	caSecretNamespace is  kubernetes secret namespace which contains ca certificate used by the server to
+	// validate certificate or the client. Used when mutual tls is used.
+	caSecretNamespace := utils.GetCACERTSecretNamespace()
+	useTLS := utils.GetisTLSPort()
+	useMTLS := utils.GetConnectorUseMTLS()
+
+	if !useTLS {
+		return nil, errors.New("error is creating tls config: server does not use tls")
+	}
+	serverLog.Info().Msg(TLSEnabledMsg)
 	serverCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 	if err != nil {
 		serverLog.Error().Msg(err.Error())
@@ -73,52 +83,62 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client, certSe
 		return nil, err
 	}
 	var config *tls.Config
-	if mtls {
-		serverLog.Info().Msg(MTLSEnabledMsg)
-		CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
-		if err != nil {
-			return nil, err
-		}
-		CACertPool := x509.NewCertPool()
-		for key, element := range CACertsData {
-			// skip non cerificate keys like crt.key if exists in the secret
-			if !strings.HasSuffix(key, TLSCertKeySuffix) {
-				continue
-			}
-			if !CACertPool.AppendCertsFromPEM(element) {
-				serverLog.Error().Err(err).Msg(err.Error())
-				return nil, errors.New("error in GetServerTLSConfig in AppendCertsFromPEM trying to lead key:" + key)
-			}
-		}
-
-		config = &tls.Config{
-			Certificates: []tls.Certificate{loadedCertServer},
-			ClientAuth:   tls.RequireAndVerifyClientCert,
-			ClientCAs:    CACertPool,
-			MinVersion:   tls.VersionTLS13,
-		}
-	} else {
+	if !useMTLS {
 		serverLog.Info().Msg(MTLSDisabledMsg)
 		config = &tls.Config{
 			Certificates: []tls.Certificate{loadedCertServer},
 			ClientAuth:   tls.NoClientCert,
 			MinVersion:   tls.VersionTLS13,
 		}
+		return config, nil
 	}
+	serverLog.Info().Msg(MTLSEnabledMsg)
+	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
+	if err != nil {
+		return nil, err
+	}
+	CACertPool := x509.NewCertPool()
+	for key, element := range CACertsData {
+		// skip non cerificate keys like crt.key if exists in the secret
+		if !strings.HasSuffix(key, TLSCertKeySuffix) {
+			continue
+		}
+		if !CACertPool.AppendCertsFromPEM(element) {
+			serverLog.Error().Err(err).Msg(err.Error())
+			return nil, errors.New("error in GetServerTLSConfig in AppendCertsFromPEM trying to lead key:" + key)
+		}
+	}
+
+	config = &tls.Config{
+		Certificates: []tls.Certificate{loadedCertServer},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    CACertPool,
+		MinVersion:   tls.VersionTLS13,
+	}
+
 	return config, nil
 }
 
-// GetClientTLSConfig returns the client tls config for tls connection between the manager and
-// the connectors based on the following params:
-// certSecretName:  kubernetes secret name which contains the client certificate
-// certSecretNamespace:  kubernetes secret namespace which contains the client certificate
-// caSecretName: kubernetes secret name which contains ca certificate used by the client to
-// validate certificate or the server.  Used when mtls is true.
-// caSecretNamespace: kubernetes secret namespace which contains ca certificate used by the client to
-// validate certificate or the server. Used when mtls is true.
-// mtls: true if mutual tls connection is used.
-func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSecretName, certSecretNamespace,
-	caSecretName, caSecretNamespace string, mtls bool) (*tls.Config, error) {
+// GetClientTLSConfig returns the client config for tls connection between the manager and
+// the connectors.
+func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
+	// certSecretName is  kubernetes secret name which contains the client certificate
+	certSecretName := utils.GetCertSecretName()
+	// certSecretNamespace is kubernetes secret namespace which contains the client certificate
+	certSecretNamespace := utils.GetCertSecretNamespace()
+	// caSecretName is kubernetes secret name which contains ca certificate used by the client to
+	// validate certificate or the server.  Used when mutual tls is used.
+	caSecretName := utils.GetCACERTSecretName()
+	// caSecretNamespace is kubernetes secret namespace which contains ca certificate used by the client to
+	// validate certificate or the server. Used when mutual tls is used.
+	caSecretNamespace := utils.GetCACERTSecretNamespace()
+
+	if caSecretName == "" || caSecretNamespace == "" {
+		// no CA certificates found, returning nil
+		clientLog.Info().Msg(TLSDisabledMsg)
+		return nil, nil
+	}
+	clientLog.Info().Msg(TLSEnabledMsg)
 	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
 	if err != nil {
 		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get ca cert")
@@ -138,29 +158,31 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client, certSe
 	}
 
 	var tlsConfig *tls.Config
-	if mtls {
-		clientLog.Info().Msg(MTLSEnabledMsg)
-		clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
-		if err != nil {
-			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
-			return nil, err
-		}
-		cert, err := tls.X509KeyPair(clientCertsData[corev1.TLSCertKey], clientCertsData[corev1.TLSPrivateKeyKey])
-		if err != nil {
-			clientLog.Error().Err(err).Msg("error in X509KeyPair")
-			return nil, err
-		}
-		tlsConfig = &tls.Config{
-			RootCAs:      caCertPool,
-			Certificates: []tls.Certificate{cert},
-			MinVersion:   tls.VersionTLS13,
-		}
-	} else {
+	if certSecretName == "" || certSecretNamespace == "" {
 		clientLog.Info().Msg(MTLSDisabledMsg)
 		tlsConfig = &tls.Config{
 			RootCAs:    caCertPool,
 			MinVersion: tls.VersionTLS13,
 		}
+		return tlsConfig, nil
 	}
+
+	clientLog.Info().Msg(MTLSEnabledMsg)
+	clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
+	if err != nil {
+		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")
+		return nil, err
+	}
+	cert, err := tls.X509KeyPair(clientCertsData[corev1.TLSCertKey], clientCertsData[corev1.TLSPrivateKeyKey])
+	if err != nil {
+		clientLog.Error().Err(err).Msg("error in X509KeyPair")
+		return nil, err
+	}
+	tlsConfig = &tls.Config{
+		RootCAs:      caCertPool,
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS13,
+	}
+
 	return tlsConfig, nil
 }

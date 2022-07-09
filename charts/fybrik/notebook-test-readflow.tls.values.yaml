@@ -14,13 +14,8 @@ global:
   loggingVerbosity: -1
 
 coordinator:
-  catalogConnectorURL: https://katalog-connector:443
-  policyManagerConnectorURL: https://opa-connector:443
-  tls:
-    catalogConnectorUseTLS: true
-    catalogConnectorUseMTLS: true
-    policyManagerConnectorUseTLS: true
-    policyManagerConnectorUseMTLS: true
+  catalogConnectorURL: https://katalog-connector:8443
+  policyManagerConnectorURL: https://opa-connector:8443
 
 # Manager component
 manager:
@@ -36,9 +31,10 @@ manager:
 
 katalogConnector:
   service:
-    port: 443
+    port: 8443
        
   tls:
+    mtls: true
     certs:
       serverCertSecretName: "test-tls-katalog-connector-certs"
       serverCertSecretNamespace: "fybrik-system"
@@ -47,13 +43,14 @@ katalogConnector:
 
 opaConnector:
   tls:
+    mtls: true
     certs:
       serverCertSecretName: "test-tls-opa-connector-certs"
       serverCertSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
       cacertSecretNamespace: "fybrik-system"
   service:
-    port: 443
+    port: 8443
 
 opaServer:
 

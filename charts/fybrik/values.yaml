@@ -92,7 +92,7 @@ coordinator:
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
-  # Defaults to `http://<catalog>-connector:80`.
+  # Defaults to `http://<catalog>-connector:8080`.
   # For tls connection use: "https://<catalog>-connector:443"
   catalogConnectorURL: ""
 
@@ -101,21 +101,9 @@ coordinator:
   policyManager: "opa"
 
   # Overrides the policy manager connector URL.
-  # Defaults to `http://<policyManager>-connector:80`.
+  # Defaults to `http://<policyManager>-connector:8080`.
   # For tls connection use: "https://<policyManager>-connector:443"
   policyManagerConnectorURL: ""
-
-  tls:
-    # Specifies whether the catalog connector communication should use tls.
-    catalogConnectorUseTLS: false
-    # Specifies whether the catalog connector should use mutual tls authentication.
-    catalogConnectorUseMTLS: false
-
-    # Specifies whether the policy manager communication should use tls.
-    policyManagerConnectorUseTLS: false
-    # Specifies whether the policy manager communication should use mutual tls authentication.
-    policyManagerConnectorUseMTLS: false
-
 
   # Configure the vault instance to be used by the coordinator manager
   vault:
@@ -370,8 +358,8 @@ katalogConnector:
     name: katalog-connector
 
   tls:
-    # Relavent if the connection between the manager and the connectors
-    # uses tls.
+    # Specifies whether the katalog connector communication should use mutual tls.
+    mtls: false
     certs:
       # Name of kubernetes tls secret that holds the katalog-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
@@ -401,7 +389,7 @@ katalogConnector:
   service:
     type: ClusterIP
     # For tls connection use port 443
-    port: 80
+    port: 8080
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -457,6 +445,8 @@ opaConnector:
     name: opa-connector
 
   tls:
+    # Specifies whether the opa connector communication should use mutual tls.
+    mtls: false
     # Relavent if the connection between the manager and the connectors
     # uses tls.
     certs:
@@ -488,7 +478,7 @@ opaConnector:
   service:
     type: ClusterIP
     # For tls connection use port 443
-    port: 80
+    port: 8080
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

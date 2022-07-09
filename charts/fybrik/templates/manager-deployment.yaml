@@ -96,26 +96,14 @@ spec:
                 name: razee-credentials
             {{- end }}
           env:
-            - name: CATALOG_CONNECTOR_USE_TLS
-              value: {{ .Values.coordinator.tls.catalogConnectorUseTLS | quote | toString }}
-            - name: POLICY_MANAGER_CONNECTOR_USE_TLS
-              value: {{ .Values.coordinator.tls.policyManagerConnectorUseTLS | quote | toString }}
-            {{- if or .Values.coordinator.tls.catalogConnectorUseTLS .Values.coordinator.tls.policyManagerConnectorUseTLS }}
-            - name: CATALOG_CONNECTOR_USE_MTLS
-              value: {{ .Values.coordinator.tls.catalogConnectorUseMTLS | quote | toString }}
-            - name: POLICY_MANAGER_CONNECTOR_USE_MTLS
-              value: {{ .Values.coordinator.tls.policyManagerConnectorUseMTLS | quote | toString }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.manager.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
               value: {{ .Values.manager.tls.certs.cacertSecretNamespace }}
-            {{- if or .Values.coordinator.tls.catalogConnectorUseMTLS .Values.coordinator.tls.policyManagerConnectorUseMTLS }}
             - name: CERT_SECRET_NAME
               value: {{ .Values.manager.tls.certs.clientCertSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.manager.tls.certs.clientCertSecretNamespace }}
-            {{- end }}
-            {{- end }}
             - name: ENABLE_WEBHOOKS
             {{- if .Values.clusterScoped }} 
               value: "true"

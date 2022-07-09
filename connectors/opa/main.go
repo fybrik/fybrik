@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
@@ -24,7 +25,7 @@ import (
 
 const (
 	envOPAServerURL = "OPA_SERVER_URL"
-	commandPort     = 8080
+	envServicePort  = "SERVICE_PORT"
 )
 
 // NewRouter returns a new router.
@@ -47,7 +48,14 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := commandPort
+	portStr, err := environment.MustGetEnv(envServicePort)
+	if err != nil {
+		return nil
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return nil
+	}
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run opa connector",
@@ -69,24 +77,23 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			if utils.GetPolicyManagerUseTLS() {
-				controller.Log.Info().Msg(fybrikTLS.TLSEnabledMsg)
+			var client kclient.Client
+			if utils.GetisTLSPort() {
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)
 				if err != nil {
 					return errors.Wrap(err, "unable to add corev1 to schema")
 				}
-				client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+				client, err = kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 				if err != nil {
 					return errors.Wrap(err, "failed to create a Kubernetes client")
 				}
-				config, err := fybrikTLS.GetServerTLSConfig(&controller.Log, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-					utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetPolicyManagerUseMTLS())
-				if err != nil {
-					return nil
-				}
 
-				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: config}
+				tlsConfig, err := fybrikTLS.GetServerTLSConfig(&controller.Log, client)
+				if err != nil {
+					return errors.Wrap(err, "failed to get tls config")
+				}
+				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: tlsConfig}
 				return server.ListenAndServeTLS("", "")
 			}
 			controller.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)

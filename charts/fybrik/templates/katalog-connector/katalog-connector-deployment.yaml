@@ -46,26 +46,24 @@ spec:
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
           env:
+            - name: SERVICE_PORT
+              value: {{ .Values.katalogConnector.service.port | quote }}
             - name: PRETTY_LOGGING
               value: {{ .Values.global.prettyLogging | quote }}
             - name: LOGGING_VERBOSITY
               value: {{ .Values.global.loggingVerbosity | quote }}
-            - name: CATALOG_CONNECTOR_USE_TLS
-              value: {{ .Values.coordinator.tls.catalogConnectorUseTLS | quote | toString }}
-            {{- if .Values.coordinator.tls.catalogConnectorUseTLS }}
-            - name: CATALOG_CONNECTOR_USE_MTLS
-              value: {{ .Values.coordinator.tls.catalogConnectorUseMTLS | quote | toString }}
+            - name: CONNECTOR_USE_TLS
+              value: {{ include "fybrik.isTLSPort" (tuple .Values.katalogConnector.service.port) | quote | toString }}
+            - name: CONNECTOR_USE_MTLS
+              value: {{ .Values.katalogConnector.tls.mtls | quote | toString }}
             - name: CERT_SECRET_NAME
               value: {{ .Values.katalogConnector.tls.certs.serverCertSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.katalogConnector.tls.certs.serverCertSecretNamespace }}
-            {{- if .Values.coordinator.tls.catalogConnectorUseMTLS }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
               value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
-            {{- end }}
-            {{- end }}
 
       {{- with .Values.katalogConnector.nodeSelector }}
       nodeSelector:

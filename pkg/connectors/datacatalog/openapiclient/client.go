@@ -42,7 +42,6 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
@@ -88,18 +87,16 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 			return nil
 		}
 
-		if utils.GetCatalogConnectorUseTLS() {
-			setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
-			tlsConfig, err := fybrikTLS.GetClientTLSConfig(&setupLog, client, utils.GetCertSecretName(), utils.GetCertSecretNamespace(),
-				utils.GetCACERTSecretName(), utils.GetCACERTSecretNamespace(), utils.GetCatalogConnectorUseMTLS())
-			if err != nil {
-				setupLog.Error().Err(err)
-				return nil
-			}
-			transport := &http.Transport{TLSClientConfig: tlsConfig}
+		setupLog.Info().Msg(fybrikTLS.TLSEnabledMsg)
+		config, err := fybrikTLS.GetClientTLSConfig(&setupLog, client)
+		if err != nil {
+			setupLog.Error().Err(err)
+			return nil
+		}
+		if config != nil {
+			transport := &http.Transport{TLSClientConfig: config}
 			cfg.HTTPClient = &http.Client{Transport: transport}
 		} else {
-			setupLog.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			cfg.HTTPClient = http.DefaultClient
 		}
 		// end section
