@@ -151,7 +151,7 @@ Relevant only when .Values.chartsPersistentVolumeClaim is set.
 {{/*
 Print Data directory.
 */}}
-{{- define "fybrik.printDataDir" -}}
+{{- define "fybrik.getDataDir" -}}
 /data
 {{- end }}
 
@@ -159,8 +159,8 @@ Print Data directory.
 Print sub directory in /data directory. The sub directory is
 passed as parameter to the function.
 */}}
-{{- define "fybrik.printDataSubdir" -}}
+{{- define "fybrik.getDataSubdir" -}}
 {{- $dir := toString (first .) -}}
-{{- printf "%s/%s" (include "fybrik.printDataDir" .) $dir }}
+{{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
 {{- end }}
 

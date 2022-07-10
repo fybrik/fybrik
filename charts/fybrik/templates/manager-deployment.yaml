@@ -42,11 +42,11 @@ spec:
           command:
           - cp 
           - -rf
-          - {{ include "fybrik.printDataDir" . }}/tools
-          - {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}/
+          - {{ include "fybrik.getDataDir" . }}/tools
+          - {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/
           volumeMounts:
             - name: solver-volume
-              mountPath: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}
+              mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
       {{- end }}
       containers:
         {{- if .Values.manager.socat }}
@@ -108,7 +108,7 @@ spec:
               
             {{- if .Values.manager.solver.image }}
             - name: CSP_PATH
-              value: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}/tools/bin/solver
+              value: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/tools/bin/solver
             {{- end }}
 
             {{- if .Values.applicationNamespace }}
@@ -136,13 +136,13 @@ spec:
               readOnly: true  
             {{- end }}     
             - name: data
-              mountPath: {{ include "fybrik.printDataDir" . }}
-            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "taxonomy" ) }}
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
-            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "adminconfig" ) }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "adminconfig" ) }}
               name: fybrik-adminconfig
             {{- if .Values.manager.solver.image }}
-            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
               name: solver-volume
             {{- end }}
             {{- if .Values.manager.chartsPersistentVolumeClaim }}
