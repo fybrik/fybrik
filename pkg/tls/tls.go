@@ -10,12 +10,13 @@ import (
 	"errors"
 	"strings"
 
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"fybrik.io/fybrik/pkg/connectors/utils"
 )
 
 const (
