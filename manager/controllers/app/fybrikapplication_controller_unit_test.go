@@ -234,11 +234,11 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 	r := createTestFybrikApplicationController(cl, s)
 	g.Expect(r).NotTo(gomega.BeNil())
 	appContext := ApplicationContext{Application: application, Log: &r.Log}
-	g.Expect(r.reconcileFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
+	g.Expect(r.addFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
 	application.DeletionTimestamp = &metav1.Time{Time: time.Now()}
-	g.Expect(r.reconcileFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
+	g.Expect(r.removeFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).To(gomega.BeEmpty(), "finalizers have not been removed")
 }
 

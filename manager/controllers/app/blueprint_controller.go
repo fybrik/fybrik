@@ -116,7 +116,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(ctx context.Context, cfg *acti
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
 
-			if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
+			if err := r.Client.Update(ctx, blueprint); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
@@ -125,7 +125,7 @@ func (r *BlueprintReconciler) reconcileFinalizers(ctx context.Context, cfg *acti
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(blueprint, BlueprintFinalizerName)
-		if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
+		if err := r.Client.Update(ctx, blueprint); err != nil {
 			return ctrl.Result{}, err
 		}
 	}

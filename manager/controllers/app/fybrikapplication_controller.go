@@ -73,6 +73,8 @@ const (
 	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
 	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
 	FybrikApplicationKind = "FybrikApplication"
+	ConfigAnnotation      = "kubectl.kubernetes.io/last-applied-configuration"
+	PlotterUpdatePrefix   = "plotter_"
 	Interval              = 10
 )
 
@@ -85,8 +87,14 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	sublog.Trace().Msg("*** FybrikApplication Reconcile ***")
 	// obtain FybrikApplication resource
+	plotterUpdate := false
+	nsName := req.NamespacedName
+	if strings.HasPrefix(nsName.Name, PlotterUpdatePrefix) {
+		plotterUpdate = true
+		nsName.Name = nsName.Name[len(PlotterUpdatePrefix):]
+	}
 	application := &api.FybrikApplication{}
-	if err := r.Get(ctx, req.NamespacedName, application); err != nil {
+	if err := r.Get(ctx, nsName, application); err != nil {
 		sublog.Warn().Msg("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -97,49 +105,47 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// Log the fybrikapplication
 	logging.LogStructure(FybrikApplicationKind, application, &log, zerolog.TraceLevel, true, true)
 	applicationContext := ApplicationContext{Log: &log, Application: application, UUID: uuid}
-	if err := r.reconcileFinalizers(ctx, applicationContext); err != nil {
-		log.Error().Err(err).Msg("Could not reconcile finalizers.")
-		return ctrl.Result{}, err
+	if plotterUpdate && (application.Status.Generated == nil || application.Status.Generated.AppVersion != application.GetGeneration()) {
+		log.Debug().Msg("Ignoring plotter update")
+		return ctrl.Result{}, nil
 	}
 
-	// If the object has a scheduled deletion time, update status and return
-	if !application.DeletionTimestamp.IsZero() {
-		// The object is being deleted
-		return ctrl.Result{}, nil
+	// If the object has a scheduled deletion time, delete it and all resources it has created
+	if !applicationContext.Application.DeletionTimestamp.IsZero() {
+		return ctrl.Result{}, r.removeFinalizers(ctx, applicationContext)
 	}
 
 	observedStatus := application.Status.DeepCopy()
 	appVersion := application.GetGeneration()
 
-	// check if webhooks are enabled and application has been validated before
-	// or if validated application is outdated
-	if os.Getenv("ENABLE_WEBHOOKS") != "true" &&
-		(string(application.Status.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
-		// do validation on applicationContext
-		err := application.ValidateFybrikApplication(ApplicationTaxonomy)
-		log.Debug().Msg("Reconciler validating Fybrik application")
-		application.Status.ValidatedGeneration = appVersion
-		// if validation fails
-		if err != nil {
-			// set error message
-			log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
-			application.Status.ErrorMessage = err.Error()
-			application.Status.ValidApplication = v1.ConditionFalse
-			if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
-				return ctrl.Result{}, err
-			}
-			return ctrl.Result{}, nil
-		}
-		application.Status.ValidApplication = v1.ConditionTrue
+	if err := r.validateApp(ctx, applicationContext); err != nil {
+		return ctrl.Result{}, err
 	}
 	if application.Status.ValidApplication == v1.ConditionFalse {
 		return ctrl.Result{}, nil
 	}
 
+	// no datasets are specified - remove finalizers and old resources
+	if len(applicationContext.Application.Spec.Data) == 0 {
+		if err := r.removeFinalizers(ctx, applicationContext); err != nil {
+			return ctrl.Result{}, err
+		}
+		initStatus(applicationContext.Application)
+		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
+		application.Status.ObservedGeneration = appVersion
+		return ctrl.Result{}, utils.UpdateStatus(ctx, r.Client, application, observedStatus)
+	}
+
 	// check if reconcile is required
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
-	generationComplete := r.ResourceInterface.ResourceExists(observedStatus.Generated) && (observedStatus.Generated.AppVersion == appVersion)
-	if (!generationComplete) || (observedStatus.ObservedGeneration != appVersion) {
+	generationComplete := observedStatus.Generated != nil && (observedStatus.Generated.AppVersion == appVersion)
+	if plotterUpdate {
+		resourceStatus, err := r.ResourceInterface.GetResourceStatus(application.Status.Generated)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		r.checkReadiness(applicationContext, resourceStatus)
+	} else if (observedStatus.ObservedGeneration != appVersion) || !generationComplete {
 		if result, err := r.reconcile(applicationContext); err != nil {
 			// another attempt will be done
 			// users should be informed in case of errors
@@ -148,32 +154,23 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return result, err
 		}
 		application.Status.ObservedGeneration = appVersion
-	} else {
-		resourceStatus, err := r.ResourceInterface.GetResourceStatus(application.Status.Generated)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-		r.checkReadiness(applicationContext, resourceStatus)
 	}
 	application.Status.Ready = isReady(application)
-
-	// Update CRD status in case of change (other than deletion, which was handled separately)
-	if application.DeletionTimestamp.IsZero() {
-		log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(application.GetGeneration()))
-		if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
+	log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(application.GetGeneration()))
+	if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
+		return ctrl.Result{}, err
+	}
+	// add finalizers
+	if application.Status.Generated != nil || (len(application.Status.ProvisionedStorage) > 0) {
+		if err := r.addFinalizers(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
-	errorMsg := getErrorMessages(application)
-	if errorMsg != "" {
+	if errorMsg := getErrorMessages(application); errorMsg != "" {
 		log.Warn().Str(logging.ACTION, logging.UPDATE).Msg("Reconcile failed with errors")
+		// trigger a new reconcile
+		return ctrl.Result{Requeue: true}, nil
 	}
-
-	// trigger a new reconcile if required (the fybrikapplication is not ready)
-	if !isReady(application) {
-		return ctrl.Result{RequeueAfter: Interval * time.Second}, nil
-	}
-
 	return ctrl.Result{}, nil
 }
 
@@ -248,34 +245,39 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 	}
 }
 
-// reconcileFinalizers reconciles finalizers for FybrikApplication
-func (r *FybrikApplicationReconciler) reconcileFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
+func (r *FybrikApplicationReconciler) getFinalizerName() string {
+	return r.Name + ".finalizer"
+}
+
+// removeFinalizers removes finalizers for FybrikApplication
+func (r *FybrikApplicationReconciler) removeFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
 	// finalizer
-	finalizerName := r.Name + ".finalizer"
-	hasFinalizer := ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName)
-
-	// If the object has a scheduled deletion time, delete it and all resources it has created
-	if !applicationContext.Application.DeletionTimestamp.IsZero() || (len(applicationContext.Application.Spec.Data) == 0) {
-		// The object is being deleted, or no datasets are defined
-		if hasFinalizer { // Finalizer was created when the object was created
-			// the finalizer is present - delete the allocated resources
-			if err := r.deleteExternalResources(applicationContext); err != nil {
-				return err
-			}
-
-			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
-
-			if err := utils.UpdateFinalizers(ctx, r.Client, applicationContext.Application); err != nil {
-				return err
-			}
+	finalizerName := r.getFinalizerName()
+	if ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName) {
+		original := applicationContext.Application.DeepCopy()
+		// the finalizer is present - delete the allocated resources
+		if err := r.deleteExternalResources(applicationContext); err != nil {
+			return err
 		}
-		return nil
+		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
+		ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
+		// use Patch to preserve the generation version
+		if err := r.Patch(ctx, applicationContext.Application, client.MergeFrom(original)); err != nil {
+			return err
+		}
 	}
-	// Make sure this CRD instance has a finalizer
-	if !hasFinalizer {
+	return nil
+}
+
+// addFinalizers adds finalizers for FybrikApplication
+func (r *FybrikApplicationReconciler) addFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
+	// finalizer
+	finalizerName := r.getFinalizerName()
+	if !ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName) {
+		original := applicationContext.Application.DeepCopy()
 		ctrlutil.AddFinalizer(applicationContext.Application, finalizerName)
-		if err := utils.UpdateFinalizers(ctx, r.Client, applicationContext.Application); err != nil {
+		// use Patch to preserve the generation version
+		if err := r.Patch(ctx, applicationContext.Application, client.MergeFrom(original)); err != nil {
 			return err
 		}
 	}
@@ -351,11 +353,6 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	initStatus(applicationContext.Application)
 	if applicationContext.Application.Status.ProvisionedStorage == nil {
 		applicationContext.Application.Status.ProvisionedStorage = make(map[string]api.DatasetDetails)
-	}
-
-	if len(applicationContext.Application.Spec.Data) == 0 {
-		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
-		return ctrl.Result{}, nil
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
@@ -696,7 +693,7 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}
 		return []reconcile.Request{
 			{NamespacedName: types.NamespacedName{
-				Name:      name,
+				Name:      PlotterUpdatePrefix + name,
 				Namespace: namespace,
 			}},
 		}
@@ -849,4 +846,30 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		}
 	}
 	return plotterGen.ProvisionedStorage, plotterSpec, nil
+}
+
+// validation of FybrikApplication
+func (r *FybrikApplicationReconciler) validateApp(ctx context.Context, applicationContext ApplicationContext) error {
+	observedStatus := applicationContext.Application.Status
+	appVersion := applicationContext.Application.GetGeneration()
+
+	// check if webhooks are enabled and application has been validated before
+	// or if validated application is outdated
+	if os.Getenv("ENABLE_WEBHOOKS") != "true" &&
+		(string(observedStatus.ValidApplication) == "" || observedStatus.ValidatedGeneration != appVersion) {
+		// do validation on applicationContext
+		err := applicationContext.Application.ValidateFybrikApplication(ApplicationTaxonomy)
+		applicationContext.Log.Debug().Msg("Reconciler validating Fybrik application")
+		applicationContext.Application.Status.ValidatedGeneration = appVersion
+		// if validation fails
+		if err != nil {
+			// set error message
+			applicationContext.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
+			applicationContext.Application.Status.ErrorMessage = err.Error()
+			applicationContext.Application.Status.ValidApplication = v1.ConditionFalse
+			return utils.UpdateStatus(ctx, r.Client, applicationContext.Application, observedStatus)
+		}
+		applicationContext.Application.Status.ValidApplication = v1.ConditionTrue
+	}
+	return nil
 }

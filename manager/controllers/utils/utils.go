@@ -153,27 +153,12 @@ func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) stri
 	return uuid
 }
 
-// UpdateFinalizers adds or removes finalizers for a resource
-func UpdateFinalizers(ctx context.Context, cl client.Client, obj client.Object) error {
-	err := cl.Update(ctx, obj)
-	if !errors.IsConflict(err) {
-		return err
-	}
-	finalizers := obj.GetFinalizers()
-	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		// Retrieve the latest version of the object before attempting update
-		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
-		if err := cl.Get(ctx, client.ObjectKeyFromObject(obj), obj); err != nil {
-			return err
-		}
-		obj.SetFinalizers(finalizers)
-		return cl.Update(ctx, obj)
-	})
-}
-
 // UpdateStatus updates the resource status
 func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, previousStatus interface{}) error {
 	err := cl.Status().Update(ctx, obj)
+	if err == nil {
+		return nil
+	}
 	if !errors.IsConflict(err) {
 		return err
 	}
