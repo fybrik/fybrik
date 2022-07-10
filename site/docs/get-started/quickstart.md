@@ -23,7 +23,7 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 Ensure that you have the following:
 
 - [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or newer must be installed on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.20 or newer must be installed on your machine.
 - Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
 
 

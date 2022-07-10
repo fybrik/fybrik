@@ -240,12 +240,12 @@ manager:
     # Set to true to enable the use of the solver by Fybrik
     enabled: false
 
-  chartVolume: ""
-    # Specify a persistent volume claim, to be mounted by the manager, that can contain
-    # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart
-    # is available on volume first, then try to pull from a Docker registry if it does not exist.
-    # To populate the volume, create a 'charts' directory at the root of the mount,
-    # and place helm charts within the charts directory.
+  # Specify a persistent volume claim, to be mounted by the manager, that can contain
+  # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart
+  # is available on volume first, then try to pull from a Docker registry if it does not exist.
+  # To populate the volume, create a 'charts' directory at the root of the mount,
+  # and place helm charts within the charts directory.
+  chartsPersistentVolumeClaim: ""
 
 # OPA server component
 opaServer:

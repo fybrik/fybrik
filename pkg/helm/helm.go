@@ -28,8 +28,9 @@ import (
 // TODO add configuration
 const TIMEOUT = 300 * time.Second
 
-// TODO add configuration
-const chartsMountPath = "/opt/fybrik/charts/"
+// Relevant only when helm charts are placed in
+// local directory.
+const chartsDir = "/charts/"
 
 // Interface of a helm chart
 type Interface interface {
@@ -144,11 +145,11 @@ func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake
 // Impl implementation
 type Impl struct {
 	// if set, the "Load" and "pull" methods will try to check locally mounted charts
-	checkLocalMounts bool
+	localChartsMountPath string
 }
 
-func NewHelmerImpl(checkLMounts bool) *Impl {
-	return &Impl{checkLocalMounts: checkLMounts}
+func NewHelmerImpl(chartsPath string) *Impl {
+	return &Impl{localChartsMountPath: chartsPath}
 }
 
 // Uninstall helm release
@@ -159,12 +160,14 @@ func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*releas
 
 // Load helm chart
 func (r *Impl) Load(ref, chartPath string) (*chart.Chart, error) {
-	if r.checkLocalMounts {
+	if r.localChartsMountPath != "" {
+		var err error
 		// check for chart mounted in container
-		chrt, err := loader.Load(chartsMountPath + ref)
+		chrt, err := loader.Load(r.localChartsMountPath + chartsDir + ref)
 		if err == nil {
 			return chrt, nil
 		}
+		return nil, err
 	}
 
 	// Construct the packed chart path
@@ -261,11 +264,13 @@ func (r *Impl) Package(chartPath, destinationPath, version string) error {
 
 // Pull helm chart from repo
 func (r *Impl) Pull(cfg *action.Configuration, ref, destination string) error {
-	if r.checkLocalMounts {
+	if r.localChartsMountPath != "" {
+		var err error
 		// if chart mounted in container, no need to pull
-		if _, err := os.Stat(chartsMountPath + ref); err == nil {
+		if _, err = os.Stat(r.localChartsMountPath + chartsDir + ref); err == nil {
 			return nil
 		}
+		return err
 	}
 
 	chartRef, err := parseReference(ref)

@@ -127,9 +127,9 @@ spec:
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}
-            {{- if .Values.manager.chartVolume }}
-            - name: CHECK_LOCAL_CHARTS
-              value: "true"
+            {{- if .Values.manager.chartsPersistentVolumeClaim }}
+            - name: LOCAL_CHARTS_DIR
+              value: {{ include "fybrik.localChartsMountPath" . }}
             {{- end }}
           {{- if .Values.clusterScoped }} 
           ports:
@@ -151,8 +151,8 @@ spec:
             - mountPath: /tmp/solver
               name: solver-volume
             {{- end }}
-            {{- if .Values.manager.chartVolume }}
-            - mountPath: /opt/fybrik/
+            {{- if .Values.manager.chartsPersistentVolumeClaim }}
+            - mountPath: {{ include "fybrik.localChartsMountPath" . }}
               name: charts
             {{- end }}
           securityContext:
@@ -177,10 +177,10 @@ spec:
         - name: fybrik-adminconfig
           configMap:
             name: fybrik-adminconfig
-        {{- if .Values.manager.chartVolume }}
+        {{- if .Values.manager.chartsPersistentVolumeClaim }}
         - name: charts
           persistentVolumeClaim:
-            claimName: "{{ .Values.manager.chartVolume }}"
+            claimName: "{{ .Values.manager.chartsPersistentVolumeClaim }}"
         {{- end }}
       {{- with .Values.manager.nodeSelector }}
       nodeSelector:

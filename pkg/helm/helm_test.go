@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -60,7 +61,6 @@ var (
 	password      = os.Getenv("DOCKER_PASSWORD")
 	insecure, _   = strconv.ParseBool(os.Getenv("DOCKER_INSECURE"))
 	chartRef      = ChartRef(hostname, namespace, chartName, tagName)
-	impl          = NewHelmerImpl(true)
 )
 
 func ChartRef(hostname, namespace, name, tagname string) string {
@@ -92,6 +92,7 @@ func TestHelmRegistry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to setup test temp charts directory: %s", err)
 	}
+	impl := NewHelmerImpl("")
 
 	if username != "" && password != "" {
 		err = impl.RegistryLogin(hostname, username, password, insecure)
@@ -126,6 +127,53 @@ func TestHelmRegistry(t *testing.T) {
 	}
 }
 
+// TestLocalChartsMount tests the case where the helm charts
+// are located in a local directory and thus there is no need
+// to retrive them from the registry.
+func TestLocalChartsMount(t *testing.T) {
+	tmpChart := os.Getenv("TMP_CHART")
+	var err error
+	if tmpChart == "" {
+		t.Skip("No chart path was defined as environment. Skipping test...")
+	}
+
+	rootPath := filepath.Dir(tmpChart)
+	// remove the "charts" suffix from the file path
+	impl := NewHelmerImpl(filepath.Dir(rootPath))
+
+	tmpDir, err := ioutil.TempDir("", "test-helm-")
+	if err != nil {
+		t.Errorf("Unable to create temporary directory: %s", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	packedChartDir := path.Join(tmpDir, "packedChartDir")
+	err = os.Mkdir(packedChartDir, 0700)
+	if err != nil {
+		t.Errorf("Unable to setup test temp charts directory: %s", err)
+	}
+
+	err = impl.Package(tmpChart, packedChartDir, tagName)
+	assert.Nil(t, err)
+	Log(t, "package chart", err)
+
+	cfg, err := impl.GetConfig("", t.Logf)
+	assert.Nil(t, err)
+	err = impl.Pull(cfg, chartName, "")
+	assert.Nil(t, err)
+	Log(t, "pull chart", err)
+
+	pulledChart, err := impl.Load(chartName, "")
+	assert.Nil(t, err)
+	Log(t, "load chart", err)
+
+	packagePath := packedChartDir + "/mychart-0.7.0.tgz"
+	packedChart, err := loader.Load(packagePath)
+	assert.Nil(t, err)
+
+	assert.Equal(t, packedChart.Metadata.Name, pulledChart.Metadata.Name, "expected loaded chart equals saved chart")
+}
+
 func TestHelmRelease(t *testing.T) {
 	// Test should only run as integration test if registry is available
 	if _, isSet := os.LookupEnv("DOCKER_HOSTNAME"); !isSet {
@@ -133,7 +181,7 @@ func TestHelmRelease(t *testing.T) {
 	}
 	var err error
 	origChart := buildTestChart()
-
+	impl := NewHelmerImpl("")
 	cfg, err := impl.GetConfig(kubeNamespace, t.Logf)
 	assert.Nil(t, err)
 
