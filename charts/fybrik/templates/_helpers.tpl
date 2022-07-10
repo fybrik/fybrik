@@ -161,6 +161,6 @@ passed as parameter to the function.
 */}}
 {{- define "fybrik.printDataSubdir" -}}
 {{- $dir := toString (first .) -}}
-{{- printf "%s/%s/" (include "fybrik.printDataDir" .) $dir }}
+{{- printf "%s/%s" (include "fybrik.printDataDir" .) $dir }}
 {{- end }}
 

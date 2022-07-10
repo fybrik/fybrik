@@ -42,11 +42,11 @@ spec:
           command:
           - cp 
           - -rf
-          - "/data/tools"
-          - "/tmp/solver/"
+          - {{ include "fybrik.printDataDir" . }}/tools
+          - {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}/
           volumeMounts:
             - name: solver-volume
-              mountPath: /tmp/solver  
+              mountPath: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}
       {{- end }}
       containers:
         {{- if .Values.manager.socat }}
@@ -108,7 +108,7 @@ spec:
               
             {{- if .Values.manager.solver.image }}
             - name: CSP_PATH
-              value: "/tmp/solver/tools/bin/solver"
+              value: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}/tools/bin/solver
             {{- end }}
 
             {{- if .Values.applicationNamespace }}
@@ -136,13 +136,13 @@ spec:
               readOnly: true  
             {{- end }}     
             - name: data
-              mountPath: /data
+              mountPath: {{ include "fybrik.printDataDir" . }}
             - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
             - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "adminconfig" ) }}
               name: fybrik-adminconfig
             {{- if .Values.manager.solver.image }}
-            - mountPath: /tmp/solver
+            - mountPath: {{ include "fybrik.printDataSubdir" ( tuple "solver" ) }}
               name: solver-volume
             {{- end }}
             {{- if .Values.manager.chartsPersistentVolumeClaim }}
