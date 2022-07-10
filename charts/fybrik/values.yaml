@@ -93,7 +93,7 @@ coordinator:
 
   # Overrides the catalog connector URL.
   # Defaults to `http://<catalog>-connector:8080`.
-  # For tls connection use: "https://<catalog>-connector:443"
+  # For tls connection use: "https://<catalog>-connector:8443"
   catalogConnectorURL: ""
 
   # Configures the policy manager system name to be used by the coordinator manager.
@@ -102,7 +102,7 @@ coordinator:
 
   # Overrides the policy manager connector URL.
   # Defaults to `http://<policyManager>-connector:8080`.
-  # For tls connection use: "https://<policyManager>-connector:443"
+  # For tls connection use: "https://<policyManager>-connector:8443"
   policyManagerConnectorURL: ""
 
   # Configure the vault instance to be used by the coordinator manager
@@ -388,7 +388,7 @@ katalogConnector:
 
   service:
     type: ClusterIP
-    # For tls connection use port 443
+    # For tls connection use port 8443
     port: 8080
 
   resources: {}
@@ -477,7 +477,7 @@ opaConnector:
 
   service:
     type: ClusterIP
-    # For tls connection use port 443
+    # For tls connection use port 8443
     port: 8080
 
   resources: {}
