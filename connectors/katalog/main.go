@@ -10,6 +10,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,10 +43,12 @@ func RunCmd() *cobra.Command {
 	ip := ""
 	portStr, err := environment.MustGetEnv(envServicePort)
 	if err != nil {
+		log.Err(err).Msg(envServicePort + " env var is not defined")
 		return nil
 	}
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
+		log.Err(err).Msg("error in converting " + envServicePort + " to integer")
 		return nil
 	}
 	cmd := &cobra.Command{
@@ -74,14 +77,15 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 
-			if utils.GetisTLSPort() {
-				tlsConfig, err := fybrikTLS.GetServerTLSConfig(&handler.Log, client)
+			if utils.IsUsingTLS() {
+				tlsConfig, err := fybrikTLS.GetServerConfig(&handler.Log, client)
 				if err != nil {
 					return errors.Wrap(err, "failed to get tls config")
 				}
 				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: tlsConfig}
 				return server.ListenAndServeTLS("", "")
 			}
+
 			handler.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			return router.Run(bindAddress)
 		},

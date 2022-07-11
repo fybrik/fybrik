@@ -12,7 +12,7 @@ spec:
   ports:
     - port: {{ .Values.katalogConnector.service.port }}
       protocol: TCP
-      {{- if include "fybrik.isTLSPort" ( tuple .Values.katalogConnector.service.port ) }}
+      {{- if .Values.katalogConnector.tls.use_tls }}
       name: https
       {{- else }}
       name: http

@@ -24,8 +24,8 @@ manager:
   socat: true
   tls:
     certs:
-      clientCertSecretName: "test-tls-manager-certs"
-      clientCertSecretNamespace: "fybrik-system"
+      certSecretName: "test-tls-manager-certs"
+      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
       cacertSecretNamespace: "fybrik-system"      
 
@@ -34,19 +34,21 @@ katalogConnector:
     port: 8443
        
   tls:
-    mtls: true
+    use_tls: true
+    use_mtls: true
     certs:
-      serverCertSecretName: "test-tls-katalog-connector-certs"
-      serverCertSecretNamespace: "fybrik-system"
+      certSecretName: "test-tls-katalog-connector-certs"
+      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
       cacertSecretNamespace: "fybrik-system"
 
 opaConnector:
   tls:
-    mtls: true
+    use_tls: true
+    use_mtls: true
     certs:
-      serverCertSecretName: "test-tls-opa-connector-certs"
-      serverCertSecretNamespace: "fybrik-system"
+      certSecretName: "test-tls-opa-connector-certs"
+      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
       cacertSecretNamespace: "fybrik-system"
   service:

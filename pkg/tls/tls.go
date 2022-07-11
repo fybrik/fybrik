@@ -52,9 +52,9 @@ const (
 	TLSCertKeySuffix = ".crt"
 )
 
-// GetServerTLSConfig returns the server config for tls connection between the manager and
+// GetServerConfig returns the server config for tls connection between the manager and
 // the connectors.
-func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
+func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
 	// certSecretName is kubernetes secret name which contains the server certificate
 	certSecretName := utils.GetCertSecretName()
 	// certSecretNamespace is kubernetes secret namespace which contains the server certificate
@@ -65,11 +65,11 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.
 	//	caSecretNamespace is  kubernetes secret namespace which contains ca certificate used by the server to
 	// validate certificate or the client. Used when mutual tls is used.
 	caSecretNamespace := utils.GetCACERTSecretNamespace()
-	useTLS := utils.GetisTLSPort()
-	useMTLS := utils.GetConnectorUseMTLS()
+	useMTLS := utils.IsUsingMTLS()
 
-	if !useTLS {
-		return nil, errors.New("error is creating tls config: server does not use tls")
+	if certSecretName == "" || certSecretNamespace == "" {
+		// no server certs provided thus the tls is not used
+		return nil, errors.New("no certificates provided")
 	}
 	serverLog.Info().Msg(TLSEnabledMsg)
 	serverCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
@@ -106,7 +106,7 @@ func GetServerTLSConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.
 		}
 		if !CACertPool.AppendCertsFromPEM(element) {
 			serverLog.Error().Err(err).Msg(err.Error())
-			return nil, errors.New("error in GetServerTLSConfig in AppendCertsFromPEM trying to lead key:" + key)
+			return nil, errors.New("error in GetServerConfig in AppendCertsFromPEM trying to lead key:" + key)
 		}
 	}
 

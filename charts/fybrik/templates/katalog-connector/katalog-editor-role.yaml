@@ -17,7 +17,7 @@ rules:
 - apiGroups: ["katalog.fybrik.io"]
   resources: ["assets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
-{{- if include "fybrik.isTLSPort" (tuple .Values.katalogConnector.service.port) }}
+{{- if .Values.katalogConnector.tls.use_tls }}
 - apiGroups: [""]
   resources:
   - secrets

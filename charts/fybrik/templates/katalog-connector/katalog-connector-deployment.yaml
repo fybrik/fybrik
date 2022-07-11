@@ -52,14 +52,14 @@ spec:
               value: {{ .Values.global.prettyLogging | quote }}
             - name: LOGGING_VERBOSITY
               value: {{ .Values.global.loggingVerbosity | quote }}
-            - name: CONNECTOR_USE_TLS
-              value: {{ include "fybrik.isTLSPort" (tuple .Values.katalogConnector.service.port) | quote | toString }}
-            - name: CONNECTOR_USE_MTLS
-              value: {{ .Values.katalogConnector.tls.mtls | quote | toString }}
+            - name: USE_TLS
+              value: {{ .Values.katalogConnector.tls.use_tls | quote | toString }}
+            - name: USE_MTLS
+              value: {{ .Values.katalogConnector.tls.use_mtls | quote | toString }}
             - name: CERT_SECRET_NAME
-              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretName }}
+              value: {{ .Values.katalogConnector.tls.certs.certSecretName }}
             - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.katalogConnector.tls.certs.serverCertSecretNamespace }}
+              value: {{ .Values.katalogConnector.tls.certs.certSecretNamespace }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE

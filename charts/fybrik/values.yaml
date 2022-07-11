@@ -172,16 +172,20 @@ manager:
       # Name of kubernetes secret that holds the manager certificate.
       # Relavent if mutual tls authentication is used.
       # The secret should be of `kubernetes.io/tls` type.
+      # certSecretName: "test-tls-manager-certs"
       certSecretName: ""
       # Name of kubernetes tls secret namespace that holds the manager certificate.
       # Relavent if mutual tls authentication is used.
+      # certSecretNamespace: "fybrik-system"
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
       # which are used by the manager to validate the connection to the connectors.
       # Relavent if tls is used.
+      # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA)
       # certificates which are used by the manager to validate the connection to the connectors.
+      # cacertSecretNamespace: "fybrik-system"
       cacertSecretNamespace: ""
 
   # Extra environment variables to be set for manager container
@@ -358,20 +362,26 @@ katalogConnector:
     name: katalog-connector
 
   tls:
+    # Specifies whether the katalog connector communication should use tls.
+    use_tls: false
     # Specifies whether the katalog connector communication should use mutual tls.
-    mtls: false
+    use_mtls: false
     certs:
       # Name of kubernetes tls secret that holds the katalog-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
+      # certSecretName: "test-tls-katalog-connector-certs"
       certSecretName: ""
       # Name of kubernetes tls secret namespace that holds the katalog-connector certificate.
+      # certSecretNamespace: "fybrik-system"
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
       # by katalog-connector to validate the connection to the manager if mtls is enabled.
+      # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by the server to validate the connection to the client if mtls is enabled.
+      # cacertSecretNamespace: "fybrik-system"
       cacertSecretNamespace: ""
 
   podAnnotations: {}
@@ -445,22 +455,28 @@ opaConnector:
     name: opa-connector
 
   tls:
+    # Specifies whether the opa connector communication should use tls.
+    use_tls: false
     # Specifies whether the opa connector communication should use mutual tls.
-    mtls: false
+    use_mtls: false
     # Relavent if the connection between the manager and the connectors
     # uses tls.
     certs:
       # Name of kubernetes tls secret that holds opa-connector certificates.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
+      # certSecretName: "test-tls-opa-connector-certs"
       certSecretName: ""
       # Name of kubernetes tls secret namespace that holds opa-connector certificate.
+      # certSecretNamespace: "fybrik-system"
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
       # by opa-connector to validate the connection to the manager if mtls is enabled.
+      # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by opa-connector to validate the connection to the manager if mtls is enabled.
+      # cacertSecretNamespace: "fybrik-system"
       cacertSecretNamespace: ""
 
   podAnnotations: {}

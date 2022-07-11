@@ -1,6 +1,6 @@
 {{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.policyManager "opa") }}
 {{- if include "fybrik.isEnabled" (tuple .Values.opaConnector.enabled $autoFlag) }}
-{{- if include "fybrik.isTLSPort" (tuple .Values.opaConnector.service.port) }}
+{{- if .Values.opaConnector.tls.use_tls }}
 # opa-editor allows managing secrets if the connection between the manager and
 # opa-connector uses tls.
 apiVersion: rbac.authorization.k8s.io/v1

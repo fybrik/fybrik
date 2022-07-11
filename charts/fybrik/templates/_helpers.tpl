@@ -147,14 +147,3 @@ Relevant only when .Values.chartsPersistentVolumeClaim is set.
 {{- define "fybrik.localChartsMountPath" }}
 {{- printf "/opt/fybrik" }}
 {{- end }}
-
-{{/*
-isTLSPort returns true if the port passed as a parameter to the function
-is used for TLS connection.
-*/}}
-{{- define "fybrik.isTLSPort" -}}
-{{- $port := first . -}}
-{{- if or (eq (toString $port) "8443") (eq (toString $port) "443") -}}
-true
-{{- end -}}
-{{- end -}}

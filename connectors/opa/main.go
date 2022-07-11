@@ -12,6 +12,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -50,10 +51,12 @@ func RunCmd() *cobra.Command {
 	ip := ""
 	portStr, err := environment.MustGetEnv(envServicePort)
 	if err != nil {
+		log.Err(err).Msg(envServicePort + " env var is not defined")
 		return nil
 	}
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
+		log.Err(err).Msg("error in converting " + envServicePort + " to integer")
 		return nil
 	}
 	cmd := &cobra.Command{
@@ -77,8 +80,8 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			var client kclient.Client
-			if utils.GetisTLSPort() {
+			if utils.IsUsingTLS() {
+				var client kclient.Client
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)
 				if err != nil {
@@ -89,7 +92,7 @@ func RunCmd() *cobra.Command {
 					return errors.Wrap(err, "failed to create a Kubernetes client")
 				}
 
-				tlsConfig, err := fybrikTLS.GetServerTLSConfig(&controller.Log, client)
+				tlsConfig, err := fybrikTLS.GetServerConfig(&controller.Log, client)
 				if err != nil {
 					return errors.Wrap(err, "failed to get tls config")
 				}

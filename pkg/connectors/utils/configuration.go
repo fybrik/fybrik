@@ -9,22 +9,22 @@ import (
 
 // Attributes that are defined in a config map or the runtime environment
 const (
-	isTLSPort             string = "CONNECTOR_USE_TLS"
-	ConnectorUseMTLS      string = "CONNECTOR_USE_MTLS"
+	UseTLS                string = "USE_TLS"
+	UseMTLS               string = "USE_MTLS"
 	CertSecretName        string = "CERT_SECRET_NAME"
 	CertSecretNamespace   string = "CERT_SECRET_NAMESPACE"
 	CACERTSecretName      string = "CACERT_SECRET_NAME"      //nolint:gosec
 	CACERTSecretNamespace string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
 )
 
-// isTLSPort returns true if the connector communication should use tls.
-func GetisTLSPort() bool {
-	return os.Getenv(isTLSPort) == "true"
+// IsUsingTLS returns true if the connector communication should use tls.
+func IsUsingTLS() bool {
+	return os.Getenv(UseTLS) == "true"
 }
 
-// GetConnectorUseMTLS returns true if the connector communication should use mtls.
-func GetConnectorUseMTLS() bool {
-	return os.Getenv(ConnectorUseMTLS) == "true"
+// IsUsingMTLS returns true if the connector communication should use mtls.
+func IsUsingMTLS() bool {
+	return os.Getenv(UseMTLS) == "true"
 }
 
 // GetCertSecretName returns the name of the kubernetes secret which holds the

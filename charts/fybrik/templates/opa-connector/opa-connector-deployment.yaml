@@ -46,14 +46,14 @@ spec:
           env:
             - name: SERVICE_PORT
               value: {{ .Values.opaConnector.service.port | quote }}
-            - name: CONNECTOR_USE_TLS
-              value: {{ include "fybrik.isTLSPort" ( tuple .Values.opaConnector.service.port ) | quote | toString }}
-            - name: CONNECTOR_USE_MTLS
-              value: {{ .Values.opaConnector.tls.mtls | quote | toString }}
+            - name: USE_TLS
+              value: {{ .Values.opaConnector.tls.use_tls | quote | toString }}
+            - name: USE_MTLS
+              value: {{ .Values.opaConnector.tls.use_mtls | quote | toString }}
             - name: CERT_SECRET_NAME
-              value: {{ .Values.opaConnector.tls.certs.serverCertSecretName }}
+              value: {{ .Values.opaConnector.tls.certs.certSecretName }}
             - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.opaConnector.tls.certs.serverCertSecretNamespace }}
+              value: {{ .Values.opaConnector.tls.certs.certSecretNamespace }}
             - name: CACERT_SECRET_NAME
               value: {{ .Values.opaConnector.tls.certs.cacertSecretName }}
             - name: CACERT_SECRET_NAMESPACE
