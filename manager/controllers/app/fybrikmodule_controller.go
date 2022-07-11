@@ -18,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
@@ -32,7 +32,7 @@ type FybrikModuleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-var ModuleTaxonomy = fappUtils.GetDataDir() + "/taxonomy/fybrik_module.json"
+var ModuleTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_module.json"
 
 const (
 	ModuleValidationConditionIndex = 0

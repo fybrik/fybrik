@@ -5,7 +5,7 @@ package app
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
 
@@ -41,8 +41,8 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	creds := ""
-	if utils.IsVaultEnabled() {
-		creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
+	if environment.IsVaultEnabled() {
+		creds = environment.GetVaultAddress() + vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
 	}
 
 	request := datacatalog.CreateAssetRequest{
@@ -54,8 +54,8 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	credentialPath := ""
-	if utils.IsVaultEnabled() {
-		credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+	if environment.IsVaultEnabled() {
+		credentialPath = environment.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 
 	var err error

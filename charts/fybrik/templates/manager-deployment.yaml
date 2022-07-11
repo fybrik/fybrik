@@ -42,7 +42,7 @@ spec:
           command:
           - cp 
           - -rf
-          - {{ include "fybrik.getDataDir" . }}/tools
+          - /data/tools
           - {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/
           volumeMounts:
             - name: solver-volume
@@ -96,6 +96,8 @@ spec:
                 name: razee-credentials
             {{- end }}
           env:
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
             {{- if .Values.clusterScoped }} 
               value: "true"

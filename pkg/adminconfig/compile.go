@@ -13,12 +13,12 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/pkg/errors"
 
-	fappUtils "fybrik.io/fybrik/manager/apis/app/v1alpha1/utils"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 // RegoPolicyDirectory is a directory containing rego files that
 // define admin config policies
-var RegoPolicyDirectory = fappUtils.GetDataDir() + "/adminconfig/"
+var RegoPolicyDirectory = environment.GetDataDir() + "/adminconfig/"
 
 // PrepareQuery prepares a query for OPA evaluation - data object and compiled modules.
 // This function is called prior to FybrikApplication controller creation in main.

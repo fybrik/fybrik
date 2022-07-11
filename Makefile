@@ -1,7 +1,7 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
-export DATA ?= /tmp
+export DATA_DIR ?= /tmp
 # the latest backward compatible CRD version
 export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
 export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
@@ -62,11 +62,11 @@ deploy_latest_compatible_CRD_version: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 
 .PHONY: pre-test
 pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
-	mkdir -p $(DATA)/taxonomy
-	mkdir -p $(DATA)/adminconfig
-	cp charts/fybrik/files/taxonomy/*.json $(DATA)/taxonomy/
-	cp charts/fybrik/files/adminconfig/* $(DATA)/adminconfig/
-	cp samples/adminconfig/* $(DATA)/adminconfig/
+	mkdir -p $(DATA_DIR)/taxonomy
+	mkdir -p $(DATA_DIR)/adminconfig
+	cp charts/fybrik/files/taxonomy/*.json $(DATA_DIR)/taxonomy/
+	cp charts/fybrik/files/adminconfig/* $(DATA_DIR)/adminconfig/
+	cp samples/adminconfig/* $(DATA_DIR)/adminconfig/
 	mkdir -p manager/testdata/unittests/basetaxonomy
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
@@ -74,7 +74,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
   	-b charts/fybrik/files/taxonomy/taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
-	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA)/taxonomy/taxonomy.json
+	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints

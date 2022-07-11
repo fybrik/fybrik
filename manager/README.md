@@ -66,7 +66,7 @@ CATALOG_CONNECTOR_URL="http://localhost:49152"
 CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
-DATA="/tmp"
+DATA_DIR="/tmp"
 ```
 
 If the manager works with a Razee service, you also need to add the following environment variables:

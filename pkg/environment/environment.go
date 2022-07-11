@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package utils
+package environment
 
 import (
 	"os"
@@ -28,7 +28,13 @@ const (
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 	UseCSPKey                         string = "USE_CSP"
 	CSPPathKey                        string = "CSP_PATH"
+	DataDir                           string = "DATA_DIR"
 )
+
+// GetDataDir returns the directory where the data resides.
+func GetDataDir() string {
+	return os.Getenv(DataDir)
+}
 
 // GetSystemNamespace returns the namespace of control plane
 func GetSystemNamespace() string {
@@ -117,7 +123,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey}
+		CatalogConnectorServiceAddressKey, DataDir}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {

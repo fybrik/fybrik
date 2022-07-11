@@ -58,16 +58,16 @@ func init() {
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
-	utils.LogEnvVariables(&setupLog)
+	environment.LogEnvVariables(&setupLog)
 
 	var applicationNamespaceSelector fields.Selector
-	applicationNamespace := utils.GetApplicationNamespace()
+	applicationNamespace := environment.GetApplicationNamespace()
 	if len(applicationNamespace) > 0 {
 		applicationNamespaceSelector = fields.SelectorFromSet(fields.Set{"metadata.namespace": applicationNamespace})
 	}
 	setupLog.Info().Msg("Application namespace: " + applicationNamespace)
 
-	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
+	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
 		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
 		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
@@ -187,7 +187,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		defer watcher.Close()
-		// watch $DATA/adminconfig directory for changes
+		// watch $DATA_DIR/adminconfig directory for changes
 		err = watcher.Add(adminconfig.RegoPolicyDirectory)
 		if err != nil {
 			setupLog.Err(err).Msg("error adding a directory to monitor")
@@ -339,7 +339,7 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		return razee.NewRazeeOAuthClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info().Msg("Using local cluster manager")
-		return local.NewClusterManager(mgr.GetClient(), utils.GetSystemNamespace())
+		return local.NewClusterManager(mgr.GetClient(), environment.GetSystemNamespace())
 	}
 }
 

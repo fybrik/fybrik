@@ -9,9 +9,8 @@ import (
 	"os"
 	"testing"
 
+	"fybrik.io/fybrik/pkg/environment"
 	"github.com/stretchr/testify/assert"
-
-	utils "fybrik.io/fybrik/manager/controllers/utils"
 )
 
 func Log(t *testing.T, label string, err error) {
@@ -26,7 +25,7 @@ func TestCredentialManagerInterface(t *testing.T) {
 	vaultToken := "dummyToken"
 	// TODO add environment variables to test against a real vault instance
 	os.Setenv("RUN_WITHOUT_VAULT", "1")
-	conn, err := InitConnection(utils.GetVaultAddress(), vaultToken)
+	conn, err := InitConnection(environment.GetVaultAddress(), vaultToken)
 	assert.Nil(t, err)
 	Log(t, "init vault", err)
 	err = conn.Mount("v1/sys/mounts/fybrik/test")

@@ -7,8 +7,8 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/optimizer"
 )
@@ -17,8 +17,8 @@ import (
 // satisfying governance and admin policies
 // with respect to the optimization strategy
 func solveSingleDataset(env *datapath.Environment, dataset *datapath.DataInfo, log *zerolog.Logger) (datapath.Solution, error) {
-	cspPath := utils.GetCSPPath()
-	if utils.UseCSP() && cspPath != "" {
+	cspPath := environment.GetCSPPath()
+	if environment.UseCSP() && cspPath != "" {
 		cspOptimizer := optimizer.NewOptimizer(env, dataset, cspPath, log)
 		solution, err := cspOptimizer.Solve()
 		if err == nil {

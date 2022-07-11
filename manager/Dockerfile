@@ -3,7 +3,6 @@
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6
 ENV HOME=/tmp
-ENV DATA=/data
 WORKDIR $HOME
 COPY manager /
 USER 10001
