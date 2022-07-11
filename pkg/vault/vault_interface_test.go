@@ -9,8 +9,9 @@ import (
 	"os"
 	"testing"
 
-	"fybrik.io/fybrik/pkg/environment"
 	"github.com/stretchr/testify/assert"
+
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 func Log(t *testing.T, label string, err error) {
