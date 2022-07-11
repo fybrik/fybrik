@@ -66,6 +66,7 @@ CATALOG_CONNECTOR_URL="http://localhost:49152"
 CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
+VAULT_ENABLED="true"
 ```
 
 If the manager works with a Razee service, you also need to add the following environment variables:
