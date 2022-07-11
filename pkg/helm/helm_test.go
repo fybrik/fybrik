@@ -143,7 +143,7 @@ func TestLocalChartsMount(t *testing.T) {
 	// remove the "charts" suffix from the file path
 	impl := NewHelmerImpl(filepath.Dir(rootPath))
 
-	tmpDir, err := ioutil.TempDir("", "test-helm-")
+	tmpDir, err := ioutil.TempDir(environment.GetDataDir(), "test-helm-")
 	if err != nil {
 		t.Errorf("Unable to create temporary directory: %s", err)
 	}
