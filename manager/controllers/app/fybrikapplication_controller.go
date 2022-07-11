@@ -146,7 +146,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 		r.checkReadiness(applicationContext, resourceStatus)
 	} else if (observedStatus.ObservedGeneration != appVersion) || !generationComplete {
-		if result, err := r.reconcile(applicationContext); err != nil {
+		if result, err := r.reconcile(applicationContext); err != nil || result.Requeue || (result.RequeueAfter > 0) {
 			// another attempt will be done
 			// users should be informed in case of errors
 			// ignore an update error, a new reconcile will be made in any case
