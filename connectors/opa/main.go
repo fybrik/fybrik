@@ -19,7 +19,6 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
@@ -80,7 +79,7 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
-			if utils.IsUsingTLS() {
+			if environment.IsUsingTLS() {
 				var client kclient.Client
 				scheme := runtime.NewScheme()
 				err = corev1.AddToScheme(scheme)

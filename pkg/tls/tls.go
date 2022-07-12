@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fybrik.io/fybrik/pkg/connectors/utils"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 const (
@@ -56,16 +56,16 @@ const (
 // the connectors.
 func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
 	// certSecretName is kubernetes secret name which contains the server certificate
-	certSecretName := utils.GetCertSecretName()
+	certSecretName := environment.GetCertSecretName()
 	// certSecretNamespace is kubernetes secret namespace which contains the server certificate
-	certSecretNamespace := utils.GetCertSecretNamespace()
+	certSecretNamespace := environment.GetCertSecretNamespace()
 	// caSecretName is kubernetes secret name which contains ca certificate used by the server to
 	// validate certificate or the client.  Used when mutual tls is used.
-	caSecretName := utils.GetCACERTSecretName()
+	caSecretName := environment.GetCACERTSecretName()
 	//	caSecretNamespace is  kubernetes secret namespace which contains ca certificate used by the server to
 	// validate certificate or the client. Used when mutual tls is used.
-	caSecretNamespace := utils.GetCACERTSecretNamespace()
-	useMTLS := utils.IsUsingMTLS()
+	caSecretNamespace := environment.GetCACERTSecretNamespace()
+	useMTLS := environment.IsUsingMTLS()
 
 	if certSecretName == "" || certSecretNamespace == "" {
 		// no server certs provided thus the tls is not used
@@ -124,15 +124,15 @@ func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Con
 // the connectors.
 func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.Config, error) {
 	// certSecretName is  kubernetes secret name which contains the client certificate
-	certSecretName := utils.GetCertSecretName()
+	certSecretName := environment.GetCertSecretName()
 	// certSecretNamespace is kubernetes secret namespace which contains the client certificate
-	certSecretNamespace := utils.GetCertSecretNamespace()
+	certSecretNamespace := environment.GetCertSecretNamespace()
 	// caSecretName is kubernetes secret name which contains ca certificate used by the client to
 	// validate certificate or the server.  Used when mutual tls is used.
-	caSecretName := utils.GetCACERTSecretName()
+	caSecretName := environment.GetCACERTSecretName()
 	// caSecretNamespace is kubernetes secret namespace which contains ca certificate used by the client to
 	// validate certificate or the server. Used when mutual tls is used.
-	caSecretNamespace := utils.GetCACERTSecretNamespace()
+	caSecretNamespace := environment.GetCACERTSecretNamespace()
 
 	if caSecretName == "" || caSecretNamespace == "" {
 		// no CA certificates found, returning nil

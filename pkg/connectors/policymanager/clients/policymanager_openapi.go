@@ -11,6 +11,8 @@ import (
 	"emperror.dev/errors"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
+	"fybrik.io/fybrik/pkg/connectors/utils"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 )
 
@@ -23,6 +25,7 @@ type openAPIPolicyManager struct {
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
 func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+	log := logging.LogInit(logging.SETUP, "policymanager client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -34,6 +37,7 @@ func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
+		HTTPClient:       utils.GetHTTPClient(&log),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 

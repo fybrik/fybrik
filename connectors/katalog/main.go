@@ -19,7 +19,6 @@ import (
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
@@ -77,7 +76,7 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 
-			if utils.IsUsingTLS() {
+			if environment.IsUsingTLS() {
 				tlsConfig, err := fybrikTLS.GetServerConfig(&handler.Log, client)
 				if err != nil {
 					return errors.Wrap(err, "failed to get tls config")
