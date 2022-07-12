@@ -14,7 +14,7 @@ The `NetworkPolicy` is always created. However, your Kubernetes cluster must hav
 
 ### Using Fybrik
 
-Fybrik can be configured to have the traffic between the manager and the connectors encrypted with mutual tls authentication.
+Fybrik can be configured to have the traffic between the manager and the connectors encrypted by useing TLS. In addition mutual TLS authentication is possible too.
 
 To enable it, a set of helm chart fields should be set upon Fybrik deployment:
 The fields contain information about the security level to use (non, TLS, or mutual TLS), and the Kubernetes secrets that contain the certificates of the manager (aka the client) and the servers (aka the data catalog and policy manager) as well as the certificates of the CAs which were used to sign the client/servers certificates.

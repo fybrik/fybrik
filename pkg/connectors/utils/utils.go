@@ -18,7 +18,6 @@ import (
 // GetHTTPClient returns an object of type *http.Client.
 func GetHTTPClient(log *zerolog.Logger) *http.Client {
 	scheme := runtime.NewScheme()
-	log.Info().Msg(fybrikTLS.TLSEnabledMsg)
 	err := corev1.AddToScheme(scheme)
 	if err != nil {
 		log.Error().Err(err)

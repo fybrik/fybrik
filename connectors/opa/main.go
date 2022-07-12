@@ -55,7 +55,7 @@ func RunCmd() *cobra.Command {
 	}
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Err(err).Msg("error in converting " + envServicePort + " to integer")
+		log.Err(err).Msg(fmt.Sprintf("error in converting %s = [%s] to integer", envServicePort, portStr))
 		return nil
 	}
 	cmd := &cobra.Command{

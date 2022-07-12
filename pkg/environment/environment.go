@@ -5,6 +5,7 @@ package environment
 
 import (
 	"os"
+	"strings"
 )
 
 // Attributes that are defined in a config map or the runtime environment
@@ -19,12 +20,12 @@ const (
 
 // IsUsingTLS returns true if the connector communication should use tls.
 func IsUsingTLS() bool {
-	return os.Getenv(UseTLS) == "true"
+	return strings.ToLower(os.Getenv(UseTLS)) == "true"
 }
 
 // IsUsingMTLS returns true if the connector communication should use mtls.
 func IsUsingMTLS() bool {
-	return os.Getenv(UseMTLS) == "true"
+	return strings.ToLower(os.Getenv(UseMTLS)) == "true"
 }
 
 // GetCertSecretName returns the name of the kubernetes secret which holds the
