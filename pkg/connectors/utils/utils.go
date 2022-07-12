@@ -7,8 +7,7 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	kruntime "k8s.io/apimachinery/pkg/runtime"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
@@ -16,14 +15,7 @@ import (
 )
 
 // GetHTTPClient returns an object of type *http.Client.
-func GetHTTPClient(log *zerolog.Logger) *http.Client {
-	scheme := runtime.NewScheme()
-	err := corev1.AddToScheme(scheme)
-	if err != nil {
-		log.Error().Err(err)
-		return nil
-	}
-
+func GetHTTPClient(log *zerolog.Logger, scheme *kruntime.Scheme) *http.Client {
 	client, err := kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
 	if err != nil {
 		log.Error().Err(err)

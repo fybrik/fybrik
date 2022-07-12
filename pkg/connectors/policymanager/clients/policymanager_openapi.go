@@ -10,6 +10,8 @@ import (
 
 	"emperror.dev/errors"
 
+	kruntime "k8s.io/apimachinery/pkg/runtime"
+
 	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
 	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
@@ -24,7 +26,8 @@ type openAPIPolicyManager struct {
 }
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
-func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.Duration,
+	schema *kruntime.Scheme) (PolicyManager, error) {
 	log := logging.LogInit(logging.SETUP, "policymanager client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
@@ -37,7 +40,7 @@ func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log),
+		HTTPClient:       utils.GetHTTPClient(&log, schema),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 
