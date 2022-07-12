@@ -87,9 +87,11 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	sublog.Trace().Msg("*** FybrikApplication Reconcile ***")
 	// obtain FybrikApplication resource
+	// events coming from plotter updates have a special prefix prepended to the name of fybrik application
 	plotterUpdate := false
 	nsName := req.NamespacedName
 	if strings.HasPrefix(nsName.Name, PlotterUpdatePrefix) {
+		// reconcile results from plotter changes
 		plotterUpdate = true
 		nsName.Name = nsName.Name[len(PlotterUpdatePrefix):]
 	}
@@ -106,6 +108,9 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	logging.LogStructure(FybrikApplicationKind, application, &log, zerolog.TraceLevel, true, true)
 	applicationContext := ApplicationContext{Log: &log, Application: application, UUID: uuid}
 	if plotterUpdate && (application.Status.Generated == nil || application.Status.Generated.AppVersion != application.GetGeneration()) {
+		// plotter update has been received but it does not match the fybrik application status
+		// this can happen if the plotter has just been created, and the application status was not updated by the server
+		// ignore and wait for the next plotter update
 		log.Debug().Msg("Ignoring plotter update")
 		return ctrl.Result{}, nil
 	}
@@ -118,6 +123,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := application.Status.DeepCopy()
 	appVersion := application.GetGeneration()
 
+	// validate fybrik application in case of the create/update resource event
 	if err := r.validateApp(ctx, applicationContext); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -140,12 +146,14 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// reconcile is required if the spec has been changed, or the previous reconcile has failed to allocate a Plotter resource
 	generationComplete := observedStatus.Generated != nil && (observedStatus.Generated.AppVersion == appVersion)
 	if plotterUpdate {
+		// check plotter status and update the application status accordingly
 		resourceStatus, err := r.ResourceInterface.GetResourceStatus(application.Status.Generated)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 		r.checkReadiness(applicationContext, resourceStatus)
 	} else if (observedStatus.ObservedGeneration != appVersion) || !generationComplete {
+		// spec has been changed, or there was a failure to allocate a plotter
 		if result, err := r.reconcile(applicationContext); err != nil || result.Requeue || (result.RequeueAfter > 0) {
 			// another attempt will be done
 			// users should be informed in case of errors
@@ -160,7 +168,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if err := utils.UpdateStatus(ctx, r.Client, application, observedStatus); err != nil {
 		return ctrl.Result{}, err
 	}
-	// add finalizers
+	// add finalizers if some resources have been allocated (plotter, datasets)
 	if application.Status.Generated != nil || (len(application.Status.ProvisionedStorage) > 0) {
 		if err := r.addFinalizers(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
