@@ -213,8 +213,7 @@ manager:
   # Container Security Context. If set, the fields of containerSecurityContext override
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
-  containerSecurityContext:
-    readOnlyRootFilesystem: false
+  containerSecurityContext: {}
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

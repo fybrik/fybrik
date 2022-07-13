@@ -42,11 +42,11 @@ spec:
           command:
           - cp 
           - -rf
-          - "/data/tools"
-          - "/tmp/solver/"
+          - /data/tools
+          - {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/
           volumeMounts:
             - name: solver-volume
-              mountPath: /tmp/solver  
+              mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
       {{- end }}
       containers:
         {{- if .Values.manager.socat }}
@@ -104,6 +104,8 @@ spec:
               value: {{ .Values.manager.tls.certs.certSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.manager.tls.certs.certSecretNamespace }}
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
             {{- if .Values.clusterScoped }} 
               value: "true"
@@ -116,7 +118,7 @@ spec:
               
             {{- if .Values.manager.solver.image }}
             - name: CSP_PATH
-              value: "/tmp/solver/tools/bin/solver"
+              value: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/tools/bin/solver
             {{- end }}
 
             {{- if .Values.applicationNamespace }}
@@ -143,12 +145,14 @@ spec:
               name: cert
               readOnly: true  
             {{- end }}     
-            - mountPath: /tmp/taxonomy
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
-            - mountPath: /tmp/adminconfig
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "adminconfig" ) }}
               name: fybrik-adminconfig
             {{- if .Values.manager.solver.image }}
-            - mountPath: /tmp/solver
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
               name: solver-volume
             {{- end }}
             {{- if .Values.manager.chartsPersistentVolumeClaim }}
@@ -171,6 +175,8 @@ spec:
         - name: solver-volume
           emptyDir: {}
         {{- end }}
+        - name: data
+          emptyDir: {}
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config

@@ -17,6 +17,7 @@ import (
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -59,10 +60,10 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	bucket := &storage.ProvisionedBucket{
 		Name:      genBucketName,
 		Endpoint:  account.Endpoint,
-		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: utils.GetSystemNamespace()},
+		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
 		Region:    string(account.Region),
 	}
-	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
+	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
 		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
@@ -83,17 +84,17 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]v1alpha1.Vault)
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{
 			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
+			Role:       environment.GetModulesRole(),
+			Address:    environment.GetVaultAddress(),
 		}
 		// The copied asset needs creds for later to be read
 		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{
 			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
+			Role:       environment.GetModulesRole(),
+			Address:    environment.GetVaultAddress(),
 		}
 	} else {
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{}
@@ -130,13 +131,13 @@ func getDatasetCredentials(item *datapath.DataInfo) map[string]v1alpha1.Vault {
 	// TODO: store multiple secrets with credentials depending on the flow
 	flows := []string{string(taxonomy.ReadFlow), string(taxonomy.WriteFlow), string(taxonomy.DeleteFlow)}
 	for _, flow := range flows {
-		if utils.IsVaultEnabled() {
+		if environment.IsVaultEnabled() {
 			// Set the value received from the catalog connector.
 			vaultSecretPath := item.DataDetails.Credentials
 			vaultMap[flow] = v1alpha1.Vault{
 				SecretPath: vaultSecretPath,
-				Role:       utils.GetModulesRole(),
-				Address:    utils.GetVaultAddress(),
+				Role:       environment.GetModulesRole(),
+				Address:    environment.GetVaultAddress(),
 			}
 		} else {
 			vaultMap[flow] = v1alpha1.Vault{}
@@ -263,9 +264,9 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 	item.DataDetails = &datacatalog.GetAssetResponse{
 		ResourceMetadata: resourceMetadata,
 	}
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		secretPath :=
-			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+			vault.PathForReadingKubeSecret(environment.GetSystemNamespace(), element.StorageAccount.SecretRef)
 
 		item.DataDetails.Credentials = secretPath
 	}
@@ -361,7 +362,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope v1alpha1.Capabil
 		instanceName = utils.CreateStepName(moduleName, assetID)
 	}
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-	releaseNamespace := utils.GetDefaultModulesNamespace()
+	releaseNamespace := environment.GetDefaultModulesNamespace()
 
 	type Release struct {
 		Name      string `json:"Name"`

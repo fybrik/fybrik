@@ -11,9 +11,9 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -54,7 +54,7 @@ func (p *PathBuilder) FindPaths() []datapath.Solution {
 	nodeFromAppRequirements := p.getRequiredConnectionNode()
 
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
-	bound, err := utils.GetDataPathMaxSize()
+	bound, err := environment.GetDataPathMaxSize()
 	if err != nil {
 		p.Log.Warn().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}

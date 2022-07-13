@@ -13,12 +13,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	"fybrik.io/fybrik/pkg/environment"
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
-const (
-	taxonomyFilePath = "/tmp/taxonomy/fybrik_application.json"
-)
+var taxonomyFilePath = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
 
 func (r *FybrikApplication) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).

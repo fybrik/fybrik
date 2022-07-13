@@ -8,7 +8,8 @@ It provides a general directive such as minimize or maximize, and a relative weg
 
 ### Infrastructure attributes
 
-Infrastructure attributes are defined in `infrastructure.json` in /tmp/adminconfig directory. 
+Infrastructure attributes are defined in `infrastructure.json` in $DATA_DIR/adminconfig directory where
+DATA_DIR environment variable defines the root directory of the data.
 
 ```
 type InfrastructureElement struct {
