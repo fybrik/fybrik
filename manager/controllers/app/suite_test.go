@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -177,7 +176,7 @@ var _ = AfterSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 })
 
-func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {
+func SetIfNotSet(key, value string, t GinkgoTInterface) {
 	if _, b := os.LookupEnv(key); !b {
 		if err := os.Setenv(key, value); err != nil {
 			t.Fatalf("Could not set environment variable %s", key)
@@ -185,7 +184,7 @@ func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {
 	}
 }
 
-func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
+func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
 	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
