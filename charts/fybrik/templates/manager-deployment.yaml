@@ -91,6 +91,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: fybrik-config
+            - configMapRef:
+                name: cluster-metadata
             {{- if include "fybrik.isRazeeConfigurationEnabled" . }}
             - secretRef:
                 name: razee-credentials
@@ -104,7 +106,6 @@ spec:
             {{- else }}
               value: "false"
             {{- end }}
-
             - name: MODULES_NAMESPACE
               value: {{ include "fybrik.getModulesNamespace" . }}
               
