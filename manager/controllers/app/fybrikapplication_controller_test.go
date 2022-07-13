@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 const timeout = time.Second * 1000
@@ -25,7 +25,7 @@ const interval = time.Millisecond * 100
 var _ = Describe("FybrikApplication Controller", func() {
 	Context("FybrikApplication", func() {
 
-		controllerNamespace := utils.GetControllerNamespace()
+		controllerNamespace := environment.GetControllerNamespace()
 		fmt.Printf("FybrikApplication: controller namespace: %s\n", controllerNamespace)
 
 		BeforeEach(func() {
@@ -57,7 +57,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				modulesNamespace := utils.GetDefaultModulesNamespace()
+				modulesNamespace := environment.GetDefaultModulesNamespace()
 				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
 				secret2.Namespace = modulesNamespace
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
@@ -143,7 +143,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")
-			Expect(blueprint.Spec.ModulesNamespace).To(Equal(utils.GetDefaultModulesNamespace()))
+			Expect(blueprint.Spec.ModulesNamespace).To(Equal(environment.GetDefaultModulesNamespace()))
 
 			Expect(blueprint.Labels["label1"]).To(Equal("foo"))
 			Expect(blueprint.Labels["label2"]).To(Equal("bar"))

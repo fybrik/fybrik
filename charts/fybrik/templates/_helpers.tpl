@@ -147,3 +147,20 @@ Relevant only when .Values.chartsPersistentVolumeClaim is set.
 {{- define "fybrik.localChartsMountPath" }}
 {{- printf "/opt/fybrik" }}
 {{- end }}
+
+{{/*
+Print Data directory.
+*/}}
+{{- define "fybrik.getDataDir" -}}
+/data
+{{- end }}
+
+{{/*
+Print sub directory in /data directory. The sub directory is
+passed as parameter to the function.
+*/}}
+{{- define "fybrik.getDataSubdir" -}}
+{{- $dir := toString (first .) -}}
+{{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
+{{- end }}
+

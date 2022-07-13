@@ -138,7 +138,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 		pullSecret := corev1.Secret{}
 		pullSecrets := []corev1.Secret{}
 
-		if err := r.Get(ctx, types.NamespacedName{Namespace: utils.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
+		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
 			&pullSecret); err == nil {
 			// if this is not a dockerconfigjson, ignore
 			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
@@ -194,7 +194,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, err
 	}
 
-	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
+	tmpDir, err := ioutil.TempDir(environment.GetDataDir(), "fybrik-helm-")
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
@@ -395,7 +395,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 
-	blueprintNamespace := utils.GetSystemNamespace()
+	blueprintNamespace := environment.GetSystemNamespace()
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return e.Object.GetNamespace() == blueprintNamespace
@@ -420,7 +420,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	ctx := context.Background()
 
 	var moduleList fapp.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
 	for ind := range moduleList.Items {

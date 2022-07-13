@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 func deployBlueprint(namespace string, shouldSucceed bool) {
@@ -25,7 +25,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Set the correct namespace
 	blueprint.SetNamespace(namespace)
-	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
+	blueprint.Spec.ModulesNamespace = environment.GetDefaultModulesNamespace()
 	fmt.Printf("Blueprint controller unit test - blueprint namespace : %s\n", namespace)
 	blueprintKey := client.ObjectKeyFromObject(blueprint)
 
@@ -62,7 +62,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 var _ = Describe("Blueprint Controller Real Env", func() {
 	Context("Blueprint", func() {
 
-		blueprintNamespace := utils.GetSystemNamespace()
+		blueprintNamespace := environment.GetSystemNamespace()
 		fmt.Printf("blueprintNamespace: %s\n", blueprintNamespace)
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
