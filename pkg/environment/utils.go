@@ -61,6 +61,8 @@ func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
 	SetIfNotSet(MainPolicyManagerNameKey, "MOCK", t)
 	SetIfNotSet(LoggingVerbosityKey, "-1", t)
 	SetIfNotSet(PrettyLoggingKey, "true", t)
+	SetIfNotSet(LocalClusterName, "thegreendragon", t)
+	SetIfNotSet(LocalRegion, "theshire", t)
 }
 
 // GetSystemNamespace returns the namespace of control plane

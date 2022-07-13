@@ -160,18 +160,6 @@ var _ = BeforeSuite(func() {
 					Name: modulesNamespace,
 				},
 			}))
-			Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "cluster-metadata",
-					Namespace: controllerNamespace,
-				},
-				Data: map[string]string{
-					"ClusterName":   "thegreendragon",
-					"Zone":          "hobbiton",
-					"Region":        "theshire",
-					"VaultAuthPath": "kind",
-				},
-			}))
 		}
 		Expect(k8sClient).ToNot(BeNil())
 		close(done)

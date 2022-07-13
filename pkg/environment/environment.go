@@ -30,7 +30,10 @@ const (
 	ModuleNamespace                   string = "MODULES_NAMESPACE"
 	ControllerNamespace               string = "CONTROLLER_NAMESPACE"
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
-	ClusterName                       string = "CLUSTER_NAME"
+	LocalClusterName                  string = "ClusterName"
+	LocalZone                         string = "Zone"
+	LocalRegion                       string = "Region"
+	LocalVaultAuthPath                string = "VaultAuthPath"
 )
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
@@ -40,7 +43,19 @@ const DefaultModulesNamespace = "fybrik-blueprints"
 const DefaultControllerNamespace = "fybrik-system"
 
 func GetLocalClusterName() string {
-	return os.Getenv(ClusterName)
+	return os.Getenv(LocalClusterName)
+}
+
+func GetLocalZone() string {
+	return os.Getenv(LocalZone)
+}
+
+func GetLocalRegion() string {
+	return os.Getenv(LocalRegion)
+}
+
+func GetLocalVaultAuthPath() string {
+	return os.Getenv(LocalVaultAuthPath)
 }
 
 func GetDefaultModulesNamespace() string {
