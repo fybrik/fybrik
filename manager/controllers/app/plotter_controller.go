@@ -108,7 +108,7 @@ func (r *PlotterReconciler) reconcileFinalizers(ctx context.Context, plotter *ap
 			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 			ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
 
-			if err := utils.UpdateFinalizers(ctx, r.Client, plotter); err != nil {
+			if err := r.Client.Update(ctx, plotter); err != nil {
 				return err
 			}
 		}
@@ -117,7 +117,7 @@ func (r *PlotterReconciler) reconcileFinalizers(ctx context.Context, plotter *ap
 	// Make sure this CRD instance has a finalizer
 	if !hasFinalizer {
 		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
-		if err := utils.UpdateFinalizers(ctx, r.Client, plotter); err != nil {
+		if err := r.Client.Update(ctx, plotter); err != nil {
 			return err
 		}
 	}
@@ -328,7 +328,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]api.MetaBlueprint)
 	}
-
+	logging.LogStructure("reconciling Plotter...", plotter, &log, zerolog.DebugLevel, false, true)
 	// Reset Assets state
 	assetToStatusMap := make(map[string]api.ObservedState)
 	plotter.Status.ObservedState.Error = "" // Reset error state
