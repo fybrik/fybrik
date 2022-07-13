@@ -30,6 +30,7 @@ const (
 	ModuleNamespace                   string = "MODULES_NAMESPACE"
 	ControllerNamespace               string = "CONTROLLER_NAMESPACE"
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
+	ClusterName                       string = "CLUSTER_NAME"
 )
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
@@ -37,6 +38,10 @@ const DefaultModulesNamespace = "fybrik-blueprints"
 
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
+
+func GetLocalClusterName() string {
+	return os.Getenv(ClusterName)
+}
 
 func GetDefaultModulesNamespace() string {
 	ns := os.Getenv(ModuleNamespace)

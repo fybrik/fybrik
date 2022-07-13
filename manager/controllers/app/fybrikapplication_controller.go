@@ -41,7 +41,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	local "fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
@@ -365,16 +364,16 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
+	env, err := r.Environment()
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	// workload cluster is common for all datasets in the given application
-	workloadCluster, err := r.GetWorkloadCluster(applicationContext)
+	workloadCluster, err := r.GetWorkloadCluster(applicationContext, env)
 	if err != nil {
 		// fatal
 		applicationContext.Log.Info().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 			Str(logging.ACTION, logging.CREATE).Msg("Could not determine in which cluster the workload runs")
-		return ctrl.Result{}, err
-	}
-	env, err := r.Environment()
-	if err != nil {
 		return ctrl.Result{}, err
 	}
 	var requirements []datapath.DataInfo
@@ -621,23 +620,20 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 	accountRequired := (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
 		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
 	// no account is defined, return an error for write and copy flows
-	if len(env.StorageAccounts) == 0 {
-		if accountRequired {
-			return errors.New(api.StorageAccountUndefined)
-		}
+	if len(env.StorageAccounts) == 0 && accountRequired {
+		return errors.New(api.StorageAccountUndefined)
 	}
 	// write is denied to all accounts, return Deny for write and copy flows
-	if len(req.StorageRequirements) == 0 {
-		if accountRequired {
-			return errors.New(api.WriteNotAllowed)
-		}
+	if len(req.StorageRequirements) == 0 && accountRequired {
+		return errors.New(api.WriteNotAllowed)
 	}
 	return nil
 }
 
 // GetWorkloadCluster returns a workload cluster
 // If no cluster has been specified for a workload, a local cluster is assumed.
-func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationContext) (multicluster.Cluster, error) {
+func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationContext,
+	env *datapath.Environment) (multicluster.Cluster, error) {
 	clusterName := appContext.Application.Spec.Selector.ClusterName
 	if clusterName == "" {
 		// if no workload selector is specified - it is not a read scenario, skip
@@ -647,22 +643,10 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationC
 		// the workload runs in a local cluster
 		appContext.Log.Warn().Err(errors.New("selector.clusterName field is not specified")).
 			Str(logging.ACTION, logging.CREATE).Msg("No workload cluster indicated, so a local cluster is assumed")
-		localClusterManager, err := local.NewClusterManager(r.Client, environment.GetSystemNamespace())
-		if err != nil {
-			return multicluster.Cluster{}, err
-		}
-		clusters, err := localClusterManager.GetClusters()
-		if err != nil || len(clusters) != 1 {
-			return multicluster.Cluster{}, err
-		}
-		return clusters[0], nil
+		clusterName = environment.GetLocalClusterName()
 	}
 	// find the cluster by its name as it is specified in FybrikApplication workload selector
-	clusters, err := r.ClusterManager.GetClusters()
-	if err != nil {
-		return multicluster.Cluster{}, err
-	}
-	for _, cluster := range clusters {
+	for _, cluster := range env.Clusters {
 		if cluster.Name == clusterName {
 			return cluster, nil
 		}

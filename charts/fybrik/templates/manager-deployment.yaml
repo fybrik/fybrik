@@ -104,7 +104,11 @@ spec:
             {{- else }}
               value: "false"
             {{- end }}
-
+            - name: CLUSTER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cluster-metadata
+                  key: ClusterName
             - name: MODULES_NAMESPACE
               value: {{ include "fybrik.getModulesNamespace" . }}
               
