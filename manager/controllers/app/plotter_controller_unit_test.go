@@ -19,6 +19,7 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -37,7 +38,7 @@ func TestPlotterController(t *testing.T) {
 
 	var (
 		name      = "plotter"
-		namespace = utils.GetSystemNamespace()
+		namespace = environment.GetSystemNamespace()
 	)
 
 	var err error
@@ -148,7 +149,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 
 	var (
 		name      = "plotter"
-		namespace = utils.GetSystemNamespace()
+		namespace = environment.GetSystemNamespace()
 	)
 
 	var err error

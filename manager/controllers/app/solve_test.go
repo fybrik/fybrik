@@ -11,9 +11,9 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -620,7 +620,7 @@ func TestModuleSelection(t *testing.T) {
 // optimization goal is to select the cheapest storage
 func TestOptimalStorage(t *testing.T) {
 	t.Parallel()
-	if !utils.UseCSP() {
+	if !environment.UseCSP() {
 		t.Skip()
 	}
 	g := gomega.NewGomegaWithT(t)
@@ -680,7 +680,7 @@ func TestOptimalStorage(t *testing.T) {
 // optimization goal is to minimize the cost of both storage accounts and clusters
 func TestOptimalStorageAndClusterCost(t *testing.T) {
 	t.Parallel()
-	if !utils.UseCSP() {
+	if !environment.UseCSP() {
 		t.Skip()
 	}
 	g := gomega.NewGomegaWithT(t)
@@ -803,7 +803,7 @@ func TestGoalConflict(t *testing.T) {
 // The second cluster should be selected
 func TestMinMultipleGoals(t *testing.T) {
 	t.Parallel()
-	if !utils.UseCSP() {
+	if !environment.UseCSP() {
 		t.Skip()
 	}
 	g := gomega.NewGomegaWithT(t)
@@ -861,7 +861,7 @@ func TestMinMultipleGoals(t *testing.T) {
 // cluster4 should be selected
 func TestMinMaxGoals(t *testing.T) {
 	t.Parallel()
-	if !utils.UseCSP() {
+	if !environment.UseCSP() {
 		t.Skip()
 	}
 	g := gomega.NewGomegaWithT(t)
@@ -919,7 +919,7 @@ func TestMinMaxGoals(t *testing.T) {
 // copy is expected to be deployed
 func TestMinDistance(t *testing.T) {
 	t.Parallel()
-	if !utils.UseCSP() {
+	if !environment.UseCSP() {
 		t.Skip()
 	}
 	g := gomega.NewGomegaWithT(t)
