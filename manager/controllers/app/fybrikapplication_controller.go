@@ -618,10 +618,17 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			return err
 		}
 	}
+	accountRequired := (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
+		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
+	// no account is defined, return an error for write and copy flows
+	if len(env.StorageAccounts) == 0 {
+		if accountRequired {
+			return errors.New(api.StorageAccountUndefined)
+		}
+	}
 	// write is denied to all accounts, return Deny for write and copy flows
 	if len(req.StorageRequirements) == 0 {
-		if (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
-			(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow) {
+		if accountRequired {
 			return errors.New(api.WriteNotAllowed)
 		}
 	}

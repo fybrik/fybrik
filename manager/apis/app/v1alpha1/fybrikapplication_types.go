@@ -98,6 +98,7 @@ const (
 	ReadAccessDenied            string = "governance policies forbid access to the data"
 	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
 	WriteNotAllowed             string = "governance policies forbid writing of the data"
+	StorageAccountUndefined     string = "no storage account has been defined"
 	ModuleNotFound              string = "no module has been registered"
 	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
