@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -81,7 +82,7 @@ var _ = BeforeSuite(func() {
 			}
 		}
 
-		environment.DefaultTestConfiguration(GinkgoT())
+		DefaultTestConfiguration(GinkgoT())
 
 		var err error
 		cfg, err = testEnv.Start()
@@ -175,3 +176,25 @@ var _ = AfterSuite(func() {
 	err := testEnv.Stop()
 	Expect(err).ToNot(HaveOccurred())
 })
+
+func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {
+	if _, b := os.LookupEnv(key); !b {
+		if err := os.Setenv(key, value); err != nil {
+			t.Fatalf("Could not set environment variable %s", key)
+		}
+	}
+}
+
+func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
+	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
+	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
+	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
+	SetIfNotSet(environment.ConnectionTimeoutKey, "120", t)
+	SetIfNotSet(environment.MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
+	SetIfNotSet(environment.MainPolicyManagerNameKey, "MOCK", t)
+	SetIfNotSet(environment.LoggingVerbosityKey, "-1", t)
+	SetIfNotSet(environment.PrettyLoggingKey, "true", t)
+	SetIfNotSet(environment.LocalClusterName, "thegreendragon", t)
+	SetIfNotSet(environment.LocalRegion, "theshire", t)
+	SetIfNotSet(environment.LocalVaultAuthPath, "kind", t)
+}

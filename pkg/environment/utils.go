@@ -8,8 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/onsi/ginkgo"
 )
 
 // Returns the integer value of an environment variable.
@@ -42,28 +40,6 @@ func MustGetEnv(key string) (string, error) {
 		return "", fmt.Errorf("missing required environment variable: %s", key)
 	}
 	return value, nil
-}
-
-func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {
-	if _, b := os.LookupEnv(key); !b {
-		if err := os.Setenv(key, value); err != nil {
-			t.Fatalf("Could not set environment variable %s", key)
-		}
-	}
-}
-
-func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
-	SetIfNotSet(CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
-	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
-	SetIfNotSet(EnableWebhooksKey, "false", t)
-	SetIfNotSet(ConnectionTimeoutKey, "120", t)
-	SetIfNotSet(MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
-	SetIfNotSet(MainPolicyManagerNameKey, "MOCK", t)
-	SetIfNotSet(LoggingVerbosityKey, "-1", t)
-	SetIfNotSet(PrettyLoggingKey, "true", t)
-	SetIfNotSet(LocalClusterName, "thegreendragon", t)
-	SetIfNotSet(LocalRegion, "theshire", t)
-	SetIfNotSet(LocalVaultAuthPath, "kind", t)
 }
 
 // GetSystemNamespace returns the namespace of control plane
