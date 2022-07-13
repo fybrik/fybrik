@@ -19,6 +19,7 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 )
@@ -31,8 +32,9 @@ type FybrikModuleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+var ModuleTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_module.json"
+
 const (
-	ModuleTaxonomy                 = "/tmp/taxonomy/fybrik_module.json"
 	ModuleValidationConditionIndex = 0
 	FybrikModuleKind               = "FybrikModule"
 )

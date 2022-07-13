@@ -69,9 +69,10 @@ type ApplicationContext struct {
 	UUID        string
 }
 
+var ApplicationTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
+var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+
 const (
-	ApplicationTaxonomy   = "/tmp/taxonomy/fybrik_application.json"
-	DataCatalogTaxonomy   = "/tmp/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
 	FybrikApplicationKind = "FybrikApplication"
 	ConfigAnnotation      = "kubectl.kubernetes.io/last-applied-configuration"
 	PlotterUpdatePrefix   = "plotter_"
@@ -183,7 +184,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 func getBucketResourceRef(name string) *types.NamespacedName {
-	return &types.NamespacedName{Name: name, Namespace: utils.GetSystemNamespace()}
+	return &types.NamespacedName{Name: name, Namespace: environment.GetSystemNamespace()}
 }
 
 func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status api.ObservedState) {
@@ -511,10 +512,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
-			if !utils.IsVaultEnabled() {
+			if !environment.IsVaultEnabled() {
 				log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
 			} else {
-				credentialPath = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
+				credentialPath = environment.GetVaultAddress() + vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 			}
 		}
 		var response *datacatalog.GetAssetResponse
@@ -646,7 +647,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationC
 		// the workload runs in a local cluster
 		appContext.Log.Warn().Err(errors.New("selector.clusterName field is not specified")).
 			Str(logging.ACTION, logging.CREATE).Msg("No workload cluster indicated, so a local cluster is assumed")
-		localClusterManager, err := local.NewClusterManager(r.Client, utils.GetSystemNamespace())
+		localClusterManager, err := local.NewClusterManager(r.Client, environment.GetSystemNamespace())
 		if err != nil {
 			return multicluster.Cluster{}, err
 		}
@@ -753,7 +754,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 	ctx := context.Background()
 	moduleMap := make(map[string]*api.FybrikModule)
 	var moduleList api.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return moduleMap, err
 	}
 	for ind := range moduleList.Items {
@@ -765,7 +766,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 // get all available storage accounts
 func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*api.FybrikStorageAccount, error) {
 	var accountList api.FybrikStorageAccountList
-	if err := r.List(context.Background(), &accountList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
+	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
 	accounts := []*api.FybrikStorageAccount{}
@@ -832,7 +833,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		AppInfo:          applicationContext.Application.Spec.AppInfo,
 		Assets:           map[string]api.AssetDetails{},
 		Flows:            []api.Flow{},
-		ModulesNamespace: utils.GetDefaultModulesNamespace(),
+		ModulesNamespace: environment.GetDefaultModulesNamespace(),
 		Templates:        map[string]api.Template{},
 	}
 

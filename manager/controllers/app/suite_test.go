@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
 	// +kubebuilder:scaffold:imports
@@ -81,7 +81,7 @@ var _ = BeforeSuite(func() {
 			}
 		}
 
-		utils.DefaultTestConfiguration(GinkgoT())
+		environment.DefaultTestConfiguration(GinkgoT())
 
 		var err error
 		cfg, err = testEnv.Start()
@@ -100,13 +100,13 @@ var _ = BeforeSuite(func() {
 			Expect(err).ToNot(HaveOccurred())
 		} else {
 			fmt.Printf("Setup fake environment... \n")
-			controllerNamespace := utils.GetControllerNamespace()
-			modulesNamespace := utils.GetDefaultModulesNamespace()
+			controllerNamespace := environment.GetControllerNamespace()
+			modulesNamespace := environment.GetDefaultModulesNamespace()
 			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ",
 				controllerNamespace, modulesNamespace)
 
-			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetSystemNamespace()})
-			workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": utils.GetDefaultModulesNamespace()})
+			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
+			workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetDefaultModulesNamespace()})
 			// the testing environment will restrict access to secrets, modules and storage accounts
 			mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 				Scheme:             scheme.Scheme,
@@ -151,7 +151,7 @@ var _ = BeforeSuite(func() {
 			k8sClient = mgr.GetClient()
 			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: utils.GetSystemNamespace(),
+					Name: environment.GetSystemNamespace(),
 				},
 			}))
 

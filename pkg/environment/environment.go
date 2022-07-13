@@ -1,14 +1,12 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package utils
+package environment
 
 import (
 	"os"
 	"strconv"
-	"strings"
 
-	"github.com/onsi/ginkgo"
 	"github.com/rs/zerolog"
 )
 
@@ -28,16 +26,41 @@ const (
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 	UseCSPKey                         string = "USE_CSP"
 	CSPPathKey                        string = "CSP_PATH"
+	DataDir                           string = "DATA_DIR"
+	ModuleNamespace                   string = "MODULES_NAMESPACE"
+	ControllerNamespace               string = "CONTROLLER_NAMESPACE"
+	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
 )
 
-// GetSystemNamespace returns the namespace of control plane
-func GetSystemNamespace() string {
-	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
-		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
-			return ns
-		}
+// DefaultModulesNamespace defines a default namespace where module resources will be allocated
+const DefaultModulesNamespace = "fybrik-blueprints"
+
+// DefaultControllerNamespace defines a default namespace where fybrik control plane is running
+const DefaultControllerNamespace = "fybrik-system"
+
+func GetDefaultModulesNamespace() string {
+	ns := os.Getenv(ModuleNamespace)
+	if ns == "" {
+		ns = DefaultModulesNamespace
 	}
-	return DefaultControllerNamespace
+	return ns
+}
+
+func GetControllerNamespace() string {
+	controllerNamespace := os.Getenv(ControllerNamespace)
+	if controllerNamespace == "" {
+		controllerNamespace = DefaultControllerNamespace
+	}
+	return controllerNamespace
+}
+
+func GetApplicationNamespace() string {
+	return os.Getenv(ApplicationNamespace)
+}
+
+// GetDataDir returns the directory where the data resides.
+func GetDataDir() string {
+	return os.Getenv(DataDir)
 }
 
 func IsVaultEnabled() bool {
@@ -85,25 +108,6 @@ func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
 }
 
-func SetIfNotSet(key, value string, t ginkgo.GinkgoTInterface) {
-	if _, b := os.LookupEnv(key); !b {
-		if err := os.Setenv(key, value); err != nil {
-			t.Fatalf("Could not set environment variable %s", key)
-		}
-	}
-}
-
-func DefaultTestConfiguration(t ginkgo.GinkgoTInterface) {
-	SetIfNotSet(CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
-	SetIfNotSet(VaultAddressKey, "http://127.0.0.1:8200/", t)
-	SetIfNotSet(EnableWebhooksKey, "false", t)
-	SetIfNotSet(ConnectionTimeoutKey, "120", t)
-	SetIfNotSet(MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
-	SetIfNotSet(MainPolicyManagerNameKey, "MOCK", t)
-	SetIfNotSet(LoggingVerbosityKey, "-1", t)
-	SetIfNotSet(PrettyLoggingKey, "true", t)
-}
-
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
@@ -117,7 +121,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey}
+		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
