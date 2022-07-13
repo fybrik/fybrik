@@ -64,21 +64,15 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).
 		Str("blueprint", req.NamespacedName.String()).Logger()
-
 	cfg, err := r.Helmer.GetConfig(blueprint.Spec.ModulesNamespace, log.Printf)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	if res, errF := r.reconcileFinalizers(ctx, cfg, &blueprint); errF != nil {
-		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
-		return res, errF
-	}
 
-	// If the object has a scheduled deletion time, update status and return
+	// If the object has a scheduled deletion time, remove finalizers and delete allocated resources
 	if !blueprint.DeletionTimestamp.IsZero() {
-		// The object is being deleted
 		log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Deleting blueprint " + blueprint.GetName())
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, r.removeFinalizers(ctx, cfg, &blueprint)
 	}
 
 	observedStatus := blueprint.Status.DeepCopy()
@@ -90,46 +84,29 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 
 	if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
+		log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(blueprint.GetGeneration()))
 		if err := utils.UpdateStatus(ctx, r.Client, &blueprint, observedStatus); err != nil {
 			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 		}
 	}
-
 	log.Debug().Msg("blueprint reconcile cycle completed.") // TODO - Add result to log?
 	return result, nil
 }
 
-// reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(ctx context.Context, cfg *action.Configuration,
-	blueprint *fapp.Blueprint) (ctrl.Result, error) {
+// removeFinalizers removes finalizers for Blueprint and uninstalls resources
+// A finalizer has been added during the blueprint creation
+func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.Configuration,
+	blueprint *fapp.Blueprint) error {
 	// finalizer
-	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName)
-
-	// If the object has a scheduled deletion time, delete it and its associated resources
-	if !blueprint.DeletionTimestamp.IsZero() {
-		// The object is being deleted
-		if hasFinalizer { // Finalizer was created when the object was created
-			// the finalizer is present - delete the allocated resources
-			if err := r.deleteExternalResources(cfg, blueprint); err != nil {
-				r.Log.Error().Err(err).Msg("Error while deleting owned resources")
-			}
-			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
-
-			if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
-				return ctrl.Result{}, err
-			}
+	if ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName) {
+		if err := r.deleteExternalResources(cfg, blueprint); err != nil {
+			r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 		}
-		return ctrl.Result{}, nil
+		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
+		ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
+		return r.Client.Update(ctx, blueprint)
 	}
-	// Make sure this CRD instance has a finalizer
-	if !hasFinalizer {
-		ctrlutil.AddFinalizer(blueprint, BlueprintFinalizerName)
-		if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(cfg *action.Configuration, blueprint *fapp.Blueprint) error {
@@ -243,8 +220,6 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msg(fmt.Sprintf("check if release %s installed, return %t and error: %v",
-		releaseName, inst, err))
 	// TODO should we return err if it is not nil?
 	var rel *release.Release
 	if inst && err == nil {
@@ -310,6 +285,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
 	blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
@@ -346,7 +322,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		logging.LogStructure("Arguments", args, log, zerolog.DebugLevel, false, false)
 		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
 			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
@@ -354,8 +329,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 
 		// check the release status
 		rel, err := r.Helmer.Status(cfg, releaseName)
-		log.Trace().Msg(fmt.Sprintf("Check it re-apply the chart: updateRequired=%t, err=%v, rel is nil=%t",
-			updateRequired, err != nil, rel == nil))
 		// nonexistent release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments

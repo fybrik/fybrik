@@ -87,6 +87,7 @@ func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alph
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, resource, func() error {
 		resource.Spec = blueprint.Spec
+		resource.ObjectMeta.Finalizers = blueprint.ObjectMeta.Finalizers
 		resource.ObjectMeta.Labels = blueprint.ObjectMeta.Labels
 		resource.ObjectMeta.Annotations = blueprint.ObjectMeta.Annotations
 		return nil

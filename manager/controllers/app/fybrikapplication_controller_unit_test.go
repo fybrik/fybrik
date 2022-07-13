@@ -235,11 +235,11 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 	r := createTestFybrikApplicationController(cl, s)
 	g.Expect(r).NotTo(gomega.BeNil())
 	appContext := ApplicationContext{Application: application, Log: &r.Log}
-	g.Expect(r.reconcileFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
+	g.Expect(r.addFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).NotTo(gomega.BeEmpty(), "finalizers have not been created")
 	// mark application as deleted
 	application.DeletionTimestamp = &metav1.Time{Time: time.Now()}
-	g.Expect(r.reconcileFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
+	g.Expect(r.removeFinalizers(context.TODO(), appContext)).To(gomega.BeNil())
 	g.Expect(application.Finalizers).To(gomega.BeEmpty(), "finalizers have not been removed")
 }
 
@@ -1101,7 +1101,8 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(context.Background(), req)
+	newReq := reconcile.Request{NamespacedName: types.NamespacedName{Namespace: req.Namespace, Name: "plotter_" + req.Name}}
+	_, err = r.Reconcile(context.Background(), newReq)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
@@ -1113,7 +1114,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(cl.Update(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// the new reconcile should update the application state
-	_, err = r.Reconcile(context.Background(), req)
+	_, err = r.Reconcile(context.Background(), newReq)
 	g.Expect(err).To(gomega.BeNil())
 	err = cl.Get(context.Background(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
