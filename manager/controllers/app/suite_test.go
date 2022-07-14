@@ -81,7 +81,7 @@ var _ = BeforeSuite(func() {
 			}
 		}
 
-		environment.DefaultTestConfiguration(GinkgoT())
+		DefaultTestConfiguration(GinkgoT())
 
 		var err error
 		cfg, err = testEnv.Start()
@@ -160,18 +160,6 @@ var _ = BeforeSuite(func() {
 					Name: modulesNamespace,
 				},
 			}))
-			Expect(k8sClient.Create(context.Background(), &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "cluster-metadata",
-					Namespace: controllerNamespace,
-				},
-				Data: map[string]string{
-					"ClusterName":   "thegreendragon",
-					"Zone":          "hobbiton",
-					"Region":        "theshire",
-					"VaultAuthPath": "kind",
-				},
-			}))
 		}
 		Expect(k8sClient).ToNot(BeNil())
 		close(done)
@@ -187,3 +175,25 @@ var _ = AfterSuite(func() {
 	err := testEnv.Stop()
 	Expect(err).ToNot(HaveOccurred())
 })
+
+func SetIfNotSet(key, value string, t GinkgoTInterface) {
+	if _, b := os.LookupEnv(key); !b {
+		if err := os.Setenv(key, value); err != nil {
+			t.Fatalf("Could not set environment variable %s", key)
+		}
+	}
+}
+
+func DefaultTestConfiguration(t GinkgoTInterface) {
+	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
+	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
+	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
+	SetIfNotSet(environment.ConnectionTimeoutKey, "120", t)
+	SetIfNotSet(environment.MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
+	SetIfNotSet(environment.MainPolicyManagerNameKey, "MOCK", t)
+	SetIfNotSet(environment.LoggingVerbosityKey, "-1", t)
+	SetIfNotSet(environment.PrettyLoggingKey, "true", t)
+	SetIfNotSet(environment.LocalClusterName, "thegreendragon", t)
+	SetIfNotSet(environment.LocalRegion, "theshire", t)
+	SetIfNotSet(environment.LocalVaultAuthPath, "kind", t)
+}

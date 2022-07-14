@@ -37,6 +37,10 @@ const (
 	CertSecretNamespace               string = "CERT_SECRET_NAMESPACE"
 	CACERTSecretName                  string = "CACERT_SECRET_NAME"      //nolint:gosec
 	CACERTSecretNamespace             string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
+	LocalClusterName                  string = "ClusterName"
+	LocalZone                         string = "Zone"
+	LocalRegion                       string = "Region"
+	LocalVaultAuthPath                string = "VaultAuthPath"
 )
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
@@ -44,6 +48,22 @@ const DefaultModulesNamespace = "fybrik-blueprints"
 
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
+
+func GetLocalClusterName() string {
+	return os.Getenv(LocalClusterName)
+}
+
+func GetLocalZone() string {
+	return os.Getenv(LocalZone)
+}
+
+func GetLocalRegion() string {
+	return os.Getenv(LocalRegion)
+}
+
+func GetLocalVaultAuthPath() string {
+	return os.Getenv(LocalVaultAuthPath)
+}
 
 func GetDefaultModulesNamespace() string {
 	ns := os.Getenv(ModuleNamespace)
