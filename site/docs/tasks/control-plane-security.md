@@ -33,13 +33,13 @@ kubectl -n fybrik-system create secret tls tls-manager-certs \
   --key=tls.key
 ```
 
-[Cert-manager](https://cert-manager.io/) can also be used to generate the secret above using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. For example, the following is an example of a `Certificate` resource for the manager where a tls type secret named `test-tls-manager-certs` is created by the cert-manager. The `issuerRef` field points to a cert-manager resource names [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
+[Cert-manager](https://cert-manager.io/) can also be used to generate the secret above using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. For example, the following is an example of a `Certificate` resource for the manager where a tls type secret named `tls-manager-certs` is created by the cert-manager. The `issuerRef` field points to a cert-manager resource names [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
 
 ```bash
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: test-tls-manager-cert
+  name: tls-manager-cert
   namespace: fybrik-system
 spec:
   dnsNames:
@@ -47,7 +47,7 @@ spec:
   issuerRef:
     kind: Issuer
     name: ca-issuer
-  secretName: test-tls-manager-certs
+  secretName: tls-manager-certs
 ```
 
 #### Using a Private CA Signed Certificate
@@ -57,7 +57,7 @@ If you are using a private CA, Fybrik requires a copy of the CA certificate whic
 For each component copy the CA certificate into a file named cacerts.pem and use kubectl to create the tls-ca secret in the fybrik-system namespace.
 
 ```bash
-kubectl -n fybrik-system create secret generic test-tls-ca-certs \
+kubectl -n fybrik-system create secret generic tls-ca \
   --from-file=cacerts.pem=./cacerts.pem
 ```
 
@@ -74,13 +74,13 @@ manager:
     certs:
       # Name of kubernetes secret that holds the manager certificate.
       # The secret should be of `kubernetes.io/tls` type.
-      certSecretName: "test-tls-manager-certs"
+      certSecretName: "tls-manager-certs"
       # Name of kubernetes tls secret namespace that holds the manager certificate.
       # The secret should be of `kubernetes.io/tls` type.
       certSecretNamespace: "fybrik-system"
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
       # which are used by the manager to validate the connection to the connectors.
-      cacertSecretName: "test-tls-ca-certs"
+      cacertSecretName: "tls-ca"
       # Name of kubernetes secret namespace that holds the certificate authority (CA)
       # certificates which are used by the manager to validate the connection to the connectors.
       cacertSecretNamespace: "fybrik-system"
