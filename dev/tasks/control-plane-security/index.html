@@ -744,9 +744,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mutual-tls" class="md-nav__link">
-    Mutual TLS
+  <a href="#transport-layer-security-tls" class="md-nav__link">
+    Transport Layer Security (TLS)
   </a>
+  
+    <nav class="md-nav" aria-label="Transport Layer Security (TLS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-fybrik-to-use-tls" class="md-nav__link">
+    Configure Fybrik to use TLS
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure Fybrik to use TLS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generating-tls-certificates-and-keys" class="md-nav__link">
+    Generating TLS certificates and keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-tls-secrets" class="md-nav__link">
+    Adding TLS Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-a-private-ca-signed-certificate" class="md-nav__link">
+    Using a Private CA Signed Certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-valuesyaml-file" class="md-nav__link">
+    Update Values.yaml file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-istio" class="md-nav__link">
+    Using Istio
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1294,9 +1348,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mutual-tls" class="md-nav__link">
-    Mutual TLS
+  <a href="#transport-layer-security-tls" class="md-nav__link">
+    Transport Layer Security (TLS)
   </a>
+  
+    <nav class="md-nav" aria-label="Transport Layer Security (TLS)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-fybrik-to-use-tls" class="md-nav__link">
+    Configure Fybrik to use TLS
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure Fybrik to use TLS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generating-tls-certificates-and-keys" class="md-nav__link">
+    Generating TLS certificates and keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-tls-secrets" class="md-nav__link">
+    Adding TLS Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-a-private-ca-signed-certificate" class="md-nav__link">
+    Using a Private CA Signed Certificate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-valuesyaml-file" class="md-nav__link">
+    Update Values.yaml file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-istio" class="md-nav__link">
+    Using Istio
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1321,12 +1429,104 @@
 <h1 id="enable-control-plane-security">Enable Control Plane Security</h1>
 <!-- TODO: once the Helm chart is ready change the text in the Mutual TLS section  -->
 
-<p>Kubernetes  <a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/"><code>NetworkPolicies</code></a> and optionally <a href="https://istio.io/">Istio</a> are used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.</p>
+<p>Kubernetes <a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/"><code>NetworkPolicies</code></a>, TLS/mTLS and optionally Istio can be used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.</p>
 <h2 id="ingress-traffic-policy">Ingress traffic policy</h2>
 <p>The installation of Fybrik applies a Kubernetes <a href="https://kubernetes.io/docs/concepts/services-networking/network-policies/"><code>NetworkPolicy</code></a> resource to the <code>fybrik-system</code> namespace. This resource ensures that ingress traffic to connectors is only allowed from workloads that run in the <code>fybrik-system</code> namespace and thus disallow access to connectors from other namespaces or external parties.</p>
 <p>The <code>NetworkPolicy</code> is always created. However, your Kubernetes cluster must have a <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/">Network Plugin</a> with <code>NetworkPolicy</code> support. Otherwise, <code>NetworkPolicy</code> resources will have no affect. While most Kubernetes distributions include a network plugin that enfoces network policies, some like <a href="https://kind.sigs.k8s.io/">Kind</a> do not and require you to install a separate network plugin instead.</p>
-<h2 id="mutual-tls">Mutual TLS</h2>
-<p>If Istio is installed in the cluster then you can use <a href="https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls">automatic mutual TLS</a> to encrypt the traffic to the connectors.</p>
+<h2 id="transport-layer-security-tls">Transport Layer Security (TLS)</h2>
+<h3 id="configure-fybrik-to-use-tls">Configure Fybrik to use TLS</h3>
+<p>Fybrik can be configured to protect traffic between the manager and connectors by using TLS. In addition, mutual TLS authentication is possible too.</p>
+<p>In the TLS mode, the connectors (aka the servers) should have their certificates available to provide them to the manager (aka client) in the TLS protocol handshake process. In mutual TLS mode, both the manager and connector should have their certificates available. If private Certificate Authorities (CA) is used then its credentials should be installed too.</p>
+<h4 id="generating-tls-certificates-and-keys">Generating TLS certificates and keys</h4>
+<p>For development and testing the TLS certificates and certificate keys can be generated using <a href="https://en.wikipedia.org/wiki/OpenSSL">openSSL</a> library. For more information on the process please refer to online documentation such as this useful <a href="https://www.youtube.com/watch?v=7YgaZIFn7mY">tutorial</a>.</p>
+<p><a href="https://cert-manager.io/">Cert-manager</a> can also be used to automatically generate and renew the TLS certificate using its <a href="https://cert-manager.io/docs/concepts/certificate/"><code>Certificate</code></a> resource. The following is an example of a <code>Certificate</code> resource for the opa-connector where a tls type secret named <code>tls-opa-connector-certs</code> containing the certificate and certificate key is automatically created by the cert-manager. The <code>issuerRef</code> field points to a cert-manager resource name <a href="https://cert-manager.io/docs/configuration/ca/"><code>Issuer</code></a> that holds the information about the CA that signs the certificate.</p>
+<div class="highlight"><pre><span></span><code>apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: opa-connector-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - opa-connector
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: tls-opa-connector-certs
+</code></pre></div>
+<h4 id="adding-tls-secrets">Adding TLS Secrets</h4>
+<p>The manager/connectors certificates are kept in Kubernetes secret:</p>
+<p>For each component copy its certificate into a file names tls.crt. Copy the certificate key into a file named tls.key.</p>
+<p>Use kubectl with the tls secret type to create the secrets.</p>
+<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create secret tls tls-opa-connector-certs <span class="se">\</span>
+  --cert<span class="o">=</span>tls.crt <span class="se">\</span>
+  --key<span class="o">=</span>tls.key
+</code></pre></div>
+<p>If cert-manager is used to manage the certificates then the secret is automatically created as shown above.</p>
+<h4 id="using-a-private-ca-signed-certificate">Using a Private CA Signed Certificate</h4>
+<p>If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.</p>
+<p>For each component copy the CA certificate into a file named cacerts.pem and use kubectl to create the tls-ca secret in the fybrik-system namespace.</p>
+<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create secret generic tls-ca <span class="se">\</span>
+  --from-file<span class="o">=</span>cacerts.pem<span class="o">=</span>./cacerts.pem
+</code></pre></div>
+<p>Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
+is created and automatically renewed by cert-manager.</p>
+<div class="highlight"><pre><span></span><code>apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer-self-signed
+spec:
+  selfSigned: <span class="o">{}</span>
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: fybrik-system
+spec:
+  ca:
+    secretName: tls-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-certificate
+  namespace: fybrik-system
+spec:
+  isCA: <span class="nb">true</span>
+  commonName: fybrik
+  secretName: tls-ca
+  issuerRef:
+    name: ca-issuer-self-signed
+    kind: ClusterIssuer
+    group: cert-manager.io
+</code></pre></div>
+<h4 id="update-valuesyaml-file">Update Values.yaml file</h4>
+<p>To use TLS the infomation about the secrets above should be inserted to the fields in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml">values.yaml</a> file upon Fybrik deployment using helm.</p>
+<p>Here is an example of the tls related fields in the opa-connector section that are filled based on the secrets created above:</p>
+<div class="highlight"><pre><span></span><code>opaConnector:
+  tls:
+    <span class="c1"># Specifies whether the opa connector communication should use tls.</span>
+    use_tls: <span class="nb">true</span>
+    <span class="c1"># Specifies whether the opa connector communication should use mutual tls.</span>
+    use_mtls: <span class="nb">true</span>
+    <span class="c1"># Relavent if the connection between the manager and the connectors</span>
+    <span class="c1"># uses tls.</span>
+    certs:
+      <span class="c1"># Name of kubernetes tls secret that holds opa-connector certificates.</span>
+      <span class="c1"># The secret should be of `kubernetes.io/tls` type.</span>
+      <span class="c1"># Relavent if tls is used.</span>
+      certSecretName: <span class="s2">&quot;tls-opa-connector-certs&quot;</span>
+      <span class="c1"># Name of kubernetes tls secret namespace that holds opa-connector certificate.</span>
+      certSecretNamespace: <span class="s2">&quot;fybrik-system&quot;</span>
+      <span class="c1"># Name of kubernetes secret that holds the certificate authority (CA) certificate which is used</span>
+      <span class="c1"># by opa-connector to validate the connection to the manager if mtls is enabled.</span>
+      cacertSecretName: <span class="s2">&quot;tls-ca&quot;</span>
+      <span class="c1"># Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which</span>
+      <span class="c1"># is used by opa-connector to validate the connection to the manager if mtls is enabled.</span>
+      cacertSecretNamespace: <span class="s2">&quot;fybrik-system&quot;</span>
+</code></pre></div>
+<h3 id="using-istio">Using Istio</h3>
+<p>Alternatively, if Istio is installed in the cluster then you can use <a href="https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls">automatic mutual TLS</a> to encrypt the traffic to the connectors.</p>
 <p>Follow these steps to enable mutual TLS:</p>
 <ul>
 <li>
