@@ -14,12 +14,77 @@ The `NetworkPolicy` is always created. However, your Kubernetes cluster must hav
 
 ### Using Fybrik
 
-Fybrik can be configured to have the traffic between the manager and the connectors encrypted by useing TLS. In addition mutual TLS authentication is possible too.
+Fybrik can be configured to have the traffic between the manager and the connectors encrypted by using TLS. In addition, mutual TLS authentication is possible too.
+ 
+In the TLS mode, the connectors (aka the servers) should have their certificates available to provide them to the manager (aka client) in the TLS protocol handshake process. In mutual TLS mode, both the manager and connector should have their certificates available.
 
-To enable it, a set of helm chart fields should be set upon Fybrik deployment:
-The fields contain information about the security level to use (non, TLS, or mutual TLS), and the Kubernetes secrets that contain the certificates of the manager (aka the client) and the servers (aka the data catalog and policy manager) as well as the certificates of the CAs which were used to sign the client/servers certificates.
 
-More information about the TLS-related fields is found in Fybrik helm chart [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) file.
+#### Adding TLS Secrets
+
+The manager/connectors certificates are kept in Kubernetes secret:
+
+For each component copy its certificate into a file names tls.crt. Copy the certificate key into a file named tls.key.
+
+Use kubectl with the tls secret type to create the secrets.
+
+```bash
+kubectl -n fybrik-system create secret tls tls-manager-certs \
+  --cert=tls.crt \
+  --key=tls.key
+```
+
+[Cert-manager](https://cert-manager.io/) can also be used to generate the secret above using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. For example, the following is an example of a `Certificate` resource for the manager where a tls type secret named `test-tls-manager-certs` is created by the cert-manager. The `issuerRef` field points to a cert-manager resource names [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
+
+```bash
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-manager-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - manager
+  issuerRef:
+    kind: Issuer
+    name: ca-issuer
+  secretName: test-tls-manager-certs
+```
+
+#### Using a Private CA Signed Certificate
+
+If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.
+
+For each component copy the CA certificate into a file named cacerts.pem and use kubectl to create the tls-ca secret in the fybrik-system namespace.
+
+```bash
+kubectl -n fybrik-system create secret generic test-tls-ca-certs \
+  --from-file=cacerts.pem=./cacerts.pem
+```
+
+#### Update Values.yaml file
+
+To use TLS the infomation about the secrets above should be inserted to the fields in [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) file upon Fybrik deployment using helm.
+
+Here is an exmaple of the tls related fields in the manager that are filled based on the secrets created above:
+
+```bash
+# Manager component
+manager:
+  tls:
+    certs:
+      # Name of kubernetes secret that holds the manager certificate.
+      # The secret should be of `kubernetes.io/tls` type.
+      certSecretName: "test-tls-manager-certs"
+      # Name of kubernetes tls secret namespace that holds the manager certificate.
+      # The secret should be of `kubernetes.io/tls` type.
+      certSecretNamespace: "fybrik-system"
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by the manager to validate the connection to the connectors.
+      cacertSecretName: "test-tls-ca-certs"
+      # Name of kubernetes secret namespace that holds the certificate authority (CA)
+      # certificates which are used by the manager to validate the connection to the connectors.
+      cacertSecretNamespace: "fybrik-system"
+```
 
 ### Using Istio
 

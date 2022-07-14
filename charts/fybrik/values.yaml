@@ -170,17 +170,15 @@ manager:
     # uses tls.
     certs:
       # Name of kubernetes secret that holds the manager certificate.
-      # Relavent if mutual tls authentication is used.
       # The secret should be of `kubernetes.io/tls` type.
       # certSecretName: "test-tls-manager-certs"
       certSecretName: ""
       # Name of kubernetes tls secret namespace that holds the manager certificate.
-      # Relavent if mutual tls authentication is used.
+      # The secret should be of `kubernetes.io/tls` type.
       # certSecretNamespace: "fybrik-system"
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
       # which are used by the manager to validate the connection to the connectors.
-      # Relavent if tls is used.
       # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA)
