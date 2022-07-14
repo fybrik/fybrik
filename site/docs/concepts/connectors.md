@@ -31,6 +31,31 @@ The catalog provides metadata about the asset such as security tags. It also pro
 Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
 The default installation of Fybrik installs [Katalog](../reference/katalog.md), a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available.
 
+#### Credential management
+
+The connector might need to read credentials stored in HashiCorp Vault. The parameters to [login](https://www.vaultproject.io/api-docs/auth/kubernetes#login) to vault and to [read secret](https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret) are as follows:
+
+* address: Vault address
+* authPath: Path to [`kubernetes` auth method](https://www.vaultproject.io/docs/auth/kubernetes) used to login to Vault
+* role: connector role used to login to Vault
+* secretPath: Path of the secret holding the credentials in Vault
+
+The parameters should be known to the connector upon startup time except from the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
+
+An example for Vault Login API call which uses the Vault parameters is as follows:
+
+```
+$ curl -v -X POST <address>/<authPath> -H "Content-Type: application/json" --data '{"jwt": <connector service account token>, "role": <role>}'
+```
+
+An example for Vault Read Secret API call which uses the Vault parameters is as follows:
+
+```
+$ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
+```
+
+More about `kubenertes` auth method and vault roles can be found in Vault [documentation](https://www.vaultproject.io/docs/auth/kubernetes).
+
 ### Policy manager
 
 Data governance policies are defined externally in the data governance manager of choice. 
