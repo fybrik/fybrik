@@ -35,6 +35,10 @@ func (m *MockClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	}, nil
 }
 
+func (m *MockClusterManager) IsMultiClusterSetup() bool {
+	return true
+}
+
 func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
 	blueprint, found := m.DeployedBlueprints[cluster]
 	if found {

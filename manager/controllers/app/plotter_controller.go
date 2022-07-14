@@ -14,11 +14,15 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	ctrlutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers"
@@ -349,14 +353,8 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 			if err != nil {
 				log.Error().Err(err).Msg("Could not fetch blueprint named " + blueprint.Name)
 				errorCollection = append(errorCollection, err)
-
-				// The following does a simple exponential backoff with a minimum of 5 seconds
-				// and a maximum of 60 seconds until the next reconcile
-				now := metav1.NewTime(time.Now())
-				elapsedTime := time.Since(now.Time)
-				backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
-				requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
-				return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
+				// a problem to fetch a blueprint, will retry
+				return ctrl.Result{}, errorCollection
 			}
 
 			if remoteBlueprint == nil {
@@ -482,7 +480,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 			log.Trace().Str(logging.PLOTTER, plotter.Name).Msg(plotterReadyMsg)
 			return ctrl.Result{}, nil
 		}
-
+		// could not remove old blueprints, will retry
 		// The following does a simple exponential backoff with a minimum of 5 seconds
 		// and a maximum of 60 seconds until the next reconcile
 		ready := *plotter.Status.ReadyTimestamp
@@ -506,9 +504,13 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 		}
 		plotter.Status.ObservedState.Error = aggregatedError
 	}
-
-	// TODO Once a better notification mechanism exists in razee switch to that
-	return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection //nolint:revive // for magic numbers
+	// plotter is not ready
+	if r.ClusterManager.IsMultiClusterSetup() {
+		// TODO Once a better notification mechanism exists in razee switch to that
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection //nolint:revive // for magic numbers
+	}
+	// don't do polling for a single cluster setup, retry in case of errors
+	return ctrl.Result{}, errorCollection
 }
 
 // NewPlotterReconciler creates a new reconciler for Plotter resources
@@ -526,9 +528,35 @@ func NewPlotterReconciler(mgr ctrl.Manager, name string, manager multicluster.Cl
 func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	numReconciles := environment.GetEnvAsInt(controllers.PlotterConcurrentReconcilesConfiguration,
 		controllers.DefaultPlotterConcurrentReconciles)
-
+	if r.ClusterManager.IsMultiClusterSetup() {
+		return ctrl.NewControllerManagedBy(mgr).
+			WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
+			For(&api.Plotter{}).
+			Complete(r)
+	}
+	// for a single cluster setup there is no need in polling since
+	// blueprints can be watched by the plotter controller
+	mapFn := func(obj client.Object) []reconcile.Request {
+		if !obj.GetDeletionTimestamp().IsZero() {
+			// the owned resource is deleted - no updates should be sent
+			return []reconcile.Request{}
+		}
+		values, err := utils.StructToMap(obj)
+		if err != nil {
+			return []reconcile.Request{}
+		}
+		// don't send updates if the object was not reconciled
+		if _, exists, err := unstructured.NestedFieldNoCopy(values, "status", "observedVersion"); err != nil || !exists {
+			return []reconcile.Request{}
+		}
+		return []reconcile.Request{
+			{NamespacedName: client.ObjectKeyFromObject(obj)},
+		}
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
 		For(&api.Plotter{}).
+		Watches(&source.Kind{Type: &api.Blueprint{}},
+			handler.EnqueueRequestsFromMapFunc(mapFn)).
 		Complete(r)
 }

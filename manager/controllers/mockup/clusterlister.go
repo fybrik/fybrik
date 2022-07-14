@@ -15,6 +15,10 @@ const (
 type ClusterLister struct {
 }
 
+func (m *ClusterLister) IsMultiClusterSetup() bool {
+	return true
+}
+
 // GetClusters returns the cluster config for testing
 func (m *ClusterLister) GetClusters() ([]multicluster.Cluster, error) {
 	return []multicluster.Cluster{
