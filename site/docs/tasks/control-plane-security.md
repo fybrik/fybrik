@@ -2,7 +2,8 @@
 
 <!-- TODO: once the Helm chart is ready change the text in the Mutual TLS section  -->
 
-Kubernetes  [`NetworkPolicies`](https://kubernetes.io/docs/concepts/services-networking/network-policies/) and optionally [Istio](https://istio.io/) are used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.
+Kubernetes [`NetworkPolicies`](https://kubernetes.io/docs/concepts/services-networking/network-policies/), TLS/mTLS and optionally Istio can be used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.
+
 
 ## Ingress traffic policy
 
@@ -10,34 +11,19 @@ The installation of Fybrik applies a Kubernetes [`NetworkPolicy`](https://kubern
 
 The `NetworkPolicy` is always created. However, your Kubernetes cluster must have a [Network Plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/) with `NetworkPolicy` support. Otherwise, `NetworkPolicy` resources will have no affect. While most Kubernetes distributions include a network plugin that enfoces network policies, some like [Kind](https://kind.sigs.k8s.io/) do not and require you to install a separate network plugin instead.
 
-## TLS
-
-Kubernetes NetworkPolicies TLS/mTLS and optionally Istio can be used to protect components of the control plane. Specifically, traffic to connectors that run as part of the control plane must be secured. Follow this page to enable control plane security.
+## Transport Layer Security (TLS)
 
 ### Configure Fybrik to use TLS
 
-Fybrik can be configured to protect trafffic between the manager and connectors by using TLS. In addition, mutual TLS authentication is possible too.
+Fybrik can be configured to protect traffic between the manager and connectors by using TLS. In addition, mutual TLS authentication is possible too.
  
 In the TLS mode, the connectors (aka the servers) should have their certificates available to provide them to the manager (aka client) in the TLS protocol handshake process. In mutual TLS mode, both the manager and connector should have their certificates available. If private Certificate Authorities (CA) is used then its credentials should be installed too.
 
+#### Generating TLS certificates and keys
 
-#### Adding TLS Secrets
+For development and testing the TLS certificates and certificate keys can be generated using [openSSL](https://en.wikipedia.org/wiki/OpenSSL) library. For more information on the process please refer to online documentation such as this useful [tutorial](https://www.youtube.com/watch?v=7YgaZIFn7mY).
 
-The manager/connectors certificates are kept in Kubernetes secret:
-
-For each component copy its certificate into a file names tls.crt. Copy the certificate key into a file named tls.key.
-
-Use kubectl with the tls secret type to create the secrets.
-
-```bash
-kubectl -n fybrik-system create secret tls tls-opa-connector-certs \
-  --cert=tls.crt \
-  --key=tls.key
-```
-
-The TLS certificate and certificate key is generated using [openSSL](https://en.wikipedia.org/wiki/OpenSSL) library. For more information on the process please refer to online documentation such as this useful [tutorial](https://www.youtube.com/watch?v=7YgaZIFn7mY).
-
-[Cert-manager](https://cert-manager.io/) can also be used to automatically generate and renew the secret above using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. For example, the following is an example of a `Certificate` resource for the opa-connector where a tls type secret named `tls-opa-connector-certs` is automatically created by the cert-manager. The `issuerRef` field points to a cert-manager resource names [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
+[Cert-manager](https://cert-manager.io/) can also be used to automatically generate and renew the TLS certificate using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. The following is an example of a `Certificate` resource for the opa-connector where a tls type secret named `tls-opa-connector-certs` containing the certificate and certificate key is automatically created by the cert-manager. The `issuerRef` field points to a cert-manager resource name [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
 
 ```bash
 apiVersion: cert-manager.io/v1
@@ -54,6 +40,22 @@ spec:
   secretName: tls-opa-connector-certs
 
 ```
+
+#### Adding TLS Secrets
+
+The manager/connectors certificates are kept in Kubernetes secret:
+
+For each component copy its certificate into a file names tls.crt. Copy the certificate key into a file named tls.key.
+
+Use kubectl with the tls secret type to create the secrets.
+
+```bash
+kubectl -n fybrik-system create secret tls tls-opa-connector-certs \
+  --cert=tls.crt \
+  --key=tls.key
+```
+
+If cert-manager is used to manage the certificates then the secret is automatically created as shown above.
 
 #### Using a Private CA Signed Certificate
 
@@ -99,15 +101,13 @@ spec:
     name: ca-issuer-self-signed
     kind: ClusterIssuer
     group: cert-manager.io
-~
-
 ```
 
 #### Update Values.yaml file
 
 To use TLS the infomation about the secrets above should be inserted to the fields in [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) file upon Fybrik deployment using helm.
 
-Here is an exmaple of the tls related fields in the opa-connector that are filled based on the secrets created above:
+Here is an example of the tls related fields in the opa-connector section that are filled based on the secrets created above:
 
 ```bash
 opaConnector:
