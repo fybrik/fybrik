@@ -19,7 +19,7 @@ import (
 	"github.com/apache/arrow/go/v7/arrow/csv"
 	"github.com/apache/arrow/go/v7/arrow/flight"
 	"github.com/apache/arrow/go/v7/arrow/ipc"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
