@@ -35,6 +35,10 @@ func (cm *localClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	return clusters, nil
 }
 
+func (cm *localClusterManager) IsMultiClusterSetup() bool {
+	return false
+}
+
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
 func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
 	if cluster != environment.GetLocalClusterName() {
