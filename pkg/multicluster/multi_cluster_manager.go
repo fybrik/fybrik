@@ -13,6 +13,7 @@ import (
 
 type ClusterLister interface {
 	GetClusters() ([]Cluster, error)
+	IsMultiClusterSetup() bool
 }
 
 type ClusterManager interface {

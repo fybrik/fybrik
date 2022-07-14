@@ -51,6 +51,10 @@ type razeeClusterManager struct {
 	log          zerolog.Logger
 }
 
+func (r *razeeClusterManager) IsMultiClusterSetup() bool {
+	return true
+}
+
 func (r *razeeClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	var clusters []multicluster.Cluster
 	var razeeClusters []types.Cluster
