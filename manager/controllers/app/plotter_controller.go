@@ -55,10 +55,6 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	if err := r.reconcileFinalizers(ctx, &plotter); err != nil {
-		sublog.Error().Err(err).Msg("Could not reconcile finalizers ")
-		return ctrl.Result{}, err
-	}
 
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
@@ -67,7 +63,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if !plotter.DeletionTimestamp.IsZero() {
 		// The object is being deleted
 		log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Reconcile: Deleting Plotter " + plotter.GetName())
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, r.removeFinalizers(ctx, &plotter)
 	}
 
 	observedStatus := plotter.Status.DeepCopy()
@@ -90,38 +86,23 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return result, nil
 }
 
-// reconcileFinalizers reconciles finalizers for Plotter
-func (r *PlotterReconciler) reconcileFinalizers(ctx context.Context, plotter *api.Plotter) error {
-	// finalizer
-	hasFinalizer := ctrlutil.ContainsFinalizer(plotter, PlotterFinalizerName)
-
-	// If the object has a scheduled deletion time, delete it and its associated resources
-	if !plotter.DeletionTimestamp.IsZero() {
-		// The object is being deleted
-		if hasFinalizer { // Finalizer was created when the object was created
-			// the finalizer is present - delete the allocated resources
-
-			for cluster, blueprint := range plotter.Status.Blueprints {
-				// TODO Check namespace deletion. Some finalizers leave namespaces in terminating state
-				err := r.ClusterManager.DeleteBlueprint(cluster, blueprint.Namespace, blueprint.Name)
-				if err != nil {
-					return err
-				}
-			}
-
-			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
-
-			if err := r.Client.Update(ctx, plotter); err != nil {
+// removeFinalizers removes finalizers for Plotter and deletes allocated resources
+func (r *PlotterReconciler) removeFinalizers(ctx context.Context, plotter *api.Plotter) error {
+	if ctrlutil.ContainsFinalizer(plotter, PlotterFinalizerName) {
+		original := plotter.DeepCopy()
+		// the finalizer is present - delete the allocated resources
+		for cluster, blueprint := range plotter.Status.Blueprints {
+			// TODO Check namespace deletion. Some finalizers leave namespaces in terminating state
+			err := r.ClusterManager.DeleteBlueprint(cluster, blueprint.Namespace, blueprint.Name)
+			if err != nil {
 				return err
 			}
+			delete(plotter.Status.Blueprints, cluster)
 		}
-		return nil
-	}
-	// Make sure this CRD instance has a finalizer
-	if !hasFinalizer {
-		ctrlutil.AddFinalizer(plotter, PlotterFinalizerName)
-		if err := r.Client.Update(ctx, plotter); err != nil {
+		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
+		ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
+		// use Patch to preserve the generation version
+		if err := r.Patch(ctx, plotter, client.MergeFrom(original)); err != nil {
 			return err
 		}
 	}
@@ -442,7 +423,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 			}
 
 			plotter.Status.Blueprints[cluster] = api.CreateMetaBlueprintWithoutState(blueprint)
-			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "Blueprint just created")
+			r.setPlotterAssetsReadyStateToFalse(assetToStatusMap, &blueprintSpec, "")
 		}
 	}
 

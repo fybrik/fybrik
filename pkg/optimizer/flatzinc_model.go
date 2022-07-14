@@ -13,6 +13,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 /*
@@ -291,7 +293,7 @@ func (fzw *FlatZincModel) Clear() {
 // dumps a FlatZinc model to a temp file using the FlatZinc syntax, returning the file name
 // It is the caller responsibility to delete the file
 func (fzw *FlatZincModel) Dump() (string, error) {
-	file, err := os.CreateTemp("", "DataPathModel.*.fzn")
+	file, err := os.CreateTemp(environment.GetDataDir(), "DataPathModel.*.fzn")
 	if err != nil {
 		return "", fmt.Errorf("failed creating temp file: %w", err)
 	}
