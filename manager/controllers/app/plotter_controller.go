@@ -546,7 +546,7 @@ func (r *PlotterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return []reconcile.Request{}
 		}
 		// don't send updates if the object was not reconciled
-		if _, exists, err := unstructured.NestedFieldNoCopy(values, "status", "observedVersion"); err != nil || !exists {
+		if _, exists, err := unstructured.NestedFieldNoCopy(values, "status", "observedGeneration"); err != nil || !exists {
 			return []reconcile.Request{}
 		}
 		return []reconcile.Request{
