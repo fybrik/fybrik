@@ -113,7 +113,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	applicationKey := client.ObjectKeyFromObject(application)
 
 	// Create FybrikApplication and FybrikModule
-	By("Expecting application creation to succeed")
+	fmt.Printf("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
@@ -124,11 +124,11 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		_ = k8sClient.Delete(context.Background(), fybrikApplication)
 	}()
 
-	By("Expecting application to be created")
+	fmt.Printf("Expecting application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), applicationKey, application)
 	}, timeout, interval).Should(gomega.Succeed())
-	By("Expecting plotter to be constructed")
+	fmt.Printf("Expecting plotter to be constructed")
 	g.Eventually(func() *apiv1alpha1.ResourceReference {
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
 		return application.Status.Generated
@@ -138,12 +138,12 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	plotter := &apiv1alpha1.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
-	By("Expecting plotter to be fetchable")
+	fmt.Printf("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	By("Expecting application to be ready")
+	fmt.Printf("Expecting application to be ready")
 	g.Eventually(func() bool {
 		err = k8sClient.Get(context.Background(), applicationKey, application)
 		if err != nil {
@@ -163,7 +163,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	By("Starting kubectl port-forward for arrow-flight")
+	fmt.Printf("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
 	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
