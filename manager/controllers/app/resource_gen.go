@@ -16,6 +16,7 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 // ContextInterface is an interface for communication with a generated resource
@@ -46,7 +47,7 @@ func (c *PlotterInterface) CreateResourceReference(owner *app.ResourceReference)
 	// Plotter runs in the control plane namespace. Plotter name identifies fybrikapplication (name and namespace)
 	return &app.ResourceReference{
 		Name:       owner.Name + "-" + owner.Namespace,
-		Namespace:  utils.GetSystemNamespace(),
+		Namespace:  environment.GetSystemNamespace(),
 		Kind:       "Plotter",
 		AppVersion: owner.AppVersion,
 	}

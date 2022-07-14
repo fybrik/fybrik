@@ -17,6 +17,7 @@ import (
 	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
 	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
 	"gopkg.in/yaml.v2"
+	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -53,13 +54,6 @@ type BlueprintReconciler struct {
 	Helmer helm.Interface
 }
 
-type ExtendedArguments struct {
-	fapp.ModuleArguments     `json:",inline"`
-	*fapp.ApplicationDetails `json:",inline"`
-	Labels                   map[string]string `json:"labels"`
-	UUID                     string            `json:"uuid"`
-}
-
 // Reconcile receives a Blueprint CRD
 func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	blueprint := fapp.Blueprint{}
@@ -70,73 +64,55 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).
 		Str("blueprint", req.NamespacedName.String()).Logger()
-
-	if res, err := r.reconcileFinalizers(ctx, &blueprint); err != nil {
-		log.Error().Err(err).Msg("Could not reconcile blueprint " + blueprint.GetName() + " finalizers")
-		return res, err
+	cfg, err := r.Helmer.GetConfig(blueprint.Spec.ModulesNamespace, log.Printf)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
-	// If the object has a scheduled deletion time, update status and return
+	// If the object has a scheduled deletion time, remove finalizers and delete allocated resources
 	if !blueprint.DeletionTimestamp.IsZero() {
-		// The object is being deleted
 		log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Deleting blueprint " + blueprint.GetName())
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, r.removeFinalizers(ctx, cfg, &blueprint)
 	}
 
 	observedStatus := blueprint.Status.DeepCopy()
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Installing/Updating blueprint " + blueprint.GetName())
 
-	result, err := r.reconcile(ctx, &log, &blueprint)
+	result, err := r.reconcile(ctx, cfg, &log, &blueprint)
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "failed to reconcile blueprint")
 	}
 
 	if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
+		log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(blueprint.GetGeneration()))
 		if err := utils.UpdateStatus(ctx, r.Client, &blueprint, observedStatus); err != nil {
 			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 		}
 	}
-
 	log.Debug().Msg("blueprint reconcile cycle completed.") // TODO - Add result to log?
 	return result, nil
 }
 
-// reconcileFinalizers reconciles finalizers for Blueprint
-func (r *BlueprintReconciler) reconcileFinalizers(ctx context.Context, blueprint *fapp.Blueprint) (ctrl.Result, error) {
+// removeFinalizers removes finalizers for Blueprint and uninstalls resources
+// A finalizer has been added during the blueprint creation
+func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.Configuration,
+	blueprint *fapp.Blueprint) error {
 	// finalizer
-	hasFinalizer := ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName)
-
-	// If the object has a scheduled deletion time, delete it and its associated resources
-	if !blueprint.DeletionTimestamp.IsZero() {
-		// The object is being deleted
-		if hasFinalizer { // Finalizer was created when the object was created
-			// the finalizer is present - delete the allocated resources
-			if err := r.deleteExternalResources(blueprint); err != nil {
-				r.Log.Error().Err(err).Msg("Error while deleting owned resources")
-			}
-			// remove the finalizer from the list and update it, because it needs to be deleted together with the object
-			ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
-
-			if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
-				return ctrl.Result{}, err
-			}
+	if ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName) {
+		if err := r.deleteExternalResources(cfg, blueprint); err != nil {
+			r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 		}
-		return ctrl.Result{}, nil
+		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
+		ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
+		return r.Client.Update(ctx, blueprint)
 	}
-	// Make sure this CRD instance has a finalizer
-	if !hasFinalizer {
-		ctrlutil.AddFinalizer(blueprint, BlueprintFinalizerName)
-		if err := utils.UpdateFinalizers(ctx, r.Client, blueprint); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func (r *BlueprintReconciler) deleteExternalResources(blueprint *fapp.Blueprint) error {
+func (r *BlueprintReconciler) deleteExternalResources(cfg *action.Configuration, blueprint *fapp.Blueprint) error {
 	errs := make([]string, 0)
 	for release := range blueprint.Status.Releases {
-		if _, err := r.Helmer.Uninstall(blueprint.Spec.ModulesNamespace, release); err != nil {
+		if _, err := r.Helmer.Uninstall(cfg, release); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
@@ -162,7 +138,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 		pullSecret := corev1.Secret{}
 		pullSecrets := []corev1.Secret{}
 
-		if err := r.Get(ctx, types.NamespacedName{Namespace: utils.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
+		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
 			&pullSecret); err == nil {
 			// if this is not a dockerconfigjson, ignore
 			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
@@ -200,10 +176,9 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 	return registrySuccessfulLogin, nil
 }
 
-func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log *zerolog.Logger, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string) (ctrl.Result, error) {
+func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
+	args map[string]interface{}, releaseNamespace, releaseName string, log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
-	kubeNamespace := blueprint.Spec.ModulesNamespace
 
 	args = CopyMap(args)
 	for k, v := range chartSpec.Values {
@@ -216,48 +191,50 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, log *zerol
 	var err error
 	registrySuccessfulLogin, err = r.obtainSecrets(ctx, log, chartSpec)
 	if err != nil {
-		return ctrl.Result{}, err
+		return nil, err
 	}
 
-	tmpDir, err := ioutil.TempDir("", "fybrik-helm-")
+	tmpDir, err := ioutil.TempDir(environment.GetDataDir(), "fybrik-helm-")
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
 	defer func(log *zerolog.Logger) {
 		if err = os.RemoveAll(tmpDir); err != nil {
 			log.Error().Msgf("Error while calling RemoveAll on directory %s created for pulling helm chart", tmpDir)
 		}
 	}(log)
-	err = r.Helmer.Pull(chartSpec.Name, tmpDir)
+
+	err = r.Helmer.Pull(cfg, chartSpec.Name, tmpDir)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart pull")
 	}
 	// if we logged into a registry, let us try to logout
 	if registrySuccessfulLogin != "" {
 		logoutErr := r.Helmer.RegistryLogout(registrySuccessfulLogin)
 		if logoutErr != nil {
-			return ctrl.Result{}, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
+			return nil, errors.WithMessage(err, "failed to logout from helm registry: "+registrySuccessfulLogin)
 		}
 	}
 	chart, err := r.Helmer.Load(chartSpec.Name, tmpDir)
 	if err != nil {
-		return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed chart load")
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
-
-	rel, err := r.Helmer.Status(kubeNamespace, releaseName)
-	if err == nil && rel != nil {
-		rel, err = r.Helmer.Upgrade(chart, kubeNamespace, releaseName, args)
+	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
+	// TODO should we return err if it is not nil?
+	var rel *release.Release
+	if inst && err == nil {
+		rel, err = r.Helmer.Upgrade(ctx, cfg, chart, releaseNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
+			return nil, errors.WithMessage(err, chartSpec.Name+": failed upgrade")
 		}
 	} else {
-		rel, err = r.Helmer.Install(chart, kubeNamespace, releaseName, args)
+		rel, err = r.Helmer.Install(ctx, cfg, chart, releaseNamespace, releaseName, args)
 		if err != nil {
-			return ctrl.Result{}, errors.WithMessage(err, chartSpec.Name+": failed install")
+			return nil, errors.WithMessage(err, chartSpec.Name+": failed install")
 		}
 	}
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
-	return ctrl.Result{}, nil
+	return rel, nil
 }
 
 // CopyMap copies a map
@@ -305,9 +282,10 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 }
 
 //nolint:gocyclo
-func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger, blueprint *fapp.Blueprint) (ctrl.Result, error) {
+func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
+	blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	modulesNamespace := blueprint.Spec.ModulesNamespace
+
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
@@ -332,37 +310,38 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
-		extendedArguments := ExtendedArguments{
+		helmValues := fapp.HelmValues{
 			ModuleArguments:    module.Arguments,
 			ApplicationDetails: blueprint.Spec.Application,
 			Labels:             blueprint.Labels,
 			UUID:               uuid,
 		}
 		var args map[string]interface{}
-		args, err := utils.StructToMap(&extendedArguments)
+		args, err := utils.StructToMap(&helmValues)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		logging.LogStructure("Arguments", args, log, zerolog.DebugLevel, false, false)
 		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
 			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
+
 		// check the release status
-		rel, err := r.Helmer.Status(modulesNamespace, releaseName)
-		// unexisting release or a failed release - re-apply the chart
+		rel, err := r.Helmer.Status(cfg, releaseName)
+		// nonexistent release or a failed release - re-apply the chart
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if _, err := r.applyChartResource(ctx, log, chart, args, blueprint, releaseName); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint.Spec.ModulesNamespace, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
-		} else if rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(releaseName, modulesNamespace, uuid)
+		}
+		if rel != nil && rel.Info.Status == release.StatusDeployed {
+			status, errMsg := r.checkReleaseStatus(cfg, rel.Manifest, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -376,7 +355,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger
 	// clean-up
 	for release, version := range blueprint.Status.Releases {
 		if version != blueprint.Status.ObservedGeneration {
-			_, err := r.Helmer.Uninstall(modulesNamespace, release)
+			_, err := r.Helmer.Uninstall(cfg, release)
 			if err != nil {
 				log.Error().Err(err).Str(logging.ACTION, logging.DELETE).Msg("Error uninstalling release " + release)
 			} else {
@@ -386,13 +365,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, log *zerolog.Logger
 	}
 	// check if all releases reached the ready state
 	if numReady == numReleases {
-		// all modules have been orhestrated successfully - the data is ready for use
+		// all modules have been orchestrated successfully - the data is ready for use
 		blueprint.Status.ObservedState.Ready = true
 		return ctrl.Result{}, nil
 	}
 
 	// the status is unknown yet - continue polling
 	if blueprint.Status.ObservedState.Error == "" {
+		log.Trace().Msg("blueprint.Status.ObservedState is not ready, will try again")
 		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
 	}
 	return ctrl.Result{}, nil
@@ -415,7 +395,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 
-	blueprintNamespace := utils.GetSystemNamespace()
+	blueprintNamespace := environment.GetSystemNamespace()
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return e.Object.GetNamespace() == blueprintNamespace
@@ -440,7 +420,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	ctx := context.Background()
 
 	var moduleList fapp.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(utils.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
 	for ind := range moduleList.Items {
@@ -519,11 +499,11 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(releaseName, namespace, uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, manifest, uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
-	resources, err := r.Helmer.GetResources(namespace, releaseName)
+	resources, err := r.Helmer.GetResources(cfg, manifest)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting resources")
 		return corev1.ConditionUnknown, ""

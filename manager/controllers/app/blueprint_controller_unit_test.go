@@ -21,6 +21,7 @@ import (
 
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/logging"
 )
@@ -39,7 +40,7 @@ func readBlueprint(f string) (*app.Blueprint, error) {
 }
 
 func TestBlueprintReconcile(t *testing.T) {
-	blueprintNamespace := utils.GetSystemNamespace()
+	blueprintNamespace := environment.GetSystemNamespace()
 	fmt.Printf("Blueprint controller unit test: Using blueprint namespace: %s\n", blueprintNamespace)
 
 	t.Parallel()
@@ -49,7 +50,7 @@ func TestBlueprintReconcile(t *testing.T) {
 	blueprint, err := readBlueprint("../../testdata/blueprint.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read blueprint file for test")
 	blueprint.Namespace = blueprintNamespace
-	blueprint.Spec.ModulesNamespace = utils.GetDefaultModulesNamespace()
+	blueprint.Spec.ModulesNamespace = environment.GetDefaultModulesNamespace()
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{

@@ -11,7 +11,13 @@ nav:
 - About: index.md
 - Get Started:
   - get-started/quickstart.md
-  - samples/notebook.md
+  - Notebook samples:
+    - Before we begin: samples/pre-steps.md
+    - samples/notebook-read.md
+    - samples/notebook-write.md
+    - samples/delete-sample.md
+    - samples/chaining-sample.md
+    - samples/cleanup.md
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md
@@ -27,6 +33,7 @@ nav:
   - tasks/multicluster.md
   - tasks/custom-taxonomy.md
   - tasks/performance.md
+  - tasks/high-availability.md
 - Reference:
   - reference/crds.md
   - Connectors API:
@@ -47,6 +54,7 @@ nav:
     - contribute/documentation/style.md
   - Plugins:
     - contribute/modules.md
+    - Using OpenAPI Generator: contribute/openapi.md
 - Publications: publications.md
 
 

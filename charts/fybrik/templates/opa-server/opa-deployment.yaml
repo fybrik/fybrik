@@ -35,7 +35,7 @@ spec:
         - name: bootstrap
           emptyDir: {}
       securityContext:
-        {{- toYaml .Values.opaServer.podSecurityContext | nindent 8 }}
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.opaServer.podSecurityContext) | nindent 8 }}
       initContainers:
         - name: initpolicy
           image: {{ .Values.opaServer.kubemgmt.image }}
@@ -63,7 +63,7 @@ spec:
       containers:
         - name: opa
           securityContext:
-            {{- toYaml .Values.opaServer.securityContext | nindent 12 }}
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.opaServer.containerSecurityContext | toYaml | nindent 12 }}
           image: {{ .Values.opaServer.image }}
           imagePullPolicy: {{ .Values.opaServer.imagePullPolicy | default .Values.global.imagePullPolicy }}
           args:

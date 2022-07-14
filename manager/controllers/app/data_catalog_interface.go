@@ -5,7 +5,7 @@ package app
 
 import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
 
@@ -41,7 +41,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	creds := ""
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
 	}
 
@@ -54,7 +54,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	}
 
 	credentialPath := ""
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 	}
 

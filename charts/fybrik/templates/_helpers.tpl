@@ -119,3 +119,48 @@ Get modules namespace
 {{- .Values.modulesNamespace.name | default "fybrik-blueprints" -}}
 {{- end -}}
 
+{{/*
+processPodSecurityContext does the following:
+- skips certain keys in Values.global.podSecurityContext map if running on openshift
+- merges Values.global.podSecurityContext with specific podSecurityContext settings
+  that is passed as a parameter to this function, giving preference to the values in the
+  latter map.
+*/}}
+{{- define "fybrik.processPodSecurityContext" }}
+{{- $globalContext := deepCopy .context.Values.global.podSecurityContext  }}
+{{- $podSecurityContext := .podSecurityContext }}
+{{- if .context.Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+  {{- range $k, $v := .context.Values.global.podSecurityContext }}
+    {{- if or (eq $k "runAsUser") (eq $k "seccompProfile") }}
+      {{- $_ := unset $globalContext $k }}
+    {{- end }}
+   {{- end }}
+{{- end }}
+{{ mergeOverwrite $globalContext $podSecurityContext | toYaml }}
+{{- end }}
+
+{{/*
+localChartsMountPath returns the mount path of a persistent volume
+that can contain helm charts that can be referenced by the Fybrik module.
+Relevant only when .Values.chartsPersistentVolumeClaim is set.
+*/}}
+{{- define "fybrik.localChartsMountPath" }}
+{{- printf "/opt/fybrik" }}
+{{- end }}
+
+{{/*
+Print Data directory.
+*/}}
+{{- define "fybrik.getDataDir" -}}
+/data
+{{- end }}
+
+{{/*
+Print sub directory in /data directory. The sub directory is
+passed as parameter to the function.
+*/}}
+{{- define "fybrik.getDataSubdir" -}}
+{{- $dir := toString (first .) -}}
+{{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
+{{- end }}
+

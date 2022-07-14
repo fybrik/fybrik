@@ -23,7 +23,7 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 Ensure that you have the following:
 
 - [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or newer must be installed on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.20 or newer must be installed on your machine.
 - Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
 
 
@@ -119,7 +119,7 @@ Run the following to install vault and the plugin in development mode:
     git clone https://github.com/fybrik/fybrik.git
     cd fybrik
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait
+    helm install fybrik charts/fybrik --set global.tag=master -n fybrik-system --wait
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager. 
@@ -129,7 +129,6 @@ Install the Fybrik release with a built-in data catalog and with [Open Policy Ag
 helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
 helm install fybrik fybrik-charts/fybrik -n fybrik-system {{ fybrikVersionFlag }}  --wait
 ```
-
 
 ## Install modules
 

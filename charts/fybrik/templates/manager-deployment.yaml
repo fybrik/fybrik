@@ -33,7 +33,21 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.manager.serviceAccount.name }}
       securityContext:
-        {{- toYaml .Values.manager.podSecurityContext | nindent 8 }}
+        {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.manager.podSecurityContext) | nindent 8 }}
+      {{- if .Values.manager.solver.image }}
+      initContainers:
+        - name: init-solver
+          image: {{ .Values.manager.solver.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command:
+          - cp 
+          - -rf
+          - /data/tools
+          - {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/
+          volumeMounts:
+            - name: solver-volume
+              mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
+      {{- end }}
       containers:
         {{- if .Values.manager.socat }}
         - name: integration-tests
@@ -77,20 +91,28 @@ spec:
           envFrom:
             - configMapRef:
                 name: fybrik-config
+            - configMapRef:
+                name: cluster-metadata
             {{- if include "fybrik.isRazeeConfigurationEnabled" . }}
             - secretRef:
                 name: razee-credentials
             {{- end }}
           env:
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
             {{- if .Values.clusterScoped }} 
               value: "true"
             {{- else }}
               value: "false"
             {{- end }}
-
             - name: MODULES_NAMESPACE
               value: {{ include "fybrik.getModulesNamespace" . }}
+              
+            {{- if .Values.manager.solver.image }}
+            - name: CSP_PATH
+              value: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}/tools/bin/solver
+            {{- end }}
 
             {{- if .Values.applicationNamespace }}
             - name: APPLICATION_NAMESPACE
@@ -99,6 +121,10 @@ spec:
 
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
+            {{- end }}
+            {{- if .Values.manager.chartsPersistentVolumeClaim }}
+            - name: LOCAL_CHARTS_DIR
+              value: {{ include "fybrik.localChartsMountPath" . }}
             {{- end }}
           {{- if .Values.clusterScoped }} 
           ports:
@@ -112,16 +138,22 @@ spec:
               name: cert
               readOnly: true  
             {{- end }}     
-            - mountPath: /tmp/taxonomy
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
-            - mountPath: /tmp/adminconfig
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "adminconfig" ) }}
               name: fybrik-adminconfig
-            {{- if .Values.manager.chartVolume }}
-            - mountPath: /opt/fybrik/
+            {{- if .Values.manager.solver.image }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "solver" ) }}
+              name: solver-volume
+            {{- end }}
+            {{- if .Values.manager.chartsPersistentVolumeClaim }}
+            - mountPath: {{ include "fybrik.localChartsMountPath" . }}
               name: charts
             {{- end }}
           securityContext:
-            {{- toYaml .Values.manager.securityContext | nindent 12 }}
+          {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10
@@ -132,16 +164,22 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
         {{- end }}
+        {{- if .Values.manager.solver.image }}
+        - name: solver-volume
+          emptyDir: {}
+        {{- end }}
+        - name: data
+          emptyDir: {}
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config
         - name: fybrik-adminconfig
           configMap:
             name: fybrik-adminconfig
-        {{- if .Values.manager.chartVolume }}
+        {{- if .Values.manager.chartsPersistentVolumeClaim }}
         - name: charts
           persistentVolumeClaim:
-            claimName: "{{ .Values.manager.chartVolume }}"
+            claimName: "{{ .Values.manager.chartsPersistentVolumeClaim }}"
         {{- end }}
       {{- with .Values.manager.nodeSelector }}
       nodeSelector:

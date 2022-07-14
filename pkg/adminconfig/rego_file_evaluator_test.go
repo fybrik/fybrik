@@ -13,7 +13,6 @@ import (
 	"github.com/open-policy-agent/opa/rego"
 
 	"fybrik.io/fybrik/pkg/adminconfig"
-	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -60,7 +59,7 @@ func EvaluatorWithOptimizations() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rg.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+	return adminconfig.NewRegoPolicyEvaluatorWithQuery(query)
 }
 
 func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
@@ -116,7 +115,7 @@ func BaseEvaluator() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rg.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+	return adminconfig.NewRegoPolicyEvaluatorWithQuery(query)
 }
 
 func EvaluatorforExpiringPolicies() *adminconfig.RegoPolicyEvaluator {
@@ -159,7 +158,7 @@ func EvaluatorforExpiringPolicies() *adminconfig.RegoPolicyEvaluator {
 	)
 	query, err := rg.PrepareForEval(context.Background())
 	Expect(err).ToNot(HaveOccurred())
-	return &adminconfig.RegoPolicyEvaluator{Log: logging.LogInit("test", "ConfigPolicyEvaluator"), Query: query}
+	return adminconfig.NewRegoPolicyEvaluatorWithQuery(query)
 }
 
 func TestRegoFileEvaluator(t *testing.T) {

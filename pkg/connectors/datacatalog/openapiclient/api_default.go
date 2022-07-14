@@ -18,11 +18,6 @@ import (
 	"net/url"
 )
 
-// Linger please
-var (
-	_ context.Context
-)
-
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
@@ -349,6 +344,126 @@ func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetA
 	localVarHeaderParams["X-Request-Datacatalog-Cred"] = parameterToString(*r.xRequestDatacatalogCred, "")
 	// body params
 	localVarPostBody = r.getAssetRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateAssetRequest struct {
+	ctx                           context.Context
+	ApiService                    *DefaultApiService
+	xRequestDatacatalogUpdateCred *string
+	updateAssetRequest            *UpdateAssetRequest
+}
+
+// This header carries credential information related to accessing the relevant destination catalog.
+func (r ApiUpdateAssetRequest) XRequestDatacatalogUpdateCred(xRequestDatacatalogUpdateCred string) ApiUpdateAssetRequest {
+	r.xRequestDatacatalogUpdateCred = &xRequestDatacatalogUpdateCred
+	return r
+}
+
+// Update Asset Request
+func (r ApiUpdateAssetRequest) UpdateAssetRequest(updateAssetRequest UpdateAssetRequest) ApiUpdateAssetRequest {
+	r.updateAssetRequest = &updateAssetRequest
+	return r
+}
+
+func (r ApiUpdateAssetRequest) Execute() (*UpdateAssetResponse, *http.Response, error) {
+	return r.ApiService.UpdateAssetExecute(r)
+}
+
+/*
+UpdateAsset This REST API updates data asset information in the data catalog configured in fybrik
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiUpdateAssetRequest
+*/
+func (a *DefaultApiService) UpdateAsset(ctx context.Context) ApiUpdateAssetRequest {
+	return ApiUpdateAssetRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//  @return UpdateAssetResponse
+func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (*UpdateAssetResponse, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UpdateAssetResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.UpdateAsset")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/updateAsset"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.xRequestDatacatalogUpdateCred == nil {
+		return localVarReturnValue, nil, reportError("xRequestDatacatalogUpdateCred is required and must be specified")
+	}
+	if r.updateAssetRequest == nil {
+		return localVarReturnValue, nil, reportError("updateAssetRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	localVarHeaderParams["X-Request-Datacatalog-Update-Cred"] = parameterToString(*r.xRequestDatacatalogUpdateCred, "")
+	// body params
+	localVarPostBody = r.updateAssetRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

@@ -1,6 +1,10 @@
 include Makefile.env
 export DOCKER_TAGNAME ?= 0.0.0
 export KUBE_NAMESPACE ?= fybrik-system
+export DATA_DIR ?= /tmp
+# the latest backward compatible CRD version
+export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
+export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -44,13 +48,25 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 
+.PHONY: deploy_latest_compatible_CRD_version
+deploy_latest_compatible_CRD_version: export VALUES_FILE?=charts/fybrik/values.yaml
+deploy_latest_compatible_CRD_version: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
+
+	$(TOOLBIN)/helm repo add fybrik-charts $(FYBRIK_CHARTS)
+	$(TOOLBIN)/helm repo update
+	$(TOOLBIN)/helm install fybrik-crd fybrik-charts/fybrik-crd  \
+               --namespace $(KUBE_NAMESPACE) --version $(LATEST_BACKWARD_SUPPORTED_CRD_VERSION) --wait --timeout 120s
+	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
+               --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
+
 .PHONY: pre-test
-pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
-	mkdir -p /tmp/taxonomy
-	mkdir -p /tmp/adminconfig
-	cp charts/fybrik/files/taxonomy/*.json /tmp/taxonomy/
-	cp charts/fybrik/files/adminconfig/* /tmp/adminconfig/
-	cp samples/adminconfig/* /tmp/adminconfig/
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
+	mkdir -p $(DATA_DIR)/taxonomy
+	mkdir -p $(DATA_DIR)/adminconfig
+	cp charts/fybrik/files/taxonomy/*.json $(DATA_DIR)/taxonomy/
+	cp charts/fybrik/files/adminconfig/* $(DATA_DIR)/adminconfig/
+	cp samples/adminconfig/* $(DATA_DIR)/adminconfig/
 	mkdir -p manager/testdata/unittests/basetaxonomy
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
@@ -58,18 +74,21 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
   	-b charts/fybrik/files/taxonomy/taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
-	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json /tmp/taxonomy/taxonomy.json
+	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
 test: pre-test
 	go test -v ./...
+	USE_CSP=true go test -v ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-integration-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
 run-integration-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
@@ -84,12 +103,13 @@ run-integration-tests:
 	$(MAKE) -C pkg/helm test
 	$(MAKE) -C samples/rest-server test
 	$(MAKE) -C manager run-integration-tests
+	
 
-.PHONY: run-notebook-tests
-run-notebook-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-notebook-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-notebook-tests: export VALUES_FILE=charts/fybrik/notebook-tests.values.yaml
-run-notebook-tests:
+.PHONY: run-notebook-readflow-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
@@ -97,7 +117,35 @@ run-notebook-tests:
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) deploy
 	$(MAKE) configure-vault
-	$(MAKE) -C manager run-notebook-tests
+	$(MAKE) -C manager run-notebook-readflow-tests
+
+.PHONY: run-notebook-readflow-bc-tests
+run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-bc-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-bc-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) deploy_latest_compatible_CRD_version
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-notebook-readflow-tests
+
+.PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-writeflow-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
+run-notebook-writeflow-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-notebook-writeflow-tests
 
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export DOCKER_HOSTNAME?=localhost:5000

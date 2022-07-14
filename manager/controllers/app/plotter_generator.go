@@ -16,6 +16,8 @@ import (
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -45,7 +47,7 @@ type PlotterGenerator struct {
 }
 
 // AllocateStorage creates a Dataset for bucket allocation
-func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface *taxonomy.Interface,
+func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
 	account *v1alpha1.FybrikStorageAccountSpec) (*v1alpha1.DataStore, error) {
 	// provisioned storage
 	var genBucketName, genObjectKeyName string
@@ -58,10 +60,10 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 	bucket := &storage.ProvisionedBucket{
 		Name:      genBucketName,
 		Endpoint:  account.Endpoint,
-		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: utils.GetSystemNamespace()},
+		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
 		Region:    string(account.Region),
 	}
-	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: utils.GetSystemNamespace()}
+	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
 		p.Log.Error().Err(err).Msg("Dataset creation failed")
 		return nil, err
@@ -82,17 +84,17 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
 	vaultMap := make(map[string]v1alpha1.Vault)
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{
 			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
+			Role:       environment.GetModulesRole(),
+			Address:    environment.GetVaultAddress(),
 		}
 		// The copied asset needs creds for later to be read
 		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{
 			SecretPath: vaultSecretPath,
-			Role:       utils.GetModulesRole(),
-			Address:    utils.GetVaultAddress(),
+			Role:       environment.GetModulesRole(),
+			Address:    environment.GetVaultAddress(),
 		}
 	} else {
 		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{}
@@ -112,7 +114,7 @@ func (p *PlotterGenerator) AllocateStorage(item *DataInfo, destinationInterface 
 	return datastore, nil
 }
 
-func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *v1alpha1.DataStore {
+func (p *PlotterGenerator) getAssetDataStore(item *datapath.DataInfo) *v1alpha1.DataStore {
 	return &v1alpha1.DataStore{
 		Connection: item.DataDetails.Details.Connection,
 		Vault:      getDatasetCredentials(item),
@@ -122,20 +124,20 @@ func (p *PlotterGenerator) getAssetDataStore(item *DataInfo) *v1alpha1.DataStore
 
 // store all available credentials in the plotter
 // only relevant credentials will be sent to modules
-func getDatasetCredentials(item *DataInfo) map[string]v1alpha1.Vault {
+func getDatasetCredentials(item *datapath.DataInfo) map[string]v1alpha1.Vault {
 	vaultMap := make(map[string]v1alpha1.Vault)
 	// credentials for read, write, delete
 	// currently, one is used for all flows
 	// TODO: store multiple secrets with credentials depending on the flow
 	flows := []string{string(taxonomy.ReadFlow), string(taxonomy.WriteFlow), string(taxonomy.DeleteFlow)}
 	for _, flow := range flows {
-		if utils.IsVaultEnabled() {
+		if environment.IsVaultEnabled() {
 			// Set the value received from the catalog connector.
 			vaultSecretPath := item.DataDetails.Credentials
 			vaultMap[flow] = v1alpha1.Vault{
 				SecretPath: vaultSecretPath,
-				Role:       utils.GetModulesRole(),
-				Address:    utils.GetVaultAddress(),
+				Role:       environment.GetModulesRole(),
+				Address:    environment.GetVaultAddress(),
 			}
 		} else {
 			vaultMap[flow] = v1alpha1.Vault{}
@@ -144,7 +146,7 @@ func getDatasetCredentials(item *DataInfo) map[string]v1alpha1.Vault {
 	return vaultMap
 }
 
-func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *v1alpha1.PlotterSpec, templateName string) {
+func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSpec *v1alpha1.PlotterSpec, templateName string) {
 	moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 	template := v1alpha1.Template{
 		Name: templateName,
@@ -159,7 +161,7 @@ func (p *PlotterGenerator) addTemplate(element *ResolvedEdge, plotterSpec *v1alp
 	plotterSpec.Templates[template.Name] = template
 }
 
-func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
 	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
 	if steps == nil {
 		steps = []v1alpha1.DataFlowStep{}
@@ -187,7 +189,7 @@ func (p *PlotterGenerator) addInMemoryStep(element *ResolvedEdge, datasetID stri
 	return steps
 }
 
-func (p *PlotterGenerator) addStep(element *ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
+func (p *PlotterGenerator) addStep(element *datapath.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
 	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
 	if steps == nil {
 		steps = []v1alpha1.DataFlowStep{}
@@ -216,7 +218,7 @@ func (p *PlotterGenerator) getSupportedFormat(capability *v1alpha1.ModuleCapabil
 
 // Handle a new asset: allocate storage and update its metadata. Used when the
 // IsNewDataSet flag is true.
-func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) error {
+func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *datapath.Solution) error {
 	var err error
 	if item.DataDetails != nil && item.DataDetails.Details.DataFormat != "" {
 		return nil
@@ -224,7 +226,7 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
 
 	var sinkDataStore *v1alpha1.DataStore
-	var element *ResolvedEdge
+	var element *datapath.ResolvedEdge
 
 	needToAllocateStorage := false
 	for _, element = range selection.DataPath {
@@ -262,9 +264,9 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 	item.DataDetails = &datacatalog.GetAssetResponse{
 		ResourceMetadata: resourceMetadata,
 	}
-	if utils.IsVaultEnabled() {
+	if environment.IsVaultEnabled() {
 		secretPath :=
-			vault.PathForReadingKubeSecret(utils.GetSystemNamespace(), element.StorageAccount.SecretRef)
+			vault.PathForReadingKubeSecret(environment.GetSystemNamespace(), element.StorageAccount.SecretRef)
 
 		item.DataDetails.Credentials = secretPath
 	}
@@ -275,8 +277,8 @@ func (p *PlotterGenerator) handleNewAsset(item *DataInfo, selection *Solution) e
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item *DataInfo, application *v1alpha1.FybrikApplication, selection *Solution,
-	plotterSpec *v1alpha1.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, application *v1alpha1.FybrikApplication,
+	selection *datapath.Solution, plotterSpec *v1alpha1.PlotterSpec) error {
 	var err error
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
 	datasetID := item.Context.DataSetID
@@ -360,7 +362,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope v1alpha1.Capabil
 		instanceName = utils.CreateStepName(moduleName, assetID)
 	}
 	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
-	releaseNamespace := utils.GetDefaultModulesNamespace()
+	releaseNamespace := environment.GetDefaultModulesNamespace()
 
 	type Release struct {
 		Name      string `json:"Name"`

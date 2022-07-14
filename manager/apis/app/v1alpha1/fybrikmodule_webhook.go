@@ -13,6 +13,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	"fybrik.io/fybrik/pkg/environment"
 	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
 )
 
@@ -28,7 +29,7 @@ var _ webhook.Validator = &FybrikModule{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *FybrikModule) ValidateCreate() error {
-	taxonomyFile := "/tmp/taxonomy/fybrik_module.json"
+	taxonomyFile := environment.GetDataDir() + "/taxonomy/fybrik_module.json"
 	return r.ValidateFybrikModule(taxonomyFile)
 }
 

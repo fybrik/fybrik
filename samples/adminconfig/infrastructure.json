@@ -1,45 +1,65 @@
 {
+    "metrics": [
+        {
+            "name": "cost",
+            "type": "numeric",
+            "units": "US Dollar per TB per month",
+            "scale": 
+            {
+                "min": 0,
+                "max": 500
+            }
+        },
+        {
+            "name": "distance",
+            "type": "numeric",
+            "units": "km",
+            "scale":
+            {
+                "min": 0,
+                "max": 20000
+            }
+        }
+    ],
     "infrastructure": [
         {
             "attribute": "storage-cost",
             "description": "neverland object store",
+            "metricName": "cost",
             "value": "100",
-            "type": "numeric",
-            "units": "US Dollar",
             "object": "fybrikstorageaccount",
             "instance": "account-neverland"
         },
         {
             "attribute": "storage-cost",
             "description": "theshire object store",
+            "metricName": "cost",
             "value": "90",
-            "type": "numeric",
-            "units": "US Dollar",
             "object": "fybrikstorageaccount",
             "instance": "account-theshire"
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between neverland and theshire",
-            "value": "5",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between neverland and theshire",
+            "metricName": "distance",
+            "value": "5000",
+            "object": "inter-region",
             "arguments": ["theshire","neverland"]
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between theshire and theshire",
-            "value": "1000",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between theshire and theshire",
+            "metricName": "distance",
+            "value": "0",
+            "object": "inter-region",
             "arguments": ["theshire","theshire"]
         },
         {
-            "attribute": "bandwidth",
-            "description": "bandwidth between neverland and neverland",
-            "value": "800",
-            "type": "numeric",
-            "units": "Mbps",
+            "attribute": "distance",
+            "description": "distance between neverland and neverland",
+            "metricName": "distance",
+            "value": "0",
+            "object": "inter-region",
             "arguments": ["neverland","neverland"]
         }
     ]

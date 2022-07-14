@@ -4,7 +4,6 @@
 package app
 
 import (
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -12,8 +11,9 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
@@ -26,12 +26,12 @@ const Transform = "transform"
 // component responsible for data path construction
 type PathBuilder struct {
 	Log   *zerolog.Logger
-	Env   *Environment
-	Asset *DataInfo
+	Env   *datapath.Environment
+	Asset *datapath.DataInfo
 }
 
 // find a solution for data plane orchestration
-func (p *PathBuilder) solve() (Solution, error) {
+func (p *PathBuilder) solve() (datapath.Solution, error) {
 	p.Log.Trace().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Choose modules for dataset")
 	solutions := p.FindPaths()
 	// No data path found for the asset
@@ -40,7 +40,7 @@ func (p *PathBuilder) solve() (Solution, error) {
 		p.Log.Error().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg(msg)
 		logging.LogStructure("Data Item Context", p.Asset, p.Log, zerolog.TraceLevel, true, true)
 		logging.LogStructure("Module Map", p.Env.Modules, p.Log, zerolog.TraceLevel, true, true)
-		return Solution{}, errors.New(msg + " for " + p.Asset.Context.DataSetID)
+		return datapath.Solution{}, errors.New(msg + " for " + p.Asset.Context.DataSetID)
 	}
 	return solutions[0], nil
 }
@@ -49,27 +49,23 @@ func (p *PathBuilder) solve() (Solution, error) {
 // First, data paths are constructed using interface connections, starting from data source.
 // Then, transformations are added to the found paths, and clusters are matched to satisfy restrictions from admin config policies.
 // Optimization is done by the shortest path (the paths are sorted by the length). To be changed in future versions.
-func (p *PathBuilder) FindPaths() []Solution {
+func (p *PathBuilder) FindPaths() []datapath.Solution {
 	nodeFromAssetMetadata := p.getAssetConnectionNode()
 	nodeFromAppRequirements := p.getRequiredConnectionNode()
 
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
-	bound, err := utils.GetDataPathMaxSize()
+	bound, err := environment.GetDataPathMaxSize()
 	if err != nil {
 		p.Log.Warn().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
 	}
-	var solutions []Solution
+	var solutions []datapath.Solution
 	if p.Asset.Context.Flow != taxonomy.WriteFlow {
 		solutions = p.findPathsWithinLimit(nodeFromAssetMetadata, nodeFromAppRequirements, bound)
 	} else {
 		solutions = p.findPathsWithinLimit(nodeFromAppRequirements, nodeFromAssetMetadata, bound)
 		// reverse each solution to start with the application requirements, e.g. workload
 		for ind := range solutions {
-			for elementInd := 0; elementInd < len(solutions[ind].DataPath)/2; elementInd++ {
-				reversedInd := len(solutions[ind].DataPath) - elementInd - 1
-				solutions[ind].DataPath[elementInd], solutions[ind].DataPath[reversedInd] =
-					solutions[ind].DataPath[reversedInd], solutions[ind].DataPath[elementInd]
-			}
+			solutions[ind].Reverse()
 		}
 	}
 	// get valid solutions by extending data paths with transformations and selecting an appropriate cluster for each capability
@@ -79,8 +75,8 @@ func (p *PathBuilder) FindPaths() []Solution {
 }
 
 // extend the received data paths with transformations and select an appropriate cluster for each capability in a data path
-func (p *PathBuilder) validSolutions(solutions []Solution) []Solution {
-	validPaths := []Solution{}
+func (p *PathBuilder) validSolutions(solutions []datapath.Solution) []datapath.Solution {
+	validPaths := []datapath.Solution{}
 	for ind := range solutions {
 		if p.validate(solutions[ind]) {
 			validPaths = append(validPaths, solutions[ind])
@@ -92,7 +88,7 @@ func (p *PathBuilder) validSolutions(solutions []Solution) []Solution {
 // if new storage should be located, check the requirements:
 // where storage can be allocated
 // what additional actions to perform
-func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
+func (p *PathBuilder) validateStorageRequirements(element *datapath.ResolvedEdge) bool {
 	var found bool
 	var actions []taxonomy.Action
 
@@ -133,7 +129,7 @@ func (p *PathBuilder) validateStorageRequirements(element *ResolvedEdge) bool {
 	return true
 }
 
-func (p *PathBuilder) validate(solution Solution) bool {
+func (p *PathBuilder) validate(solution datapath.Solution) bool {
 	// start from data source, check supported actions and cluster restrictions
 	requiredActions := p.Asset.Actions
 	for ind := range solution.DataPath {
@@ -193,7 +189,7 @@ func (p *PathBuilder) validate(solution Solution) bool {
 }
 
 // find a cluster that satisfies the requirements
-func (p *PathBuilder) findCluster(element *ResolvedEdge) bool {
+func (p *PathBuilder) findCluster(element *datapath.ResolvedEdge) bool {
 	for _, cluster := range p.Env.Clusters {
 		if p.validateClusterRestrictions(element, cluster) {
 			element.Cluster = cluster.Name
@@ -207,15 +203,15 @@ func (p *PathBuilder) findCluster(element *ResolvedEdge) bool {
 // Only data movements between data stores/endpoints are considered.
 // Transformations are added in the later stage.
 // Capabilities outside the data path are not handled yet.
-func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution {
-	solutions := []Solution{}
+func (p *PathBuilder) findPathsWithinLimit(source, sink *datapath.Node, n int) []datapath.Solution {
+	solutions := []datapath.Solution{}
 	for _, module := range p.Env.Modules {
 		for capabilityInd, capability := range module.Spec.Capabilities {
 			// check if capability is allowed
 			if !p.allowCapability(capability.Capability) {
 				continue
 			}
-			edge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
+			edge := datapath.Edge{Module: module, CapabilityIndex: capabilityInd, Source: nil, Sink: nil}
 			// check that the module + module capability satisfy the requirements from the admin config policies
 			if !p.validateModuleRestrictions(&edge) {
 				p.Log.Debug().Msgf("module %s does not satisfy requirements for capability %s", module.Name, capability.Capability)
@@ -232,9 +228,9 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 			if supportsSourceInterface(&edge, source) {
 				edge.Source = source
 				// found a path
-				var path []*ResolvedEdge
-				path = append(path, &ResolvedEdge{Edge: edge})
-				solutions = append(solutions, Solution{DataPath: path})
+				var path []*datapath.ResolvedEdge
+				path = append(path, &datapath.ResolvedEdge{Edge: edge})
+				solutions = append(solutions, datapath.Solution{DataPath: path})
 			} else {
 				p.Log.Debug().Msgf("module %s does not satisfy source requirements for capability %s", module.Name, capability.Capability)
 			}
@@ -252,13 +248,13 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *Node, n int) []Solution
 						DataFormat: capability.API.DataFormat})
 				}
 				for _, inter := range sources {
-					node := Node{Connection: inter}
+					node := datapath.Node{Connection: inter}
 					// recursive call to find paths of length = n-1 using the supported source of the selected module capability
 					paths := p.findPathsWithinLimit(source, &node, n-1)
 					// add the selected module to the found paths
 					for i := range paths {
-						auxEdge := Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
-						paths[i].DataPath = append(paths[i].DataPath, &ResolvedEdge{Edge: auxEdge})
+						auxEdge := datapath.Edge{Module: module, CapabilityIndex: capabilityInd, Source: &node, Sink: sink}
+						paths[i].DataPath = append(paths[i].DataPath, &datapath.ResolvedEdge{Edge: auxEdge})
 					}
 					if len(paths) > 0 {
 						solutions = append(solutions, paths...)
@@ -309,7 +305,7 @@ func GetDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alph
 }
 
 // supportsGovernanceAction checks whether the module supports the required governance action
-func supportsGovernanceAction(edge *Edge, action taxonomy.Action) bool {
+func supportsGovernanceAction(edge *datapath.Edge, action taxonomy.Action) bool {
 	// Loop over the data transforms (actions) performed by the module for this capability
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	for _, act := range capability.Actions {
@@ -338,7 +334,7 @@ func match(source, sink *taxonomy.Interface) bool {
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
 //nolint:dupl
-func supportsSourceInterface(edge *Edge, sourceNode *Node) bool {
+func supportsSourceInterface(edge *datapath.Edge, sourceNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	hasSources := false
 	for _, inter := range capability.SupportedInterfaces {
@@ -367,7 +363,7 @@ func supportsSourceInterface(edge *Edge, sourceNode *Node) bool {
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
 //nolint:dupl
-func supportsSinkInterface(edge *Edge, sinkNode *Node) bool {
+func supportsSinkInterface(edge *datapath.Edge, sinkNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	hasSinks := false
 	for _, inter := range capability.SupportedInterfaces {
@@ -393,7 +389,7 @@ func supportsSinkInterface(edge *Edge, sinkNode *Node) bool {
 	return false
 }
 
-func (p *PathBuilder) getAssetConnectionNode() *Node {
+func (p *PathBuilder) getAssetConnectionNode() *datapath.Node {
 	var protocol taxonomy.ConnectionType
 	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
@@ -403,7 +399,7 @@ func (p *PathBuilder) getAssetConnectionNode() *Node {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat
 	}
-	return &Node{
+	return &datapath.Node{
 		Connection: &taxonomy.Interface{
 			Protocol:   protocol,
 			DataFormat: dataFormat,
@@ -411,18 +407,18 @@ func (p *PathBuilder) getAssetConnectionNode() *Node {
 	}
 }
 
-func (p *PathBuilder) getRequiredConnectionNode() *Node {
+func (p *PathBuilder) getRequiredConnectionNode() *datapath.Node {
 	if p.Asset.Context.Requirements.Interface == nil {
 		return nil
 	}
-	return &Node{Connection: p.Asset.Context.Requirements.Interface}
+	return &datapath.Node{Connection: p.Asset.Context.Requirements.Interface}
 }
 
 func (p *PathBuilder) allowCapability(capability taxonomy.Capability) bool {
 	return p.Asset.Configuration.ConfigDecisions[capability].Deploy != adminconfig.StatusFalse
 }
 
-func (p *PathBuilder) validateModuleRestrictions(edge *Edge) bool {
+func (p *PathBuilder) validateModuleRestrictions(edge *datapath.Edge) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	moduleSpec := edge.Module.Spec
 	restrictions := []adminconfig.Restriction{}
@@ -436,7 +432,7 @@ func (p *PathBuilder) validateModuleRestrictions(edge *Edge) bool {
 	return p.validateRestrictions(restrictions, &moduleSpec, "")
 }
 
-func (p *PathBuilder) validateClusterRestrictions(edge *ResolvedEdge, cluster multicluster.Cluster) bool {
+func (p *PathBuilder) validateClusterRestrictions(edge *datapath.ResolvedEdge, cluster multicluster.Cluster) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
 	if !p.validateClusterRestrictionsPerCapability(capability.Capability, cluster) {
 		return false
@@ -456,84 +452,11 @@ func (p *PathBuilder) validateClusterRestrictionsPerCapability(capability taxono
 }
 
 // Validation of an object with respect to the admin config restrictions
-//nolint:gocyclo
 func (p *PathBuilder) validateRestrictions(restrictions []adminconfig.Restriction, spec interface{}, instanceName string) bool {
-	if len(restrictions) == 0 {
-		return true
-	}
-	details, err := utils.StructToMap(spec)
-	if err != nil {
-		return false
-	}
 	for _, restrict := range restrictions {
-		var value interface{}
-		var err error
-		var found bool
-		// infrastructure attribute or a property in the spec?
-		attributeObj := p.Env.AttributeManager.GetAttribute(taxonomy.Attribute(restrict.Property), instanceName)
-		if attributeObj != nil {
-			value = attributeObj.Value
-			found = true
-		} else {
-			fields := strings.Split(restrict.Property, ".")
-			value, found, err = NestedFieldNoCopy(details, fields...)
-		}
-		if err != nil || !found {
+		if !restrict.SatisfiedByResource(p.Env.AttributeManager, spec, instanceName) {
 			return false
-		}
-		if restrict.Range != nil {
-			var numericVal int
-			switch value := value.(type) {
-			case int64:
-				numericVal = int(value)
-			case float64:
-				numericVal = int(value)
-			case int:
-				numericVal = value
-			case string:
-				if numericVal, err = strconv.Atoi(value); err != nil {
-					return false
-				}
-			}
-			if restrict.Range.Max > 0 && numericVal > restrict.Range.Max {
-				return false
-			}
-			if restrict.Range.Min > 0 && numericVal < restrict.Range.Min {
-				return false
-			}
-		} else if len(restrict.Values) != 0 {
-			if !utils.HasString(value.(string), restrict.Values) {
-				return false
-			}
 		}
 	}
 	return true
-}
-
-func NestedFieldNoCopy(obj map[string]interface{}, fields ...string) (interface{}, bool, error) {
-	var val interface{} = obj
-
-	for _, field := range fields {
-		if val == nil {
-			return nil, false, nil
-		}
-		if reflect.TypeOf(val).Kind() == reflect.Slice {
-			s := reflect.ValueOf(val)
-			i, err := strconv.Atoi(field)
-			if err != nil {
-				return nil, false, nil
-			}
-			val = s.Index(i).Interface()
-			continue
-		}
-		if m, ok := val.(map[string]interface{}); ok {
-			val, ok = m[field]
-			if !ok {
-				return nil, false, nil
-			}
-		} else {
-			return nil, false, nil
-		}
-	}
-	return val, true, nil
 }

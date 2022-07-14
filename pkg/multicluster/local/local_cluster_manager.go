@@ -7,18 +7,13 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/multicluster"
-)
-
-const (
-	clusterMetadataConfigmapName string = "cluster-metadata"
 )
 
 // localClusterManager for local cluster configuration
@@ -29,34 +24,20 @@ type localClusterManager struct {
 
 // GetClusters returns a list of registered clusters
 func (cm *localClusterManager) GetClusters() ([]multicluster.Cluster, error) {
-	cmcm := corev1.ConfigMap{}
-	namespacedName := client.ObjectKey{
-		Name:      clusterMetadataConfigmapName,
-		Namespace: cm.Namespace,
-	}
-	if err := cm.Client.Get(context.Background(), namespacedName, &cmcm); err != nil {
-		return nil, errors.Wrap(err, "error in GetClusters")
-	}
-	cluster := multicluster.CreateCluster(cmcm)
-	clusters := []multicluster.Cluster{cluster}
+	clusters := []multicluster.Cluster{{
+		Name: environment.GetLocalClusterName(),
+		Metadata: multicluster.ClusterMetadata{
+			Region:        environment.GetLocalRegion(),
+			Zone:          environment.GetLocalZone(),
+			VaultAuthPath: environment.GetLocalVaultAuthPath(),
+		},
+	}}
 	return clusters, nil
-}
-
-// GetLocalClusterName returns the local cluster name
-func (cm *localClusterManager) GetLocalClusterName() (string, error) {
-	clusters, err := cm.GetClusters()
-	if err != nil {
-		return "", err
-	}
-	if len(clusters) != 1 {
-		return "", errors.New(v1alpha1.InvalidClusterConfiguration)
-	}
-	return clusters[0].Name, nil
 }
 
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
 func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
-	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
+	if cluster != environment.GetLocalClusterName() {
 		return nil, fmt.Errorf("unregistered cluster: %s", cluster)
 	}
 	blueprint := &v1alpha1.Blueprint{}
@@ -76,7 +57,7 @@ func (cm *localClusterManager) CreateBlueprint(cluster string, blueprint *v1alph
 
 // UpdateBlueprint updates the given blueprint or creates a new one if it does not exist
 func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
-	if localCluster, err := cm.GetLocalClusterName(); err != nil || localCluster != cluster {
+	if cluster != environment.GetLocalClusterName() {
 		return fmt.Errorf("unregistered cluster: %s", cluster) //nolint:revive // Ignore repetitive error msg
 	}
 	resource := &v1alpha1.Blueprint{
@@ -87,6 +68,7 @@ func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alph
 	}
 	if _, err := ctrl.CreateOrUpdate(context.Background(), cm.Client, resource, func() error {
 		resource.Spec = blueprint.Spec
+		resource.ObjectMeta.Finalizers = blueprint.ObjectMeta.Finalizers
 		resource.ObjectMeta.Labels = blueprint.ObjectMeta.Labels
 		resource.ObjectMeta.Annotations = blueprint.ObjectMeta.Annotations
 		return nil
