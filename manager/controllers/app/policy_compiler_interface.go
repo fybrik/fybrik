@@ -15,6 +15,7 @@ import (
 	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
@@ -23,9 +24,7 @@ import (
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-const (
-	PolicyManagerTaxonomy = "/tmp/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
-)
+var PolicyManagerTaxonomy = environment.GetDataDir() + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
 func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
@@ -75,10 +74,11 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		if !utils.IsVaultEnabled() {
+		if !environment.IsVaultEnabled() {
 			appContext.Log.Error().Str("SecretRef", appContext.Application.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
 		} else {
-			creds = utils.GetVaultAddress() + vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
+			creds = environment.GetVaultAddress() +
+				vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
 		}
 	}
 

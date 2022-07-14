@@ -58,6 +58,10 @@ Therefore, you need to define configuration as environment variables.
 Create `.env` file in the root folder of the project. For example:
 
 ```bash
+ClusterName="thegreendragon"
+Zone="hobbiton"
+VaultAuthPath="kind"
+Region="theshire"
 VAULT_ADDRESS="http://vault.fybrik-system:8200"
 MAIN_POLICY_MANAGER_NAME="opa"
 MAIN_POLICY_MANAGER_CONNECTOR_URL="http://localhost:49153"
@@ -67,6 +71,7 @@ CONNECTION_TIMEOUT="120"
 VAULT_MODULES_ROLE="module"
 ENABLE_WEBHOOKS="false"
 VAULT_ENABLED="true"
+DATA_DIR="/tmp"
 ```
 
 If the manager works with a Razee service, you also need to add the following environment variables:

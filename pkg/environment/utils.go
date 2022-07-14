@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Returns the integer value of an environment variable.
@@ -39,4 +40,14 @@ func MustGetEnv(key string) (string, error) {
 		return "", fmt.Errorf("missing required environment variable: %s", key)
 	}
 	return value, nil
+}
+
+// GetSystemNamespace returns the namespace of control plane
+func GetSystemNamespace() string {
+	if data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
+			return ns
+		}
+	}
+	return DefaultControllerNamespace
 }
