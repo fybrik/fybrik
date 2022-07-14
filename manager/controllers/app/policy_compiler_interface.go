@@ -77,8 +77,7 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 		if !environment.IsVaultEnabled() {
 			appContext.Log.Error().Str("SecretRef", appContext.Application.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
 		} else {
-			creds = environment.GetVaultAddress() +
-				vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
+			creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
 		}
 	}
 
