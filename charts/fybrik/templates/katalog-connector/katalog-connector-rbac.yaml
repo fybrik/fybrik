@@ -8,7 +8,7 @@ metadata:
   name:  {{ template "fybrik.fullname" . }}-katalog-connector-crb
 roleRef:
   kind: ClusterRole
-  name: fybrik-katalog-editor-cr
+  name: {{ template "fybrik.fullname" . }}-katalog-editor-cr
 {{- else }}
 kind: RoleBinding
 metadata:

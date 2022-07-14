@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-manager-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - manager
+  issuerRef:
+    kind: Issuer
+    name: test-tls-ca-issuer
+  secretName: test-tls-manager-certs

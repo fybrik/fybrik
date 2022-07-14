@@ -1,0 +1,81 @@
+# Default values for Fybrik.
+# This is a YAML-formatted file.
+# It overrides values that are different from the default values.yaml
+
+# Global configuration applies to multiple components installed by this chart
+global:
+  hub: localhost:5000/fybrik-system
+  tag: "0.0.0"
+  imagePullPolicy: "Always"
+
+  prettyLogging: false
+  # zerolog verbosity level 
+  # ref: https://github.com/rs/zerolog#leveled-logging
+  loggingVerbosity: -1
+
+coordinator:
+  catalogConnectorURL: https://katalog-connector:8443
+  policyManagerConnectorURL: https://opa-connector:8443
+
+# Manager component
+manager:
+  # Set to true to enable socat in the manager pod to forward
+  # traffic from a localhost registry. Used only for development and integration tests.
+  socat: true
+  tls:
+    certs:
+      certSecretName: "test-tls-manager-certs"
+      certSecretNamespace: "fybrik-system"
+      cacertSecretName: "test-tls-ca-certs"
+      cacertSecretNamespace: "fybrik-system"      
+
+katalogConnector:
+  service:
+    port: 8443
+       
+  tls:
+    use_tls: true
+    use_mtls: true
+    certs:
+      certSecretName: "test-tls-katalog-connector-certs"
+      certSecretNamespace: "fybrik-system"
+      cacertSecretName: "test-tls-ca-certs"
+      cacertSecretNamespace: "fybrik-system"
+
+opaConnector:
+  tls:
+    use_tls: true
+    use_mtls: true
+    certs:
+      certSecretName: "test-tls-opa-connector-certs"
+      certSecretNamespace: "fybrik-system"
+      cacertSecretName: "test-tls-ca-certs"
+      cacertSecretNamespace: "fybrik-system"
+  service:
+    port: 8443
+
+opaServer:
+
+  # Bootstrap policies to load upon startup
+  bootstrapPolicies:
+    notebookSamplePolicy: |-
+      package dataapi.authz
+
+      rule[{}] {
+        description := "allow read datasets with no tags"
+        input.action.actionType == "read"
+        not input.resource.metadata.tags
+      }
+
+      rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
+        description := "While reading redact columns tagged as PII in datasets tagged with finance = true"
+        input.action.actionType == "read"
+        input.resource.metadata.tags.finance
+        column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+      }
+
+
+# S3 mock service installed in fybrik namespace
+s3mock:
+  enabled: true
+

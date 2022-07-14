@@ -46,10 +46,25 @@ spec:
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
           env:
+            - name: SERVICE_PORT
+              value: {{ .Values.katalogConnector.service.port | quote }}
             - name: PRETTY_LOGGING
               value: {{ .Values.global.prettyLogging | quote }}
             - name: LOGGING_VERBOSITY
               value: {{ .Values.global.loggingVerbosity | quote }}
+            - name: USE_TLS
+              value: {{ .Values.katalogConnector.tls.use_tls | quote | toString }}
+            - name: USE_MTLS
+              value: {{ .Values.katalogConnector.tls.use_mtls | quote | toString }}
+            - name: CERT_SECRET_NAME
+              value: {{ .Values.katalogConnector.tls.certs.certSecretName }}
+            - name: CERT_SECRET_NAMESPACE
+              value: {{ .Values.katalogConnector.tls.certs.certSecretNamespace }}
+            - name: CACERT_SECRET_NAME
+              value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
+            - name: CACERT_SECRET_NAMESPACE
+              value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
+
       {{- with .Values.katalogConnector.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

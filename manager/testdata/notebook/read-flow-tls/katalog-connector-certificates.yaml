@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-katalog-connector-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - katalog-connector
+  issuerRef:
+    kind: Issuer
+    name: test-tls-ca-issuer
+  secretName: test-tls-katalog-connector-certs
