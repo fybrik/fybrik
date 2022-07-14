@@ -5,19 +5,27 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	"fybrik.io/fybrik/pkg/environment"
+	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
 const (
 	envOPAServerURL = "OPA_SERVER_URL"
-	commandPort     = 8080
+	envServicePort  = "SERVICE_PORT"
 )
 
 // NewRouter returns a new router.
@@ -40,7 +48,16 @@ func RootCmd() *cobra.Command {
 // RunCmd defines the command for running the connector
 func RunCmd() *cobra.Command {
 	ip := ""
-	port := commandPort
+	portStr, err := environment.MustGetEnv(envServicePort)
+	if err != nil {
+		log.Err(err).Msg(envServicePort + " env var is not defined")
+		return nil
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Err(err).Msg(fmt.Sprintf("error in converting %s = [%s] to integer", envServicePort, portStr))
+		return nil
+	}
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run opa connector",
@@ -62,6 +79,26 @@ func RunCmd() *cobra.Command {
 			router.Use(gin.Logger())
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
+			if environment.IsUsingTLS() {
+				var client kclient.Client
+				scheme := runtime.NewScheme()
+				err = corev1.AddToScheme(scheme)
+				if err != nil {
+					return errors.Wrap(err, "unable to add corev1 to schema")
+				}
+				client, err = kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
+				if err != nil {
+					return errors.Wrap(err, "failed to create a Kubernetes client")
+				}
+
+				tlsConfig, err := fybrikTLS.GetServerConfig(&controller.Log, client)
+				if err != nil {
+					return errors.Wrap(err, "failed to get tls config")
+				}
+				server := http.Server{Addr: bindAddress, Handler: router, TLSConfig: tlsConfig}
+				return server.ListenAndServeTLS("", "")
+			}
+			controller.Log.Info().Msg(fybrikTLS.TLSDisabledMsg)
 			return router.Run(bindAddress)
 		},
 	}

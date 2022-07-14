@@ -9,8 +9,11 @@ import (
 	"time"
 
 	"emperror.dev/errors"
+	kruntime "k8s.io/apimachinery/pkg/runtime"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
+	"fybrik.io/fybrik/pkg/connectors/utils"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
@@ -22,7 +25,9 @@ type openAPIDataCatalog struct {
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Duration) DataCatalog {
+func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Duration,
+	schema *kruntime.Scheme) DataCatalog {
+	log := logging.LogInit(logging.SETUP, "datacatalog client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "OpenAPI-Generator/1.0.0/go",
@@ -34,6 +39,7 @@ func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Du
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
+		HTTPClient:       utils.GetHTTPClient(&log, schema),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 

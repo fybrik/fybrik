@@ -11,9 +11,12 @@ spec:
   type: {{ .Values.katalogConnector.service.type }}
   ports:
     - port: {{ .Values.katalogConnector.service.port }}
-      targetPort: http
       protocol: TCP
+      {{- if .Values.katalogConnector.tls.use_tls }}
+      name: https
+      {{- else }}
       name: http
+      {{- end }}
   selector:
     app.kubernetes.io/component: katalog-connector
     {{- include "fybrik.selectorLabels" . | nindent 4 }}

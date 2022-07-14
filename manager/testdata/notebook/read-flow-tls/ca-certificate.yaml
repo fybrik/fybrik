@@ -1,0 +1,29 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: test-tls-ca-issuer-self-signed
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-tls-ca-issuer
+  namespace: fybrik-system
+spec:
+  ca:
+    secretName: test-tls-ca-certs
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-ca-certificate
+  namespace: fybrik-system
+spec:
+  isCA: true
+  commonName: fybrik
+  secretName: test-tls-ca-certs
+  issuerRef:
+    name: test-tls-ca-issuer-self-signed
+    kind: ClusterIssuer
+    group: cert-manager.io
