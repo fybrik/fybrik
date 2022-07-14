@@ -67,7 +67,7 @@ kubectl -n fybrik-system create secret generic tls-ca \
 ```
 
 Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
-is creates and automatically renewed by cert-manager.
+is created and automatically renewed by cert-manager.
 
 ```bash
 apiVersion: cert-manager.io/v1
