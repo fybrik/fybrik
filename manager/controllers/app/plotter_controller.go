@@ -75,7 +75,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	result, reconcileErrors := r.reconcile(&plotter)
 	if err := utils.UpdateStatus(ctx, r.Client, &plotter, observedStatus); err != nil {
-		return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "status", plotter.Status)
+		return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "plotterStatus", plotter.Status)
 	}
 
 	if reconcileErrors != nil {
