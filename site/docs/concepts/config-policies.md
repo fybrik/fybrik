@@ -221,18 +221,28 @@ When writing configuration policies, infrastructure metrics and costs may also b
 For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
 Infrastructure attributes and metrics are stored in the `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.
 
+### Infrastructure metrics
+
+Prior to defining an infrastructure attribute, the corresponding metric should be defined, providing information about the attribute value, e.g. the measurement units and the scale of possible values.
+Several attributes may share the same metric, e.g. `rate` can be defined for both the `error-rate` and the `load-rate`.
+Example of a metric:
+```
+"name": "rate",
+"type": "numeric",
+"units": "%",
+"scale": {"min": 0, "max": 100}
+```
+
 ### How to define infrastructure attributes
 
 An infrastructure attribute is defined by a JSON object that includes the following fields:
 
 - `attribute` - name of the infrastructure attribute, should be defined in the taxonomy
 - `description` 
-- `type` - value type(can be numeric, string or boolean)
-- `value` - the actual value of the metric
-- `units` - measurement units, defined in the taxonomy 
+- `metricName` - a reference to the [metric](#infrastructure-metrics)
+- `value` - the actual value of the attribute
 - `object` - a resource the attribute relates to (storageaccount, module, cluster)
 - `instance` - a reference to the resource instance, e.g. storage account name
-- `scale` - a scale of values (minimum and maximum) when applicable
 
 The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the `cluster-metadata` config map). The valid values for the attribute `object` field are `storageaccount`, `module` and `cluster`, respectively.
 
@@ -243,8 +253,7 @@ For example, the following attribute defines the storage cost of the "account-th
     "attribute": "storage-cost",
     "description": "theshire object store",
     "value": "90",
-    "type": "numeric",
-    "units": "US Dollar per TB per month",
+    "metricName": "cost",
     "object": "storageaccount",
     "instance": "account-theshire"
 }
@@ -252,7 +261,7 @@ For example, the following attribute defines the storage cost of the "account-th
 
 ### Add a new attribute definition to the taxonomy
 
-See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example how to define an attribute and the corresponding measurement units. 
+See [metric taxonomy](https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml) for an example how to define an attribute and the corresponding measurement units. 
  
 ### Usage of infrastructure attributes in policies
 
@@ -266,6 +275,47 @@ config[{"capability": "copy", "decision": decision}] {
     account_restrict := {"property": "storage-cost", "range": {"max": 95}}
     policy := {"ID": "copy-restrict-storage", "description":"Use cheaper storage", "version": "0.1"}
     decision := {"policy": policy, "restrictions": {"storageaccounts": [account_restrict]}}
+}
+```
+
+## Optimization goals
+
+In a typical Fybrik deployment there may be several possibilities to create a data plane that satisfies the user requirements, governance and configuration policies. Based on the enterprise policy, an IT administrator may affect the choice of the data plane by defining a policy with optimization goals. 
+An optimization goal attempts to minimize or maximize a specific [infrastructure attribute](#how-to-define-infrastructure-attributes).
+
+### Syntax 
+
+Optimization rules are written in rego files in a package `adminconfig`.
+
+Rules are written in the following syntax: `optimize[decision]` where
+
+- `decision` is a JSON structure with the following fields:
+- `policy` - policy metadata: unique ID, human-readable description and a version
+- list of `goals` including attribute name, optimization directive(`min` or `max`) and optionally a weight.
+
+For example, the following rule attempts to minimize storage cost in copy scenarios.
+
+```
+# minimize storage cost for copy scenarios
+optimize[decision] {
+    input.request.usage == "copy"
+    policy := {"ID": "save-cost", "description":"Save storage costs", "version": "0.1"}
+    decision := {"policy": policy, "strategy": [{"attribute": "storage-cost", "directive": "min"}]}
+}
+```
+
+### Weights
+
+If more than one goal is provided, they can have a different weight. By default, all weights are equal to 1.  
+For example, the rule below defines two goals with weights in the 4:1 ratio. 
+```
+# minimize distance, minimize storage cost for read scenarios
+optimize[decision] {
+    input.request.usage == "read"
+    policy := {"ID": "general-strategy", "description":"focus on higher performance while saving storage costs", "version": "0.1"}
+    optimize_distance := {"attribute": "distance", "directive": "min", "weight": "0.8"}
+    optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": "0.2"}
+    decision := {"policy": policy, "strategy": [optimize_distance,optimize_storage]}
 }
 ```
 
