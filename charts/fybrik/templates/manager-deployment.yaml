@@ -141,13 +141,13 @@ spec:
               protocol: TCP
           {{- end }}
           volumeMounts:
-            {{- if .Values.clusterScoped }}
-            - mountPath: /tmp/k8s-webhook-server/serving-certs
-              name: cert
-              readOnly: true  
-            {{- end }}     
             - name: data
               mountPath: {{ include "fybrik.getDataDir" . }}
+           {{- if .Values.clusterScoped }}
+            - mountPath: {{ include "fybrik.getDataSubdir" (tuple "k8s-webhook-server" ) }}
+              name: cert
+              readOnly: true
+            {{- end }}
             - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
               name: fybrik-taxonomy
             - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "adminconfig" ) }}
