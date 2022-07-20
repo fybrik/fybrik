@@ -42,6 +42,8 @@ import (
 	"fybrik.io/fybrik/pkg/storage"
 )
 
+const certSubDir = "/k8s-webhook-server"
+
 var (
 	gitCommit string
 	scheme    = kruntime.NewScheme()
@@ -85,6 +87,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	setupLog.Info().Msg("Manager client rate limits: qps = " + fmt.Sprint(client.QPS) + " burst=" + fmt.Sprint(client.Burst))
 
 	mgr, err := ctrl.NewManager(client, ctrl.Options{
+		CertDir:            environment.GetDataDir() + certSubDir,
 		Scheme:             scheme,
 		Namespace:          namespace,
 		MetricsBindAddress: metricsAddr,
