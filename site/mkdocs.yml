@@ -27,6 +27,7 @@ nav:
     - concepts/modules.md
     - concepts/vault_plugins.md
   - concepts/config-policies.md
+  - concepts/optimizer.md
 - Tasks:
   - tasks/control-plane-security.md
   - tasks/using-opa.md
