@@ -215,73 +215,11 @@ config[{"capability": "copy", "decision": decision}] {
 ```
 Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
 
-## Taking infrastructure metrics into consideration
-
-When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
-For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
-Infrastructure attributes and metrics are stored in the `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.
-
-### Infrastructure metrics
-
-Prior to defining an infrastructure attribute, the corresponding metric should be defined, providing information about the attribute value, e.g. the measurement units and the scale of possible values.
-Several attributes may share the same metric, e.g. `rate` can be defined for both the `error-rate` and the `load-rate`.
-Example of a metric:
-```
-"name": "rate",
-"type": "numeric",
-"units": "%",
-"scale": {"min": 0, "max": 100}
-```
-
-### How to define infrastructure attributes
-
-An infrastructure attribute is defined by a JSON object that includes the following fields:
-
-- `attribute` - name of the infrastructure attribute, should be defined in the taxonomy
-- `description` 
-- `metricName` - a reference to the [metric](#infrastructure-metrics)
-- `value` - the actual value of the attribute
-- `object` - a resource the attribute relates to (storageaccount, module, cluster)
-- `instance` - a reference to the resource instance, e.g. storage account name
-
-The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the `cluster-metadata` config map). The valid values for the attribute `object` field are `storageaccount`, `module` and `cluster`, respectively.
-
-For example, the following attribute defines the storage cost of the "account-theshire" storage account. 
-
-```
-{
-    "attribute": "storage-cost",
-    "description": "theshire object store",
-    "value": "90",
-    "metricName": "cost",
-    "object": "storageaccount",
-    "instance": "account-theshire"
-}
-```
-
-### Add a new attribute definition to the taxonomy
-
-See [metric taxonomy](https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml) for an example how to define an attribute and the corresponding measurement units. 
- 
-### Usage of infrastructure attributes in policies
-
-An infrastructure attribute can be used as the `property` value in configuration policies. For example, the following policy restricts 
-the storage account selection using the `storage-cost` infrastructure attribute:
-```
-# restrict storage costs to a maximum of $95 when copying the data
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage == "copy"
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    account_restrict := {"property": "storage-cost", "range": {"max": 95}}
-    policy := {"ID": "copy-restrict-storage", "description":"Use cheaper storage", "version": "0.1"}
-    decision := {"policy": policy, "restrictions": {"storageaccounts": [account_restrict]}}
-}
-```
 
 ## Optimization goals
 
 In a typical Fybrik deployment there may be several possibilities to create a data plane that satisfies the user requirements, governance and configuration policies. Based on the enterprise policy, an IT administrator may affect the choice of the data plane by defining a policy with optimization goals. 
-An optimization goal attempts to minimize or maximize a specific [infrastructure attribute](#how-to-define-infrastructure-attributes).
+An optimization goal attempts to minimize or maximize a specific [infrastructure attribute](../tasks/infrastructure.md#how-to-define-infrastructure-attributes).
 
 ### Syntax 
 
@@ -306,8 +244,8 @@ optimize[decision] {
 
 ### Weights
 
-If more than one goal is provided, they can have a different weight. By default, all weights are equal to 1.  
-For example, the rule below defines two goals with weights in the 4:1 ratio. 
+If more than one goal is provided, they can have a different weight. By default, all weights are equal to 1. 
+For example, the rule below defines two goals with weights in the 4:1 ratio meaning that the optimizer try to optimize distance and storage costs, but will give a higher priority to distance.
 ```
 # minimize distance, minimize storage cost for read scenarios
 optimize[decision] {
