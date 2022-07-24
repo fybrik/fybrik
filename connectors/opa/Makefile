@@ -7,6 +7,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 KUBE_NAMESPACE ?= fybrik-system
 POLICY_FILES ?=
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
 .PHONY: all
 all: docker-build docker-push
@@ -18,7 +19,7 @@ docker-build: source-build
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o opa-connector .
 
 .PHONY: run
 run:

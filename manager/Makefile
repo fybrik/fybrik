@@ -26,7 +26,7 @@ run:
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o manager main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o manager main.go
 
 # Overwrite docker-build from docker.mk
 .PHONY: docker-build
