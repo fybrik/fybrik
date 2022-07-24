@@ -8,7 +8,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -46,11 +45,6 @@ func GetCertificatesFromSecret(client kclient.Client, secretName, secretNamespac
 
 	return secret.Data, nil
 }
-
-const (
-	// TLSCertKeySuffix is the key suffix for tls certificates in a kubernetes secret.
-	TLSCertKeySuffix = ".crt"
-)
 
 // isCertificateProvided returns true if the name and the namespace of the secret which holds
 // the certificate were provided. Otherwise it returns false.
@@ -129,8 +123,8 @@ func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Con
 			return nil, err
 		}
 		for key, element := range CACertsData {
-			// skip non cerificate keys like crt.key if exists in the secret
-			if !strings.HasSuffix(key, TLSCertKeySuffix) {
+			// skip private key
+			if key == corev1.TLSPrivateKeyKey {
 				continue
 			}
 			if !CACertPool.AppendCertsFromPEM(element) {
@@ -186,8 +180,8 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.
 			return nil, err
 		}
 		for key, element := range CACertsData {
-			// skip non cerificate keys like crt.key if exists in the secret
-			if !strings.HasSuffix(key, TLSCertKeySuffix) {
+			// skip private key
+			if key == corev1.TLSPrivateKeyKey {
 				continue
 			}
 			if !caCertPool.AppendCertsFromPEM(element) {

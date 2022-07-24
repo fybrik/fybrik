@@ -381,9 +381,9 @@ katalogConnector:
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
       # by katalog-connector to validate the connection to the manager if mtls is enabled.
-      # cacertSecretName: "test-tls-ca-certs"
       # If the secret is not provided then the CA certificates are taken from the default
       # certificates directory, for example `/etc/ssl/certs/`.
+      # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by the server to validate the connection to the client if mtls is enabled.
@@ -478,9 +478,9 @@ opaConnector:
       certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
       # by opa-connector to validate the connection to the manager if mtls is enabled.
-      # cacertSecretName: "test-tls-ca-certs"
       # If the secret is not provided then the CA certificates are taken from the default
       # certificates directory, for example `/etc/ssl/certs/`.
+      # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
       # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
       # is used by opa-connector to validate the connection to the manager if mtls is enabled.

@@ -61,11 +61,11 @@ If cert-manager is used to manage the certificates then the secret is automatica
 
 If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.
 
-For each component copy the CA certificate into a file named cacerts.pem and use kubectl to create the tls-ca secret in the fybrik-system namespace.
+For each component copy the CA certificate into a file named ca.crt and use kubectl to create the tls-ca secret in the fybrik-system namespace.
 
 ```bash
 kubectl -n fybrik-system create secret generic tls-ca \
-  --from-file=cacerts.pem=./cacerts.pem
+  --from-file=ca.crt=./ca.crt
 ```
 
 Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
