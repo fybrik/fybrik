@@ -163,10 +163,3 @@ passed as parameter to the function.
 {{- $dir := toString (first .) -}}
 {{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
 {{- end }}
-
-{{/*
-Print the size limit of a mounted empty directory.
-*/}}
-{{- define "fybrik.emptyDirSizeLimit" -}}
-{{- printf "200Mi" }}
-{{- end }}
