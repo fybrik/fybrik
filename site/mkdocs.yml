@@ -35,6 +35,7 @@ nav:
   - tasks/custom-taxonomy.md
   - tasks/performance.md
   - tasks/high-availability.md
+  - tasks/data-plane-optimization.md
 - Reference:
   - reference/crds.md
   - Connectors API:
