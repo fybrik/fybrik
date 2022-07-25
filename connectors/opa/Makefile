@@ -4,10 +4,10 @@ DOCKER_NAME = opa-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
+include $(ROOT_DIR)/hack/make-rules/version.mk
 
 KUBE_NAMESPACE ?= fybrik-system
 POLICY_FILES ?=
-GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
 .PHONY: all
 all: docker-build docker-push
@@ -19,7 +19,7 @@ docker-build: source-build
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o opa-connector .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build $(LDFLAGS) -o opa-connector .
 
 .PHONY: run
 run:

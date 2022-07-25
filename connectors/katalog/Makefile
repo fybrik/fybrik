@@ -4,8 +4,7 @@ DOCKER_NAME = katalog-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
-
-GIT_COMMIT := $(shell git rev-list -1 HEAD)
+include $(ROOT_DIR)/hack/make-rules/version.mk
 
 .PHONY: all
 all: docker-build docker-push
@@ -17,7 +16,7 @@ docker-build: source-build
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/katalog main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build $(LDFLAGS) -o bin/katalog main.go
 
 .PHONY: run
 run:
