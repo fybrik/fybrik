@@ -174,10 +174,12 @@ spec:
         {{- end }}
         {{- if .Values.manager.solver.image }}
         - name: solver-volume
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: {{ include "fybrik.emptyDirSizeLimit" . }}
         {{- end }}
         - name: data
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: {{ include "fybrik.emptyDirSizeLimit" . }}
         - name: fybrik-taxonomy
           configMap:
             name: fybrik-taxonomy-config
