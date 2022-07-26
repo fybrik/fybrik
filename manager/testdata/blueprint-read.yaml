@@ -5,6 +5,8 @@ apiVersion: app.fybrik.io/v1alpha1
 kind: Blueprint
 metadata:
   name: blueprint-with-read
+  annotations:
+    app.fybrik.io/app-uuid: "1234"
   labels:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
