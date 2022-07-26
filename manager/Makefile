@@ -17,7 +17,7 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 # Build manager binary
 .PHONY: manager
 manager:
-	PRETTY_LOGGING=true LOGGING_VERBOSITY=-1 go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/manager main.go
+	go build -ldflags "-X main.gitCommit=$(GIT_COMMIT)" -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
