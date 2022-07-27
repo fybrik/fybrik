@@ -7,6 +7,8 @@ all: manager
 DOCKER_NAME ?= manager
 KUBE_NAMESPACE ?= fybrik-system
 CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
+PRETTY_LOGGING ?= true
+LOGGING_VERBOSITY?= -1
 
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
