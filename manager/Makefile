@@ -2,7 +2,7 @@ ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 
 .PHONY: all
-all: manager
+all: source-build
 
 DOCKER_NAME ?= manager
 KUBE_NAMESPACE ?= fybrik-system
@@ -12,11 +12,6 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 include $(ROOT_DIR)/hack/make-rules/version.mk
-
-# Build manager binary
-.PHONY: manager
-manager:
-	go build $(LDFLAGS) -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
