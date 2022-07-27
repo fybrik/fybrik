@@ -100,18 +100,10 @@ run-notebook-readflow-tests: setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-tests
-run-notebook-readflow-tls-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-notebook-readflow-tls-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
-run-notebook-readflow-tls-tests:
-	$(MAKE) kind
-	$(MAKE) cluster-prepare
-	$(MAKE) docker-build docker-push
-	$(MAKE) -C test/services docker-build docker-push
-	$(MAKE) cluster-prepare-wait
+run-notebook-readflow-tls-tests: export USE_FYBRIK_DEV=true
+run-notebook-readflow-tls-tests: setup-cluster
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
-	$(MAKE) deploy
-	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests
