@@ -99,12 +99,15 @@ func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.
 	blueprint *fapp.Blueprint) error {
 	// finalizer
 	if ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName) {
+		original := blueprint.DeepCopy()
 		if err := r.deleteExternalResources(cfg, blueprint); err != nil {
 			r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 		}
 		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 		ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
-		return r.Client.Update(ctx, blueprint)
+		if err := r.Patch(ctx, blueprint, client.MergeFrom(original)); err != nil {
+			return client.IgnoreNotFound(err)
+		}
 	}
 	return nil
 }
