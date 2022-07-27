@@ -7,6 +7,8 @@ all: manager
 DOCKER_NAME ?= manager
 KUBE_NAMESPACE ?= fybrik-system
 CONTROLLER_NAMESPACE ?= ${KUBE_NAMESPACE}
+PRETTY_LOGGING ?= true
+LOGGING_VERBOSITY?= -1
 
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
@@ -22,7 +24,7 @@ manager:
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
 run:
-	PRETTY_LOGGING=true LOGGING_VERBOSITY=-1 go run -ldflags "-X main.gitCommit=$(GIT_COMMIT)" ./main.go --enable-all-controllers --metrics-bind-addr=0
+	go run -ldflags "-X main.gitCommit=$(GIT_COMMIT)" ./main.go --enable-all-controllers --metrics-bind-addr=0
 
 .PHONY: source-build
 source-build:
