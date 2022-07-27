@@ -4,6 +4,7 @@ DOCKER_NAME = opa-connector
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
+include $(ROOT_DIR)/hack/make-rules/version.mk
 
 KUBE_NAMESPACE ?= fybrik-system
 POLICY_FILES ?=
@@ -18,7 +19,7 @@ docker-build: source-build
 
 .PHONY: source-build
 source-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o opa-connector .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build $(LDFLAGS) -o opa-connector .
 
 .PHONY: run
 run:
