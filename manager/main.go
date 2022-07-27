@@ -46,6 +46,7 @@ const certSubDir = "/k8s-webhook-server"
 
 var (
 	gitCommit string
+	gitTag    string
 	scheme    = kruntime.NewScheme()
 	setupLog  = logging.LogInit(logging.SETUP, "main")
 )
@@ -59,7 +60,7 @@ func init() {
 //nolint:funlen,gocyclo
 func run(namespace string, metricsAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
-	setupLog.Info().Msg("creating manager. based on git commit: " + gitCommit)
+	setupLog.Info().Msg("creating manager. based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 	environment.LogEnvVariables(&setupLog)
 
 	var applicationNamespaceSelector fields.Selector
