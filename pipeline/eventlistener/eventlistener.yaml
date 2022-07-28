@@ -1,4 +1,4 @@
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v12
 kind: EventListener
 metadata:
   name: tekton-task-eventlistener

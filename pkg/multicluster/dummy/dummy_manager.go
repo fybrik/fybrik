@@ -6,17 +6,17 @@ package dummy
 import (
 	"errors"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/apis/app/v12"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 
 // MockClusterManager is meant to be used for testing
 type MockClusterManager struct {
-	DeployedBlueprints map[string]*v1alpha1.Blueprint
+	DeployedBlueprints map[string]*v12.Blueprint
 	Clusters           []multicluster.Cluster
 }
 
-func NewDummyClusterManager(blueprints map[string]*v1alpha1.Blueprint, clusters []multicluster.Cluster) MockClusterManager {
+func NewDummyClusterManager(blueprints map[string]*v12.Blueprint, clusters []multicluster.Cluster) MockClusterManager {
 	return MockClusterManager{
 		DeployedBlueprints: blueprints,
 		Clusters:           clusters,
@@ -39,7 +39,7 @@ func (m *MockClusterManager) IsMultiClusterSetup() bool {
 	return true
 }
 
-func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
+func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v12.Blueprint, error) {
 	blueprint, found := m.DeployedBlueprints[cluster]
 	if found {
 		return blueprint, nil
@@ -47,12 +47,12 @@ func (m *MockClusterManager) GetBlueprint(cluster, namespace, name string) (*v1a
 	return nil, errors.New("blueprint not found")
 }
 
-func (m *MockClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (m *MockClusterManager) CreateBlueprint(cluster string, blueprint *v12.Blueprint) error {
 	m.DeployedBlueprints[cluster] = blueprint
 	return nil
 }
 
-func (m *MockClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (m *MockClusterManager) UpdateBlueprint(cluster string, blueprint *v12.Blueprint) error {
 	m.DeployedBlueprints[cluster] = blueprint
 	return nil
 }

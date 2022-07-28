@@ -4,7 +4,7 @@
 package app
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v12"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"

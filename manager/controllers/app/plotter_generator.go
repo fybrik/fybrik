@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/apis/app/v12"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -34,7 +34,7 @@ const (
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
 	Storage *storage.ProvisionedBucket
-	Details *v1alpha1.DataStore
+	Details *v12.DataStore
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -48,7 +48,7 @@ type PlotterGenerator struct {
 
 // AllocateStorage creates a Dataset for bucket allocation
 func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
-	account *v1alpha1.FybrikStorageAccountSpec) (*v1alpha1.DataStore, error) {
+	account *v12.FybrikStorageAccountSpec) (*v12.DataStore, error) {
 	// provisioned storage
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -70,10 +70,10 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	}
 
 	connection := taxonomy.Connection{
-		Name: v1alpha1.S3,
+		Name: v12.S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.S3): map[string]interface{}{
+				string(v12.S3): map[string]interface{}{
 					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
@@ -83,24 +83,24 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	}
 
 	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
-	vaultMap := make(map[string]v1alpha1.Vault)
+	vaultMap := make(map[string]v12.Vault)
 	if environment.IsVaultEnabled() {
-		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{
+		vaultMap[string(taxonomy.WriteFlow)] = v12.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       environment.GetModulesRole(),
 			Address:    environment.GetVaultAddress(),
 		}
 		// The copied asset needs creds for later to be read
-		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{
+		vaultMap[string(taxonomy.ReadFlow)] = v12.Vault{
 			SecretPath: vaultSecretPath,
 			Role:       environment.GetModulesRole(),
 			Address:    environment.GetVaultAddress(),
 		}
 	} else {
-		vaultMap[string(taxonomy.WriteFlow)] = v1alpha1.Vault{}
-		vaultMap[string(taxonomy.ReadFlow)] = v1alpha1.Vault{}
+		vaultMap[string(taxonomy.WriteFlow)] = v12.Vault{}
+		vaultMap[string(taxonomy.ReadFlow)] = v12.Vault{}
 	}
-	datastore := &v1alpha1.DataStore{
+	datastore := &v12.DataStore{
 		Vault:      vaultMap,
 		Connection: connection,
 		Format:     destinationInterface.DataFormat,
@@ -114,8 +114,8 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	return datastore, nil
 }
 
-func (p *PlotterGenerator) getAssetDataStore(item *datapath.DataInfo) *v1alpha1.DataStore {
-	return &v1alpha1.DataStore{
+func (p *PlotterGenerator) getAssetDataStore(item *datapath.DataInfo) *v12.DataStore {
+	return &v12.DataStore{
 		Connection: item.DataDetails.Details.Connection,
 		Vault:      getDatasetCredentials(item),
 		Format:     item.DataDetails.Details.DataFormat,
@@ -124,8 +124,8 @@ func (p *PlotterGenerator) getAssetDataStore(item *datapath.DataInfo) *v1alpha1.
 
 // store all available credentials in the plotter
 // only relevant credentials will be sent to modules
-func getDatasetCredentials(item *datapath.DataInfo) map[string]v1alpha1.Vault {
-	vaultMap := make(map[string]v1alpha1.Vault)
+func getDatasetCredentials(item *datapath.DataInfo) map[string]v12.Vault {
+	vaultMap := make(map[string]v12.Vault)
 	// credentials for read, write, delete
 	// currently, one is used for all flows
 	// TODO: store multiple secrets with credentials depending on the flow
@@ -134,23 +134,23 @@ func getDatasetCredentials(item *datapath.DataInfo) map[string]v1alpha1.Vault {
 		if environment.IsVaultEnabled() {
 			// Set the value received from the catalog connector.
 			vaultSecretPath := item.DataDetails.Credentials
-			vaultMap[flow] = v1alpha1.Vault{
+			vaultMap[flow] = v12.Vault{
 				SecretPath: vaultSecretPath,
 				Role:       environment.GetModulesRole(),
 				Address:    environment.GetVaultAddress(),
 			}
 		} else {
-			vaultMap[flow] = v1alpha1.Vault{}
+			vaultMap[flow] = v12.Vault{}
 		}
 	}
 	return vaultMap
 }
 
-func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSpec *v1alpha1.PlotterSpec, templateName string) {
+func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSpec *v12.PlotterSpec, templateName string) {
 	moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-	template := v1alpha1.Template{
+	template := v12.Template{
 		Name: templateName,
-		Modules: []v1alpha1.ModuleInfo{{
+		Modules: []v12.ModuleInfo{{
 			Name:       element.Module.Name,
 			Type:       element.Module.Spec.Type,
 			Chart:      element.Module.Spec.Chart,
@@ -162,9 +162,9 @@ func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSp
 }
 
 func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
+	steps []v12.DataFlowStep, templateName string) []v12.DataFlowStep {
 	if steps == nil {
-		steps = []v1alpha1.DataFlowStep{}
+		steps = []v12.DataFlowStep{}
 	}
 	var lastStepAPI *datacatalog.ResourceDetails
 	if len(steps) > 0 {
@@ -174,11 +174,11 @@ func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datas
 	if lastStepAPI == nil {
 		assetID = datasetID
 	}
-	steps = append(steps, v1alpha1.DataFlowStep{
+	steps = append(steps, v12.DataFlowStep{
 		Cluster:  element.Cluster,
 		Template: templateName,
-		Parameters: &v1alpha1.StepParameters{
-			Arguments: []*v1alpha1.StepArgument{{
+		Parameters: &v12.StepParameters{
+			Arguments: []*v12.StepArgument{{
 				AssetID: assetID,
 				API:     lastStepAPI,
 			}},
@@ -190,15 +190,15 @@ func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datas
 }
 
 func (p *PlotterGenerator) addStep(element *datapath.ResolvedEdge, datasetID string, api *datacatalog.ResourceDetails,
-	steps []v1alpha1.DataFlowStep, templateName string) []v1alpha1.DataFlowStep {
+	steps []v12.DataFlowStep, templateName string) []v12.DataFlowStep {
 	if steps == nil {
-		steps = []v1alpha1.DataFlowStep{}
+		steps = []v12.DataFlowStep{}
 	}
-	steps = append(steps, v1alpha1.DataFlowStep{
+	steps = append(steps, v12.DataFlowStep{
 		Cluster:  element.Cluster,
 		Template: templateName,
-		Parameters: &v1alpha1.StepParameters{
-			Arguments: []*v1alpha1.StepArgument{{AssetID: datasetID}, {AssetID: datasetID + "-copy"}},
+		Parameters: &v12.StepParameters{
+			Arguments: []*v12.StepArgument{{AssetID: datasetID}, {AssetID: datasetID + "-copy"}},
 			API:       api,
 			Actions:   element.Actions,
 		},
@@ -207,7 +207,7 @@ func (p *PlotterGenerator) addStep(element *datapath.ResolvedEdge, datasetID str
 }
 
 // getSupportedFormat returns the first dataformat supported by the module's capability sink interface
-func (p *PlotterGenerator) getSupportedFormat(capability *v1alpha1.ModuleCapability) taxonomy.DataFormat {
+func (p *PlotterGenerator) getSupportedFormat(capability *v12.ModuleCapability) taxonomy.DataFormat {
 	for _, inter := range capability.SupportedInterfaces {
 		if inter.Sink != nil {
 			return inter.Sink.DataFormat
@@ -225,7 +225,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 	}
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Handle new dataset")
 
-	var sinkDataStore *v1alpha1.DataStore
+	var sinkDataStore *v12.DataStore
 	var element *datapath.ResolvedEdge
 
 	needToAllocateStorage := false
@@ -277,18 +277,18 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 }
 
 // Adds the asset details, flows and templates to the given plotter spec.
-func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, application *v1alpha1.FybrikApplication,
-	selection *datapath.Solution, plotterSpec *v1alpha1.PlotterSpec) error {
+func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, application *v12.FybrikApplication,
+	selection *datapath.Solution, plotterSpec *v12.PlotterSpec) error {
 	var err error
 	p.Log.Trace().Str(logging.DATASETID, item.Context.DataSetID).Msg("Generating a plotter")
 	datasetID := item.Context.DataSetID
-	subflows := make([]v1alpha1.SubFlow, 0)
+	subflows := make([]v12.SubFlow, 0)
 
-	plotterSpec.Assets[item.Context.DataSetID] = v1alpha1.AssetDetails{
+	plotterSpec.Assets[item.Context.DataSetID] = v12.AssetDetails{
 		DataStore: *p.getAssetDataStore(item),
 	}
 	// DataStore for destination will be determined if an implicit copy is required
-	var steps []v1alpha1.DataFlowStep
+	var steps []v12.DataFlowStep
 	flowType := item.Context.Flow
 	if flowType == "" {
 		flowType = taxonomy.ReadFlow
@@ -308,23 +308,23 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 		}
 		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Region != "" {
 			// allocate storage and create a temoprary asset
-			var sinkDataStore *v1alpha1.DataStore
+			var sinkDataStore *v12.DataStore
 			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
 			steps = p.addStep(element, datasetID, api, steps, templateName)
 			copyAssetID := steps[len(steps)-1].Parameters.Arguments[1].AssetID
-			copyAsset := v1alpha1.AssetDetails{
+			copyAsset := v12.AssetDetails{
 				AdvertisedAssetID: datasetID,
 				DataStore:         *sinkDataStore,
 			}
 			plotterSpec.Assets[copyAssetID] = copyAsset
 			datasetID = copyAssetID
-			subflows = append(subflows, v1alpha1.SubFlow{
+			subflows = append(subflows, v12.SubFlow{
 				FlowType: taxonomy.CopyFlow,
-				Triggers: []v1alpha1.SubFlowTrigger{v1alpha1.InitTrigger},
-				Steps:    [][]v1alpha1.DataFlowStep{steps},
+				Triggers: []v12.SubFlowTrigger{v12.InitTrigger},
+				Steps:    [][]v12.DataFlowStep{steps},
 			})
 
 			// clear steps
@@ -334,16 +334,16 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 		}
 	}
 	if steps != nil {
-		subflows = append(subflows, v1alpha1.SubFlow{
+		subflows = append(subflows, v12.SubFlow{
 			FlowType: flowType,
-			Triggers: []v1alpha1.SubFlowTrigger{v1alpha1.WorkloadTrigger},
-			Steps:    [][]v1alpha1.DataFlowStep{steps},
+			Triggers: []v12.SubFlowTrigger{v12.WorkloadTrigger},
+			Steps:    [][]v12.DataFlowStep{steps},
 		})
 	}
 	// If everything finished without errors build the flow and add it to the plotter spec
 	// Also add new assets as well as templates
 	flowName := item.Context.DataSetID + "-" + string(flowType)
-	flow := v1alpha1.Flow{
+	flow := v12.Flow{
 		Name:     flowName,
 		FlowType: flowType,
 		AssetID:  item.Context.DataSetID,
@@ -353,10 +353,10 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 	return nil
 }
 
-func moduleAPIToService(api *datacatalog.ResourceDetails, scope v1alpha1.CapabilityScope, appContext *v1alpha1.FybrikApplication,
+func moduleAPIToService(api *datacatalog.ResourceDetails, scope v12.CapabilityScope, appContext *v12.FybrikApplication,
 	moduleName, assetID string) (*datacatalog.ResourceDetails, error) {
 	instanceName := moduleName
-	if scope == v1alpha1.Asset {
+	if scope == v12.Asset {
 		// if the scope of the module is asset then concat its id to the module name
 		// to create the instance name.
 		instanceName = utils.CreateStepName(moduleName, assetID)

@@ -240,7 +240,7 @@ else
     set +e
     kubectl create ns knative-eventing
     cat > ${TMP}/knative-eventing.yaml <<EOH
-apiVersion: operator.knative.dev/v1alpha1
+apiVersion: operator.knative.dev/v12
 kind: KnativeEventing
 metadata:
   name: knative-eventing

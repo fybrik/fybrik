@@ -93,7 +93,7 @@ Then, register the data asset itself in the data catalog `katalog` used for samp
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1alpha1
+apiVersion: katalog.fybrik.io/v12
 kind: Asset
 metadata:
   name: paysim-csv
@@ -162,7 +162,7 @@ Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource 
 <!-- TODO: check if works without role field -->
 ```yaml
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v12
 kind: FybrikApplication
 metadata:
   name: delete-app

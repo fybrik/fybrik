@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v12"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
@@ -56,7 +56,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	}
 	namespace, name := splittedID[0], splittedID[1]
 
-	asset := &v1alpha1.Asset{}
+	asset := &v12.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info().Msg(err.Error())
@@ -124,10 +124,10 @@ func (r *Handler) createAsset(c *gin.Context) {
 		assetPrefix = request.DestinationAssetID + "-"
 	}
 
-	asset := &v1alpha1.Asset{
+	asset := &v12.Asset{
 		ObjectMeta: v1.ObjectMeta{Namespace: request.DestinationCatalogID, GenerateName: assetPrefix},
-		Spec: v1alpha1.AssetSpec{
-			SecretRef: v1alpha1.SecretRef{Name: secretName, Namespace: secretNamespace},
+		Spec: v12.AssetSpec{
+			SecretRef: v12.SecretRef{Name: secretName, Namespace: secretNamespace},
 			Metadata:  request.ResourceMetadata,
 			Details:   request.Details,
 		},
@@ -171,7 +171,7 @@ func (r *Handler) deleteAsset(c *gin.Context) {
 	}
 	namespace, name := splittedID[0], splittedID[1]
 
-	asset := &v1alpha1.Asset{}
+	asset := &v12.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		r.Log.Info().Msg(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while getting asset information"})
@@ -213,7 +213,7 @@ func (r *Handler) updateAsset(c *gin.Context) {
 
 	r.Log.Info().Msg("Looking up asset: Namespace: " + namespace + ", name: " + name)
 
-	asset := &v1alpha1.Asset{}
+	asset := &v12.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info().Msg(err.Error())

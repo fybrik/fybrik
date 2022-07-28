@@ -1,5 +1,5 @@
 # If we detect an image has been rebuilt, trigger a pipeline that will re-deploy (helm upgrade)
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v12
 kind: TriggerTemplate
 metadata:
   name: image-build-template
@@ -59,7 +59,7 @@ spec:
           name: build-and-deploy
 ---
 # If we detect code has been rebuilt, trigger a pipeline that will rebuild the downstream image 
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v12
 kind: TriggerTemplate
 metadata:
   name: code-change-template

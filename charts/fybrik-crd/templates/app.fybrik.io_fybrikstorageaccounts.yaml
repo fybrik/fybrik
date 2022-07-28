@@ -16,7 +16,7 @@ spec:
     singular: fybrikstorageaccount
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v12
     schema:
       openAPIV3Schema:
         description: FybrikStorageAccount defines a storage account used for copying

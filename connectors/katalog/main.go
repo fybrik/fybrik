@@ -17,7 +17,7 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v12"
 	"fybrik.io/fybrik/connectors/katalog/pkg/connector"
 	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
@@ -62,9 +62,9 @@ func RunCmd() *cobra.Command {
 			gin.SetMode(gin.ReleaseMode)
 
 			scheme := runtime.NewScheme()
-			err := v1alpha1.AddToScheme(scheme)
+			err := v12.AddToScheme(scheme)
 			if err != nil {
-				return errors.Wrap(err, "unable to add katalog v1alpha1 to schema")
+				return errors.Wrap(err, "unable to add katalog v12 to schema")
 			}
 			err = corev1.AddToScheme(scheme)
 			if err != nil {

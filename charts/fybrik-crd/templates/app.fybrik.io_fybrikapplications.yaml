@@ -16,7 +16,7 @@ spec:
     singular: fybrikapplication
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v12
     schema:
       openAPIV3Schema:
         description: FybrikApplication provides information about the application

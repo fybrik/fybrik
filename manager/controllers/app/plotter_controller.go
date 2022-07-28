@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	api "fybrik.io/fybrik/manager/apis/app/v12"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
@@ -394,7 +394,7 @@ func (r *PlotterReconciler) reconcile(plotter *api.Plotter) (ctrl.Result, []erro
 			blueprint := &api.Blueprint{
 				TypeMeta: metav1.TypeMeta{
 					Kind:       "Blueprint",
-					APIVersion: "app.fybrik.io/v1alpha1",
+					APIVersion: "app.fybrik.io/v12",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:        plotter.Name,

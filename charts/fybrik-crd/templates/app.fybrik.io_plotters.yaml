@@ -26,7 +26,7 @@ spec:
     - jsonPath: .status.readyTimestamp
       name: ReadySince
       type: string
-    name: v1alpha1
+    name: v12
     schema:
       openAPIV3Schema:
         description: Plotter is the Schema for the plotters API

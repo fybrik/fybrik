@@ -1,7 +1,7 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v12
 kind: FybrikModule
 metadata:
   name: transform

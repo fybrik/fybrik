@@ -1,4 +1,4 @@
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v12
 kind: TriggerBinding
 metadata:
   name: image-triggerbinding
@@ -21,7 +21,7 @@ spec:
     - name: event-type
       value: $(header.Ce-Type)
 ---
-apiVersion: triggers.tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v12
 kind: TriggerBinding
 metadata:
   name: code-change-triggerbinding

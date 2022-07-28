@@ -24,7 +24,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
+	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v12"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -36,13 +36,13 @@ func TestGetAssetInfo(t *testing.T) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	// Create fake Asset
-	asset := &v1alpha1.Asset{
+	asset := &v12.Asset{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: "demo",
 			Name:      "demo-asset",
 		},
-		Spec: v1alpha1.AssetSpec{
-			SecretRef: v1alpha1.SecretRef{
+		Spec: v12.AssetSpec{
+			SecretRef: v12.SecretRef{
 				Name: "creds-demo-asset",
 			},
 			Details: datacatalog.ResourceDetails{
@@ -71,7 +71,7 @@ func TestGetAssetInfo(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	schema := runtime.NewScheme()
-	_ = v1alpha1.AddToScheme(schema)
+	_ = v12.AddToScheme(schema)
 	client := fake.NewClientBuilder().WithScheme(schema).WithObjects(asset).Build()
 	handler := NewHandler(client)
 
@@ -154,7 +154,7 @@ func TestCreateAsset(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	schema := runtime.NewScheme()
-	_ = v1alpha1.AddToScheme(schema)
+	_ = v12.AddToScheme(schema)
 	client := fake.NewClientBuilder().WithScheme(schema).Build()
 	handler := NewHandler(client)
 
@@ -177,7 +177,7 @@ func TestCreateAsset(t *testing.T) {
 		assetName := response.AssetID
 		g.Expect(strings.HasPrefix(assetName, destAssetName)).To(BeTrue())
 
-		asset := &v1alpha1.Asset{}
+		asset := &v12.Asset{}
 		if err := handler.client.Get(context.Background(),
 			types.NamespacedName{Namespace: destCatalogID, Name: assetName}, asset); err != nil {
 			t.Log(err)
@@ -251,7 +251,7 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	schema := runtime.NewScheme()
-	_ = v1alpha1.AddToScheme(schema)
+	_ = v12.AddToScheme(schema)
 	client := fake.NewClientBuilder().WithScheme(schema).Build()
 	handler := NewHandler(client)
 
@@ -280,7 +280,7 @@ func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
 		g.Expect(assetName).Should(HavePrefix(FybrikAssetPrefix))
 		t.Log("new asset created with name: ", assetName)
 
-		asset := &v1alpha1.Asset{}
+		asset := &v12.Asset{}
 		if err := handler.client.Get(context.Background(),
 			types.NamespacedName{Namespace: namespace, Name: assetName}, asset); err != nil {
 			t.Log(err)
@@ -357,7 +357,7 @@ func TestCreateAndUpdateAsset(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	schema := runtime.NewScheme()
-	_ = v1alpha1.AddToScheme(schema)
+	_ = v12.AddToScheme(schema)
 	client := fake.NewClientBuilder().WithScheme(schema).Build()
 	handler := NewHandler(client)
 
@@ -434,7 +434,7 @@ func TestCreateAndUpdateAsset(t *testing.T) {
 		t.Log("w.Body.String()", w.Body.String())
 		g.Expect(err).To(BeNil())
 
-		asset := &v1alpha1.Asset{}
+		asset := &v12.Asset{}
 		if err := handler.client.Get(context.Background(),
 			types.NamespacedName{Namespace: destCatalogID, Name: createdAssetID}, asset); err != nil {
 			t.Log(err)

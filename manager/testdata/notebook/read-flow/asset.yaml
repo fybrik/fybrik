@@ -1,4 +1,4 @@
-apiVersion: katalog.fybrik.io/v1alpha1
+apiVersion: katalog.fybrik.io/v12
 kind: Asset
 metadata:
   name: data-csv

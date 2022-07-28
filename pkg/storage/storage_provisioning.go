@@ -43,7 +43,7 @@ const (
 
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "com.ie.ibm.hpsys", Version: "v1alpha1"}
+	GroupVersion = schema.GroupVersion{Group: "com.ie.ibm.hpsys", Version: "v12"}
 )
 
 // ProvisionedBucket holds information about the bucket to be provisioned.

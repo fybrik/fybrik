@@ -75,7 +75,7 @@ Then, register two storage accounts: one in `theshire` and one in `neverland`. R
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1alpha1
+apiVersion:   app.fybrik.io/v12
 kind:         FybrikStorageAccount
 metadata:
   name: theshire-storage-account
@@ -89,7 +89,7 @@ EOF
 ```
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1alpha1
+apiVersion:   app.fybrik.io/v12
 kind:         FybrikStorageAccount
 metadata:
   name: neverland-storage-account
@@ -141,7 +141,7 @@ Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v12
 kind: FybrikApplication
 metadata:
   name: my-notebook-write
@@ -339,7 +339,7 @@ Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource 
 
 ```bash
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v12
 kind: FybrikApplication
 metadata:
   name: my-notebook-read

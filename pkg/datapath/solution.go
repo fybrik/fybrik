@@ -6,7 +6,7 @@ package datapath
 import (
 	"fmt"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	appApi "fybrik.io/fybrik/manager/apis/app/v12"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ---
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v12
 kind: FybrikModule
 metadata:
   name: implicit-copy-batch-s3
