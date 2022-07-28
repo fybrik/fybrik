@@ -6,13 +6,14 @@ kind: Plotter
 metadata:
   name: plotter
   namespace: fybrik-system
+  annotations:
+    app.fybrik.io/app-uuid: "1234"
   labels:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
 spec:
   assets:
     S3:
-      assetId: "S3"  # dataset requested by user
       advertisedAssetId: test
       assetDetails:
         vault:
@@ -20,10 +21,12 @@ spec:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-read?namespace=default"
+            authPath: ""
           write:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
+            authPath: ""
         connection:
           name: s3
           s3:
@@ -33,13 +36,13 @@ spec:
           type: 2
         format: parquet
     DB2:
-      assetId: "DB2"  # dataset requested by user
       assetDetails:
         vault:
           read:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+            authPath: ""
         connection:
           name: db2
           db2:
@@ -53,7 +56,7 @@ spec:
   - name: notebook
     flowType: read
     assetId: "DB2"
-    subflows:
+    subFlows:
     - name: subflow-copy
       flowType: copy
       triggers:
@@ -84,6 +87,7 @@ spec:
                         hostname: mygrpc-service
                         port: 80
                         scheme: grpc
+  modulesNamespace: fybrik-blueprints
   templates:
     copyTemplate:
       name: copyTemplate
@@ -91,14 +95,15 @@ spec:
       - name: implicit-copy-batch-latest
         scope: asset
         type: service
+        capability: copy
         chart:
           name: ghcr.io/mesh-for-data/m4d-implicit-copy-batch:0.1.0
     readTemplate:
       name: readTemplate
       modules:
-        - name: arrow-flight-read
-          scope: workload
-          type: service
-          chart:
-            name: ghcr.io/fybrik/arrow-flight-module-chart:latest
-  selector: {}
+      - name: arrow-flight-read
+        capability: read
+        scope: workload
+        type: service
+        chart:
+          name: ghcr.io/fybrik/arrow-flight-module-chart:latest
