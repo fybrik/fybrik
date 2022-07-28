@@ -6,6 +6,8 @@ kind: Plotter
 metadata:
   name: plotter
   namespace: fybrik-system
+  annotations:
+    app.fybrik.io/app-uuid: "1234"
   labels:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
@@ -25,10 +27,12 @@ spec:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-read?namespace=default"
+            authPath: ""
           write:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
+            authPath: ""
     "S3-NEW":
       assetDetails:
         connection:
@@ -43,10 +47,12 @@ spec:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-read?namespace=default"
+            authPath: ""
           write:
             address: http://vault.fybrik-system:8200
             role: module
             secretPath: "/v1/kubernetes-secrets/s3-write?namespace=default"
+            authPath: ""
   flows:
   - assetId: "S3"
     flowType: read
