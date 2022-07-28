@@ -5,6 +5,10 @@ export DATA_DIR ?= /tmp
 # the latest backward compatible CRD version
 export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
 export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
+# Install latest development version
+export DEPLOY_FYBRIK_DEV_VERSION?=1
+# Install tls certificates used for testing
+export DEPLOY_TLS_CERTS?=0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -39,12 +43,12 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
 
-.PHONY: deploy
-deploy: export VALUES_FILE?=charts/fybrik/values.yaml
-deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
-deploy:
+.PHONY: deploy-fybrik
+deploy-fybrik: export VALUES_FILE?=charts/fybrik/values.yaml
+deploy-fybrik: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+deploy-fybrik:
 	$(TOOLBIN)/kubectl create namespace $(KUBE_NAMESPACE) || true
-ifeq ($(USE_FYBRIK_DEV), true)
+ifeq ($(DEPLOY_FYBRIK_DEV_VERSION),1)
 	$(TOOLBIN)/helm install fybrik-crd charts/fybrik-crd  \
                --namespace $(KUBE_NAMESPACE) --wait --timeout 120s
 	$(TOOLBIN)/helm install fybrik charts/fybrik --values $(VALUES_FILE) $(HELM_SETTINGS) \
@@ -85,8 +89,8 @@ test: pre-test
 .PHONY: run-integration-tests
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
-run-integration-tests: export USE_FYBRIK_DEV=true
-run-integration-tests: setup-cluster
+run-integration-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C modules helm
 	$(MAKE) -C modules helm-uninstall # Uninstalls the deployed tests from previous command
 	$(MAKE) -C pkg/helm test
@@ -95,34 +99,35 @@ run-integration-tests: setup-cluster
 
 .PHONY: run-notebook-readflow-tests
 run-notebook-readflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-notebook-readflow-tests: export USE_FYBRIK_DEV=true
-run-notebook-readflow-tests: setup-cluster
+run-notebook-readflow-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-tests
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
-run-notebook-readflow-tls-tests: export USE_FYBRIK_DEV=true
-run-notebook-readflow-tls-tests: setup-cluster
-	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
+run-notebook-readflow-tls-tests: export DEPLOY_TLS_CERTS=1
+run-notebook-readflow-tls-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests
 run-notebook-readflow-bc-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-notebook-readflow-bc-tests: export USE_FYBRIK_DEV=false
-run-notebook-readflow-bc-tests: setup-cluster
+run-notebook-readflow-bc-tests: export DEPLOY_FYBRIK_DEV_VERSION=0
+run-notebook-readflow-bc-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-writeflow-tests
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
-run-notebook-writeflow-tests: export USE_FYBRIK_DEV=true
-run-notebook-writeflow-tests: setup-cluster
+run-notebook-writeflow-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-writeflow-tests
 
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
 run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
-run-namescope-integration-tests: export USE_FYBRIK_DEV=true
-run-namescope-integration-tests: setup-cluster
+run-namescope-integration-tests:
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: setup-cluster
@@ -134,8 +139,11 @@ setup-cluster:
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
+ifeq ($(DEPLOY_TLS_CERTS), 1)
+	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
+endif
 	$(MAKE) -C charts test
-	$(MAKE) deploy
+	$(MAKE) deploy-fybrik
 	$(MAKE) configure-vault
 
 .PHONY: cluster-prepare
