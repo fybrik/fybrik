@@ -136,10 +136,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if err := r.removeFinalizers(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
-		initStatus(applicationContext.Application)
 		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
-		application.Status.ObservedGeneration = appVersion
-		return ctrl.Result{}, utils.UpdateStatus(ctx, r.Client, application, observedStatus)
+		return ctrl.Result{}, nil
 	}
 
 	// check if reconcile is required
@@ -261,15 +259,18 @@ func (r *FybrikApplicationReconciler) getFinalizerName() string {
 func (r *FybrikApplicationReconciler) removeFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
 	// finalizer
 	finalizerName := r.getFinalizerName()
+	original := applicationContext.Application.DeepCopy()
+	initStatus(applicationContext.Application)
+	applicationContext.Application.Status.ObservedGeneration = applicationContext.Application.GetGeneration()
+	if err := r.deleteExternalResources(applicationContext); err != nil {
+		return err
+	}
+	if err := utils.UpdateStatus(ctx, r.Client, applicationContext.Application, &original.Status); err != nil {
+		return err
+	}
 	if ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName) {
-		original := applicationContext.Application.DeepCopy()
-		// the finalizer is present - delete the allocated resources
-		if err := r.deleteExternalResources(applicationContext); err != nil {
-			return err
-		}
 		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 		ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
-		// use Patch to preserve the generation version
 		if err := r.Patch(ctx, applicationContext.Application, client.MergeFrom(original)); err != nil {
 			return err
 		}
