@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
-	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -43,7 +43,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	defer GinkgoRecover()
 
-	err := apiv1alpha1.AddToScheme(scheme.Scheme)
+	err := app.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -74,7 +74,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	writeApplication := &apiv1alpha1.FybrikApplication{}
+	writeApplication := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
 	writeApplicationKey := client.ObjectKeyFromObject(writeApplication)
@@ -128,42 +128,42 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	writeApplication = &apiv1alpha1.FybrikApplication{}
+	writeApplication = &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
 	writeApplicationKey = client.ObjectKeyFromObject(writeApplication)
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
+		application := &app.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
 			Name: writeApplicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), writeApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
 	}()
 
 	// Create FybrikApplication and FybrikModule
-	fmt.Printf("Expecting write application creation to succeed")
+	fmt.Println("Expecting write application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), writeApplication)).Should(gomega.Succeed())
 
-	fmt.Printf("Expecting write application to be created")
+	fmt.Println("Expecting write application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	fmt.Printf("Expecting plotter to be constructed")
-	g.Eventually(func() *apiv1alpha1.ResourceReference {
+	fmt.Println("Expecting plotter to be constructed")
+	g.Eventually(func() *app.ResourceReference {
 		_ = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 		return writeApplication.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter := &apiv1alpha1.Plotter{}
+	plotter := &app.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: writeApplication.Status.Generated.Namespace, Name: writeApplication.Status.Generated.Name}
-	fmt.Printf("Expecting plotter to be fetchable")
+	fmt.Println("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	fmt.Printf("Expecting write application to be ready")
+	fmt.Println("Expecting write application to be ready")
 	g.Eventually(func() bool {
 		err = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 		if err != nil {
@@ -202,7 +202,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	err = v1alpha1.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	asset := &v1alpha1.Asset{}
-	fmt.Printf("Expecting asset to be fetchable")
+	fmt.Println("Expecting asset to be fetchable")
 	assetObjectKey := client.ObjectKey{Namespace: newCatalogID, Name: newAssetID}
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), assetObjectKey, asset)
@@ -217,7 +217,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Printf("Starting kubectl port-forward for arrow-flight")
+	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
 	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
@@ -291,7 +291,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	fmt.Printf("Starting read scenario")
 	// Installing application to read new data
-	readApplication := &apiv1alpha1.FybrikApplication{}
+	readApplication := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-read.yaml", readApplication)).
 		ToNot(gomega.HaveOccurred())
 	// Update the name of the dataset id
@@ -308,19 +308,19 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}, timeout, interval).Should(gomega.Succeed())
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		application := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
+		application := &app.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
 			Name: readApplicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), readApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
 	}()
 	fmt.Printf("Expecting plotter to be constructed")
-	g.Eventually(func() *apiv1alpha1.ResourceReference {
+	g.Eventually(func() *app.ResourceReference {
 		_ = k8sClient.Get(context.Background(), readApplicationKey, readApplication)
 		return readApplication.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter = &apiv1alpha1.Plotter{}
+	plotter = &app.Plotter{}
 	plotterObjectKey = client.ObjectKey{Namespace: readApplication.Status.Generated.Namespace, Name: readApplication.Status.Generated.Name}
 	fmt.Printf("Expecting plotter to be fetchable")
 	g.Eventually(func() error {

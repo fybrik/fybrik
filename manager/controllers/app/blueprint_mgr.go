@@ -4,11 +4,11 @@
 package app
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"github.com/rs/zerolog"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-
-	"github.com/rs/zerolog"
 )
 
 // ModuleInstanceSpec consists of the module spec and arguments

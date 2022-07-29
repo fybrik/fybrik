@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
@@ -29,7 +29,7 @@ import (
 const (
 	clusterMetadataConfigMapSL = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
 	endPointURL                = "https://config.satellite.cloud.ibm.com/graphql"
-	bluePrintSelfLink          = "/apis/app.fybrik.io/v1alpha1/namespaces/%s/blueprints/%s"
+	bluePrintSelfLink          = "/apis/app.fybrik.io/app/namespaces/%s/blueprints/%s"
 	channelNameTemplate        = "fybrik.io-%s-%s"
 	groupNameTemplate          = "fybrik-%s"
 	clusterGroupKey            = "clusterGroup"
@@ -41,7 +41,7 @@ var (
 )
 
 func init() {
-	_ = v1alpha1.AddToScheme(scheme)
+	_ = app.AddToScheme(scheme)
 }
 
 type razeeClusterManager struct {
@@ -102,7 +102,7 @@ func createBluePrintSelfLink(namespace, name string) string {
 	return fmt.Sprintf(bluePrintSelfLink, namespace, name)
 }
 
-func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) (*v1alpha1.Blueprint, error) {
+func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) (*app.Blueprint, error) {
 	selfLink := createBluePrintSelfLink(namespace, name)
 	cluster, err := r.con.Clusters.ClusterByName(r.orgID, clusterName)
 	if err != nil {
@@ -125,8 +125,8 @@ func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) 
 		return nil, nil
 	}
 
-	_ = v1alpha1.AddToScheme(scheme)
-	blueprint := v1alpha1.Blueprint{}
+	_ = app.AddToScheme(scheme)
+	blueprint := app.Blueprint{}
 	err = multicluster.Decode(jsonData.Content, scheme, &blueprint)
 	if blueprint.Namespace == "" {
 		log.Warn().Msg("Retrieved an empty blueprint")
@@ -146,7 +146,7 @@ type Collection struct {
 }
 
 //nolint:funlen,gocyclo
-func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *app.Blueprint) error {
 	groupName := getGroupName(cluster)
 	channelName := channelName(cluster, blueprint.Name)
 	version := "0"
@@ -249,7 +249,7 @@ func (r *razeeClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha
 	return nil
 }
 
-func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *app.Blueprint) error {
 	channelName := channelName(cluster, blueprint.Name)
 
 	content, err := yaml.Marshal(blueprint)

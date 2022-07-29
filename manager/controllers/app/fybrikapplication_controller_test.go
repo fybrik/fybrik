@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 )
@@ -31,10 +31,10 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
-			module := &apiv1alpha1.FybrikModule{}
+			module := &app.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			module.Namespace = controllerNamespace
-			application := &apiv1alpha1.FybrikApplication{}
+			application := &app.FybrikApplication{}
 
 			Expect(readObjectFromFile("../../testdata/e2e/fybrikapplication.yaml", application)).ToNot(HaveOccurred())
 			_ = k8sClient.Delete(context.Background(), application)
@@ -76,7 +76,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 				module.Namespace = "default"
 				Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())
-				fetchedModule := &apiv1alpha1.FybrikModule{}
+				fetchedModule := &app.FybrikModule{}
 				moduleKey := client.ObjectKeyFromObject(module)
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
@@ -93,11 +93,11 @@ var _ = Describe("FybrikApplication Controller", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
 				Skip("Skipping test when running locally")
 			}
-			module := &apiv1alpha1.FybrikModule{}
+			module := &app.FybrikModule{}
 			Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 			module.Namespace = controllerNamespace
-			application := &apiv1alpha1.FybrikApplication{}
-			prodApplication := &apiv1alpha1.FybrikApplication{}
+			application := &app.FybrikApplication{}
+			prodApplication := &app.FybrikApplication{}
 			Expect(readObjectFromFile("../../testdata/e2e/productionApp.yaml", prodApplication)).ToNot(HaveOccurred())
 			origApplication := prodApplication.DeepCopy()
 			prodAppKey := client.ObjectKeyFromObject(prodApplication)
@@ -115,17 +115,17 @@ var _ = Describe("FybrikApplication Controller", func() {
 					(k8sClient.Get(context.Background(), prodAppKey, prodApplication) == nil)
 			}, timeout, interval).Should(BeTrue())
 			By("Expecting plotters to be constructed")
-			Eventually(func() *apiv1alpha1.ResourceReference {
+			Eventually(func() *app.ResourceReference {
 				_ = k8sClient.Get(context.Background(), applicationKey, application)
 				return application.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
-			Eventually(func() *apiv1alpha1.ResourceReference {
+			Eventually(func() *app.ResourceReference {
 				_ = k8sClient.Get(context.Background(), prodAppKey, prodApplication)
 				return prodApplication.Status.Generated
 			}, timeout, interval).ShouldNot(BeNil())
 
 			// The plotter has to be created
-			plotter := &apiv1alpha1.Plotter{}
+			plotter := &app.Plotter{}
 			plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace, Name: application.Status.Generated.Name}
 			By("Expecting plotter to be fetchable")
 			Eventually(func() error {
@@ -140,7 +140,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 			blueprintObjectKey := client.ObjectKey{Namespace: plotter.Namespace, Name: plotter.Name}
 			By("Expecting Blueprint to contain application labels")
-			blueprint := &apiv1alpha1.Blueprint{}
+			blueprint := &app.Blueprint{}
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), blueprintObjectKey, blueprint)
 			}, timeout, interval).Should(Succeed(), "Blueprint has not been created")

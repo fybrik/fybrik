@@ -27,11 +27,10 @@ import (
 	"google.golang.org/grpc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -93,7 +92,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		log.Println("Object already exists in S3!")
 	}
 
-	err = apiv1alpha1.AddToScheme(scheme.Scheme)
+	err = app.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -110,34 +109,34 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	application := &apiv1alpha1.FybrikApplication{}
+	application := &app.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
 	applicationKey := client.ObjectKeyFromObject(application)
 
 	// Create FybrikApplication and FybrikModule
-	fmt.Printf("Expecting application creation to succeed")
+	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		fybrikApplication := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+		fybrikApplication := &app.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
 		_ = k8sClient.Delete(context.Background(), fybrikApplication)
 	}()
 
-	fmt.Printf("Expecting application to be created")
+	fmt.Println("Expecting application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), applicationKey, application)
 	}, timeout, interval).Should(gomega.Succeed())
-	fmt.Printf("Expecting plotter to be constructed")
-	g.Eventually(func() *apiv1alpha1.ResourceReference {
+	fmt.Println("Expecting plotter to be constructed")
+	g.Eventually(func() *app.ResourceReference {
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
 		return application.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter := &apiv1alpha1.Plotter{}
+	plotter := &app.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
 	fmt.Printf("Expecting plotter to be fetchable")

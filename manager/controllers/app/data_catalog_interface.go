@@ -4,12 +4,12 @@
 package app
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"github.com/rs/zerolog/log"
+
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
-
-	"github.com/rs/zerolog/log"
 )
 
 // RegisterAsset registers a new asset in the specified catalog
