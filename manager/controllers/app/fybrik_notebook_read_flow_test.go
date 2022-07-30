@@ -139,12 +139,12 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	plotter := &app.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
-	fmt.Printf("Expecting plotter to be fetchable")
+	fmt.Println("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	fmt.Printf("Expecting application to be ready")
+	fmt.Println("Expecting application to be ready")
 	g.Eventually(func() bool {
 		err = k8sClient.Get(context.Background(), applicationKey, application)
 		if err != nil {
@@ -164,7 +164,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Printf("Starting kubectl port-forward for arrow-flight")
+	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
 	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
