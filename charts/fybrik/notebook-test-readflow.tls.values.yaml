@@ -36,7 +36,7 @@ katalogConnector:
     use_mtls: true
     certs:
       certSecretName: "test-tls-katalog-connector-certs"
-      cacertSecretName: ""
+      cacertSecretName: "test-tls-ca-certs"
 
 opaConnector:
   tls:
