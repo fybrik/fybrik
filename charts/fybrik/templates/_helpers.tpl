@@ -163,4 +163,3 @@ passed as parameter to the function.
 {{- $dir := toString (first .) -}}
 {{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
 {{- end }}
-
