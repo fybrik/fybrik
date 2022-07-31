@@ -8,7 +8,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	api "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	api "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/logging"
 )
 

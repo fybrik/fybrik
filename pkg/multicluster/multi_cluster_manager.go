@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	app "fybrik.io/fybrik/manager/apis/app/v1"
 )
 
 type ClusterLister interface {

@@ -4,7 +4,7 @@
 package datapath
 
 import (
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	appApi "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/model/datacatalog"

@@ -14,56 +14,14 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1alpha1-fybrikapplication
-    failurePolicy: Fail
-    name: vfybrikapplication.kb.io
-    rules:
-      - apiGroups:
-          - app.fybrik.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - fybrikapplications
-    sideEffects: None
-  - admissionReviewVersions:
-      - v1
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook-service
-        namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1alpha1-fybrikmodule
-    failurePolicy: Fail
-    name: vfybrikmodule.kb.io
-    rules:
-      - apiGroups:
-          - app.fybrik.io
-        apiVersions:
-          - v1alpha1
-        operations:
-          - CREATE
-          - UPDATE
-        resources:
-          - fybrikmodules
-    sideEffects: None
-  - admissionReviewVersions:
-      - v1
-      - v1beta1
-    clientConfig:
-      service:
-        name: webhook-service
-        namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1beta1-fybrikapplication
+        path: /validate-app-fybrik-io-v1-fybrikapplication
     failurePolicy: Fail
     name: vfybrikapplication-beta.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
         apiVersions:
-          - v1beta1
+          - v1
         operations:
           - CREATE
           - UPDATE
@@ -77,14 +35,14 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1beta1-fybrikmodule
+        path: /validate-app-fybrik-io-v1-fybrikmodule
     failurePolicy: Fail
     name: vfybrikmodule-beta.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
         apiVersions:
-          - v1beta1
+          - v1
         operations:
           - CREATE
           - UPDATE

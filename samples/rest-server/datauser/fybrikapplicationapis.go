@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 
-	dm "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	dm "fybrik.io/fybrik/manager/apis/app/v1"
 )
 
 var dmaClient *K8sClient

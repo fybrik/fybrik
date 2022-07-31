@@ -15,7 +15,7 @@ license: $(TOOLBIN)/license_finder
 
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
-	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
+	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1/ -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 

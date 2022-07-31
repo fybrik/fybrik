@@ -1,4 +1,4 @@
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikApplication
 metadata:
   name: delete-app

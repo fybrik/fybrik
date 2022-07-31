@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package v1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,6 +35,7 @@ type FybrikStorageAccountStatus struct {
 // It contains endpoint, region and a reference to the credentials a
 // Owner of the asset is responsible to store the credentials
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 type FybrikStorageAccount struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

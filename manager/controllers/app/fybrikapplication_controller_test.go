@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	app "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 )
@@ -72,7 +72,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				// test access restriction: only modules from the control plane can be accessed
 				// Create a module in default namespace
 				// An attempt to fetch it will fail
-				module := &apiv1alpha1.FybrikModule{}
+				module := &app.FybrikModule{}
 				Expect(readObjectFromFile("../../testdata/e2e/module-read.yaml", module)).ToNot(HaveOccurred())
 				module.Namespace = "default"
 				Expect(k8sClient.Create(context.Background(), module)).Should(Succeed())

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	appApi "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"

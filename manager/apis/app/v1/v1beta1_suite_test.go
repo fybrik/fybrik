@@ -1,7 +1,7 @@
 // Copyright 2020 The Kubernetes Authors.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package v1
 
 import (
 	"fmt"
@@ -27,13 +27,13 @@ func TestMain(m *testing.M) {
 	}
 
 	if os.Getenv("USE_EXISTING_CONTROLLER") == "true" {
-		fmt.Printf("apis/app/v1alpha1: Using existing environment; don't load CRDs. \n")
+		fmt.Printf("apis/app/v1: Using existing environment; don't load CRDs. \n")
 		useexistingcluster := true
 		testEnv = &envtest.Environment{
 			UseExistingCluster: &useexistingcluster,
 		}
 	} else {
-		fmt.Printf("apis/app/v1alpha1: Using fake environment; so set path to CRDs so they are installed. \n")
+		fmt.Printf("apis/app/v1: Using fake environment; so set path to CRDs so they are installed. \n")
 		testEnv = &envtest.Environment{
 			CRDDirectoryPaths: []string{
 				filepath.Join(path, "..", "..", "..", "..", "charts", "fybrik-crd", "templates"),

@@ -1,0 +1,339 @@
+{
+  "title": "external.json",
+  "definitions": {
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0CapabilityScope": {
+      "description": "CapabilityScope indicates the level at which a capability is implemented",
+      "type": "string",
+      "enum": [
+        "asset",
+        "workload",
+        "cluster"
+      ]
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0ChartSpec": {
+      "description": "ChartSpec specifies chart name and values",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "chartPullSecret": {
+          "description": "Name of secret containing helm registry credentials",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of helm chart",
+          "type": "string"
+        },
+        "values": {
+          "description": "Values to pass to helm chart installation",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0DataContext": {
+      "description": "DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.",
+      "type": "object",
+      "required": [
+        "requirements",
+        "requirements"
+      ],
+      "properties": {
+        "flow": {
+          "$ref": "taxonomy.json#/definitions/DataFlow",
+          "description": "Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed."
+        },
+        "requirements": {
+          "$ref": "#/definitions/DataRequirements",
+          "description": "Requirements from the system"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0DataRequirements": {
+      "description": "DataRequirements structure contains a list of requirements (interface, need to catalog the dataset, etc.)",
+      "type": "object",
+      "properties": {
+        "flowParams": {
+          "$ref": "#/definitions/FlowRequirements",
+          "description": "FlowParams include the requirements for particular data flows"
+        },
+        "interface": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Interface indicates the protocol and format expected by the data user"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0Dependency": {
+      "description": "Dependency details another component on which this module relies - i.e. a pre-requisit",
+      "type": "object",
+      "required": [
+        "type",
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name is the name of the dependent component",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/DependencyType",
+          "description": "Type provides information used in determining how to instantiate the component"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0DependencyType": {
+      "description": "DependencyType indicates what type of pre-requisit is required TODO - Should these be changed???",
+      "type": "string",
+      "enum": [
+        "module",
+        "connector",
+        "feature"
+      ]
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0FlowRequirements": {
+      "description": "FlowRequirements include the requirements specific to the flow Note: Implicit copies done for data plane optimization by Fybrik do not use these parameters",
+      "type": "object",
+      "properties": {
+        "metadata": {
+          "$ref": "datacatalog.json#/definitions/ResourceMetadata",
+          "description": "Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset."
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0FybrikApplicationSpec": {
+      "description": "FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.",
+      "type": "object",
+      "title": "fybrik_application",
+      "required": [
+        "appInfo",
+        "data"
+      ],
+      "properties": {
+        "appInfo": {
+          "$ref": "taxonomy.json#/definitions/AppInfo",
+          "description": "AppInfo contains information describing the reasons for the processing that will be done by the application."
+        },
+        "data": {
+          "description": "Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataContext"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0FybrikModuleSpec": {
+      "description": "FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.",
+      "type": "object",
+      "title": "fybrik_module",
+      "required": [
+        "capabilities",
+        "capabilities",
+        "chart"
+      ],
+      "properties": {
+        "capabilities": {
+          "description": "Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleCapability"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0ModuleCapability": {
+      "description": "Capability declares what this module knows how to do and the types of data it knows how to handle",
+      "type": "object",
+      "required": [
+        "capability"
+      ],
+      "properties": {
+        "actions": {
+          "description": "Actions are the data transformations that the module supports",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleSupportedAction"
+          }
+        },
+        "api": {
+          "$ref": "datacatalog.json#/definitions/ResourceDetails",
+          "description": "API indicates to the application how to access the capabilities provided by the module"
+        },
+        "capability": {
+          "$ref": "taxonomy.json#/definitions/Capability",
+          "description": "Capability declares what this module knows how to do - ex: read, write, transform..."
+        },
+        "plugins": {
+          "description": "Plugins enable the module to add libraries to perform actions rather than implementing them by itself",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Plugin"
+          }
+        },
+        "supportedInterfaces": {
+          "description": "Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated This field may not be required if not handling data",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleInOut"
+          }
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0ModuleInOut": {
+      "description": "ModuleInOut specifies the protocol and format of the data input and output by the module - if any",
+      "type": "object",
+      "properties": {
+        "sink": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Sink specifies the output data protocol and format"
+        },
+        "source": {
+          "$ref": "taxonomy.json#/definitions/Interface",
+          "description": "Source specifies the input data protocol and format"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0ModuleSupportedAction": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "taxonomy.json#/definitions/ActionName",
+          "description": "Unique name of an action supported by the module"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0Plugin": {
+      "type": "object",
+      "required": [
+        "pluginType",
+        "dataFormat"
+      ],
+      "properties": {
+        "pluginType": {
+          "$ref": "taxonomy.json#/definitions/PluginType",
+          "description": "PluginType indicates the technology used for the module and the plugin to interact The values supported should come from the module taxonomy Examples of such mechanisms are vault plugins, wasm, etc"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0ResourceStatusIndicator": {
+      "description": "ResourceStatusIndicator is used to determine the status of an orchestrated resource",
+      "type": "object",
+      "required": [
+        "kind",
+        "successCondition"
+      ],
+      "properties": {
+        "errorMessage": {
+          "description": "ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg",
+          "type": "string"
+        },
+        "failureCondition": {
+          "description": "FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind provides information about the resource kind",
+          "type": "string"
+        },
+        "successCondition": {
+          "description": "SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)",
+          "type": "string"
+        }
+      }
+    },
+    "fybrik.io~1fybrik~1manager~1apis~1app~1v1~0Selector": {
+      "description": "Selector is a label query over a set of resources in the specified cluster.",
+      "type": "object",
+      "required": [
+        "workloadSelector"
+      ],
+      "properties": {
+        "clusterName": {
+          "description": "Cluster name",
+          "type": "string"
+        },
+        "workloadSelector": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector",
+          "description": "WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector."
+        }
+      }
+    },
+    "github.com~1c2h5oh~1datasize~0ByteSize": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Duration": {
+      "type": "string"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Fields": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelector": {
+      "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
+      "type": "object",
+      "properties": {
+        "matchExpressions": {
+          "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorRequirement"
+          }
+        },
+        "matchLabels": {
+          "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorOperator": {
+      "description": "A label selector operator is the set of operators that can be used in a selector requirement.",
+      "type": "string"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorRequirement": {
+      "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+      "type": "object",
+      "required": [
+        "key",
+        "operator"
+      ],
+      "properties": {
+        "key": {
+          "description": "key is the label key that the selector applies to.",
+          "type": "string"
+        },
+        "operator": {
+          "$ref": "#/definitions/k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0LabelSelectorOperator",
+          "description": "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist."
+        },
+        "values": {
+          "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0MicroTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0ObjectMeta": {
+      "type": "object"
+    },
+    "k8s.io~1apimachinery~1pkg~1apis~1meta~1v1~0Time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

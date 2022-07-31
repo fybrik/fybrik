@@ -10,7 +10,7 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/rs/zerolog"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	app "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"

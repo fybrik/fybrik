@@ -1,0 +1,21 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: rest-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rest-server
+  template:
+    metadata:
+      labels:
+        app: rest-server
+    spec:
+      containers:
+      - name: datauserserver
+        image: ghcr.io/roytman/datauserserver:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always

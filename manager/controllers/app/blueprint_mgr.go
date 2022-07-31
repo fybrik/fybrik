@@ -6,7 +6,7 @@ package app
 import (
 	"github.com/rs/zerolog"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	app "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 )

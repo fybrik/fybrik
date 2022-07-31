@@ -1,0 +1,9 @@
+float: pi = 3.1415;
+array [1..7] of int: fib = [1, 1, 2, 3, 5, 8, 13];
+
+var int: y;
+array [1..3] of var int: y3 :: mip2 :: mip3;
+
+constraint int_le(0, x) :: domain;
+
+solve :: int_search(xs, input_order, indomain_min, complete) minimize x;

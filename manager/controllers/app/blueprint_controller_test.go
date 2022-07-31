@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	app "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/environment"
 )
 
