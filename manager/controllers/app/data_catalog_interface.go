@@ -6,7 +6,7 @@ package app
 import (
 	"github.com/rs/zerolog/log"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
@@ -21,7 +21,7 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string,
-	info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
+	info *fapp.DatasetDetails, input *fapp.FybrikApplication) (string, error) {
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
 	if info.Details != nil {

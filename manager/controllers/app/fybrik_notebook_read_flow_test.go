@@ -30,7 +30,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -92,7 +92,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		log.Println("Object already exists in S3!")
 	}
 
-	err = app.AddToScheme(scheme.Scheme)
+	err = fapp.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -109,7 +109,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	application := &app.FybrikApplication{}
+	application := &fapp.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
 	applicationKey := client.ObjectKeyFromObject(application)
 
@@ -119,7 +119,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		fybrikApplication := &app.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
 		_ = k8sClient.Delete(context.Background(), fybrikApplication)
@@ -130,13 +130,13 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		return k8sClient.Get(context.Background(), applicationKey, application)
 	}, timeout, interval).Should(gomega.Succeed())
 	fmt.Println("Expecting plotter to be constructed")
-	g.Eventually(func() *app.ResourceReference {
+	g.Eventually(func() *fapp.ResourceReference {
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
 		return application.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter := &app.Plotter{}
+	plotter := &fapp.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
 	fmt.Println("Expecting plotter to be fetchable")

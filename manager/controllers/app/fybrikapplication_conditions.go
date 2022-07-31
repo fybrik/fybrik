@@ -8,7 +8,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 
-	api "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/logging"
 )
 
@@ -25,9 +25,9 @@ const (
 
 // Helper functions to manage conditions
 
-func initStatus(application *api.FybrikApplication) {
+func initStatus(application *fapp.FybrikApplication) {
 	application.Status.ErrorMessage = ""
-	application.Status.AssetStates = make(map[string]api.AssetState)
+	application.Status.AssetStates = make(map[string]fapp.AssetState)
 	if len(application.Spec.Data) == 0 {
 		application.Status.Ready = true
 	} else {
@@ -38,20 +38,20 @@ func initStatus(application *api.FybrikApplication) {
 	}
 }
 
-func resetAssetState(application *api.FybrikApplication, assetID string) {
-	conditions := make([]api.Condition, numConditions)
-	conditions[ErrorConditionIndex] = api.Condition{Type: api.ErrorCondition, Status: corev1.ConditionFalse}
-	conditions[DenyConditionIndex] = api.Condition{Type: api.DenyCondition, Status: corev1.ConditionFalse}
-	conditions[ReadyConditionIndex] = api.Condition{Type: api.ReadyCondition, Status: corev1.ConditionFalse}
-	application.Status.AssetStates[assetID] = api.AssetState{Conditions: conditions}
+func resetAssetState(application *fapp.FybrikApplication, assetID string) {
+	conditions := make([]fapp.Condition, numConditions)
+	conditions[ErrorConditionIndex] = fapp.Condition{Type: fapp.ErrorCondition, Status: corev1.ConditionFalse}
+	conditions[DenyConditionIndex] = fapp.Condition{Type: fapp.DenyCondition, Status: corev1.ConditionFalse}
+	conditions[ReadyConditionIndex] = fapp.Condition{Type: fapp.ReadyCondition, Status: corev1.ConditionFalse}
+	application.Status.AssetStates[assetID] = fapp.AssetState{Conditions: conditions}
 }
 
 func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 	errMsg := "An error was received for asset " + assetID
 	errMsg += " . If the error persists, please contact an operator."
 	errMsg += "Error description: " + msg
-	appContext.Application.Status.AssetStates[assetID].Conditions[ErrorConditionIndex] = api.Condition{
-		Type:    api.ErrorCondition,
+	appContext.Application.Status.AssetStates[assetID].Conditions[ErrorConditionIndex] = fapp.Condition{
+		Type:    fapp.ErrorCondition,
 		Status:  corev1.ConditionTrue,
 		Message: errMsg}
 	appContext.Log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
@@ -59,8 +59,8 @@ func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 }
 
 func setDenyCondition(appContext ApplicationContext, assetID, msg string) {
-	appContext.Application.Status.AssetStates[assetID].Conditions[DenyConditionIndex] = api.Condition{
-		Type:    api.DenyCondition,
+	appContext.Application.Status.AssetStates[assetID].Conditions[DenyConditionIndex] = fapp.Condition{
+		Type:    fapp.DenyCondition,
 		Status:  corev1.ConditionTrue,
 		Message: msg}
 	appContext.Log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
@@ -74,7 +74,7 @@ func setReadyCondition(appContext ApplicationContext, assetID string) {
 }
 
 // determine if the application is ready
-func isReady(application *api.FybrikApplication) bool {
+func isReady(application *fapp.FybrikApplication) bool {
 	if len(application.Spec.Data) == 0 {
 		return true
 	}
@@ -94,7 +94,7 @@ func isReady(application *api.FybrikApplication) bool {
 	return true
 }
 
-func getErrorMessages(application *api.FybrikApplication) string {
+func getErrorMessages(application *fapp.FybrikApplication) string {
 	if application.Status.ErrorMessage != "" {
 		return application.Status.ErrorMessage
 	}

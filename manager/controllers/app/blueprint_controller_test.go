@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/environment"
 )
 
@@ -20,7 +20,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 	const timeout = time.Second * 30
 	const interval = time.Millisecond * 100
 
-	blueprint := &app.Blueprint{}
+	blueprint := &fapp.Blueprint{}
 	Expect(readObjectFromFile("../../testdata/blueprint-read.yaml", blueprint)).ToNot(HaveOccurred())
 
 	// Set the correct namespace
@@ -34,7 +34,7 @@ func deployBlueprint(namespace string, shouldSucceed bool) {
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		bp := &app.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
+		bp := &fapp.Blueprint{ObjectMeta: metav1.ObjectMeta{Namespace: blueprintKey.Namespace, Name: blueprintKey.Name}}
 		_ = k8sClient.Get(context.Background(), blueprintKey, bp)
 		_ = k8sClient.Delete(context.Background(), bp)
 	}()
@@ -67,7 +67,7 @@ var _ = Describe("Blueprint Controller Real Env", func() {
 		BeforeEach(func() {
 			// Add any setup steps that needs to be executed before each test
 			const interval = time.Millisecond * 100
-			blueprint := &app.Blueprint{}
+			blueprint := &fapp.Blueprint{}
 			Expect(readObjectFromFile("../../testdata/blueprint-read.yaml", blueprint)).ToNot(HaveOccurred())
 			blueprint.SetNamespace("default")
 			_ = k8sClient.Delete(context.Background(), blueprint)

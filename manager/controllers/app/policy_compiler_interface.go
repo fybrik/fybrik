@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
@@ -26,7 +26,7 @@ import (
 
 var PolicyManagerTaxonomy = environment.GetDataDir() + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
-func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
+func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *fapp.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
@@ -59,7 +59,7 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
+		schema.GroupKind{Group: "fapp.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
 		response.DecisionID, allErrs)
 }
 

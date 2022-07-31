@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
@@ -44,7 +44,7 @@ func TestPlotterController(t *testing.T) {
 	var err error
 	plotterYAML, err := os.ReadFile("../../testdata/plotter.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
-	plotter := &app.Plotter{}
+	plotter := &fapp.Plotter{}
 	err = yaml.Unmarshal(plotterYAML, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
 
@@ -60,7 +60,7 @@ func TestPlotterController(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := dummy.NewDummyClusterManager(
-		make(map[string]*app.Blueprint),
+		make(map[string]*fapp.Blueprint),
 		[]multicluster.Cluster{{
 			Name: "thegreendragon",
 			Metadata: multicluster.ClusterMetadata{
@@ -105,9 +105,9 @@ func TestPlotterController(t *testing.T) {
 	blueprint.Status.ObservedState.Ready = true
 	for instanceName := range blueprint.Spec.Modules {
 		if blueprint.Status.ModulesState == nil {
-			blueprint.Status.ModulesState = map[string]app.ObservedState{}
+			blueprint.Status.ModulesState = map[string]fapp.ObservedState{}
 		}
-		blueprint.Status.ModulesState[instanceName] = app.ObservedState{
+		blueprint.Status.ModulesState[instanceName] = fapp.ObservedState{
 			Ready: true,
 		}
 	}
@@ -155,7 +155,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	var err error
 	plotterYAML, err := os.ReadFile("../../testdata/plotter-read-write.yaml")
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
-	plotter := &app.Plotter{}
+	plotter := &fapp.Plotter{}
 	err = yaml.Unmarshal(plotterYAML, plotter)
 	g.Expect(err).To(gomega.BeNil(), "Cannot read plotter file for test")
 
@@ -171,7 +171,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	dummyManager := dummy.NewDummyClusterManager(
-		make(map[string]*app.Blueprint),
+		make(map[string]*fapp.Blueprint),
 		[]multicluster.Cluster{{
 			Name: "thegreendragon",
 			Metadata: multicluster.ClusterMetadata{
@@ -216,9 +216,9 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	blueprint.Status.ObservedState.Ready = true
 	for instanceName := range blueprint.Spec.Modules {
 		if blueprint.Status.ModulesState == nil {
-			blueprint.Status.ModulesState = map[string]app.ObservedState{}
+			blueprint.Status.ModulesState = map[string]fapp.ObservedState{}
 		}
-		blueprint.Status.ModulesState[instanceName] = app.ObservedState{
+		blueprint.Status.ModulesState[instanceName] = fapp.ObservedState{
 			Ready: true,
 		}
 	}

@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 )
@@ -45,7 +45,7 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-interfaceErrors.yaml"
-	fybrikModule := &app.FybrikModule{}
+	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
 
@@ -67,7 +67,7 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newModule := &app.FybrikModule{}
+	newModule := &fapp.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.Conditions[ModuleValidationConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
@@ -85,7 +85,7 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-actionsErrors.yaml"
-	fybrikModule := &app.FybrikModule{}
+	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
 
@@ -107,7 +107,7 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newModule := &app.FybrikModule{}
+	newModule := &fapp.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.Conditions[ModuleValidationConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionFalse))
@@ -125,7 +125,7 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 		Namespace: "fybrik-system",
 	}
 	filename := "../../testdata/unittests/fybrikmodule-validActions.yaml"
-	fybrikModule := &app.FybrikModule{}
+	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
 
@@ -147,7 +147,7 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newModule := &app.FybrikModule{}
+	newModule := &fapp.FybrikModule{}
 	err = cl.Get(context.Background(), req.NamespacedName, newModule)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrik module")
 	g.Expect(newModule.Status.Conditions[ModuleValidationConditionIndex].Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue))
