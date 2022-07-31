@@ -243,7 +243,7 @@ func TestDenyOnRead(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3/deny-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.S3, DataFormat: v1alpha1.Parquet}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.S3, DataFormat: mockup.Parquet}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("2")
@@ -274,7 +274,7 @@ func TestDenyOnRead(t *testing.T) {
 	// Expect Deny condition
 	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
-	g.Expect(cond.Message).To(gomega.ContainSubstring(v1alpha1.ReadAccessDenied))
+	g.Expect(cond.Message).To(gomega.ContainSubstring(ReadAccessDenied))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}), "Requests another reconcile")
 }
@@ -296,7 +296,7 @@ func TestNoReadPath(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.JdbcDB2}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.JdbcDB2}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("3")
@@ -356,11 +356,11 @@ func TestWrongCopyModule(t *testing.T) {
 	application.Spec.Data = []v1alpha1.DataContext{
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "kafka/allow-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -422,7 +422,7 @@ func TestActionSupport(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "db2/redact-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("5")
@@ -488,15 +488,15 @@ func TestMultipleDatasets(t *testing.T) {
 	application.Spec.Data = []v1alpha1.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "db2/redact-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -584,7 +584,7 @@ func TestFilterAsset(t *testing.T) {
 	application.Spec.Data = []v1alpha1.DataContext{
 		{
 			DataSetID:    "s3/filter-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -659,15 +659,15 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	application.Spec.Data = []v1alpha1.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "local/redact-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+			Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -727,7 +727,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("8")
@@ -951,7 +951,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	// Expect Deny condition
 	cond := application.Status.AssetStates[assetName].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
-	g.Expect(cond.Message).To(gomega.ContainSubstring(v1alpha1.WriteNotAllowed))
+	g.Expect(cond.Message).To(gomega.ContainSubstring(WriteNotAllowed))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
 
@@ -1033,7 +1033,7 @@ func TestPlotterUpdate(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3/allow-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("11")
@@ -1389,7 +1389,7 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("17")
@@ -1525,7 +1525,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
-	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(v1alpha1.S3))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(utils.GetDefaultConnectionType()))
 	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format).ToNot(gomega.BeEmpty())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
 }
@@ -1694,7 +1694,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3/deny-dataset",
 		Flow:         taxonomy.WriteFlow,
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 
 	// Objects to track in the fake client.
@@ -1730,7 +1730,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	// Expect Deny condition
 	cond := application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex]
 	g.Expect(cond.Status).To(gomega.BeIdenticalTo(corev1.ConditionTrue), "Deny condition is not set")
-	g.Expect(cond.Message).To(gomega.ContainSubstring(v1alpha1.WriteNotAllowed))
+	g.Expect(cond.Message).To(gomega.ContainSubstring(WriteNotAllowed))
 	g.Expect(application.Status.Ready).To(gomega.BeTrue())
 }
 
@@ -1748,7 +1748,7 @@ func TestReadChain(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = v1alpha1.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight}},
+		Requirements: v1alpha1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("21")

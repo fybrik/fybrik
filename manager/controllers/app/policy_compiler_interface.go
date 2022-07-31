@@ -102,9 +102,9 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			var message string
 			switch openapiReq.Action.ActionType {
 			case taxonomy.ReadFlow:
-				message = app.ReadAccessDenied
+				message = ReadAccessDenied
 			case taxonomy.WriteFlow:
-				message = app.WriteNotAllowed
+				message = WriteNotAllowed
 			}
 			return actions, errors.New(message)
 		}

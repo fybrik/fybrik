@@ -308,12 +308,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	if blueprint.Labels == nil {
 		blueprint.Labels = map[string]string{}
 	}
-	blueprint.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-	blueprint.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
+	blueprint.Labels[utils.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[utils.BlueprintNamespaceLabel] = blueprint.Namespace
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
-		helmValues := fapp.HelmValues{
+		helmValues := HelmValues{
 			ModuleArguments:    module.Arguments,
 			ApplicationDetails: blueprint.Spec.Application,
 			Labels:             blueprint.Labels,
@@ -325,8 +325,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
-			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
+		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+			utils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 
