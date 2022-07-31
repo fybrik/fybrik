@@ -29,7 +29,7 @@ import (
 const (
 	clusterMetadataConfigMapSL = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
 	endPointURL                = "https://config.satellite.cloud.ibm.com/graphql"
-	bluePrintSelfLink          = "/apis/app.fybrik.io/app/namespaces/%s/blueprints/%s"
+	bluePrintSelfLink          = "/apis/app.fybrik.io/v1beta1/namespaces/%s/blueprints/%s"
 	channelNameTemplate        = "fybrik.io-%s-%s"
 	groupNameTemplate          = "fybrik-%s"
 	clusterGroupKey            = "clusterGroup"
