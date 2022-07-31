@@ -94,16 +94,15 @@ func (r *PlotterReconciler) removeFinalizers(ctx context.Context, plotter *api.P
 		for cluster, blueprint := range plotter.Status.Blueprints {
 			// TODO Check namespace deletion. Some finalizers leave namespaces in terminating state
 			err := r.ClusterManager.DeleteBlueprint(cluster, blueprint.Namespace, blueprint.Name)
-			if err != nil {
+			if err != nil && client.IgnoreNotFound(err) != nil {
 				return err
 			}
 			delete(plotter.Status.Blueprints, cluster)
 		}
 		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 		ctrlutil.RemoveFinalizer(plotter, PlotterFinalizerName)
-		// use Patch to preserve the generation version
 		if err := r.Patch(ctx, plotter, client.MergeFrom(original)); err != nil {
-			return err
+			return client.IgnoreNotFound(err)
 		}
 	}
 	return nil

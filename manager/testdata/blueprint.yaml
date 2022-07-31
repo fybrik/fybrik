@@ -8,6 +8,8 @@ metadata:
   labels:
     app.fybrik.io/app-namespace: default
     app.fybrik.io/app-name: notebook
+  annotations:
+    app.fybrik.io/app-uuid: "1234"
 spec:
   application:
     context: {}
@@ -20,58 +22,60 @@ spec:
         name: ghcr.io/fybrik/fybrik-implicit-copy-batch:0.1.0
       arguments:
         assets:
-          - assetID: xyz        
-            destination:
-              connection:
-                name: S3
-                s3:
-                  bucket: fybrik-test-bucket
-                  endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-                  object_key: small.kp.encrypted.parq
-                type: 2
-              vault:
-                write:
-                  address: http://vault.fybrik-system:8200
-                  authPath: /v1/auth/kubernetes/login
-                  role: module
-                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-              format: parquet
-            source:
-              connection:
-                name: db2
-                db2:
-                  port: "5000"
-                  table: NQD60833.SMALL
-                  database: NQD60833
-                  url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
-                  ssl: "true"
-              vault:
-                read:
-                  address: http://vault.fybrik-system:8200
-                  authPath: /v1/auth/kubernetes/login
-                  role: module
-                  secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
-              format: table
-            transformations: []
-    notebook-read-module:
-      name: arrow-flight
-      chart:
-        name: ghcr.io/fybrik/fybrik-template:0.1.0
-      arguments:
-        assets:
-        - source:
-            connection:
-              name: s3
-              s3:
-                bucket: fybrik-test-bucket
-                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
-                object_key: small.kp.encrypted.parq
-              type: 2
+        - args:
+          - connection:
+              name: db2
+              db2:
+                port: "5000"
+                table: NQD60833.SMALL
+                database: NQD60833
+                url: dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net
+                ssl: "true"
+            format: table
             vault:
               read:
                 address: http://vault.fybrik-system:8200
                 authPath: /v1/auth/kubernetes/login
                 role: module
                 secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+          - connection:
+              name: s3
+              s3:
+                bucket: fybrik-test-bucket
+                endpoint: s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
             format: parquet
+            vault:
+              write:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
           assetID: xyz
+          capability: copy
+      assetIds:
+      - xyz
+    notebook-read-module:
+      name: arrow-flight
+      chart:
+        name: ghcr.io/fybrik/fybrik-template:0.1.0
+      arguments:
+        assets:
+        - args:
+          - connection:
+              name: s3
+              s3:
+                bucket: fybrik-test-bucket
+                endpoint: http://s3.eu-gb.cloud-object-storage.appdomain.cloud
+                object_key: small.kp.encrypted.parq
+            format: parquet
+            vault:
+              read:
+                address: http://vault.fybrik-system:8200
+                authPath: /v1/auth/kubernetes/login
+                role: module
+                secretPath: "/v1/kubernetes-secrets/secret-name?namespace=default"
+          assetID: xzy
+          capability: read
+      assetIds:
+      - xzy
