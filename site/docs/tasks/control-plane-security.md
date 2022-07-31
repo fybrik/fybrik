@@ -68,6 +68,8 @@ kubectl -n fybrik-system create secret generic tls-ca \
   --from-file=ca.crt=./ca.crt
 ```
 
+Note that Fybrik expects that the keys of the CA certificates in the secret will end with `.crt` suffix.
+
 Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
 is created and automatically renewed by cert-manager.
 

@@ -155,7 +155,7 @@ func GetServerConfig(serverLog *zerolog.Logger) (*tls.Config, error) {
 		return nil, err
 	}
 	if caCertPool != nil {
-		serverLog.Log().Msg("private CA certificates were provided")
+		serverLog.Log().Msg("private CA certificates were provided in GetServerConfig")
 	}
 	//nolint:gosec // ignore G402: TLS MinVersion too low
 	config = &tls.Config{
@@ -176,7 +176,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger) (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	} else if caCertPool != nil {
-		clientLog.Log().Msg("private CA certificates were provided")
+		clientLog.Log().Msg("private CA certificates were provided in GetClientTLSConfig")
 	}
 	cert, err := getCertificate()
 	if err != nil {
