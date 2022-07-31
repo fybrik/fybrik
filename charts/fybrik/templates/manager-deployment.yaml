@@ -98,14 +98,6 @@ spec:
                 name: razee-credentials
             {{- end }}
           env:
-            - name: CACERT_SECRET_NAME
-              value: {{ .Values.manager.tls.certs.cacertSecretName }}
-            - name: CACERT_SECRET_NAMESPACE
-              value: {{ .Values.manager.tls.certs.cacertSecretNamespace }}
-            - name: CERT_SECRET_NAME
-              value: {{ .Values.manager.tls.certs.certSecretName }}
-            - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.manager.tls.certs.certSecretNamespace }}
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
@@ -126,6 +118,8 @@ spec:
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
             {{- end }}
+            - name: TLS_MIN_VERSION
+              value: {{ .Values.manager.tls.minVersion }}
 
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
@@ -145,7 +139,7 @@ spec:
               mountPath: {{ include "fybrik.getDataDir" . }}
            {{- if .Values.clusterScoped }}
             - mountPath: {{ include "fybrik.getDataSubdir" (tuple "k8s-webhook-server" ) }}
-              name: cert
+              name: webhook-cert
               readOnly: true
             {{- end }}
             - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
@@ -160,6 +154,16 @@ spec:
             - mountPath: {{ include "fybrik.localChartsMountPath" . }}
               name: charts
             {{- end }}
+            {{- if .Values.manager.tls.certs.certSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cert" ) }}
+              name: tls-cert
+              readOnly: true
+            {{- end }}
+            {{- if .Values.manager.tls.certs.cacertSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cacert" ) }}
+              name: tls-cacert
+              readOnly: true
+            {{- end }}
           securityContext:
           {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
           resources:
@@ -167,7 +171,7 @@ spec:
       terminationGracePeriodSeconds: 10
       volumes:
         {{- if .Values.clusterScoped }}
-        - name: cert
+        - name: webhook-cert
           secret:
             defaultMode: 420
             secretName: webhook-server-cert
@@ -190,6 +194,18 @@ spec:
         - name: charts
           persistentVolumeClaim:
             claimName: "{{ .Values.manager.chartsPersistentVolumeClaim }}"
+        {{- end }}
+        {{- if .Values.manager.tls.certs.certSecretName }}
+        - name: tls-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.manager.tls.certs.certSecretName }}
+        {{- end }}
+        {{- if .Values.manager.tls.certs.cacertSecretName }}
+        - name: tls-cacert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.manager.tls.certs.cacertSecretName }}
         {{- end }}
       {{- with .Values.manager.nodeSelector }}
       nodeSelector:

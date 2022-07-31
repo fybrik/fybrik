@@ -14,10 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	kclient "sigs.k8s.io/controller-runtime/pkg/client"
-	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	"fybrik.io/fybrik/pkg/environment"
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
@@ -86,18 +82,7 @@ func RunCmd() *cobra.Command {
 
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 			if environment.IsUsingTLS() {
-				var client kclient.Client
-				scheme := runtime.NewScheme()
-				err = corev1.AddToScheme(scheme)
-				if err != nil {
-					return errors.Wrap(err, "unable to add corev1 to schema")
-				}
-				client, err = kclient.New(kconfig.GetConfigOrDie(), kclient.Options{Scheme: scheme})
-				if err != nil {
-					return errors.Wrap(err, "failed to create a Kubernetes client")
-				}
-
-				tlsConfig, err := fybrikTLS.GetServerConfig(&controller.Log, client)
+				tlsConfig, err := fybrikTLS.GetServerConfig(&controller.Log)
 				if err != nil {
 					return errors.Wrap(err, "failed to get tls config")
 				}

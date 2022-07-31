@@ -4,6 +4,7 @@
 package environment
 
 import (
+	"crypto/tls"
 	"os"
 	"strconv"
 	"strings"
@@ -33,10 +34,7 @@ const (
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
 	UseTLS                            string = "USE_TLS"
 	UseMTLS                           string = "USE_MTLS"
-	CertSecretName                    string = "CERT_SECRET_NAME"
-	CertSecretNamespace               string = "CERT_SECRET_NAMESPACE"
-	CACERTSecretName                  string = "CACERT_SECRET_NAME"      //nolint:gosec
-	CACERTSecretNamespace             string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
+	TLSMinVersion                     string = "TLS_MIN_VERSION"
 	LocalClusterName                  string = "ClusterName"
 	LocalZone                         string = "Zone"
 	LocalRegion                       string = "Region"
@@ -95,28 +93,20 @@ func IsUsingMTLS() bool {
 	return strings.ToLower(os.Getenv(UseMTLS)) == "true"
 }
 
-// GetCertSecretName returns the name of the kubernetes secret which holds the
-// manager/connectors.
-func GetCertSecretName() string {
-	return os.Getenv(CertSecretName)
-}
-
-// GetCertSecretNamespace returns the namespace of the kubernetes secret which holds the
-// manager/connectors.
-func GetCertSecretNamespace() string {
-	return os.Getenv(CertSecretNamespace)
-}
-
-// GetCACERTSecretName returns the name of the kubernetes secret that holds the CA certificates
-// used by the client/server to validate the manager to the manager/connectors.
-func GetCACERTSecretName() string {
-	return os.Getenv(CACERTSecretName)
-}
-
-// GetCACERTSecretNamespace returns the namespace of the kubernetes secret that holds the CA certificate
-// used by the client/server to validate the manager to the manager/connectors.
-func GetCACERTSecretNamespace() string {
-	return os.Getenv(CACERTSecretNamespace)
+// GetTLSMinVersion returns the minimum TLS version that is acceptable.
+// if not provided VersionTLS13 is currently taken as the minimum.
+func GetTLSMinVersion() uint16 {
+	minVersion := os.Getenv(TLSMinVersion)
+	if minVersion == "VersionTLS10" {
+		return tls.VersionTLS10
+	} else if minVersion == "VersionTLS11" {
+		return tls.VersionTLS11
+	} else if minVersion == "VersionTLS12" {
+		return tls.VersionTLS12
+	} else if minVersion == "VersionTLS13" {
+		return tls.VersionTLS13
+	}
+	return tls.VersionTLS13
 }
 
 // GetDataDir returns the directory where the data resides.

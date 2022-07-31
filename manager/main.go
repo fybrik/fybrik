@@ -117,7 +117,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		setupLog.Trace().Msg("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
-		policyManager, err := newPolicyManager(scheme)
+		policyManager, err := newPolicyManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create policy manager facade")
 			return 1
@@ -129,7 +129,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initialize DataCatalog interface
-		catalog, err := newDataCatalog(scheme)
+		catalog, err := newDataCatalog()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create data catalog facade")
 			return 1
@@ -282,7 +282,7 @@ func main() {
 		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
-func newDataCatalog(schema *kruntime.Scheme) (dcclient.DataCatalog, error) {
+func newDataCatalog() (dcclient.DataCatalog, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
@@ -295,11 +295,10 @@ func newDataCatalog(schema *kruntime.Scheme) (dcclient.DataCatalog, error) {
 		providerName,
 		connectorURL,
 		connectionTimeout,
-		schema,
 	)
 }
 
-func newPolicyManager(schema *kruntime.Scheme) (pmclient.PolicyManager, error) {
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	connectionTimeout, err := getConnectionTimeout()
 	if err != nil {
 		return nil, err
@@ -316,7 +315,6 @@ func newPolicyManager(schema *kruntime.Scheme) (pmclient.PolicyManager, error) {
 			mainPolicyManagerName,
 			mainPolicyManagerURL,
 			connectionTimeout,
-			schema,
 		)
 	} else {
 		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)

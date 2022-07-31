@@ -83,7 +83,7 @@ func RunCmd() *cobra.Command {
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)
 
 			if environment.IsUsingTLS() {
-				tlsConfig, err := fybrikTLS.GetServerConfig(&handler.Log, client)
+				tlsConfig, err := fybrikTLS.GetServerConfig(&handler.Log)
 				if err != nil {
 					return errors.Wrap(err, "failed to get tls config")
 				}
