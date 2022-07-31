@@ -134,6 +134,22 @@ run-notebook-readflow-tls-tests:
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
+.PHONY: run-notebook-readflow-tls-cacerts-preloaded-tests
+run-notebook-readflow-tls-cacerts-preloaded-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tls-cacerts-preloaded-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-tls-cacerts-preloaded-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-cacerts-preloaded.yaml
+run-notebook-readflow-tls-cacerts-preloaded-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) cluster-prepare-wait
+	cd manager/testdata/notebook/read-flow-tls && ./setup-preload-ca-certs.sh
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	$(MAKE) deploy
+	$(MAKE) configure-vault
+	$(MAKE) -C manager run-notebook-readflow-tests
+	cd manager/testdata/notebook/read-flow-tls && ./post-tls-test.sh
+
 .PHONY: run-notebook-readflow-bc-tests
 run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-notebook-readflow-tests: export DOCKER_NAMESPACE?=fybrik-system
