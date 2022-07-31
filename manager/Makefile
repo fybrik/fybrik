@@ -34,7 +34,6 @@ wait_for_manager: $(TOOLBIN)/kubectl
 
 .PHONY: prep-test
 prep-test: export DOCKER_HOSTNAME?=localhost:5000
-prep-test: export DOCKER_HOSTNAME?=localhost:5000
 prep-test: export DOCKER_NAMESPACE?=fybrik-system
 prep-test: export DOCKER_TAGNAME?=master
 prep-test: export USE_MOCKUP_CONNECTOR?=true

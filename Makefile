@@ -6,9 +6,9 @@ export DATA_DIR ?= /tmp
 export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
 export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
 # Install latest development version
-export DEPLOY_FYBRIK_DEV_VERSION?=1
+export DEPLOY_FYBRIK_DEV_VERSION ?= 1
 # Install tls certificates used for testing
-export DEPLOY_TLS_CERTS?=0
+export DEPLOY_TLS_CERTS ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
