@@ -110,7 +110,7 @@ helm push <local-chart-path> oci://<registry>/<path>
 
 The YAML file begins with standard Kubernetes metadata followed by the `FybrikModule` specification:
 ```yaml
-apiVersion: app.fybrik.io/v1alpha1 # always this value
+apiVersion: app.fybrik.io/v1
 kind: FybrikModule # always this value
 metadata:
   name: "<module name>" # the name of your new module

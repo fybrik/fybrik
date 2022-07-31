@@ -102,7 +102,7 @@ Trying to deploy a fybrikapplication.yaml that has an intent of `Marketing` shou
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikApplication
 metadata:
   name: taxonomy-test
@@ -149,7 +149,7 @@ After updating fybrik to get fybrikapplications with `Marketing` intent, the dep
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikApplication
 metadata:
   name: taxonomy-test
@@ -233,7 +233,7 @@ Trying to deploy a fybrikmodule.yaml that has a `FilterAction` should fail valid
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikModule
 metadata:
   name: taxonomy-module-test
@@ -293,7 +293,7 @@ After updating fybrik to get fybrikmodule with `FilterAction`, the deployment of
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikModule
 metadata:
   name: taxonomy-module-test

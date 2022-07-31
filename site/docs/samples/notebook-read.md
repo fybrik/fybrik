@@ -188,7 +188,7 @@ Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1
 kind: FybrikApplication
 metadata:
   name: my-notebook
