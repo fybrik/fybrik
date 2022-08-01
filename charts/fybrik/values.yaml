@@ -400,6 +400,9 @@ katalogConnector:
     # For tls connection use port 8443
     port: 8080
 
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -493,6 +496,9 @@ opaConnector:
     type: ClusterIP
     # For tls connection use port 8443
     port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

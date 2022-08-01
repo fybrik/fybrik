@@ -177,6 +177,8 @@ func GetClientTLSConfig(clientLog *zerolog.Logger) (*tls.Config, error) {
 		return nil, err
 	} else if caCertPool != nil {
 		clientLog.Log().Msg("private CA certificates were provided in GetClientTLSConfig")
+	} else {
+		clientLog.Log().Msg("private CA certificates were not provided in GetClientTLSConfig")
 	}
 	cert, err := getCertificate()
 	if err != nil {
