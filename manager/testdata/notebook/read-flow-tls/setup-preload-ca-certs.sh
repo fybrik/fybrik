@@ -10,8 +10,8 @@ kubectl -n fybrik-system apply -f katalog-connector-certificates.yaml
 kubectl -n fybrik-system apply -f opa-connector-certificates.yaml
 kubectl -n fybrik-system apply -f manager-certificates.yaml
 
-while ! kubectl get secret test-tls-ca-certs -n fybrik-system; do echo "Waiting for my secret. "; sleep 1; done
-kubectl get secret test-tls-ca-certs -o json | jq -r '.data."ca.crt"' | base64 -d > ca.crt
+while ! kubectl get secret test-tls-ca-certs -n fybrik-system; do echo "Waiting for test-tls-ca-certs secret. "; sleep 1; done
+kubectl get secret test-tls-ca-certs -n fybrik-system -o json | jq -r '.data."ca.crt"' | base64 -d > ca.crt
 
 cp ca.crt ${ROOT_DIR}/connectors/katalog/
 cp ca.crt ${ROOT_DIR}/connectors/opa/
@@ -22,3 +22,4 @@ cp ${ROOT_DIR}/manager/Dockerfile manager-Dockerfile.orig
 cp katalog-connector-Dockerfile ${ROOT_DIR}/connectors/katalog/Dockerfile
 cp opa-connector-Dockerfile ${ROOT_DIR}/connectors/opa/Dockerfile
 cp manager-Dockerfile ${ROOT_DIR}/manager/Dockerfile
+
