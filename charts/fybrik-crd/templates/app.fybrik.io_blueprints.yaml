@@ -23,7 +23,7 @@ spec:
     - jsonPath: .status.observedState.ready
       name: Ready
       type: string
-    name: v1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: Blueprint is the Schema for the blueprints API

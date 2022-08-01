@@ -3,7 +3,7 @@
 
 package app
 
-import fapp "fybrik.io/fybrik/manager/apis/app/v1"
+import fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 
 // HelmValues are the values passed to modules during orchestration of the data plane
 type HelmValues struct {

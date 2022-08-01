@@ -14,14 +14,14 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1-fybrikapplication
+        path: /validate-app-fybrik-io-v1beta1-fybrikapplication
     failurePolicy: Fail
     name: vfybrikapplication-v1.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
         apiVersions:
-          - v1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE
@@ -35,14 +35,14 @@ webhooks:
       service:
         name: webhook-service
         namespace: '{{ .Release.Namespace }}'
-        path: /validate-app-fybrik-io-v1-fybrikmodule
+        path: /validate-app-fybrik-io-v1beta1-fybrikmodule
     failurePolicy: Fail
-    name: vfybrikmodule-v1.kb.io
+    name: vfybrikmodule-v1beta1.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
         apiVersions:
-          - v1
+          - v1beta1
         operations:
           - CREATE
           - UPDATE

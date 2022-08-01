@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
 // CreateApplication makes a new FybrikApplication CRD

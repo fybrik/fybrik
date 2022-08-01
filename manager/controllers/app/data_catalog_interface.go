@@ -6,7 +6,7 @@ package app
 import (
 	"github.com/rs/zerolog/log"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"

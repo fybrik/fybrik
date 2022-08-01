@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
@@ -29,7 +29,7 @@ import (
 const (
 	clusterMetadataConfigMapSL = "/api/v1/namespaces/fybrik-system/configmaps/cluster-metadata"
 	endPointURL                = "https://config.satellite.cloud.ibm.com/graphql"
-	bluePrintSelfLink          = "/apis/app.fybrik.io/v1/namespaces/%s/blueprints/%s"
+	bluePrintSelfLink          = "/apis/app.fybrik.io/v1beta1/namespaces/%s/blueprints/%s"
 	channelNameTemplate        = "fybrik.io-%s-%s"
 	groupNameTemplate          = "fybrik-%s"
 	clusterGroupKey            = "clusterGroup"

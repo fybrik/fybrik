@@ -10,7 +10,7 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/rs/zerolog"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -27,8 +27,8 @@ var testLog = logging.LogInit("Solver", "Test")
 func newEnvironment() *datapath.Environment {
 	return &datapath.Environment{
 		Clusters:        []multicluster.Cluster{},
-		Modules:         map[string]*app.FybrikModule{},
-		StorageAccounts: []*app.FybrikStorageAccount{},
+		Modules:         map[string]*fapp.FybrikModule{},
+		StorageAccounts: []*fapp.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
 			Log:        testLog,
 			Metrics:    infrastructure.MetricsDictionary{},
@@ -41,11 +41,11 @@ func addCluster(env *datapath.Environment, cluster multicluster.Cluster) {
 	env.Clusters = append(env.Clusters, cluster)
 }
 
-func addModule(env *datapath.Environment, module *app.FybrikModule) {
+func addModule(env *datapath.Environment, module *fapp.FybrikModule) {
 	env.Modules[module.Name] = module
 }
 
-func addStorageAccount(env *datapath.Environment, account *app.FybrikStorageAccount) {
+func addStorageAccount(env *datapath.Environment, account *fapp.FybrikStorageAccount) {
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
@@ -66,12 +66,12 @@ func createReadRequest() *datapath.DataInfo {
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
-		Context: &app.DataContext{
+		Context: &fapp.DataContext{
 			DataSetID: "id",
 			Flow:      taxonomy.ReadFlow,
-			Requirements: app.DataRequirements{
+			Requirements: fapp.DataRequirements{
 				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
-				FlowParams: app.FlowRequirements{},
+				FlowParams: fapp.FlowRequirements{},
 			},
 		},
 		Configuration: adminconfig.EvaluatorOutput{
@@ -96,12 +96,12 @@ func createCopyRequest() *datapath.DataInfo {
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
-		Context: &app.DataContext{
+		Context: &fapp.DataContext{
 			DataSetID: "ingest",
 			Flow:      taxonomy.CopyFlow,
-			Requirements: app.DataRequirements{
+			Requirements: fapp.DataRequirements{
 				Interface:  &taxonomy.Interface{Protocol: mockup.S3, DataFormat: mockup.CSV},
-				FlowParams: app.FlowRequirements{},
+				FlowParams: fapp.FlowRequirements{},
 			},
 		},
 		Configuration: adminconfig.EvaluatorOutput{
@@ -120,12 +120,12 @@ func createWriteNewAssetRequest() *datapath.DataInfo {
 	return &datapath.DataInfo{
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
-		Context: &app.DataContext{
+		Context: &fapp.DataContext{
 			DataSetID: "newAsset",
 			Flow:      taxonomy.WriteFlow,
-			Requirements: app.DataRequirements{
+			Requirements: fapp.DataRequirements{
 				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
-				FlowParams: app.FlowRequirements{IsNewDataSet: true},
+				FlowParams: fapp.FlowRequirements{IsNewDataSet: true},
 			},
 		},
 		Configuration: adminconfig.EvaluatorOutput{
@@ -148,12 +148,12 @@ func createUpdateRequest() *datapath.DataInfo {
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
-		Context: &app.DataContext{
+		Context: &fapp.DataContext{
 			DataSetID: "write",
 			Flow:      taxonomy.WriteFlow,
-			Requirements: app.DataRequirements{
+			Requirements: fapp.DataRequirements{
 				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
-				FlowParams: app.FlowRequirements{},
+				FlowParams: fapp.FlowRequirements{},
 			},
 		},
 		Configuration: adminconfig.EvaluatorOutput{
@@ -176,7 +176,7 @@ func createDeleteRequest() *datapath.DataInfo {
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
-		Context: &app.DataContext{
+		Context: &fapp.DataContext{
 			DataSetID: "delete",
 			Flow:      taxonomy.DeleteFlow,
 		},
@@ -207,12 +207,12 @@ func TestReadWithTransforms(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
-	account := &app.FybrikStorageAccount{}
+	account := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
 	asset := createReadRequest()
@@ -233,12 +233,12 @@ func TestReadModuleSource(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModuleS3 := &app.FybrikModule{}
+	readModuleS3 := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModuleS3)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModuleS3)
 	readModuleDB2 := readModuleS3.DeepCopy()
 	readModuleDB2.Name = "readDB2"
-	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = app.ModuleInOut{Source: &taxonomy.Interface{Protocol: mockup.JdbcDB2}}
+	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = fapp.ModuleInOut{Source: &taxonomy.Interface{Protocol: mockup.JdbcDB2}}
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createReadRequest()
 	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
@@ -258,12 +258,12 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
-	account := &app.FybrikStorageAccount{}
+	account := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
 	asset := createReadRequest()
@@ -285,8 +285,8 @@ func TestReadAndTransformModules(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	transformModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	transformModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
@@ -310,8 +310,8 @@ func TestReadAfterRead(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	transformModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	transformModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
@@ -337,13 +337,13 @@ func TestTransformInDataLocation(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addModule(env, copyModule)
-	account := &app.FybrikStorageAccount{}
+	account := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account)
 	remoteGeo := "remote"
@@ -388,16 +388,16 @@ func TestCopyFlow(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addModule(env, copyModule)
-	account1 := &app.FybrikStorageAccount{}
+	account1 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &app.FybrikStorageAccount{}
+	account2 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
@@ -420,13 +420,13 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	copyModule := &app.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, copyModule)
-	account1 := &app.FybrikStorageAccount{}
+	account1 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &app.FybrikStorageAccount{}
+	account2 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
@@ -479,16 +479,16 @@ func TestWriteNewAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	writeModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	writeModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, writeModule)
 	addModule(env, copyModule)
-	account1 := &app.FybrikStorageAccount{}
+	account1 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &app.FybrikStorageAccount{}
+	account2 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
@@ -515,16 +515,16 @@ func TestWriteExistingAsset(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	writeModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	writeModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, writeModule)
 	addModule(env, copyModule)
-	account1 := &app.FybrikStorageAccount{}
+	account1 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &app.FybrikStorageAccount{}
+	account2 := &fapp.FybrikStorageAccount{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
@@ -545,8 +545,8 @@ func TestWriteAndTransformModules(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	writeModule := &app.FybrikModule{}
-	transformModule := &app.FybrikModule{}
+	writeModule := &fapp.FybrikModule{}
+	transformModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, writeModule)
@@ -568,9 +568,9 @@ func TestDeleteFlow(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	deleteModule := &app.FybrikModule{}
-	writeModule := &app.FybrikModule{}
-	transformModule := &app.FybrikModule{}
+	deleteModule := &fapp.FybrikModule{}
+	writeModule := &fapp.FybrikModule{}
+	transformModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-delete.yaml", deleteModule)).NotTo(gomega.HaveOccurred())
@@ -590,10 +590,10 @@ func TestModuleSelection(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	workloadLevelModule := &app.FybrikModule{}
+	workloadLevelModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", workloadLevelModule)).NotTo(gomega.HaveOccurred())
 	assetLevelModule := workloadLevelModule.DeepCopy()
-	assetLevelModule.Spec.Capabilities[0].Scope = app.Asset
+	assetLevelModule.Spec.Capabilities[0].Scope = fapp.Asset
 	assetLevelModule.Name = "assetLevel"
 	workloadLevelModule.Name = "workloadLevel"
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
@@ -626,8 +626,8 @@ func TestOptimalStorage(t *testing.T) {
 	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
@@ -644,8 +644,8 @@ func TestOptimalStorage(t *testing.T) {
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 50
 	for i := 0; i < 5; i++ {
-		account := &app.FybrikStorageAccount{
-			Spec: app.FybrikStorageAccountSpec{
+		account := &fapp.FybrikStorageAccount{
+			Spec: fapp.FybrikStorageAccountSpec{
 				ID:        genName("account-", i),
 				SecretRef: genName("credentials-", i),
 				Region:    taxonomy.ProcessingLocation(genName("region", i)),
@@ -686,8 +686,8 @@ func TestOptimalStorageAndClusterCost(t *testing.T) {
 	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
@@ -705,8 +705,8 @@ func TestOptimalStorageAndClusterCost(t *testing.T) {
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 50
 	for i := 0; i < 5; i++ {
-		account := &app.FybrikStorageAccount{
-			Spec: app.FybrikStorageAccountSpec{
+		account := &fapp.FybrikStorageAccount{
+			Spec: fapp.FybrikStorageAccountSpec{
 				ID:        genName("account-", i),
 				SecretRef: genName("credentials-", i),
 				Region:    taxonomy.ProcessingLocation(genName("region", i)),
@@ -762,7 +762,7 @@ func TestGoalConflict(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
@@ -809,7 +809,7 @@ func TestMinMultipleGoals(t *testing.T) {
 	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
@@ -867,7 +867,7 @@ func TestMinMaxGoals(t *testing.T) {
 	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "rate", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 100}})
@@ -925,8 +925,8 @@ func TestMinDistance(t *testing.T) {
 	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	readModule := &app.FybrikModule{}
-	copyModule := &app.FybrikModule{}
+	readModule := &fapp.FybrikModule{}
+	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
@@ -942,8 +942,8 @@ func TestMinDistance(t *testing.T) {
 		Weight:    "1.0",
 	}}
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "distance", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 20000}})
-	account := &app.FybrikStorageAccount{
-		Spec: app.FybrikStorageAccountSpec{
+	account := &fapp.FybrikStorageAccount{
+		Spec: fapp.FybrikStorageAccountSpec{
 			ID:        "account-theshire",
 			SecretRef: "credentials-theshire",
 			Region:    taxonomy.ProcessingLocation(workloadCluster),

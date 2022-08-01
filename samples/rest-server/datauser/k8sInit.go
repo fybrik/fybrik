@@ -13,7 +13,7 @@ import (
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	kconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
 const (

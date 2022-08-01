@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1
+package v1beta1
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ func (r *FybrikModule) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-io-v1-fybrikmodule,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=fybrikmodules,versions=v1,name=vfybrikmodule-v1.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-io-v1beta1-fybrikmodule,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=fybrikmodules,versions=v1beta1,name=vfybrikmodule-v1beta1.kb.io
 
 var _ webhook.Validator = &FybrikModule{}
 

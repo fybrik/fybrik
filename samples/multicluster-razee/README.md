@@ -227,7 +227,7 @@ Register a `FybrikStorageAccount` on the cluster `kind-control` for creating AWS
 kubectl config use-context kind-control
 
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1
+apiVersion:   app.fybrik.io/v1beta1
 kind:         FybrikStorageAccount
 metadata:
   name: storage-account
@@ -266,7 +266,7 @@ And then, register the data asset itself in the catalog on control plane. Replac
 kubectl config use-context kind-control
 
 cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1alpha1
+apiVersion: katalog.fybrik.io/v1beta1
 kind: Asset
 metadata:
   name: paysim-csv
@@ -377,7 +377,7 @@ Create a [`FybrikApplication`](https://fybrik.io/dev/reference/crds/#fybrikappli
 kubectl config use-context kind-control
 
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1
+apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
   name: my-notebook

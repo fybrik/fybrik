@@ -10,7 +10,7 @@ import (
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 

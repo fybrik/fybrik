@@ -162,7 +162,7 @@ Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource 
 <!-- TODO: check if works without role field -->
 ```yaml
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1
+apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
   name: delete-app

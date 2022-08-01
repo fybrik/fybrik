@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -347,7 +347,7 @@ func setVirtualEndpoints(application *fapp.FybrikApplication, flows []fapp.Flow)
 		}
 		subflow := flow.SubFlows[len(flow.SubFlows)-1]
 		for _, sequentialSteps := range subflow.Steps {
-			// Check the last step in the sequential flow (this will expose the app)
+			// Check the last step in the sequential flow (this will expose the api)
 			lastStep := sequentialSteps[len(sequentialSteps)-1]
 			if lastStep.Parameters.API != nil {
 				endpointMap[flow.AssetID] = lastStep.Parameters.API.Connection

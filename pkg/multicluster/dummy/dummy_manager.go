@@ -5,7 +5,7 @@ package dummy
 
 import (
 	"errors"
-	app "fybrik.io/fybrik/manager/apis/app/v1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
 

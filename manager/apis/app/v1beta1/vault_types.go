@@ -1,7 +1,7 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1
+package v1beta1
 
 // Holds details for retrieving credentials from Vault store.
 type Vault struct {
