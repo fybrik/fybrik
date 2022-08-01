@@ -10,7 +10,6 @@ import (
 	"log"
 	"strings"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"

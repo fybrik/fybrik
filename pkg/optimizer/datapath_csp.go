@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"

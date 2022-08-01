@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1"
 	pb "fybrik.io/fybrik/pkg/connectors/protobuf"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -57,7 +56,7 @@ func (m *grpcDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds st
 	result, err := m.client.GetDatasetInfo(context.Background(), dataCatalogReq)
 	errStatus, _ := status.FromError(err)
 	if errStatus.Code() == codes.InvalidArgument {
-		return nil, errors.New(app.InvalidAssetID)
+		return nil, errors.New("invalid asset id")
 	}
 	log.Println("GRPC result returned from GetAssetInfo:")
 	responseBytes, errJSON := json.MarshalIndent(result, "", "\t")

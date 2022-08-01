@@ -3,7 +3,7 @@
 
 package utils
 
-import api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+import api "fybrik.io/fybrik/manager/apis/app/v1"
 
 const (
 	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
