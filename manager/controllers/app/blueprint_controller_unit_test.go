@@ -107,8 +107,8 @@ func TestShortReleaseName(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "appns-app-mybp",
 			Labels: map[string]string{
-				app.ApplicationNameLabel:      "my-app",
-				app.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      "my-app",
+				utils.ApplicationNamespaceLabel: "default",
 			},
 		},
 		Spec: app.BlueprintSpec{
@@ -116,8 +116,8 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "dataFlowInstance1")
+	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "dataFlowInstance1")
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }
 
@@ -129,8 +129,8 @@ func TestLongReleaseName(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
 			Labels: map[string]string{
-				app.ApplicationNameLabel:      "my-app",
-				app.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      "my-app",
+				utils.ApplicationNamespaceLabel: "default",
 			},
 		},
 		Spec: app.BlueprintSpec{
@@ -142,14 +142,14 @@ func TestLongReleaseName(t *testing.T) {
 		},
 	}
 
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
+	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
-	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
+	relName2 := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }

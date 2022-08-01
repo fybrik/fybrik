@@ -92,19 +92,6 @@ type FybrikApplicationSpec struct {
 	Data []DataContext `json:"data"`
 }
 
-// ErrorMessages that are reported to the user
-const (
-	InvalidAssetID              string = "the asset does not exist"
-	ReadAccessDenied            string = "governance policies forbid access to the data"
-	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
-	WriteNotAllowed             string = "governance policies forbid writing of the data"
-	StorageAccountUndefined     string = "no storage account has been defined"
-	ModuleNotFound              string = "no module has been registered"
-	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
-	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
-	InvalidAssetDataStore       string = "the asset data store is not supported"
-)
-
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
 	// Name of the resource
@@ -231,9 +218,3 @@ type FybrikApplicationList struct {
 func init() {
 	SchemeBuilder.Register(&FybrikApplication{}, &FybrikApplicationList{})
 }
-
-const (
-	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
-	ApplicationNameLabel      = "app.fybrik.io/app-name"
-)

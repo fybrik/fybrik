@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -60,8 +61,8 @@ func addAttribute(env *datapath.Environment, attribute *taxonomy.InfrastructureE
 func createReadRequest() *datapath.DataInfo {
 	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
-			Connection: taxonomy.Connection{Name: v1alpha1.S3},
-			DataFormat: v1alpha1.CSV,
+			Connection: taxonomy.Connection{Name: mockup.S3},
+			DataFormat: mockup.CSV,
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
@@ -69,7 +70,7 @@ func createReadRequest() *datapath.DataInfo {
 			DataSetID: "id",
 			Flow:      taxonomy.ReadFlow,
 			Requirements: v1alpha1.DataRequirements{
-				Interface:  &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight},
+				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
 				FlowParams: v1alpha1.FlowRequirements{},
 			},
 		},
@@ -90,8 +91,8 @@ func createReadRequest() *datapath.DataInfo {
 func createCopyRequest() *datapath.DataInfo {
 	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
-			Connection: taxonomy.Connection{Name: v1alpha1.S3},
-			DataFormat: v1alpha1.CSV,
+			Connection: taxonomy.Connection{Name: mockup.S3},
+			DataFormat: mockup.CSV,
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
@@ -99,7 +100,7 @@ func createCopyRequest() *datapath.DataInfo {
 			DataSetID: "ingest",
 			Flow:      taxonomy.CopyFlow,
 			Requirements: v1alpha1.DataRequirements{
-				Interface:  &taxonomy.Interface{Protocol: v1alpha1.S3, DataFormat: v1alpha1.CSV},
+				Interface:  &taxonomy.Interface{Protocol: mockup.S3, DataFormat: mockup.CSV},
 				FlowParams: v1alpha1.FlowRequirements{},
 			},
 		},
@@ -123,7 +124,7 @@ func createWriteNewAssetRequest() *datapath.DataInfo {
 			DataSetID: "newAsset",
 			Flow:      taxonomy.WriteFlow,
 			Requirements: v1alpha1.DataRequirements{
-				Interface:  &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight},
+				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
 				FlowParams: v1alpha1.FlowRequirements{IsNewDataSet: true},
 			},
 		},
@@ -142,8 +143,8 @@ func createWriteNewAssetRequest() *datapath.DataInfo {
 func createUpdateRequest() *datapath.DataInfo {
 	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
-			Connection: taxonomy.Connection{Name: v1alpha1.S3},
-			DataFormat: v1alpha1.CSV,
+			Connection: taxonomy.Connection{Name: mockup.S3},
+			DataFormat: mockup.CSV,
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
@@ -151,7 +152,7 @@ func createUpdateRequest() *datapath.DataInfo {
 			DataSetID: "write",
 			Flow:      taxonomy.WriteFlow,
 			Requirements: v1alpha1.DataRequirements{
-				Interface:  &taxonomy.Interface{Protocol: v1alpha1.ArrowFlight},
+				Interface:  &taxonomy.Interface{Protocol: mockup.ArrowFlight},
 				FlowParams: v1alpha1.FlowRequirements{},
 			},
 		},
@@ -170,8 +171,8 @@ func createUpdateRequest() *datapath.DataInfo {
 func createDeleteRequest() *datapath.DataInfo {
 	return &datapath.DataInfo{
 		DataDetails: &datacatalog.GetAssetResponse{Details: datacatalog.ResourceDetails{
-			Connection: taxonomy.Connection{Name: v1alpha1.S3},
-			DataFormat: v1alpha1.CSV,
+			Connection: taxonomy.Connection{Name: mockup.S3},
+			DataFormat: mockup.CSV,
 		}},
 		Actions:             []taxonomy.Action{},
 		StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
@@ -237,10 +238,10 @@ func TestReadModuleSource(t *testing.T) {
 	addModule(env, readModuleS3)
 	readModuleDB2 := readModuleS3.DeepCopy()
 	readModuleDB2.Name = "readDB2"
-	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = v1alpha1.ModuleInOut{Source: &taxonomy.Interface{Protocol: v1alpha1.JdbcDB2}}
+	readModuleDB2.Spec.Capabilities[0].SupportedInterfaces[0] = v1alpha1.ModuleInOut{Source: &taxonomy.Interface{Protocol: mockup.JdbcDB2}}
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createReadRequest()
-	asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDB2
+	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
 	asset.DataDetails.Details.DataFormat = ""
 	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -266,7 +267,7 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
 	asset := createReadRequest()
-	asset.DataDetails.Details.Connection.Name = v1alpha1.JdbcDB2
+	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
 	asset.DataDetails.Details.DataFormat = ""
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
@@ -292,8 +293,8 @@ func TestReadAndTransformModules(t *testing.T) {
 	addModule(env, transformModule)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createReadRequest()
-	asset.DataDetails.Details.Connection.Name = v1alpha1.S3
-	asset.DataDetails.Details.DataFormat = v1alpha1.Parquet
+	asset.DataDetails.Details.Connection.Name = mockup.S3
+	asset.DataDetails.Details.DataFormat = mockup.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
@@ -318,8 +319,8 @@ func TestReadAfterRead(t *testing.T) {
 	addModule(env, transformModule)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createReadRequest()
-	asset.DataDetails.Details.Connection.Name = v1alpha1.S3
-	asset.DataDetails.Details.DataFormat = v1alpha1.Parquet
+	asset.DataDetails.Details.Connection.Name = mockup.S3
+	asset.DataDetails.Details.DataFormat = mockup.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())

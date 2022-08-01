@@ -69,11 +69,12 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		return nil, err
 	}
 
+	cType := utils.GetDefaultConnectionType()
 	connection := taxonomy.Connection{
-		Name: v1alpha1.S3,
+		Name: cType,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.S3): map[string]interface{}{
+				string(cType): map[string]interface{}{
 					"endpoint":   bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
