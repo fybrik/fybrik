@@ -132,11 +132,10 @@ func GetServerConfig(serverLog *zerolog.Logger) (*tls.Config, error) {
 	if err != nil {
 		serverLog.Error().Msg(err.Error())
 		return nil, err
-	}
-	if loadedCertServer == nil {
-		return nil, errors.New("server TLS certificate is missing")
+	} else if loadedCertServer == nil {
+		return nil, errors.New("TLS certificate for server is missing")
 	} else {
-		serverLog.Log().Msg("server TLS certificate was provided")
+		serverLog.Log().Msg("TLS certificate for server was provided")
 	}
 	serverLog.Info().Msg(TLSEnabledMsg)
 	var config *tls.Config
