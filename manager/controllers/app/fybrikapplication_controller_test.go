@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 )
 
@@ -147,8 +148,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 
 			Expect(blueprint.Labels["label1"]).To(Equal("foo"))
 			Expect(blueprint.Labels["label2"]).To(Equal("bar"))
-			Expect(blueprint.Labels[apiv1alpha1.ApplicationNameLabel]).To(Equal(applicationKey.Name))
-			Expect(blueprint.Labels[apiv1alpha1.ApplicationNamespaceLabel]).To(Equal(applicationKey.Namespace))
+			Expect(utils.GetApplicationNameFromLabels(blueprint.Labels)).To(Equal(applicationKey.Name))
+			Expect(utils.GetApplicationNamespaceFromLabels(blueprint.Labels)).To(Equal(applicationKey.Namespace))
 			Expect(blueprint.Spec.Application.WorkloadSelector.MatchLabels["app"]).To(Equal("notebook"))
 			Expect(blueprint.Spec.Application.Context.Items["intent"].(string)).To(Equal("Fraud Detection"))
 			By("Expecting FybrikApplication to eventually be ready")

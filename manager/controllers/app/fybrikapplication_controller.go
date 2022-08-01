@@ -73,9 +73,21 @@ var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json
 
 const (
 	FybrikApplicationKind = "FybrikApplication"
-	ConfigAnnotation      = "kubectl.kubernetes.io/last-applied-configuration"
 	PlotterUpdatePrefix   = "plotter_"
 	Interval              = 10
+)
+
+// ErrorMessages that are reported to the user
+const (
+	InvalidAssetID              string = "the asset does not exist"
+	ReadAccessDenied            string = "governance policies forbid access to the data"
+	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
+	WriteNotAllowed             string = "governance policies forbid writing of the data"
+	StorageAccountUndefined     string = "no storage account has been defined"
+	ModuleNotFound              string = "no module has been registered"
+	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -418,7 +430,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec,
 		applicationContext.Application.Labels, applicationContext.UUID); err != nil {
 		applicationContext.Log.Error().Err(err).Str(logging.ACTION, logging.CREATE).Msgf("Error creating %s", resourceRef.Kind)
-		if err.Error() == api.InvalidClusterConfiguration {
+		if err.Error() == InvalidClusterConfiguration {
 			applicationContext.Application.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
@@ -614,7 +626,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[region] = actions
-		} else if err.Error() != api.WriteNotAllowed {
+		} else if err.Error() != WriteNotAllowed {
 			return err
 		}
 	}
@@ -622,11 +634,11 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
 	// no account is defined, return an error for write and copy flows
 	if len(env.StorageAccounts) == 0 && accountRequired {
-		return errors.New(api.StorageAccountUndefined)
+		return errors.New(StorageAccountUndefined)
 	}
 	// write is denied to all accounts, return Deny for write and copy flows
 	if len(req.StorageRequirements) == 0 && accountRequired {
-		return errors.New(api.WriteNotAllowed)
+		return errors.New(WriteNotAllowed)
 	}
 	return nil
 }
@@ -687,9 +699,9 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			// the owned resource is deleted - no updates should be sent
 			return []reconcile.Request{}
 		}
-		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
-		name, foundName := labels[api.ApplicationNameLabel]
-		if !foundNamespace || !foundName {
+		namespace := utils.GetApplicationNamespaceFromLabels(labels)
+		name := utils.GetApplicationNameFromLabels(labels)
+		if namespace == "" || name == "" {
 			return []reconcile.Request{}
 		}
 		return []reconcile.Request{
@@ -720,7 +732,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 		return
 	}
 	switch err.Error() {
-	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
+	case InvalidAssetID, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, InvalidAssetDataStore:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
 		setErrorCondition(appContext, assetID, err.Error())
@@ -729,8 +741,8 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 
 func ownerLabels(id types.NamespacedName) map[string]string {
 	return map[string]string{
-		api.ApplicationNamespaceLabel: id.Namespace,
-		api.ApplicationNameLabel:      id.Name,
+		utils.ApplicationNamespaceLabel: id.Namespace,
+		utils.ApplicationNameLabel:      id.Name,
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -394,7 +395,7 @@ func (p *PathBuilder) getAssetConnectionNode() *datapath.Node {
 	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
 	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = v1alpha1.S3
+		protocol = utils.GetDefaultConnectionType()
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat

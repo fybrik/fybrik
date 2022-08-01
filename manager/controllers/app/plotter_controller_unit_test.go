@@ -113,8 +113,8 @@ func TestPlotterController(t *testing.T) {
 	}
 
 	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
-	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
-	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
+	g.Expect(utils.GetApplicationNamespaceFromLabels(deployedBp.Labels)).To(gomega.Equal("default"))
+	g.Expect(utils.GetApplicationNameFromLabels(deployedBp.Labels)).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(deployedBp.Spec.Modules["implicit-copy-batch-latest-6575548090"].Chart.Name).
@@ -224,8 +224,8 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	}
 
 	deployedBp := dummyManager.DeployedBlueprints["thegreendragon"]
-	g.Expect(deployedBp.Labels[app.ApplicationNamespaceLabel]).To(gomega.Equal("default"))
-	g.Expect(deployedBp.Labels[app.ApplicationNameLabel]).To(gomega.Equal("notebook"))
+	g.Expect(utils.GetApplicationNamespaceFromLabels(deployedBp.Labels)).To(gomega.Equal("default"))
+	g.Expect(utils.GetApplicationNameFromLabels(deployedBp.Labels)).To(gomega.Equal("notebook"))
 	res, err = r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(len(deployedBp.Spec.Modules) == 1).To(gomega.BeTrue(), "Blueprint should have one module")

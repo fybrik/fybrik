@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package mockup
 
 import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"

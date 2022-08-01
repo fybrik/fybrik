@@ -10,7 +10,6 @@ import (
 	"log"
 	"strings"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -42,7 +41,7 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 		return &dataDetails, nil
 	}
 
-	return nil, errors.New(v1alpha1.InvalidAssetID)
+	return nil, errors.New("the asset does not exist")
 }
 
 func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
@@ -87,10 +86,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	dummyCredentials := "dummy"
 
 	s3Connection := taxonomy.Connection{
-		Name: v1alpha1.S3,
+		Name: S3,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.S3): map[string]interface{}{
+				string(S3): map[string]interface{}{
 					// TODO(roee88): why are real endpoints used?
 					"endpoint":   "s3.eu-gb.cloud-object-storage.appdomain.cloud",
 					"bucket":     "fybrik-test-bucket",
@@ -101,10 +100,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	}
 
 	db2Connection := taxonomy.Connection{
-		Name: v1alpha1.JdbcDB2,
+		Name: JdbcDB2,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.JdbcDB2): map[string]interface{}{
+				string(JdbcDB2): map[string]interface{}{
 					"database": "test-db",
 					"table":    "test-table",
 					"url":      "dashdb-txn-sbox-yp-lon02-02.services.eu-gb.bluemix.net",
@@ -117,10 +116,10 @@ func NewTestCatalog() *DataCatalogDummy {
 	kafkaDeserializer := "io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer"
 	sslTruststore := "xyz123"
 	kafkaConnection := taxonomy.Connection{
-		Name: v1alpha1.Kafka,
+		Name: Kafka,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(v1alpha1.Kafka): map[string]interface{}{
+				string(Kafka): map[string]interface{}{
 					"topic_name":              "topic",
 					"security_protocol":       "SASL_SSL",
 					"sasl_mechanism":          "SCRAM-SHA-512",
@@ -148,7 +147,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(v1alpha1.S3)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(S3)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -174,7 +173,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(v1alpha1.JdbcDB2)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(JdbcDB2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
@@ -186,7 +185,7 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
-	dummyCatalog.dataDetails[string(v1alpha1.Kafka)] = datacatalog.GetAssetResponse{
+	dummyCatalog.dataDetails[string(Kafka)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
 			Geography: geo,
