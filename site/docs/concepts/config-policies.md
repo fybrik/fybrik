@@ -1,8 +1,8 @@
-# Configuration Policies
+# IT Config Policies
 
-## What are configuration policies?
+## What are IT config policies?
 
-Configuration policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. The configuration policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
+IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
 
 ## Input to policies
 
@@ -27,7 +27,7 @@ Rules are written in the following syntax: `config[{"capability": capability, "d
 
 ```
 { 
-	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>, "version": <version>}, 
+	"policy": {"ID": <id>, "description": <description>, "version": <version>}, 
 	"deploy": <"True", "False">,
 	"restrictions": {
 		"modules": <list of restrictions>,
@@ -51,7 +51,7 @@ config[{"capability": "read", "decision": decision}] {
 ```
 
 
-`policy` provides policy metadata: unique ID, human-readable description, version and `policySetID` (see ### Policy Set ID)
+`policy` provides policy metadata: unique ID, human-readable description and version
 
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
 Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
@@ -64,11 +64,6 @@ Cluster is not a custom resource. It has the following properties:
 
 `deploy` receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.
 
-### Policy Set ID
-
-Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific `policySetID` which will be trigered only if it matches the `policySetID` defined in FybrikApplication. 
-If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
-In a similar way, all policies are relevant for a FybrikApplication that does not specify a policy set id, to support a use-case of a single policy set for all.
 
 ### Out of the box policies
 
@@ -204,7 +199,7 @@ package adminconfig
 
 # vaild from 2022.1.1, expire on 2022.6.1
 config[{"capability": "copy", "decision": decision}] {
-    policy := {"policySetID": "1", "ID": "test-1"}
+    policy := {"ID": "test-1", "description": "forbid making copies", "version": "0.1"}
     nowDate := time.now_ns()
     startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
     expiration := time.parse_rfc3339_ns("2022-06-01T00:00:00Z")
@@ -215,6 +210,26 @@ config[{"capability": "copy", "decision": decision}] {
 ```
 Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
 
+### How to update policies after Fybrik is already deployed
+
+Updating policies is done by updating `fybrik-adminconfig` config map in the controller plane.
+
+To do that, first, download all files to some directory, e.g. /tmp/adminconfig, after that update the files, and finally, upload them to the config map. The steps below demonstrate how to add a new rego file `samples/adminconfig/quickstart-policies.rego`. 
+
+```
+#!/bin/bash
+kubectl get cm fybrik-adminconfig -o json > tmp.json
+mkdir -p /tmp/adminconfig
+files=$(cat tmp.json | jq '.data' | jq -r 'keys[]')
+for k in $files; do
+    name=".data[\"$k\"]";
+    cat tmp.json | jq -r $name > /tmp/adminconfig/$k;
+done
+cp samples/adminconfig/quickstart_policies.rego /tmp/adminconfig/
+kubectl create configmap fybrik-adminconfig --from-file=/tmp/adminconfig -o yaml --dry-run=client | kubectl replace -n fybrik-system -f -
+rm -rf /tmp/adminconfig
+rm -rf tmp.json
+```
 
 ## Optimization goals
 
