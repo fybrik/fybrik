@@ -22,8 +22,3 @@ cp ${ROOT_DIR}/manager/Dockerfile manager-Dockerfile.orig
 cp katalog-connector-Dockerfile ${ROOT_DIR}/connectors/katalog/Dockerfile
 cp opa-connector-Dockerfile ${ROOT_DIR}/connectors/opa/Dockerfile
 cp manager-Dockerfile ${ROOT_DIR}/manager/Dockerfile
-
-
-
-
-
