@@ -59,7 +59,7 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 	}
 
 	return apierrors.NewInvalid(
-		schema.GroupKind{Group: "fapp.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
+		schema.GroupKind{Group: "app.fybrik.io", Kind: "PolicyManager-GetPolicyDecisionsResponse"},
 		response.DecisionID, allErrs)
 }
 

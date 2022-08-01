@@ -71,7 +71,9 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 // Credentials for accessing data set are stored in a credential management system (such as vault) and
 // the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *fapp.Plotter) fapp.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
+	clusterName string,
+	plotter *fapp.Plotter) fapp.BlueprintSpec {
 	spec := fapp.BlueprintSpec{
 		Cluster:          clusterName,
 		ModulesNamespace: plotter.Spec.ModulesNamespace,
