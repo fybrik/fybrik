@@ -95,17 +95,22 @@ func IsUsingMTLS() bool {
 
 // GetTLSMinVersion returns the minimum TLS version that is acceptable.
 // if not provided VersionTLS13 is currently taken as the minimum.
-func GetTLSMinVersion() uint16 {
+func GetTLSMinVersion(log *zerolog.Logger) uint16 {
 	minVersion := os.Getenv(TLSMinVersion)
 	if minVersion == "VersionTLS10" {
+		log.Info().Msg("Using tls.VersionTLS10")
 		return tls.VersionTLS10
 	} else if minVersion == "VersionTLS11" {
+		log.Info().Msg("Using tls.VersionTLS11")
 		return tls.VersionTLS11
 	} else if minVersion == "VersionTLS12" {
+		log.Info().Msg("Using tls.VersionTLS12")
 		return tls.VersionTLS12
 	} else if minVersion == "VersionTLS13" {
+		log.Info().Msg("Using tls.VersionTLS13")
 		return tls.VersionTLS13
 	}
+	log.Info().Msg("Using default tls.VersionTLS13")
 	return tls.VersionTLS13
 }
 
