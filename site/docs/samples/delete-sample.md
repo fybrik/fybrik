@@ -93,7 +93,7 @@ Then, register the data asset itself in the data catalog `katalog` used for samp
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1
+apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
   name: paysim-csv
