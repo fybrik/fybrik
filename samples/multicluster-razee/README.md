@@ -266,7 +266,7 @@ And then, register the data asset itself in the catalog on control plane. Replac
 kubectl config use-context kind-control
 
 cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1beta1
+apiVersion: katalog.fybrik.io/v1alpha1
 kind: Asset
 metadata:
   name: paysim-csv
