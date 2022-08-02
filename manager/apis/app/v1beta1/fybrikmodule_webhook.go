@@ -23,7 +23,7 @@ func (r *FybrikModule) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-io-v1beta1-fybrikmodule,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=fybrikmodules,versions=v1beta1,name=vfybrikmodule-v1beta1.kb.io
+// +kubebuilder:webhook:verbs=create;update,admissionReviewVersions=v1;v1beta1,sideEffects=None,path=/validate-app-fybrik-io-v1beta1-fybrikmodule,mutating=false,failurePolicy=fail,groups=app.fybrik.io,resources=fybrikmodules,versions=v1beta1,name=vfybrikmodule.kb.io
 
 var _ webhook.Validator = &FybrikModule{}
 

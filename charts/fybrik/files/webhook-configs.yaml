@@ -16,7 +16,7 @@ webhooks:
         namespace: '{{ .Release.Namespace }}'
         path: /validate-app-fybrik-io-v1beta1-fybrikapplication
     failurePolicy: Fail
-    name: vfybrikapplication-v1beta1.kb.io
+    name: vfybrikapplication.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
@@ -37,7 +37,7 @@ webhooks:
         namespace: '{{ .Release.Namespace }}'
         path: /validate-app-fybrik-io-v1beta1-fybrikmodule
     failurePolicy: Fail
-    name: vfybrikmodule-v1beta1.kb.io
+    name: vfybrikmodule.kb.io
     rules:
       - apiGroups:
           - app.fybrik.io
