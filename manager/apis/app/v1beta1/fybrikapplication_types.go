@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package v1beta1
 
 import (
 	"github.com/c2h5oh/datasize"
@@ -196,6 +196,7 @@ type FybrikApplicationStatus struct {
 // in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically
 // by the manager from the credential management system.
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 type FybrikApplication struct {
 	metav1.TypeMeta   `json:",inline"`

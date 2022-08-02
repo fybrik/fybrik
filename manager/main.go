@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/manager/controllers/utils"
@@ -52,7 +52,7 @@ var (
 )
 
 func init() {
-	_ = appv1.AddToScheme(scheme)
+	_ = fapp.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
@@ -72,13 +72,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
-		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:              {Field: systemNamespaceSelector},
+		&fapp.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&fapp.Plotter{}:              {Field: systemNamespaceSelector},
+		&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:          {Field: systemNamespaceSelector},
+		&fapp.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:             {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -167,11 +167,11 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err = (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fapp.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err = (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fapp.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}
