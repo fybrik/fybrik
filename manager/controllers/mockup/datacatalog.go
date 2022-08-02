@@ -40,7 +40,6 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 		log.Print(string(responseBytes))
 		return &dataDetails, nil
 	}
-
 	return nil, errors.New("the asset does not exist")
 }
 
