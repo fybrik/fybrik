@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.9">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
     
     
       
@@ -1620,7 +1620,7 @@ helm push &lt;local-chart-path&gt; oci://&lt;registry&gt;/&lt;path&gt;
 <h2 id="fybrikmodule-yaml">FybrikModule YAML</h2>
 <p><code>FybrikModule</code> is a kubernetes Custom Resource Definition (custom resource) which describes to the control plane the functionality provided by the module.  The FybrikModule custom resource has no controller. The specification of the <code>FybrikModule</code> Kubernetes custom resource is available in the <a href="../../reference/crds/#fybrikmodule">API documentation</a>. </p>
 <p>The YAML file begins with standard Kubernetes metadata followed by the <code>FybrikModule</code> specification:
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1alpha1</span><span class="w"> </span><span class="c1"># always this value</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span><span class="w"></span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"> </span><span class="c1"># always this value</span><span class="w"></span>
 <span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span><span class="w"></span>
