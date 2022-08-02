@@ -10,7 +10,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -270,11 +270,11 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *datapath.Node, n int) [
 // helper functions
 
 // CheckDependencies returns dependent modules
-func CheckDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, []string) {
-	var found []*v1alpha1.FybrikModule
+func CheckDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) ([]*fapp.FybrikModule, []string) {
+	var found []*fapp.FybrikModule
 	var missing []string
 	for _, dependency := range module.Spec.Dependencies {
-		if dependency.Type != v1alpha1.Module {
+		if dependency.Type != fapp.Module {
 			continue
 		}
 		if moduleMap[dependency.Name] == nil {
@@ -290,14 +290,14 @@ func CheckDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1al
 }
 
 // SupportsDependencies checks whether the module supports the dependency requirements
-func SupportsDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) bool {
+func SupportsDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) bool {
 	// check dependencies
 	_, missingModules := CheckDependencies(module, moduleMap)
 	return len(missingModules) == 0
 }
 
 // GetDependencies returns dependencies of a selected module
-func GetDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, error) {
+func GetDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) ([]*fapp.FybrikModule, error) {
 	dependencies, missingModules := CheckDependencies(module, moduleMap)
 	if len(missingModules) > 0 {
 		return dependencies, errors.New("Module " + module.Name + " has missing dependencies")

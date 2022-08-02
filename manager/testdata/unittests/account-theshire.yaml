@@ -1,4 +1,4 @@
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1beta1
 kind: FybrikStorageAccount
 metadata:
   name: account-theshire
