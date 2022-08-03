@@ -474,6 +474,7 @@ opaConnector:
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
       # certSecretName: "test-tls-opa-connector-certs"
+      certSecretName: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificates 
       # which are used by opa-connector to validate the connection to the manager if
       # mtls is enabled.
