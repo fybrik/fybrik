@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
+	"fybrik.io/fybrik/pkg/environment"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -24,9 +24,6 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
 )
-
-// TODO add configuration
-const TIMEOUT = 300 * time.Second
 
 // Relevant only when helm charts are placed in
 // local directory.
@@ -156,7 +153,11 @@ func NewHelmerImpl(chartsPath string) *Impl {
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	uninstall.Wait = true
-	uninstall.Timeout = TIMEOUT
+	interval, err := environment.GetResourcesPollingInterval()
+	if err != nil {
+		return nil, err
+	}
+	uninstall.Timeout = interval
 	return uninstall.Run(releaseName)
 }
 
