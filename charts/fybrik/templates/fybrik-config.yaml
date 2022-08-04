@@ -7,6 +7,7 @@ data:
   PRETTY_LOGGING: {{ .Values.global.prettyLogging | quote }}
   LOGGING_VERBOSITY: {{ .Values.global.loggingVerbosity | quote }}
   RESOURCE_POLLING_INTERVAL: {{ .Values.manager.resourcePollingInterval | quote }}
+  HELM_WAIT_TIMEOUT: {{ .Values.manager.helmWaitTimeout | quote }}
   
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}

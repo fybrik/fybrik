@@ -43,6 +43,7 @@ const (
 	LocalRegion                       string = "Region"
 	LocalVaultAuthPath                string = "VaultAuthPath"
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
+	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
 )
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
@@ -51,9 +52,14 @@ const DefaultModulesNamespace = "fybrik-blueprints"
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
 
-// DefaultPollingInterval defines the default time interval to check the status of the resources
+// defaultPollingInterval defines the default time interval to check the status of the resources
 // deployed by the manager. The interval is specified in milliseconds.
-const DefaultPollingInterval = 2000 * time.Millisecond
+const defaultPollingInterval = 2000 * time.Millisecond
+
+// defaultHelmWaitTimeout defines the default time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// The timeout is specified in seconds.
+const defaultHelmWaitTimeout = 200 * time.Second
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -143,17 +149,31 @@ func GetModulesRole() string {
 // GetResourcesPollingInterval returns the time interval to check the
 // status of the resources deployed by the manager. The interval is specified
 // in milliseconds.
-// Default value is 2000 milliseconds
 func GetResourcesPollingInterval() (time.Duration, error) {
 	intervalStr := os.Getenv(ResourcesPollingInterval)
 	if intervalStr == "" {
-		return DefaultPollingInterval, nil
+		return defaultPollingInterval, nil
 	}
 	interval, err := strconv.Atoi(intervalStr)
 	if err != nil {
-		return DefaultPollingInterval, err
+		return defaultPollingInterval, err
 	}
-	return time.Duration(interval) * time.Second, nil
+	return time.Duration(interval) * time.Millisecond, nil
+}
+
+// GetHelmWaitTimeout returns the time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// The timeout is specified in seconds.
+func GetHelmWaitTimeout() (time.Duration, error) {
+	timeoutStr := os.Getenv(ResourcesPollingInterval)
+	if timeoutStr == "" {
+		return defaultHelmWaitTimeout, nil
+	}
+	timeout, err := strconv.Atoi(timeoutStr)
+	if err != nil {
+		return defaultHelmWaitTimeout, err
+	}
+	return time.Duration(timeout) * time.Second, nil
 }
 
 // GetVaultAddress returns the address and port of the vault system,
@@ -205,7 +225,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
 		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace,
-		ResourcesPollingInterval}
+		ResourcesPollingInterval, HelmWaitTimeout}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
@@ -213,6 +233,11 @@ func LogEnvVariables(log *zerolog.Logger) {
 	}
 	interval, err := GetResourcesPollingInterval()
 	if err != nil {
-		log.Error().Msg("error getting the value. Setting the default to " + interval.String())
+		log.Error().Msg("error getting " + ResourcesPollingInterval + ". Setting the default to " +
+			interval.String())
+	}
+	timeout, err := GetHelmWaitTimeout()
+	if err != nil {
+		log.Error().Msg("error getting" + HelmWaitTimeout + " Setting the default to " + timeout.String())
 	}
 }
