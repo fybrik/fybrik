@@ -189,9 +189,6 @@ func (r *Impl) Install(ctx context.Context, cfg *action.Configuration, chrt *cha
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.Timeout = TIMEOUT
-	install.Wait = true
-	install.WaitForJobs = true
 
 	return install.RunWithContext(ctx, chrt, vals)
 }
@@ -201,9 +198,6 @@ func (r *Impl) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *cha
 	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.Wait = true
-	upgrade.WaitForJobs = true
-	upgrade.Timeout = TIMEOUT
 
 	return upgrade.RunWithContext(ctx, releaseName, chrt, vals)
 }

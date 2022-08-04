@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -41,6 +42,7 @@ const (
 	LocalZone                         string = "Zone"
 	LocalRegion                       string = "Region"
 	LocalVaultAuthPath                string = "VaultAuthPath"
+	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 )
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
@@ -48,6 +50,10 @@ const DefaultModulesNamespace = "fybrik-blueprints"
 
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
+
+// DefaultPollingInterval defines the default time interval to check the status of the resources
+// deployed by the manager. The interval is specified in milliseconds.
+const DefaultPollingInterval = 2000 * time.Millisecond
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -134,6 +140,22 @@ func GetModulesRole() string {
 	return os.Getenv(VaultModulesRoleKey)
 }
 
+// GetResourcesPollingInterval returns the time interval to check the
+// status of the resources deployed by the manager. The interval is specified
+// in milliseconds.
+// Default value is 2000 milliseconds
+func GetResourcesPollingInterval() (time.Duration, error) {
+	intervalStr := os.Getenv(ResourcesPollingInterval)
+	if intervalStr == "" {
+		return DefaultPollingInterval, nil
+	}
+	interval, err := strconv.Atoi(intervalStr)
+	if err != nil {
+		return DefaultPollingInterval, err
+	}
+	return time.Duration(interval) * time.Second, nil
+}
+
 // GetVaultAddress returns the address and port of the vault system,
 // which is used for managing data set credentials
 func GetVaultAddress() string {
@@ -182,7 +204,8 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace}
+		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace,
+		ResourcesPollingInterval}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
