@@ -163,6 +163,7 @@ func GetResourcesPollingInterval() (time.Duration, error) {
 
 // GetHelmWaitTimeout returns the time to wait for helm operation
 // on the resources deployed by the manager to complete.
+// Currently used only in uninstall operation.
 // The timeout is specified in seconds.
 func GetHelmWaitTimeout() (time.Duration, error) {
 	timeoutStr := os.Getenv(ResourcesPollingInterval)

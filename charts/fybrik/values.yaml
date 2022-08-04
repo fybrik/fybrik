@@ -171,7 +171,7 @@ manager:
   resourcePollingInterval: 2000
 
   # Maximum time to wait for helm operation on the resources deployed
-  # by the manager to complete.
+  # by the manager to complete. Currently used only in uninstall operation.
   # The timeout is specified in seconds.
   # Default value is 200 seconds.
   helmWaitTimeout: 200
