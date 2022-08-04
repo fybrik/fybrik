@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"emperror.dev/errors"
-	"fybrik.io/fybrik/pkg/environment"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -23,6 +22,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
+
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 // Relevant only when helm charts are placed in
