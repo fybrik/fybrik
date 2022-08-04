@@ -486,8 +486,10 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 	}
 	// plotter is not ready
 	if r.ClusterManager.IsMultiClusterSetup() {
+		// if an error exists it is logged in LogEnvVariables and a default value is used
+		requeueAfter, _ := environment.GetResourcesPollingInterval()
 		// TODO Once a better notification mechanism exists in razee switch to that
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection //nolint:revive // for magic numbers
+		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
 	// don't do polling for a single cluster setup, retry in case of errors
 	return ctrl.Result{}, errorCollection

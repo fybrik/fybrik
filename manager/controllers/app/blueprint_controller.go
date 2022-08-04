@@ -375,7 +375,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	// the status is unknown yet - continue polling
 	if blueprint.Status.ObservedState.Error == "" {
 		log.Trace().Msg("blueprint.Status.ObservedState is not ready, will try again")
-		// if error exists it is logged in LogEnvVariables
+		// if an error exists it is logged in LogEnvVariables and a default value is used
 		interval, _ := environment.GetResourcesPollingInterval()
 		return ctrl.Result{RequeueAfter: interval}, nil
 	}
