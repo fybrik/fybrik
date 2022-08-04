@@ -211,4 +211,8 @@ func LogEnvVariables(log *zerolog.Logger) {
 	for _, envVar := range envVarArray {
 		logEnvVariable(log, envVar)
 	}
+	interval, err := GetResourcesPollingInterval()
+	if err != nil {
+		log.Error().Msg("error getting the value. Setting the default to " + interval.String())
+	}
 }

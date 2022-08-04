@@ -106,8 +106,6 @@ spec:
               value: {{ .Values.manager.tls.certs.certSecretName }}
             - name: CERT_SECRET_NAMESPACE
               value: {{ .Values.manager.tls.certs.certSecretNamespace }}
-            - name: RESOURCE_POLLING_INTERVAL
-              value: {{ .Values.manager.resourcePollingInterval | quote }}
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
