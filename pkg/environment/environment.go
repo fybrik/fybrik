@@ -212,33 +212,41 @@ func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
 }
 
+const printValueStr = "%s set to \"%s\""
+
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
-		log.Info().Msgf("%s set to \"%s\"", key, value)
+		log.Info().Msgf(printValueStr, key, value)
 	} else {
 		log.Info().Msgf("%s is undefined", key)
 	}
+}
+
+// logEnvVarUpdatedValue logs environment variables values that might be different
+// from the values they were originally set to.
+func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error) {
+	if err != nil {
+		log.Warn().Msg("error getting " + envVar + ". Setting the default to " +
+			value)
+		return
+	}
+	log.Info().Msgf(printValueStr, envVar, value)
 }
 
 func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace,
-		ResourcesPollingInterval, HelmWaitTimeout}
+		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
 		logEnvVariable(log, envVar)
 	}
+
 	interval, err := GetResourcesPollingInterval()
-	if err != nil {
-		log.Error().Msg("error getting " + ResourcesPollingInterval + ". Setting the default to " +
-			interval.String())
-	}
+	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
 	timeout, err := GetHelmWaitTimeout()
-	if err != nil {
-		log.Error().Msg("error getting" + HelmWaitTimeout + " Setting the default to " + timeout.String())
-	}
+	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
 }
