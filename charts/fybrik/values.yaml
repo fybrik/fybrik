@@ -168,9 +168,9 @@ manager:
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
-    # MinVersion contains the minimum TLS version that is acceptable. 
-    # If not provided, VersionTLS13 is currently taken as the minimum.
-    minVersion: VersionTLS13
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, minimal supported TLS protocol is taken as the minimum.
+    minVersion: v13
     certs:
       # Name of kubernetes secret that holds the manager certificate.
       # The secret should be of `kubernetes.io/tls` type.
@@ -364,8 +364,8 @@ katalogConnector:
 
   tls:
     # MinVersion contains the minimum TLS version that is acceptable.
-    # If not provided, VersionTLS13 is currently taken as the minimum.
-    minVersion: VersionTLS13
+    # If not provided, minimal supported TLS protocol is taken as the minimum.
+    minVersion: v13
     # Specifies whether the katalog connector communication should use tls.
     use_tls: false
     # Specifies whether the katalog connector communication should use mutual tls.
@@ -461,8 +461,8 @@ opaConnector:
 
   tls:
     # MinVersion contains the minimum TLS version that is acceptable.
-    # If not provided, VersionTLS13 is currently taken as the minimum.
-    minVersion: VersionTLS13
+    # If not provided, minimal supported TLS protocol is taken as the minimum.
+    minVersion: v13
     # Specifies whether the opa connector communication should use tls.
     use_tls: false
     # Specifies whether the opa connector communication should use mutual tls.
