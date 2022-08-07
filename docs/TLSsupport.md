@@ -13,18 +13,19 @@
   TLS 1.3 (RFC [8446](https://datatracker.ietf.org/doc/html/rfc8446))
 - The current implementation will not allow changing the default cipher suites. (golang allows defining a list of enabled 
 TLS 1.0–1.2 cipher suites. TLS 1.3 cipher suites are not configurable.)
-- In order to allow automatic certificates renew or revoke, [cert-manager](https://cert-manager.io/) will be used to 
+- In order to allow automatic certificates renew or revoke, [cert-manager](https://cert-manager.io/) can be used to 
   manage the certificates.
 - Client (Fybrik manager) and servers (connectors) configuration can be set independently, if there is no match 
 the connection will fail. 
 - If a server is configured to use TLS it will not support unencrypted (e.g. HTTP) communications. 
 
 ## Implementation Design
-- Certificates, keys and CA certificates will be stored in cert-manager and mounted to the relevant Pods as 
-certificate directories.
-  - Certificate and keys will be stored in the **"tls-cert"** cert-manager mounted directory. The certificate file is
-   **"tls.crt"** (in goLang); the key file is "tls.key" (in goLang)
-  - CA certificates will be stored in the **"tls-cacert"** cert-manager mounted directory in files with extension **".crt"**
+- Certificates, keys and CA certificates will be stored in Kubernetes secrets and mounted to the relevant Pods as 
+certificate files.
+- Certificate and keys will be stored in the **"tls-cert"** secret mounted directory. The certificate file is
+ **"tls.crt"** (in goLang); the key file is "tls.key" (in goLang)
+  - The secret which contains the CA certificates is mounted to a local directory **tls-cacert** in the container. Only 
+  files with extension ".crt" are considered.
 - Other variables will be provided as Pod's environment variables: 
   - **"USE_TLS"** - use or not TLS, the server settings only
   - **"USE_MTLS"** - should the server require mutual TLS, the server settings only
