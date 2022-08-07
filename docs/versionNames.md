@@ -35,7 +35,22 @@ rely on the feature.
   - The version name is vX where X is an integer. 
   - The stable versions of features appear in released software for many subsequent versions.
 
-##  Relations between CRD changes and Fybrik releases
+## Relations between CRD changes and Fybrik releases
 Based on the above definitions, the relation between CRD versions and Fybrik versions is unidirectional. Which means, 
 CRD API changes requires at least minor Fybrik release, on the other hand not each Fybrik release requires a new CRD 
 version. 
+
+## Connectors API versioning
+Fybrik manager communicates with connectors (data catalog and policy manager) over REST API. REST doesn’t provide any 
+specific versioning guidelines, however the more commonly used approaches fall into three categories:
+- URI Versioning
+- Versioning using Custom Request Header
+- Versioning using the “Accept” header
+For examples and explanations, see [REST API Versioning](https://restfulapi.net/versioning/)
+
+*Note:* current implementation of controllers REST API does not support any versioning. When we define a new API version 
+we will have to choose one of the REST API versioning mechanisms and assume that missing version information is the 
+current (old) version.  
+
+## Other Components
+TBD
