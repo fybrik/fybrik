@@ -6,7 +6,7 @@ metadata:
 data:
   PRETTY_LOGGING: {{ .Values.global.prettyLogging | quote }}
   LOGGING_VERBOSITY: {{ .Values.global.loggingVerbosity | quote }}
-  
+  TLS_MIN_VERSION:  {{ .Values.manager.tls.minVersion }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   {{- if .Values.manager.solver.image }}

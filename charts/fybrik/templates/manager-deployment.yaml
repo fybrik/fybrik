@@ -118,9 +118,6 @@ spec:
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
             {{- end }}
-            - name: TLS_MIN_VERSION
-              value: {{ .Values.manager.tls.minVersion }}
-
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}
