@@ -146,7 +146,7 @@ func GetServerConfig(serverLog *zerolog.Logger) (*tls.Config, error) {
 			Certificates: []tls.Certificate{*loadedCertServer},
 			// Do not use mutual TLS
 			ClientAuth: tls.NoClientCert,
-			MinVersion: environment.GetTLSMinVersion(serverLog),
+			MinVersion: environment.GetMinTLSVersion(serverLog),
 		}
 		return config, nil
 	}
@@ -166,7 +166,7 @@ func GetServerConfig(serverLog *zerolog.Logger) (*tls.Config, error) {
 		// configure mutual TLS
 		ClientAuth: tls.RequireAndVerifyClientCert,
 		ClientCAs:  caCertPool,
-		MinVersion: environment.GetTLSMinVersion(serverLog),
+		MinVersion: environment.GetMinTLSVersion(serverLog),
 	}
 
 	return config, nil
@@ -204,7 +204,7 @@ func GetClientTLSConfig(clientLog *zerolog.Logger) (*tls.Config, error) {
 	tlsConfig := &tls.Config{
 		RootCAs:      caCertPool,
 		Certificates: []tls.Certificate{providedCert},
-		MinVersion:   environment.GetTLSMinVersion(clientLog),
+		MinVersion:   environment.GetMinTLSVersion(clientLog),
 	}
 
 	return tlsConfig, nil

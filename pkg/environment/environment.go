@@ -34,7 +34,7 @@ const (
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
 	UseTLS                            string = "USE_TLS"
 	UseMTLS                           string = "USE_MTLS"
-	TLSMinVersion                     string = "TLS_MIN_VERSION"
+	MinTLSVersion                     string = "MIN_TLS_VERSION"
 	LocalClusterName                  string = "ClusterName"
 	LocalZone                         string = "Zone"
 	LocalRegion                       string = "Region"
@@ -93,10 +93,10 @@ func IsUsingMTLS() bool {
 	return strings.ToLower(os.Getenv(UseMTLS)) == "true"
 }
 
-// GetTLSMinVersion returns the minimum TLS version that is acceptable.
+// GetMinTLSVersion returns the minimum TLS version that is acceptable.
 // if not provided minimal supported TLS protocol is taken as the minimum
-func GetTLSMinVersion(log *zerolog.Logger) uint16 {
-	minVersion := os.Getenv(TLSMinVersion)
+func GetMinTLSVersion(log *zerolog.Logger) uint16 {
+	minVersion := os.Getenv(MinTLSVersion)
 	if minVersion == "v10" {
 		log.Info().Msg("Using TLS v10")
 		return tls.VersionTLS10
@@ -178,7 +178,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
 		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace,
-		TLSMinVersion}
+		MinTLSVersion}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
