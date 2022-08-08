@@ -74,6 +74,7 @@ opaServer:
   - "--server"
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
+  - "--authentication=tls"
   - "--tls-cert-file=/data/tls-cert/tls.crt"
   - "--tls-private-key-file=/data/tls-cert/tls.key"
   - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
