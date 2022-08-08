@@ -43,7 +43,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	if s, ok := os.LookupEnv("VALUES_FILE"); !ok ||
 		(s != "charts/fybrik/notebook-test-readflow.values.yaml" &&
 			s != "charts/fybrik/notebook-test-readflow.tls.values.yaml" &&
-			s != "charts/fybrik/notebook-test-readflow.tls-cacerts-preloaded.yaml") {
+			s != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
 		t.Skip("Only executed for notebook tests")
 	}
 	gomega.RegisterFailHandler(Fail)

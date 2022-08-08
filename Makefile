@@ -134,21 +134,22 @@ run-notebook-readflow-tls-tests:
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
-.PHONY: run-notebook-readflow-tls-cacerts-preloaded-tests
-run-notebook-readflow-tls-cacerts-preloaded-tests: export DOCKER_HOSTNAME?=localhost:5000
-run-notebook-readflow-tls-cacerts-preloaded-tests: export DOCKER_NAMESPACE?=fybrik-system
-run-notebook-readflow-tls-cacerts-preloaded-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-cacerts-preloaded.yaml
-run-notebook-readflow-tls-cacerts-preloaded-tests:
+.PHONY: run-notebook-readflow-tls-system-cacerts-tests
+run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
+run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
+run-notebook-readflow-tls-system-cacerts-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) cluster-prepare-wait
-	cd manager/testdata/notebook/read-flow-tls && ./setup-preload-ca-certs.sh
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
+	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 	$(MAKE) deploy
+	cd manager/testdata/notebook/read-flow-tls && ./copy-cacert-to-pods.sh
 	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
-	cd manager/testdata/notebook/read-flow-tls && ./post-tls-test.sh
 
 .PHONY: run-notebook-readflow-bc-tests
 run-notebook-readflow-tests: export DOCKER_HOSTNAME?=localhost:5000
