@@ -104,10 +104,7 @@ func getCACertPool() (*x509.CertPool, error) {
 		return nil, err
 	}
 	if certFiles != nil {
-		CACertPool, err = x509.SystemCertPool()
-		if err != nil {
-			return nil, err
-		}
+		CACertPool = x509.NewCertPool()
 		for _, cacertFile := range certFiles {
 			caCert, err := os.ReadFile(cacertFile)
 			if err != nil {

@@ -179,7 +179,7 @@ manager:
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
       # which are used by the manager to validate the connection to the connectors.
       # The CA certificates key in the secret should have `.crt` suffix.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
@@ -269,13 +269,23 @@ opaServer:
   - "--server"
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
+  # for tls support add:
+  #  - "--authentication=tls"
+  #  - "--tls-cert-file=/data/tls-cert/tls.crt"
+  #  - "--tls-private-key-file=/data/tls-cert/tls.key"
+  #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
+  #  - "--addr=https://0.0.0.0:443"
+
 
   tls:
     # Specifies whether the opa-server communication should use tls.
+    # For more information please refer to https://www.openpolicyagent.org/docs/latest/security/
     use_tls: false
     certs:
       # Name of kubernetes tls secret that holds the opa server certificates.
-      # The secret should be of `kubernetes.io/tls` type.
+      # The secret should be of `kubernetes.io/tls` type such that the certificates in tls.crt and tls.key
+      # are passed as parameters to opa server at startup via the command line flags `--tls-cert-file=`
+      # and `--tls-private-key-file` respectively.
       # Relavent if tls is used.
       # certSecretName: "test-tls-opa-server-certs"
       certSecretName: ""
@@ -283,7 +293,7 @@ opaServer:
       # which are used by opa-server to validate the connection to the clients
       # if mtls is enabled.
       # The CA certificates key in the secret should have `.crt` suffix.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
@@ -313,11 +323,20 @@ opaServer:
   # the equivalent fields of .Values.global.podSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
+  # for tls support add:
+  #  runAsNonRoot: false
+  #  runAsUser: 0
 
   # Container Security Context. If set, the fields of containerSecurityContext override
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
+  # for tls support add:
+  # privileged: true
+  # allowPrivilegeEscalation: true
+  # capabilities:
+  #   add:
+  #     - NET_BIND_SERVICE
 
   service:
     type: ClusterIP
@@ -404,7 +423,7 @@ katalogConnector:
       # which are used by katalog-connector to validate the connection to the manager 
       # if mtls is enabled.
       # The CA certificates key in the secret should have `.crt` suffix.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
@@ -464,6 +483,7 @@ opaConnector:
 
   # Overrides the URL of the OPA server
   # Defaults to the address of the deployed OPA server
+  # If the OPA server is configured with TLS then use https://opa:443
   serverURL:
 
   # Image name or a hub/image[:tag]
@@ -503,6 +523,7 @@ opaConnector:
       # which are used by opa-connector to validate the connection to the manager if
       # mtls is enabled.
       # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
