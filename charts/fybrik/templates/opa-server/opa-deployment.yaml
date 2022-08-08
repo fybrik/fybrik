@@ -34,6 +34,21 @@ spec:
       volumes:
         - name: bootstrap
           emptyDir: {}
+        - name: data
+          emptyDir:
+            sizeLimit: {{ .Values.opaServer.dirSizeLimit }}
+        {{- if .Values.opaServer.tls.certs.certSecretName }}
+        - name: tls-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.opaServer.tls.certs.certSecretName }}
+        {{- end }}
+        {{- if .Values.opaServer.tls.certs.cacertSecretName }}
+        - name: tls-cacert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.opaServer.tls.certs.cacertSecretName }}
+        {{- end }}
       securityContext:
       {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.opaServer.podSecurityContext) | nindent 8 }}
       initContainers:
@@ -70,14 +85,33 @@ spec:
             {{- toYaml .Values.opaServer.args | nindent 12 }}
             - "/bootstrap"
           ports:
+            {{- if .Values.opaServer.tls.use_tls }}
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            {{- else }}
             - name: http
               containerPort: 8181
               protocol: TCP
+            {{- end }}
           resources:
             {{- toYaml .Values.opaServer.resources | nindent 12 }}
           volumeMounts:
             - name: bootstrap
               mountPath: /bootstrap
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            {{- if .Values.opaServer.tls.certs.certSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cert" ) }}
+              name: tls-cert
+              readOnly: true
+            {{- end }}
+            {{- if .Values.opaServer.tls.certs.cacertSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cacert" ) }}
+              name: tls-cacert
+              readOnly: true
+            {{- end }}
+
         - name: kube-mgmt
           image: {{ .Values.opaServer.kubemgmt.image }}
           args:

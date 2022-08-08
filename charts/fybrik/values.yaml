@@ -270,11 +270,34 @@ opaServer:
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
 
+  tls:
+    # Specifies whether the opa-server communication should use tls.
+    use_tls: false
+    certs:
+      # Name of kubernetes tls secret that holds the opa server certificates.
+      # The secret should be of `kubernetes.io/tls` type.
+      # Relavent if tls is used.
+      # certSecretName: "test-tls-opa-server-certs"
+      certSecretName: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by opa-server to validate the connection to the clients
+      # if mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # If the secret is not provided then the CA certificates are taken from the system
+      # CA certificate store, for example `/etc/ssl/certs/`.
+      # cacertSecretName: "test-tls-ca-certs"
+      cacertSecretName: ""
+
+
   kubemgmt:
     image: openpolicyagent/kube-mgmt:0.11
 
   # Used if autoscaling is not enabled 
   replicaCount: 1
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
   
   serviceAccount:
     # Specifies whether a service account should be created
@@ -298,6 +321,7 @@ opaServer:
 
   service:
     type: ClusterIP
+    # For tls connection use port 443
     port: 8181
 
   resources: {}

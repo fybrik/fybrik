@@ -75,7 +75,10 @@ func RunCmd() *cobra.Command {
 			}
 
 			// Create and start connector
-			controller := NewConnectorController(opaServerURL)
+			controller, err := NewConnectorController(opaServerURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to set connection to opa server")
+			}
 			controller.Log.Info().Msg("based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 			router := NewRouter(controller)
 			router.Use(gin.Logger())

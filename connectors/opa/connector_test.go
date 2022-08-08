@@ -80,7 +80,7 @@ func TestGetPoliciesDecisions(t *testing.T) {
 	defer opaMock.Close()
 
 	// Create OPA connector controller for testing
-	controller := NewConnectorController(opaMock.URL)
+	controller, _ := NewConnectorController(opaMock.URL)
 
 	// Create a fake request to OPA connector
 	w := httptest.NewRecorder()
