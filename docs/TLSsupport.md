@@ -3,6 +3,11 @@
 ## Requirements
 - TLS communication is an optional feature, if it is not turned ON, the regular TCP/HTTP communication should be available
 - TLS can be extended to mutual TLS
+- Client (Fybrik manager) and servers (connectors) configuration can be set independently, if there is no match
+  the connection will fail.
+  - Client when it starts always loads all provided certificates and keys, after that it tries to connect to the server
+  based on server's URL.
+  - Server loads the provided certificates only it is configured to use TLS, and loads CA certificates if mutual TLS is ON.
 - The system should allow setting required TLS parameters, Certificates, Certificate Authorities (CA).
 - If CA are not set, the default CA will be used. Due to close communication between Fybrik manager and connectors, 
   explicit setting CA will **replace** the default goLang or Java CA settings. Optionally, they can be merged.
@@ -15,8 +20,6 @@
 TLS 1.0–1.2 cipher suites. TLS 1.3 cipher suites are not configurable.)
 - In order to allow automatic certificates renew or revoke, [cert-manager](https://cert-manager.io/) can be used to 
   manage the certificates.
-- Client (Fybrik manager) and servers (connectors) configuration can be set independently, if there is no match 
-the connection will fail. 
 - If a server is configured to use TLS it will not support unencrypted (e.g. HTTP) communications. 
 
 ## Implementation Design
