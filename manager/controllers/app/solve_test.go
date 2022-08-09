@@ -1016,7 +1016,7 @@ func TestClusterAttribute(t *testing.T) {
 	asset.Configuration.ConfigDecisions["read"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			Clusters: []adminconfig.Restriction{{Property: "compliance", Values: adminconfig.StringList{{"true"}}}},
+			Clusters: []adminconfig.Restriction{{Property: "compliance", Values: adminconfig.StringList{"true"}}}},
 	}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
