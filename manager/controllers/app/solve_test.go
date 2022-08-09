@@ -980,3 +980,45 @@ func TestMinDistance(t *testing.T) {
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
 }
+
+// a read scenario
+// a read module is deployed
+// two clusters, only one is allowed because of a compliance attribute
+func TestClusterAttribute(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	readModule := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, readModule)
+	allowedCluster := multicluster.Cluster{Name: "clusterA", Metadata: multicluster.ClusterMetadata{Region: "regionA"}}
+	forbiddenCluster := multicluster.Cluster{Name: "clusterB", Metadata: multicluster.ClusterMetadata{Region: "regionB"}}
+	addCluster(env, allowedCluster)
+	addCluster(env, forbiddenCluster)
+	asset := createReadRequest()
+	asset.WorkloadCluster = forbiddenCluster
+	asset.DataDetails.ResourceMetadata.Geography = "regionC"
+	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "compliance", Type: taxonomy.Bool})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "compliance",
+		MetricName: "compliance",
+		Value:      "true",
+		Object:     taxonomy.Cluster,
+		Instance:   allowedCluster.Name,
+	})
+	addAttribute(env, &taxonomy.InfrastructureElement{
+		Name:       "compliance",
+		MetricName: "compliance",
+		Value:      "false",
+		Object:     taxonomy.Cluster,
+		Instance:   forbiddenCluster.Name,
+	})
+	asset.Configuration.ConfigDecisions["read"] = adminconfig.Decision{
+		Deploy: adminconfig.StatusTrue,
+		DeploymentRestrictions: adminconfig.Restrictions{
+			Clusters: []adminconfig.Restriction{{Property: "compliance", Values: adminconfig.StringList{{"true"}}}},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal(allowedCluster.Name))
+}

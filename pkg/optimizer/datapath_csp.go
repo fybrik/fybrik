@@ -280,7 +280,7 @@ func (dpc *DataPathCSP) modcapSatisfiesRestrictions(modcap *moduleAndCapability,
 	newPrefix := oldPrefix + strconv.Itoa(modcap.capabilityIdx) + "."
 	for _, restriction := range restrictions {
 		restriction.Property = strings.Replace(restriction.Property, oldPrefix, newPrefix, 1)
-		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, modcap.module.Spec, "") {
+		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, modcap.module.Spec, modcap.module.Name) {
 			return false
 		}
 	}
@@ -290,7 +290,7 @@ func (dpc *DataPathCSP) modcapSatisfiesRestrictions(modcap *moduleAndCapability,
 // Decide if a given cluster satisfies all administrator's restrictions
 func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluster, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
-		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &cluster, "") {
+		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &cluster, cluster.Name) {
 			return false
 		}
 	}
