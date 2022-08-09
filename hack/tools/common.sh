@@ -7,6 +7,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+source ./requirements.sh
+
 arch=amd64
 os="unknown"
 
