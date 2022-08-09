@@ -46,6 +46,8 @@ const (
 	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
 )
 
+const printValueStr = "%s set to \"%s\""
+
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
 const DefaultModulesNamespace = "fybrik-blueprints"
 
@@ -149,6 +151,8 @@ func GetModulesRole() string {
 // GetResourcesPollingInterval returns the time interval to check the
 // status of the resources deployed by the manager. The interval is specified
 // in milliseconds.
+// The function returns a default value if an error occurs or
+// if ResourcesPollingInterval env var is undefined.
 func GetResourcesPollingInterval() (time.Duration, error) {
 	intervalStr := os.Getenv(ResourcesPollingInterval)
 	if intervalStr == "" {
@@ -165,8 +169,10 @@ func GetResourcesPollingInterval() (time.Duration, error) {
 // on the resources deployed by the manager to complete.
 // Currently used only in uninstall operation.
 // The timeout is specified in seconds.
+// The function returns a default value if an error occurs or if
+// HelmWaitTimeout env var is undefined.
 func GetHelmWaitTimeout() (time.Duration, error) {
-	timeoutStr := os.Getenv(ResourcesPollingInterval)
+	timeoutStr := os.Getenv(HelmWaitTimeout)
 	if timeoutStr == "" {
 		return defaultHelmWaitTimeout, nil
 	}
@@ -183,7 +189,10 @@ func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
 }
 
-// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
+// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy,
+// not including transformations)
+// The function returns a default value if an error occurs or
+// if DatapathLimitKey env var is undefined.
 func GetDataPathMaxSize() (int, error) {
 	defaultLimit := 2
 	limitStr := os.Getenv(DatapathLimitKey)
@@ -211,8 +220,6 @@ func GetCSPPath() string {
 func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
 }
-
-const printValueStr = "%s set to \"%s\""
 
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
