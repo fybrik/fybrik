@@ -20,7 +20,9 @@
 TLS 1.0–1.2 cipher suites. TLS 1.3 cipher suites are not configurable.)
 - In order to allow automatic certificates renew or revoke, [cert-manager](https://cert-manager.io/) can be used to 
   manage the certificates.
-- If a server is configured to use TLS it will not support unencrypted (e.g. HTTP) communications. 
+- If a server is configured to use TLS it will not support unencrypted (e.g. HTTP) communications.
+- The current implementation will not automatically reload renewed certificates and requires the restart of relevant Pods.
+  In the future, we need to add a mechanism to do it automatically without restart of Pods.
 
 ## Implementation Design
 - Certificates, keys and CA certificates will be stored in Kubernetes secrets and mounted to the relevant Pods as 
