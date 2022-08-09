@@ -8,7 +8,7 @@ The core parts of Fybrik are based on Kubernetes controllers and Custom Resource
 
 The primary interaction object for a data user is the `FybrikApplication` custom resource (1) where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
 
-![Architecture](../static/workflow_multicluster.svg)
+![Architecture](../static/architecture.png)
 
 Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) Fybrik and modules. 
 [Modules](./modules.md) (M) describe capabilities that can be included in a data plane.  These may be existing open source or third party service, or custom ones.  The module of a service indicates the capabilities it supports, the formats and interfaces, and how to deploy the service.  Modules may describe externally deployed services, or services deployed by fybrik.  Examples of modules are those that provide read/write access or produce implicit copies that serve as lower latency caches of remote assets. Modules may also perform actions to enforce data governance policy decisions, such as masking or redaction as examples.
@@ -26,7 +26,3 @@ updates of said blueprints. Once all the blueprints on all clusters are ready th
 A single [blueprint](../reference/crds.md#blueprint) contains the specification of all assets that shall be accessed in a single cluster by a single application.
 The `BlueprintController` makes sure that a blueprint can deploy all needed modules and tracks their status. Once e.g. an implicit-copy module finishes the copy the blueprint is also in a ready state.
 A read or write module is in ready state as soon as the proxy service such as the arrow-flight module is running. 
-
-In this example an [implicit-copy module](../reference/ddc.md) copies data from a remote postgres database into a S3 compatible ceph instance.
-The arrow-flight module then locally serves the data to the user via the Arrow flight protocol. Credentials are handled by the modules (11) and are never exposed to the user. The application reads from and writes data to allowed targets. 
-Requests are handled by FybrikModule instances(12). The application can not interact with unauthorized targets.
