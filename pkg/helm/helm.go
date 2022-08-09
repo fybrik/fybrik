@@ -154,10 +154,8 @@ func NewHelmerImpl(chartsPath string) *Impl {
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	uninstall.Wait = true
-	interval, err := environment.GetHelmWaitTimeout()
-	if err != nil {
-		return nil, err
-	}
+	// If an error exists it is logged in LogEnvVariables and a default value is used
+	interval, _ := environment.GetHelmWaitTimeout()
 	uninstall.Timeout = interval
 	return uninstall.Run(releaseName)
 }
