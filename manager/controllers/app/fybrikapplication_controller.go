@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -64,7 +64,7 @@ type FybrikApplicationReconciler struct {
 
 type ApplicationContext struct {
 	Log         *zerolog.Logger
-	Application *api.FybrikApplication
+	Application *fapp.FybrikApplication
 	UUID        string
 }
 
@@ -73,9 +73,21 @@ var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json
 
 const (
 	FybrikApplicationKind = "FybrikApplication"
-	ConfigAnnotation      = "kubectl.kubernetes.io/last-applied-configuration"
 	PlotterUpdatePrefix   = "plotter_"
 	Interval              = 10
+)
+
+// ErrorMessages that are reported to the user
+const (
+	InvalidAssetID              string = "the asset does not exist"
+	ReadAccessDenied            string = "governance policies forbid access to the data"
+	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
+	WriteNotAllowed             string = "governance policies forbid writing of the data"
+	StorageAccountUndefined     string = "no storage account has been defined"
+	ModuleNotFound              string = "no module has been registered"
+	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
+	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -95,7 +107,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		plotterUpdate = true
 		nsName.Name = nsName.Name[len(PlotterUpdatePrefix):]
 	}
-	application := &api.FybrikApplication{}
+	application := &fapp.FybrikApplication{}
 	if err := r.Get(ctx, nsName, application); err != nil {
 		sublog.Warn().Msg("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -136,10 +148,8 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if err := r.removeFinalizers(ctx, applicationContext); err != nil {
 			return ctrl.Result{}, err
 		}
-		initStatus(applicationContext.Application)
 		applicationContext.Log.Info().Msg("No plotter will be generated since no datasets are specified")
-		application.Status.ObservedGeneration = appVersion
-		return ctrl.Result{}, utils.UpdateStatus(ctx, r.Client, application, observedStatus)
+		return ctrl.Result{}, nil
 	}
 
 	// check if reconcile is required
@@ -186,7 +196,7 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 	return &types.NamespacedName{Name: name, Namespace: environment.GetSystemNamespace()}
 }
 
-func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status api.ObservedState) {
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fapp.ObservedState) {
 	if applicationContext.Application.Status.AssetStates == nil {
 		initStatus(applicationContext.Application)
 	}
@@ -261,15 +271,18 @@ func (r *FybrikApplicationReconciler) getFinalizerName() string {
 func (r *FybrikApplicationReconciler) removeFinalizers(ctx context.Context, applicationContext ApplicationContext) error {
 	// finalizer
 	finalizerName := r.getFinalizerName()
+	original := applicationContext.Application.DeepCopy()
+	initStatus(applicationContext.Application)
+	applicationContext.Application.Status.ObservedGeneration = applicationContext.Application.GetGeneration()
+	if err := r.deleteExternalResources(applicationContext); err != nil {
+		return err
+	}
+	if err := utils.UpdateStatus(ctx, r.Client, applicationContext.Application, &original.Status); err != nil {
+		return err
+	}
 	if ctrlutil.ContainsFinalizer(applicationContext.Application, finalizerName) {
-		original := applicationContext.Application.DeepCopy()
-		// the finalizer is present - delete the allocated resources
-		if err := r.deleteExternalResources(applicationContext); err != nil {
-			return err
-		}
 		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 		ctrlutil.RemoveFinalizer(applicationContext.Application, finalizerName)
-		// use Patch to preserve the generation version
 		if err := r.Patch(ctx, applicationContext.Application, client.MergeFrom(original)); err != nil {
 			return err
 		}
@@ -325,7 +338,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 }
 
 // setVirtualEndpoints populates the endpoints in the status of the fybrikapplication
-func setVirtualEndpoints(application *api.FybrikApplication, flows []api.Flow) {
+func setVirtualEndpoints(application *fapp.FybrikApplication, flows []fapp.Flow) {
 	endpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		// sanity check
@@ -360,7 +373,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	// clear status
 	initStatus(applicationContext.Application)
 	if applicationContext.Application.Status.ProvisionedStorage == nil {
-		applicationContext.Application.Status.ProvisionedStorage = make(map[string]api.DatasetDetails)
+		applicationContext.Application.Status.ProvisionedStorage = make(map[string]fapp.DatasetDetails)
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
@@ -410,14 +423,14 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 
 	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
-	ownerRef := &api.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
+	ownerRef := &fapp.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
 	if err := r.ResourceInterface.CreateOrUpdateResource(ownerRef, resourceRef, plotterSpec,
 		applicationContext.Application.Labels, applicationContext.UUID); err != nil {
 		applicationContext.Log.Error().Err(err).Str(logging.ACTION, logging.CREATE).Msgf("Error creating %s", resourceRef.Kind)
-		if err.Error() == api.InvalidClusterConfiguration {
+		if err.Error() == InvalidClusterConfiguration {
 			applicationContext.Application.Status.ErrorMessage = err.Error()
 			return ctrl.Result{}, nil
 		}
@@ -458,7 +471,7 @@ func (r *FybrikApplicationReconciler) Environment() (*datapath.Environment, erro
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *api.FybrikApplication, dataCtx *api.DataContext,
+func CreateDataRequest(application *fapp.FybrikApplication, dataCtx *fapp.DataContext,
 	assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flow taxonomy.DataFlow
 
@@ -613,7 +626,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[region] = actions
-		} else if err.Error() != api.WriteNotAllowed {
+		} else if err.Error() != WriteNotAllowed {
 			return err
 		}
 	}
@@ -621,11 +634,11 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
 	// no account is defined, return an error for write and copy flows
 	if len(env.StorageAccounts) == 0 && accountRequired {
-		return errors.New(api.StorageAccountUndefined)
+		return errors.New(StorageAccountUndefined)
 	}
 	// write is denied to all accounts, return Deny for write and copy flows
 	if len(req.StorageRequirements) == 0 && accountRequired {
-		return errors.New(api.WriteNotAllowed)
+		return errors.New(WriteNotAllowed)
 	}
 	return nil
 }
@@ -686,9 +699,9 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			// the owned resource is deleted - no updates should be sent
 			return []reconcile.Request{}
 		}
-		namespace, foundNamespace := labels[api.ApplicationNamespaceLabel]
-		name, foundName := labels[api.ApplicationNameLabel]
-		if !foundNamespace || !foundName {
+		namespace := utils.GetApplicationNamespaceFromLabels(labels)
+		name := utils.GetApplicationNameFromLabels(labels)
+		if namespace == "" || name == "" {
 			return []reconcile.Request{}
 		}
 		return []reconcile.Request{
@@ -704,9 +717,9 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
-		For(&api.FybrikApplication{}).
+		For(&fapp.FybrikApplication{}).
 		Watches(&source.Kind{
-			Type: &api.Plotter{},
+			Type: &fapp.Plotter{},
 		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
 }
 
@@ -719,7 +732,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 		return
 	}
 	switch err.Error() {
-	case api.InvalidAssetID, api.ReadAccessDenied, api.CopyNotAllowed, api.WriteNotAllowed, api.InvalidAssetDataStore:
+	case InvalidAssetID, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, InvalidAssetDataStore:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
 		setErrorCondition(appContext, assetID, err.Error())
@@ -728,16 +741,16 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 
 func ownerLabels(id types.NamespacedName) map[string]string {
 	return map[string]string{
-		api.ApplicationNamespaceLabel: id.Namespace,
-		api.ApplicationNameLabel:      id.Name,
+		utils.ApplicationNamespaceLabel: id.Namespace,
+		utils.ApplicationNameLabel:      id.Name,
 	}
 }
 
 // GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
-func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikModule, error) {
+func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikModule, error) {
 	ctx := context.Background()
-	moduleMap := make(map[string]*api.FybrikModule)
-	var moduleList api.FybrikModuleList
+	moduleMap := make(map[string]*fapp.FybrikModule)
+	var moduleList fapp.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return moduleMap, err
 	}
@@ -748,12 +761,12 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*api.FybrikMod
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*api.FybrikStorageAccount, error) {
-	var accountList api.FybrikStorageAccountList
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fapp.FybrikStorageAccount, error) {
+	var accountList fapp.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	accounts := []*api.FybrikStorageAccount{}
+	accounts := []*fapp.FybrikStorageAccount{}
 	for i := range accountList.Items {
 		accounts = append(accounts, accountList.Items[i].DeepCopy())
 	}
@@ -772,14 +785,14 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
-		details := &api.DataStore{}
+		details := &fapp.DataStore{}
 		if info.Details != nil {
 			details = info.Details.DeepCopy()
 		}
 
-		applicationContext.Application.Status.ProvisionedStorage[datasetID] = api.DatasetDetails{
+		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fapp.DatasetDetails{
 			DatasetRef:       info.Storage.Name,
-			SecretRef:        api.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+			SecretRef:        fapp.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
 		}
@@ -803,7 +816,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 }
 
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *datapath.Environment,
-	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *api.PlotterSpec, error) {
+	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *fapp.PlotterSpec, error) {
 	plotterGen := &PlotterGenerator{
 		Client:             r.Client,
 		Log:                applicationContext.Log,
@@ -812,13 +825,13 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 
-	plotterSpec := &api.PlotterSpec{
+	plotterSpec := &fapp.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,
 		AppInfo:          applicationContext.Application.Spec.AppInfo,
-		Assets:           map[string]api.AssetDetails{},
-		Flows:            []api.Flow{},
+		Assets:           map[string]fapp.AssetDetails{},
+		Flows:            []fapp.Flow{},
 		ModulesNamespace: environment.GetDefaultModulesNamespace(),
-		Templates:        map[string]api.Template{},
+		Templates:        map[string]fapp.Template{},
 	}
 
 	paths, err := solve(env, requirements, applicationContext.Log)

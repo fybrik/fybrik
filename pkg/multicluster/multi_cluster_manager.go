@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
 type ClusterLister interface {
@@ -18,9 +18,9 @@ type ClusterLister interface {
 
 type ClusterManager interface {
 	ClusterLister
-	GetBlueprint(cluster string, namespace string, name string) (*v1alpha1.Blueprint, error)
-	CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error
-	UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error
+	GetBlueprint(cluster string, namespace string, name string) (*app.Blueprint, error)
+	CreateBlueprint(cluster string, blueprint *app.Blueprint) error
+	UpdateBlueprint(cluster string, blueprint *app.Blueprint) error
 	DeleteBlueprint(cluster string, namespace string, name string) error
 }
 

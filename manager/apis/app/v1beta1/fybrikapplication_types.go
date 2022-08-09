@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package v1beta1
 
 import (
 	"github.com/c2h5oh/datasize"
@@ -91,19 +91,6 @@ type FybrikApplicationSpec struct {
 	// +required
 	Data []DataContext `json:"data"`
 }
-
-// ErrorMessages that are reported to the user
-const (
-	InvalidAssetID              string = "the asset does not exist"
-	ReadAccessDenied            string = "governance policies forbid access to the data"
-	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
-	WriteNotAllowed             string = "governance policies forbid writing of the data"
-	StorageAccountUndefined     string = "no storage account has been defined"
-	ModuleNotFound              string = "no module has been registered"
-	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
-	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
-	InvalidAssetDataStore       string = "the asset data store is not supported"
-)
 
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
@@ -209,6 +196,7 @@ type FybrikApplicationStatus struct {
 // in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically
 // by the manager from the credential management system.
 // +kubebuilder:object:root=true
+// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 type FybrikApplication struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -231,9 +219,3 @@ type FybrikApplicationList struct {
 func init() {
 	SchemeBuilder.Register(&FybrikApplication{}, &FybrikApplicationList{})
 }
-
-const (
-	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
-	ApplicationNameLabel      = "app.fybrik.io/app-name"
-)

@@ -17,15 +17,15 @@ import (
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	api "fybrik.io/fybrik/manager/apis/app/v1alpha1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 const (
-	stepNameHashLength       = 10
-	hashPostfixLength        = 5
-	k8sMaxConformNameLength  = 63
-	helmMaxConformNameLength = 53
+	stepNameHashLength                               = 10
+	hashPostfixLength                                = 5
+	k8sMaxConformNameLength                          = 63
+	helmMaxConformNameLength                         = 53
+	S3                       taxonomy.ConnectionType = "s3"
 )
 
 // IsDenied returns true if the data access is denied
@@ -133,26 +133,6 @@ func Intersection(set1, set2 []string) []string {
 	return res
 }
 
-const FybrikAppUUID = "app.fybrik.io/app-uuid"
-
-// GetFybrikApplicationUUID returns a globally unique ID for the FybrikApplication instance.
-// It must be unique over time and across clusters, even after the instance has been deleted,
-// because this ID will be used for logging purposes.
-func GetFybrikApplicationUUID(fapp *api.FybrikApplication) string {
-	// Use the clusterwise unique kubernetes id.
-	// No need to add cluster because FybrikApplication instances can only be created on the coordinator cluster.
-	return string(fapp.GetObjectMeta().GetUID())
-}
-
-// GetFybrikApplicationUUIDfromAnnotations returns the UUID passed to the resource in its annotations
-func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) string {
-	uuid, founduuid := annotations[FybrikAppUUID]
-	if !founduuid {
-		return "UUID missing"
-	}
-	return uuid
-}
-
 // UpdateStatus updates the resource status
 func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, previousStatus interface{}) error {
 	err := cl.Status().Update(ctx, obj)
@@ -186,4 +166,8 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		res.Object[statusKey] = currentStatus
 		return cl.Status().Update(ctx, res)
 	})
+}
+
+func GetDefaultConnectionType() taxonomy.ConnectionType {
+	return S3
 }

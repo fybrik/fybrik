@@ -267,12 +267,10 @@ func (r *Impl) Package(chartPath, destinationPath, version string) error {
 // Pull helm chart from repo
 func (r *Impl) Pull(cfg *action.Configuration, ref, destination string) error {
 	if r.localChartsMountPath != "" {
-		var err error
 		// if chart mounted in container, no need to pull
-		if _, err = os.Stat(r.localChartsMountPath + chartsDir + ref); err == nil {
+		if _, err := os.Stat(r.localChartsMountPath + chartsDir + ref); err == nil {
 			return nil
 		}
-		return err
 	}
 
 	chartRef, err := parseReference(ref)

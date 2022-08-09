@@ -11,7 +11,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/multicluster"
 )
@@ -40,11 +40,11 @@ func (cm *localClusterManager) IsMultiClusterSetup() bool {
 }
 
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
-func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*v1alpha1.Blueprint, error) {
+func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*app.Blueprint, error) {
 	if cluster != environment.GetLocalClusterName() {
 		return nil, fmt.Errorf("unregistered cluster: %s", cluster)
 	}
-	blueprint := &v1alpha1.Blueprint{}
+	blueprint := &app.Blueprint{}
 	namespacedName := client.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -55,16 +55,16 @@ func (cm *localClusterManager) GetBlueprint(cluster, namespace, name string) (*v
 }
 
 // CreateBlueprint creates a blueprint resource or updates an existing one
-func (cm *localClusterManager) CreateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (cm *localClusterManager) CreateBlueprint(cluster string, blueprint *app.Blueprint) error {
 	return cm.UpdateBlueprint(cluster, blueprint)
 }
 
 // UpdateBlueprint updates the given blueprint or creates a new one if it does not exist
-func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *v1alpha1.Blueprint) error {
+func (cm *localClusterManager) UpdateBlueprint(cluster string, blueprint *app.Blueprint) error {
 	if cluster != environment.GetLocalClusterName() {
 		return fmt.Errorf("unregistered cluster: %s", cluster) //nolint:revive // Ignore repetitive error msg
 	}
-	resource := &v1alpha1.Blueprint{
+	resource := &app.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      blueprint.Name,
 			Namespace: blueprint.Namespace,

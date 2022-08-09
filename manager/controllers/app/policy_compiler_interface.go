@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
@@ -26,7 +26,7 @@ import (
 
 var PolicyManagerTaxonomy = environment.GetDataDir() + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
-func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
+func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *fapp.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
@@ -102,9 +102,9 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			var message string
 			switch openapiReq.Action.ActionType {
 			case taxonomy.ReadFlow:
-				message = app.ReadAccessDenied
+				message = ReadAccessDenied
 			case taxonomy.WriteFlow:
-				message = app.WriteNotAllowed
+				message = WriteNotAllowed
 			}
 			return actions, errors.New(message)
 		}

@@ -4,18 +4,18 @@
 package app
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"github.com/rs/zerolog"
+
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
-
-	"github.com/rs/zerolog"
 )
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
-	Module      app.BlueprintModule
+	Module      fapp.BlueprintModule
 	ClusterName string
-	Scope       app.CapabilityScope
+	Scope       fapp.CapabilityScope
 }
 
 // RefineInstances collects all instances of the same read/write module with non "Asset" scope
@@ -27,7 +27,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 	for ind := range instances {
 		// If the module scope is of type "asset" then avoid trying to unify it with another module.
 		// Copy module is assumed to be of "asset" scope
-		if instances[ind].Scope == app.Asset {
+		if instances[ind].Scope == fapp.Asset {
 			newInstances = append(newInstances, instances[ind])
 			continue
 		}
@@ -48,8 +48,8 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *app.Plotter) map[string]app.BlueprintSpec {
-	blueprintMap := make(map[string]app.BlueprintSpec)
+func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *fapp.Plotter) map[string]fapp.BlueprintSpec {
+	blueprintMap := make(map[string]fapp.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
 	for ind := range instances {
@@ -71,12 +71,14 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 // Credentials for accessing data set are stored in a credential management system (such as vault) and
 // the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
-func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, clusterName string, plotter *app.Plotter) app.BlueprintSpec {
-	spec := app.BlueprintSpec{
+func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
+	clusterName string,
+	plotter *fapp.Plotter) fapp.BlueprintSpec {
+	spec := fapp.BlueprintSpec{
 		Cluster:          clusterName,
 		ModulesNamespace: plotter.Spec.ModulesNamespace,
-		Modules:          map[string]app.BlueprintModule{},
-		Application: &app.ApplicationDetails{
+		Modules:          map[string]fapp.BlueprintModule{},
+		Application: &fapp.ApplicationDetails{
 			WorkloadSelector: plotter.Spec.Selector.WorkloadSelector,
 			Context:          plotter.Spec.AppInfo,
 		},
@@ -85,7 +87,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec, cl
 	for ind := range instances {
 		modulename := instances[ind].Module.Name
 		instanceName := modulename
-		if instances[ind].Scope == app.Asset {
+		if instances[ind].Scope == fapp.Asset {
 			// Need unique name for each module
 			// if the module scope is one per asset then concat the id of the asset to it
 			instanceName = utils.CreateStepName(modulename, instances[ind].Module.AssetIDs[0])
