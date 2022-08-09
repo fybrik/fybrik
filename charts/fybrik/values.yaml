@@ -204,8 +204,9 @@ manager:
     # The name of the service account to use
     name: manager
 
-  podAnnotations:
-    sidecar.istio.io/inject: "true"
+  podAnnotations: {}
+  #  To enable Istio automatic sidecar injection add:
+  #  sidecar.istio.io/inject: "true"
 
   # Pod Security Context. If set, the fields of podSecurityContext override
   # the equivalent fields of .Values.global.podSecurityContext.
