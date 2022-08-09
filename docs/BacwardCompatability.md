@@ -15,27 +15,40 @@ The objects should be smoothly promoted to the new version (if required).
 - It must be possible to round-trip Fybrik version changes (convert to different API versions and back) with no loss of 
 information (Should we support downgrade ?)
 
+For the Fybrik versioning convention see **TODO**
+
+### Backward compatibility policy
+Fybrik will support up to 2 backward minor releases, e.g. the version v1.5.x should be able to work with releases v1.4.x
+and v1.3.x
+
 ## Fybrik components or features that can influence on compatability 
 
-*Note:* the least is not closed, and can be extended
+*Note:* the list is not closed, and can be extended
 
 - Custom Resource Definitions (CRDs)
 - Data Catalog Connector Interface
 - Policy Manager Interface
-- Certificates and Secret Management
 - IT Configuration Policies
 - IT attributes
-- Kubernetes Resources
 - ....
 
-## Fybrik Version Policy
-Fybrik uses [semantic versioning model](https://semver.org), which is the module adopted by wide range of projects, 
-e.g. Kubernetes, goLang, Helm and many others.
-Fybrik version starts from the `v` character and 
 
-Fybrik adapts GoLang [module version numbering](https://go.dev/doc/modules/version-numbers), which is very common 
-policy used by many other open-source projects. The release names should be according to the semantic versioning model
+## Custom Resource Definitions Upgrade Plan
+The CustomResourceDefinition API provides a workflow for introducing and upgrading to new versions of a 
+CustomResourceDefinition. For more information about 
+[serving multiple versions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#serving-multiple-versions-of-a-crd) of your CustomResourceDefinition 
+and migrating your objects from one version to another see 
+[Versions in CustomResourceDefinitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/)
 
+The first step of adding a new version is to "pick a conversion strategy. Since custom resource objects need to be able 
+to be served at both versions, that means they will sometimes be served at a different version than their storage 
+version. In order for this to be possible, the custom resource objects must sometimes be converted between the version 
+they are stored at and the version they are served at. If the conversion involves schema changes and requires custom 
+logic, a conversion **Webhook** should be used. If there are no schema changes, the default **None** conversion strategy may 
+be used and only the apiVersion field will be modified when serving different versions."
 
+Due to some Fybrik customers' limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate 
+possible CRD changes without changing its schema.
 
-## Kubernetes Resources
+We were able to change a required field in version v1 to an optional field in v2. In addition, we were able to add a new 
+optional field in v2. 
