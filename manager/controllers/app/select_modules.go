@@ -430,7 +430,7 @@ func (p *PathBuilder) validateModuleRestrictions(edge *datapath.Edge) bool {
 		restrict.Property = strings.Replace(restrict.Property, oldPrefix, newPrefix, 1)
 		restrictions = append(restrictions, restrict)
 	}
-	return p.validateRestrictions(restrictions, &moduleSpec, "")
+	return p.validateRestrictions(restrictions, &moduleSpec, edge.Module.Name)
 }
 
 func (p *PathBuilder) validateClusterRestrictions(edge *datapath.ResolvedEdge, cluster multicluster.Cluster) bool {
@@ -449,7 +449,7 @@ func (p *PathBuilder) validateClusterRestrictions(edge *datapath.ResolvedEdge, c
 func (p *PathBuilder) validateClusterRestrictionsPerCapability(capability taxonomy.Capability,
 	cluster multicluster.Cluster) bool {
 	restrictions := p.Asset.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
-	return p.validateRestrictions(restrictions, &cluster, "")
+	return p.validateRestrictions(restrictions, &cluster, cluster.Name)
 }
 
 // Validation of an object with respect to the admin config restrictions
