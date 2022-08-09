@@ -283,9 +283,9 @@ opaServer:
     use_tls: false
     certs:
       # Name of kubernetes tls secret that holds the opa server certificates.
-      # The secret should be of `kubernetes.io/tls` type such that the certificates in tls.crt and tls.key
-      # are passed as parameters to opa server at startup via the command line flags `--tls-cert-file=`
-      # and `--tls-private-key-file` respectively.
+      # The secret should be of `kubernetes.io/tls` type such that the certificates
+      # in tls.crt and tls.key are passed as parameters to opa server at startup
+      # via the command line flags `--tls-cert-file=`and `--tls-private-key-file` respectively.
       # Relavent if tls is used.
       # certSecretName: "test-tls-opa-server-certs"
       certSecretName: ""
@@ -293,6 +293,8 @@ opaServer:
       # which are used by opa-server to validate the connection to the clients
       # if mtls is enabled.
       # The CA certificates key in the secret should have `.crt` suffix.
+      # The certificates are passed as parameters to opa server at startup via
+      # the command line flags `--tls-ca-cert-file`.
       # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.

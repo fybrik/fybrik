@@ -87,13 +87,11 @@ spec:
           ports:
             {{- if .Values.opaServer.tls.use_tls }}
             - name: https
-              containerPort: 443
-              protocol: TCP
             {{- else }}
             - name: http
-              containerPort: 8181
-              protocol: TCP
             {{- end }}
+              containerPort: {{ .Values.opaServer.service.port }}
+              protocol: TCP
           resources:
             {{- toYaml .Values.opaServer.resources | nindent 12 }}
           volumeMounts:
