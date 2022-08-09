@@ -41,7 +41,7 @@ katalogConnector:
       cacertSecretName: "test-tls-ca-certs"
 
 opaConnector:
-  serverURL: https://opa:443
+  serverURL: https://opa:8443
   tls:
     use_tls: true
     use_mtls: true
@@ -52,17 +52,6 @@ opaConnector:
     port: 8443
 
 opaServer:
-
-  podSecurityContext:
-    runAsNonRoot: false
-    runAsUser: 0
-
-  containerSecurityContext:
-    privileged: true
-    allowPrivilegeEscalation: true
-    capabilities:
-      add:
-        - NET_BIND_SERVICE
 
   tls:
     use_tls: true
@@ -80,10 +69,10 @@ opaServer:
   - "--tls-cert-file=/data/tls-cert/tls.crt"
   - "--tls-private-key-file=/data/tls-cert/tls.key"
   - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
-  - "--addr=https://0.0.0.0:443"
+  - "--addr=https://0.0.0.0:8443"
 
   service:
-    port: 443
+    port: 8443
 
   # Bootstrap policies to load upon startup
   bootstrapPolicies:

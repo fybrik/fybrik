@@ -276,7 +276,7 @@ opaServer:
   #  - "--tls-cert-file=/data/tls-cert/tls.crt"
   #  - "--tls-private-key-file=/data/tls-cert/tls.key"
   #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
-  #  - "--addr=https://0.0.0.0:443"
+  #  - "--addr=https://0.0.0.0:8443"
 
 
   tls:
@@ -327,24 +327,15 @@ opaServer:
   # the equivalent fields of .Values.global.podSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
   podSecurityContext: {}
-  # for tls support add:
-  #  runAsNonRoot: false
-  #  runAsUser: 0
 
   # Container Security Context. If set, the fields of containerSecurityContext override
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
-  # for tls support add:
-  # privileged: true
-  # allowPrivilegeEscalation: true
-  # capabilities:
-  #   add:
-  #     - NET_BIND_SERVICE
 
   service:
     type: ClusterIP
-    # For tls connection use port 443
+    # For tls connection use port 8443
     port: 8181
 
   resources: {}
@@ -487,7 +478,7 @@ opaConnector:
 
   # Overrides the URL of the OPA server
   # Defaults to the address of the deployed OPA server
-  # If the OPA server is configured with TLS then use https://opa:443
+  # If the OPA server is configured with TLS then use https://opa:8443
   serverURL:
 
   # Image name or a hub/image[:tag]
