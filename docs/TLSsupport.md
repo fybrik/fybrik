@@ -34,4 +34,5 @@ certificate files.
 - Other variables will be provided as Pod's environment variables: 
   - **"USE_TLS"** - use or not TLS, the server settings only
   - **"USE_MTLS"** - should the server require mutual TLS, the server settings only
-  - **"MIN_TLS_VERSION"** - minimal supported TLS version (exact values depend on the programming language)
+  - **"MIN_TLS_VERSION"** - minimal supported TLS version, possible values are `TLS-1.0`, `TLS-1.1`, `TLS-1.2` and 
+`TLS-1.3`. If value is not set, the default system value is used.
