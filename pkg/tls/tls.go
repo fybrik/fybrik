@@ -15,6 +15,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 const (
@@ -30,15 +31,6 @@ var cacertsDir = environment.GetDataDir() + "/tls-cacert"
 var certFile = certsDir + "/" + corev1.TLSCertKey
 var certPrivateKeyFile = certsDir + "/" + corev1.TLSPrivateKeyKey
 var CACertFileSuffix = ".crt"
-
-func pathExists(path string) bool {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-	}
-	return true
-}
 
 // isCertificateProvided returns true if the certificate file and private key were provided as expected.
 // Otherwise it returns false.
@@ -56,8 +48,8 @@ func isCertificateProvided(certFileExists, keyFileExists bool) (bool, error) {
 // getCertificate returns a certificate for the server/client if such provided.
 func getCertificate() (*tls.Certificate, error) {
 	// Mounted cert files.
-	certFileExists := pathExists(certFile)
-	keyFileExists := pathExists(certPrivateKeyFile)
+	certFileExists := utils.IsPathExists(certFile)
+	keyFileExists := utils.IsPathExists(certPrivateKeyFile)
 
 	certProvided, err := isCertificateProvided(certFileExists, keyFileExists)
 	if err != nil {
@@ -76,7 +68,7 @@ func getCertificate() (*tls.Certificate, error) {
 
 func find(root, ext string) ([]string, error) {
 	var a []string
-	dirExists := pathExists(cacertsDir)
+	dirExists := utils.IsPathExists(cacertsDir)
 	if !dirExists {
 		return nil, nil
 	}
