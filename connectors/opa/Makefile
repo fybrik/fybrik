@@ -14,8 +14,13 @@ all: docker-build docker-push
 
 .PHONY: docker-build
 docker-build: source-build
+ifdef FROM_IMAGE
+	docker build . -t ${IMG} --build-arg image=${FROM_IMAGE}
+	rm opa-connector
+else
 	docker build . -t ${IMG}
 	rm opa-connector
+endif
 
 .PHONY: source-build
 source-build:

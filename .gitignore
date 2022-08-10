@@ -29,6 +29,7 @@ bin
 .netrc
 
 .log
+.crt
 
 .vscode/*
 !.vscode/settings.json
