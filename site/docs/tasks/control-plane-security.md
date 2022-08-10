@@ -45,7 +45,7 @@ spec:
 
 The manager/connectors certificates are kept in Kubernetes secret of type tls which are mounted to the manager/connectors pods in fybrik deployment.
 
-For each component copy its certificate into a file named tls.crt. Copy the certificate key into a file named tls.key.
+For each component copy its certificate into a file named tls.crt. Copy the certificate key into a file named tls.key. (the files names used in this example can be changed)
 
 Use kubectl with the tls secret type to create the secrets.
 
@@ -62,7 +62,7 @@ If cert-manager is used to manage the certificates then the secret is automatica
 If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.
 If no private CA certificates are provided then the system CA certificates are used, otherwise the private CA certificates replace the system CA certificates.
 
-For each component copy the CA certificate into a file named ca.crt and use kubectl to create the tls-ca secret in the fybrik-system namespace.
+For each component copy the CA certificate into a file and use kubectl to create or patch the tls-ca secret in the fybrik-system namespace. In the following example ca.crt file is used to create the secret:
 
 ```bash
 kubectl -n fybrik-system create secret generic tls-ca \
