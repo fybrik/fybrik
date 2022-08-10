@@ -10,7 +10,8 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
-	"fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -269,11 +270,11 @@ func (p *PathBuilder) findPathsWithinLimit(source, sink *datapath.Node, n int) [
 // helper functions
 
 // CheckDependencies returns dependent modules
-func CheckDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, []string) {
-	var found []*v1alpha1.FybrikModule
+func CheckDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) ([]*fapp.FybrikModule, []string) {
+	var found []*fapp.FybrikModule
 	var missing []string
 	for _, dependency := range module.Spec.Dependencies {
-		if dependency.Type != v1alpha1.Module {
+		if dependency.Type != fapp.Module {
 			continue
 		}
 		if moduleMap[dependency.Name] == nil {
@@ -289,14 +290,14 @@ func CheckDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1al
 }
 
 // SupportsDependencies checks whether the module supports the dependency requirements
-func SupportsDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) bool {
+func SupportsDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) bool {
 	// check dependencies
 	_, missingModules := CheckDependencies(module, moduleMap)
 	return len(missingModules) == 0
 }
 
 // GetDependencies returns dependencies of a selected module
-func GetDependencies(module *v1alpha1.FybrikModule, moduleMap map[string]*v1alpha1.FybrikModule) ([]*v1alpha1.FybrikModule, error) {
+func GetDependencies(module *fapp.FybrikModule, moduleMap map[string]*fapp.FybrikModule) ([]*fapp.FybrikModule, error) {
 	dependencies, missingModules := CheckDependencies(module, moduleMap)
 	if len(missingModules) > 0 {
 		return dependencies, errors.New("Module " + module.Name + " has missing dependencies")
@@ -394,7 +395,7 @@ func (p *PathBuilder) getAssetConnectionNode() *datapath.Node {
 	var dataFormat taxonomy.DataFormat
 	// If the connection name is empty, the default protocol is s3.
 	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = v1alpha1.S3
+		protocol = utils.GetDefaultConnectionType()
 	} else {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat
@@ -429,7 +430,7 @@ func (p *PathBuilder) validateModuleRestrictions(edge *datapath.Edge) bool {
 		restrict.Property = strings.Replace(restrict.Property, oldPrefix, newPrefix, 1)
 		restrictions = append(restrictions, restrict)
 	}
-	return p.validateRestrictions(restrictions, &moduleSpec, "")
+	return p.validateRestrictions(restrictions, &moduleSpec, edge.Module.Name)
 }
 
 func (p *PathBuilder) validateClusterRestrictions(edge *datapath.ResolvedEdge, cluster multicluster.Cluster) bool {
@@ -448,7 +449,7 @@ func (p *PathBuilder) validateClusterRestrictions(edge *datapath.ResolvedEdge, c
 func (p *PathBuilder) validateClusterRestrictionsPerCapability(capability taxonomy.Capability,
 	cluster multicluster.Cluster) bool {
 	restrictions := p.Asset.Configuration.ConfigDecisions[capability].DeploymentRestrictions.Clusters
-	return p.validateRestrictions(restrictions, &cluster, "")
+	return p.validateRestrictions(restrictions, &cluster, cluster.Name)
 }
 
 // Validation of an object with respect to the admin config restrictions

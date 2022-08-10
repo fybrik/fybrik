@@ -24,6 +24,7 @@ const (
 	TLSDisabledMsg  string = "TLS authentication is disabled"
 	MTLSEnabledMsg  string = "Mutual TLS authentication is enabled"
 	MTLSDisabledMsg string = "Mutual TLS authentication is disabled"
+	BadCACerts      string = "please set both CA certificate secret name and namespace (one is missing)"
 )
 
 // GetCertificatesFromSecret reads the certificates from kubernetes
@@ -93,18 +94,31 @@ func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Con
 		}
 		return config, nil
 	}
+	var CACertsData map[string][]byte
 	serverLog.Info().Msg(MTLSEnabledMsg)
-	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
+	if caSecretName != "" && caSecretNamespace != "" {
+		serverLog.Log().Msg("GetServerConfig: get CA certificates from secret")
+		CACertsData, err = GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
+		if err != nil {
+			return nil, err
+		}
+	} else if caSecretName == "" && caSecretNamespace == "" {
+		serverLog.Log().Msg("GetServerConfig: using system CA certificates")
+	} else {
+		return nil, errors.New(BadCACerts)
+	}
+
+	// init the certificates pool with the system CA certificates
+	caCertPool, err := x509.SystemCertPool()
 	if err != nil {
 		return nil, err
 	}
-	CACertPool := x509.NewCertPool()
 	for key, element := range CACertsData {
 		// skip non cerificate keys like crt.key if exists in the secret
 		if !strings.HasSuffix(key, TLSCertKeySuffix) {
 			continue
 		}
-		if !CACertPool.AppendCertsFromPEM(element) {
+		if !caCertPool.AppendCertsFromPEM(element) {
 			serverLog.Error().Err(err).Msg(err.Error())
 			return nil, errors.New("error in GetServerConfig in AppendCertsFromPEM trying to lead key:" + key)
 		}
@@ -113,7 +127,7 @@ func GetServerConfig(serverLog *zerolog.Logger, client kclient.Client) (*tls.Con
 	config = &tls.Config{
 		Certificates: []tls.Certificate{loadedCertServer},
 		ClientAuth:   tls.RequireAndVerifyClientCert,
-		ClientCAs:    CACertPool,
+		ClientCAs:    caCertPool,
 		MinVersion:   tls.VersionTLS13,
 	}
 
@@ -134,19 +148,27 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.
 	// validate certificate or the server. Used when mutual tls is used.
 	caSecretNamespace := environment.GetCACERTSecretNamespace()
 
-	if caSecretName == "" || caSecretNamespace == "" {
-		// no CA certificates found, returning nil
-		clientLog.Info().Msg(TLSDisabledMsg)
-		return nil, nil
-	}
-	clientLog.Info().Msg(TLSEnabledMsg)
-	CACertsData, err := GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
-	if err != nil {
-		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get ca cert")
-		return nil, err
+	var CACertsData map[string][]byte
+	var err error
+	if caSecretName != "" && caSecretNamespace != "" {
+		clientLog.Log().Msg("get CA certificates from a secret in GetClientTLSConfig")
+		CACertsData, err = GetCertificatesFromSecret(client, caSecretName, caSecretNamespace)
+		if err != nil {
+			clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret trying to get CA cert")
+			return nil, err
+		}
+	} else if caSecretName == "" && caSecretNamespace == "" {
+		clientLog.Log().Msg("GetClientTLSConfig: load system CA certificates")
+	} else {
+		clientLog.Log().Msg(BadCACerts)
+		return nil, errors.New(BadCACerts)
 	}
 
-	caCertPool := x509.NewCertPool()
+	// init the certificates pool with the system CA certificates
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, err
+	}
 	for key, element := range CACertsData {
 		// skip non cerificate keys like crt.key if exists in the secret
 		if !strings.HasSuffix(key, TLSCertKeySuffix) {
@@ -160,7 +182,6 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.
 
 	var tlsConfig *tls.Config
 	if certSecretName == "" || certSecretNamespace == "" {
-		clientLog.Info().Msg(MTLSDisabledMsg)
 		tlsConfig = &tls.Config{
 			RootCAs:    caCertPool,
 			MinVersion: tls.VersionTLS13,
@@ -168,7 +189,6 @@ func GetClientTLSConfig(clientLog *zerolog.Logger, client kclient.Client) (*tls.
 		return tlsConfig, nil
 	}
 
-	clientLog.Info().Msg(MTLSEnabledMsg)
 	clientCertsData, err := GetCertificatesFromSecret(client, certSecretName, certSecretNamespace)
 	if err != nil {
 		clientLog.Error().Err(err).Msg("error in GetCertificatesFromSecret tring to get client/server cert")

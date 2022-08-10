@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
@@ -99,12 +99,15 @@ func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.
 	blueprint *fapp.Blueprint) error {
 	// finalizer
 	if ctrlutil.ContainsFinalizer(blueprint, BlueprintFinalizerName) {
+		original := blueprint.DeepCopy()
 		if err := r.deleteExternalResources(cfg, blueprint); err != nil {
 			r.Log.Error().Err(err).Msg("Error while deleting owned resources")
 		}
 		// remove the finalizer from the list and update it, because it needs to be deleted together with the object
 		ctrlutil.RemoveFinalizer(blueprint, BlueprintFinalizerName)
-		return r.Client.Update(ctx, blueprint)
+		if err := r.Patch(ctx, blueprint, client.MergeFrom(original)); err != nil {
+			return client.IgnoreNotFound(err)
+		}
 	}
 	return nil
 }
@@ -305,12 +308,12 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	if blueprint.Labels == nil {
 		blueprint.Labels = map[string]string{}
 	}
-	blueprint.Labels[fapp.BlueprintNameLabel] = blueprint.Name
-	blueprint.Labels[fapp.BlueprintNamespaceLabel] = blueprint.Namespace
+	blueprint.Labels[utils.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[utils.BlueprintNamespaceLabel] = blueprint.Namespace
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
-		helmValues := fapp.HelmValues{
+		helmValues := HelmValues{
 			ModuleArguments:    module.Arguments,
 			ApplicationDetails: blueprint.Spec.Application,
 			Labels:             blueprint.Labels,
@@ -322,8 +325,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(blueprint.Labels[fapp.ApplicationNameLabel],
-			blueprint.Labels[fapp.ApplicationNamespaceLabel], instanceName)
+		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+			utils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 

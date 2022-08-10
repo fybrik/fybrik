@@ -27,6 +27,11 @@ const (
 	envServicePort = "SERVICE_PORT"
 )
 
+var (
+	gitCommit string
+	gitTag    string
+)
+
 // RootCmd defines the root cli command
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -72,6 +77,7 @@ func RunCmd() *cobra.Command {
 			}
 
 			handler := connector.NewHandler(client)
+			handler.Log.Info().Msg("based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 			router := connector.NewRouter(handler)
 			router.Use(gin.Logger())
 			bindAddress := fmt.Sprintf("%s:%d", ip, port)

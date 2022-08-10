@@ -4,10 +4,11 @@
 
 source ./common.sh
 
-header_text "Checking for bin/yq"
-[[ -f bin/yq ]] && exit 0
 
-header_text "Installing bin/yq"
+header_text "Checking for bin/yq ${YQ_VERSION}"
+[[ -f bin/yq && `bin/yq --version | awk '{print $3}'` == ${YQ_VERSION} ]] && exit 0
+
+header_text "Installing bin/yq ${YQ_VERSION}"
 mkdir -p ./bin
-curl -L https://github.com/mikefarah/yq/releases/download/v4.6.0/yq_${os}_${arch} -o bin/yq
+curl -L https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_${os}_${arch} -o bin/yq
 chmod +x bin/yq

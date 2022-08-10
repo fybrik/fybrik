@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/rs/zerolog"
 )
@@ -69,19 +70,27 @@ const (
 
 // GetLoggingVerbosity returns the level as per https://github.com/rs/zerolog#leveled-logging
 func GetLoggingVerbosity() zerolog.Level {
-	verbosityStr := os.Getenv("LOGGING_VERBOSITY")
-
+	retDefault := zerolog.TraceLevel
+	verbosityStr, ok := os.LookupEnv("LOGGING_VERBOSITY")
+	verbosityStr = strings.TrimSpace(verbosityStr)
+	if !ok || verbosityStr == "" {
+		return retDefault
+	}
+	fmt.Printf("verbosity %v\n", verbosityStr)
 	verbosityInt, err := strconv.Atoi(verbosityStr)
 	if err != nil {
-		fmt.Println("Trouble reading verbosity. Found " + verbosityStr + ". Using trace as default")
-		return zerolog.TraceLevel
+		fmt.Printf("Trouble reading verbosity, err = %v. Found %s. Using trace as default", err, verbosityStr)
+		return retDefault
 	}
 	return zerolog.Level(verbosityInt)
 }
 
 // GetPrettyLogging returns the indication of whether logs should be human readable or pure json
 func PrettyLogging() bool {
-	prettyStr := os.Getenv("PRETTY_LOGGING")
+	prettyStr, ok := os.LookupEnv("PRETTY_LOGGING")
+	if !ok {
+		return true
+	}
 	prettyBool, err := strconv.ParseBool(prettyStr)
 	if err != nil {
 		fmt.Println("Error parsing PRETTY_LOGGING")

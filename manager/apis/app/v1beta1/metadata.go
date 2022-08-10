@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1alpha1
+package v1beta1
 
 // ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
 type ObservedState struct {

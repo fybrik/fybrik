@@ -9,7 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -279,7 +280,7 @@ func (dpc *DataPathCSP) modcapSatisfiesRestrictions(modcap *moduleAndCapability,
 	newPrefix := oldPrefix + strconv.Itoa(modcap.capabilityIdx) + "."
 	for _, restriction := range restrictions {
 		restriction.Property = strings.Replace(restriction.Property, oldPrefix, newPrefix, 1)
-		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, modcap.module.Spec, "") {
+		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, modcap.module.Spec, modcap.module.Name) {
 			return false
 		}
 	}
@@ -289,7 +290,7 @@ func (dpc *DataPathCSP) modcapSatisfiesRestrictions(modcap *moduleAndCapability,
 // Decide if a given cluster satisfies all administrator's restrictions
 func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluster, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
-		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &cluster, "") {
+		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &cluster, cluster.Name) {
 			return false
 		}
 	}
@@ -996,7 +997,7 @@ func arrayOfSameInt(num, arrayLen int) []string {
 
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
-		return taxonomy.Interface{Protocol: appApi.S3, DataFormat: ""}
+		return taxonomy.Interface{Protocol: utils.GetDefaultConnectionType(), DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }

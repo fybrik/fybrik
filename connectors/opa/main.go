@@ -28,6 +28,11 @@ const (
 	envServicePort  = "SERVICE_PORT"
 )
 
+var (
+	gitCommit string
+	gitTag    string
+)
+
 // NewRouter returns a new router.
 func NewRouter(controller *ConnectorController) *gin.Engine {
 	router := gin.Default()
@@ -75,6 +80,7 @@ func RunCmd() *cobra.Command {
 
 			// Create and start connector
 			controller := NewConnectorController(opaServerURL)
+			controller.Log.Info().Msg("based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 			router := NewRouter(controller)
 			router.Use(gin.Logger())
 
