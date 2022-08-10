@@ -1,6 +1,6 @@
 # Enabling data-plane optimization
 
-Fybrik takes into account data governance and hard IT config policies when building a data plane. However, it does not by default take into account **soft** IT config policies (i.e., optimization goals). To enable data-plane optimization, the [Optimizer component](../concepts/optimizer.md) must be enabled.
+Fybrik takes into account data governance and hard IT config policies when building a data plane. However, it does not by default take into account IT config optimization policies (i.e., optimization goals). To enable data-plane optimization, the [Optimizer component](../concepts/optimizer.md) must be enabled.
 
 ## Enabling the optimizer
 Enabling the optimizer is done by setting the `solver.enabled` property to `true` in Fybrik's Helm chart. Assuming Fybrik is already deployed, the following command can be used to enable the optimizer:
