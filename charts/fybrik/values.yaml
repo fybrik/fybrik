@@ -273,9 +273,10 @@ opaServer:
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
   # for tls support add:
-  #  - "--authentication=tls"
+  # more information can be found in https://www.openpolicyagent.org/docs/latest/security/
   #  - "--tls-cert-file=/data/tls-cert/tls.crt"
   #  - "--tls-private-key-file=/data/tls-cert/tls.key"
+  #  - "--authentication=tls"
   #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
   #  - "--addr=https://0.0.0.0:8443"
 
