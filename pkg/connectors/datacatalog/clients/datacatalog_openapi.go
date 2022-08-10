@@ -6,7 +6,6 @@ package clients
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"emperror.dev/errors"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
@@ -25,8 +24,7 @@ type openAPIDataCatalog struct {
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name, connectionURL string, connectionTimeout time.Duration,
-	schema *kruntime.Scheme) DataCatalog {
+func NewOpenAPIDataCatalog(name, connectionURL string, schema *kruntime.Scheme) DataCatalog {
 	log := logging.LogInit(logging.SETUP, "datacatalog client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),

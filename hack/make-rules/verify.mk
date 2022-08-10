@@ -58,13 +58,5 @@ misspell: $(TOOLBIN)/misspell
 misspell-fix: $(TOOLBIN)/misspell
 	$(TOOLBIN)/misspell -w ./**
 
-CODE_MAINT += protos-lint
-.PHONY: protos-lint
-protos-lint: $(TOOLBIN)/protoc $(TOOLBIN)/protoc-gen-lint
-	@for i in $$(find . -name protos -type d); do \
-		echo "protoc-gen-lint on $$i/*.proto"; \
-		PATH=$(ABSTOOLBIN) protoc -I $$i/ $$i/*.proto --lint_out=sort_imports:$$i; \
-	done
-
 .PHONY: verify
 verify: $(CODE_MAINT)

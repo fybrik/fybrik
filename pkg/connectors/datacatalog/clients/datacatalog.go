@@ -5,10 +5,6 @@ package clients
 
 import (
 	"io"
-	"strings"
-	"time"
-
-	"emperror.dev/errors"
 
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 
@@ -24,15 +20,7 @@ type DataCatalog interface {
 	io.Closer
 }
 
-func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration,
+func NewDataCatalog(catalogProviderName, catalogConnectorAddress string,
 	schema *kruntime.Scheme) (DataCatalog, error) {
-	if strings.HasPrefix(catalogConnectorAddress, "http") {
-		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout, schema), nil
-	}
-
-	catalogClient, err := NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create GRPC data catalog client")
-	}
-	return catalogClient, nil
+	return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, schema), nil
 }
