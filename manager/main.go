@@ -27,7 +27,6 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
@@ -40,6 +39,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 const certSubDir = "/k8s-webhook-server"

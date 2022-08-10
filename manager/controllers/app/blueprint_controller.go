@@ -35,10 +35,11 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 const (
@@ -61,8 +62,8 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).
 		Str("blueprint", req.NamespacedName.String()).Logger()
 	cfg, err := r.Helmer.GetConfig(blueprint.Spec.ModulesNamespace, log.Printf)
 	if err != nil {
@@ -85,7 +86,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if !equality.Semantic.DeepEqual(&blueprint.Status, observedStatus) {
 		log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating status for desired generation " + fmt.Sprint(blueprint.GetGeneration()))
-		if err := utils.UpdateStatus(ctx, r.Client, &blueprint, observedStatus); err != nil {
+		if err := managerUtils.UpdateStatus(ctx, r.Client, &blueprint, observedStatus); err != nil {
 			return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update blueprint status", "status", blueprint.Status)
 		}
 	}
@@ -287,7 +288,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 //nolint:gocyclo
 func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
 	blueprint *fapp.Blueprint) (ctrl.Result, error) {
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
@@ -308,8 +309,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	if blueprint.Labels == nil {
 		blueprint.Labels = map[string]string{}
 	}
-	blueprint.Labels[utils.BlueprintNameLabel] = blueprint.Name
-	blueprint.Labels[utils.BlueprintNamespaceLabel] = blueprint.Namespace
+	blueprint.Labels[managerUtils.BlueprintNameLabel] = blueprint.Name
+	blueprint.Labels[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
 
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
@@ -325,8 +326,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
-		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
-			utils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
+		releaseName := managerUtils.GetReleaseName(managerUtils.GetApplicationNameFromLabels(blueprint.Labels),
+			managerUtils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 
@@ -444,7 +445,7 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 		// Could not retrieve the list of modules, will retry later
 		return corev1.ConditionUnknown, ""
 	}
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(res.GetAnnotations())
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(res.GetAnnotations())
 
 	if expected == nil {
 		// use kstatus to compute the status of the resources for them the expected results have not been specified
@@ -476,7 +477,7 @@ func (r *BlueprintReconciler) checkResourceStatus(res *unstructured.Unstructured
 
 func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 	// convert the unstructured data to Labels interface to use Has and Get methods for retrieving data
-	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	labelsImpl := managerUtils.UnstructuredAsLabels{Data: res}
 	if !labelsImpl.Has(fieldPath) {
 		return ""
 	}
@@ -486,14 +487,14 @@ func getErrorMessage(res *unstructured.Unstructured, fieldPath string) string {
 func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, condition, uuid string) bool {
 	selector, err := labels.Parse(condition)
 	if err != nil {
-		r.Log.Error().Err(err).Str(utils.FybrikAppUUID, uuid).
+		r.Log.Error().Err(err).Str(managerUtils.FybrikAppUUID, uuid).
 			Msg("condition " + condition + "failed to parse")
 		return false
 	}
 	// get selector requirements, 'selectable' property is ignored
 	requirements, _ := selector.Requirements()
 	// convert the unstructured data to Labels interface to leverage the package capability of parsing and evaluating conditions
-	labelsImpl := utils.UnstructuredAsLabels{Data: res}
+	labelsImpl := managerUtils.UnstructuredAsLabels{Data: res}
 	for _, req := range requirements {
 		if !req.Matches(labelsImpl) {
 			return false
@@ -503,7 +504,7 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 }
 
 func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, manifest, uuid string) (corev1.ConditionStatus, string) {
-	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
 	resources, err := r.Helmer.GetResources(cfg, manifest)
