@@ -158,8 +158,6 @@ jobs:
         K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
       run: make run-notebook-readflow-tests
 
-
-
 #  notebook-backward-sample-read-flow:
 #    name: Read flow notebook backward sample
 #    runs-on: ubuntu-latest
@@ -265,7 +263,6 @@ jobs:
       run: make install-tools
     - name: Read flow notebook tests with tls using system CA certs
       run: make run-notebook-readflow-tls-system-cacerts-tests
-
 
   tekton-pipelines:
     name: Tekton Tests
