@@ -61,7 +61,7 @@ const defaultPollingInterval = 2000 * time.Millisecond
 // defaultHelmWaitTimeout defines the default time to wait for helm operation
 // on the resources deployed by the manager to complete.
 // The timeout is specified in seconds.
-const defaultHelmWaitTimeout = 200 * time.Second
+const defaultHelmWaitTimeout = 300 * time.Second
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -244,7 +244,7 @@ func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error)
 func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
-		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
+		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
 		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
@@ -256,4 +256,6 @@ func LogEnvVariables(log *zerolog.Logger) {
 	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
 	timeout, err := GetHelmWaitTimeout()
 	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
+	dataPathMaxSize, err := GetDataPathMaxSize()
+	logEnvVarUpdatedValue(log, DatapathLimitKey, strconv.Itoa(dataPathMaxSize), err)
 }
