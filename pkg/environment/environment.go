@@ -97,20 +97,20 @@ func IsUsingMTLS() bool {
 // if not provided minimal supported TLS protocol is taken as the minimum
 func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 	minVersion := os.Getenv(MinTLSVersion)
-	if minVersion == "v10" {
-		log.Info().Msg("Using TLS v10")
+	if minVersion == "TLS-1.0" {
+		log.Info().Msg("MinTLSVersion is set to TLS-1.0")
 		return tls.VersionTLS10
-	} else if minVersion == "v11" {
-		log.Info().Msg("Using TLS v11")
+	} else if minVersion == "TLS-1.1" {
+		log.Info().Msg("MinTLSVersion is set to TLS-1.1")
 		return tls.VersionTLS11
-	} else if minVersion == "v12" {
-		log.Info().Msg("Using TLS v12")
+	} else if minVersion == "TLS-1.2" {
+		log.Info().Msg("MinTLSVersion is set to TLS-1.2")
 		return tls.VersionTLS12
-	} else if minVersion == "v13" {
-		log.Info().Msg("Using TLS v13")
+	} else if minVersion == "TLS-1.3" {
+		log.Info().Msg("MinTLSVersion is set to TLS-1.3")
 		return tls.VersionTLS13
 	}
-	log.Info().Msg("Using default TLS v10")
+	log.Info().Msg("MinTLSVersion is set to default value TLS-1.0")
 	return tls.VersionTLS10
 }
 
