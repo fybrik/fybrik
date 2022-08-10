@@ -16,10 +16,9 @@ spec:
       {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.manager.podAnnotations }}
+      {{- if .Values.manager.podAnnotations }}
       annotations:
-        sidecar.istio.io/inject: "true"
-        {{- toYaml . | nindent 8 }}
+      {{- .Values.manager.podAnnotations | toYaml | nindent 8 }}
       {{- end }}
       labels:
         control-plane: controller-manager
