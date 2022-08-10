@@ -205,6 +205,8 @@ manager:
     name: manager
 
   podAnnotations: {}
+  #  To enable Istio automatic sidecar injection add:
+  #  sidecar.istio.io/inject: "true"
 
   # Pod Security Context. If set, the fields of podSecurityContext override
   # the equivalent fields of .Values.global.podSecurityContext.
