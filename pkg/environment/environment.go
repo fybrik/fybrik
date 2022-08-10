@@ -94,7 +94,8 @@ func IsUsingMTLS() bool {
 }
 
 // GetMinTLSVersion returns the minimum TLS version that is acceptable.
-// if not provided minimal supported TLS protocol is taken as the minimum
+// if not provided it returns zero which means that
+// the system default value is used.
 func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 	minVersion := os.Getenv(MinTLSVersion)
 	if minVersion == "TLS-1.0" {
@@ -110,8 +111,8 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 		log.Info().Msg("MinTLSVersion is set to TLS-1.3")
 		return tls.VersionTLS13
 	}
-	log.Info().Msg("MinTLSVersion is set to default value TLS-1.0")
-	return tls.VersionTLS10
+	log.Info().Msg("MinTLSVersion is set to the system default value")
+	return 0
 }
 
 // GetDataDir returns the directory where the data resides.

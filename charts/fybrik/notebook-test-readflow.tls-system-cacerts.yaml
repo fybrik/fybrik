@@ -3,6 +3,8 @@
 # It overrides values that are different from the default values.yaml
 # The values used for testing read flow where the manager and connectors
 # uses tls connection.
+# The CA certificates are copied directly to the manager/connector code
+# and thus not specified in the values in this file.
 
 # Global configuration applies to multiple components installed by this chart
 global:
