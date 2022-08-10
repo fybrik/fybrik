@@ -25,7 +25,7 @@ For development and testing the TLS certificates and certificate keys can be gen
 
 [Cert-manager](https://cert-manager.io/) can also be used to automatically generate and renew the TLS certificate using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. The following is an example of a `Certificate` resource for the opa-connector where a tls type secret named `tls-opa-connector-certs` containing the certificate and certificate key is automatically created by the cert-manager. The `issuerRef` field points to a cert-manager resource name [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
 
-```bash
+```yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -74,7 +74,7 @@ Note that Fybrik expects that the keys of the CA certificates in the secret will
 Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
 is created and automatically renewed by cert-manager.
 
-```bash
+```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -112,7 +112,7 @@ To use TLS the infomation about the secrets above should be inserted to the fiel
 
 Here is an example of the tls related fields in the opa-connector section that are filled based on the secrets created above:
 
-```bash
+```yaml
 opaConnector:
   tls:
     # MinVersion contains the minimum TLS version that is acceptable.
