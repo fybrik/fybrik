@@ -9,8 +9,6 @@ include $(ROOT_DIR)/hack/make-rules/version.mk
 .PHONY: all
 all: docker-build docker-push
 
-.PHONY: docker-build
-docker-build: source-build
 # Overwrite docker-build from docker.mk
 .PHONY: docker-build
 docker-build: source-build
