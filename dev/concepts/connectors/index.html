@@ -1425,7 +1425,7 @@ The default installation of Fybrik installs <a href="../../reference/katalog/">K
 <ul>
 <li>address: Vault address</li>
 <li>authPath: Path to <a href="https://www.vaultproject.io/docs/auth/kubernetes"><code>kubernetes</code> auth method</a> used to login to Vault</li>
-<li>role: connector role used to login to Vault</li>
+<li>role: connector role used to login to Vault - configured to be "fybrik"</li>
 <li>secretPath: Path of the secret holding the credentials in Vault</li>
 </ul>
 <p>The parameters should be known to the connector upon startup time except from the vault secret path (<code>SecretPath</code>) which is passed as a parameter in each call to the connector usually under <code>Credentials</code> name.</p>
