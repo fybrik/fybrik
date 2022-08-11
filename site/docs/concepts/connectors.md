@@ -37,7 +37,7 @@ The connector might need to read credentials stored in HashiCorp Vault. The para
 
 * address: Vault address
 * authPath: Path to [`kubernetes` auth method](https://www.vaultproject.io/docs/auth/kubernetes) used to login to Vault
-* role: connector role used to login to Vault
+* role: connector role used to login to Vault - configured to be "fybrik"
 * secretPath: Path of the secret holding the credentials in Vault
 
 The parameters should be known to the connector upon startup time except from the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
