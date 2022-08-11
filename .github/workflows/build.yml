@@ -49,7 +49,9 @@ jobs:
     - name: kubeval
       uses: instrumenta/kubeval-action@master
       with:
-        files: charts/fybrik-crd/templates
+        files: |
+          charts/fybrik-crd/templates
+          charts/fybrik-crd/charts/asset-crd/templates
   test:
     name: Unit tests
     runs-on: ubuntu-latest
