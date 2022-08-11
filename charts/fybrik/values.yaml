@@ -165,6 +165,17 @@ manager:
   # Overrides arguments to be passed to manager container
   overrideArgs:
 
+  # Set to the time interval to check the status of the resources
+  # deployed by the manager. The interval is specified in milliseconds.
+  # Default value is 2000 milliseconds.
+  resourcePollingInterval: 2000
+
+  # Maximum time to wait for helm operation on the resources deployed
+  # by the manager to complete. Currently used only in uninstall operation.
+  # The timeout is specified in seconds.
+  # Default value is 200 seconds.
+  helmWaitTimeout: 200
+
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
