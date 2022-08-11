@@ -188,8 +188,8 @@ func GetVaultAddress() string {
 
 // GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy,
 // not including transformations)
-// The function returns a default value if an error occurs or
-// if DatapathLimitKey env var is undefined.
+// The function returns a default value if an error occurs or if DatapathLimitKey env var
+// is undefined.
 func GetDataPathMaxSize() (int, error) {
 	defaultLimit := 2
 	limitStr := os.Getenv(DatapathLimitKey)
