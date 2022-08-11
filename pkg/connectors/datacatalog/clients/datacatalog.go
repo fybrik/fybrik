@@ -10,8 +10,6 @@ import (
 
 	"emperror.dev/errors"
 
-	kruntime "k8s.io/apimachinery/pkg/runtime"
-
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
@@ -24,10 +22,9 @@ type DataCatalog interface {
 	io.Closer
 }
 
-func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration,
-	schema *kruntime.Scheme) (DataCatalog, error) {
+func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration) (DataCatalog, error) {
 	if strings.HasPrefix(catalogConnectorAddress, "http") {
-		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout, schema), nil
+		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout), nil
 	}
 
 	catalogClient, err := NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
