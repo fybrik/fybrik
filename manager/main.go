@@ -24,7 +24,6 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
@@ -37,6 +36,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 const certSubDir = "/k8s-webhook-server"
@@ -114,7 +114,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		setupLog.Trace().Msg("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
-		policyManager, err := newPolicyManager(scheme)
+		policyManager, err := newPolicyManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create policy manager facade")
 			return 1
@@ -126,7 +126,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initialize DataCatalog interface
-		catalog, err := newDataCatalog(scheme)
+		catalog, err := newDataCatalog()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create data catalog facade")
 			return 1
@@ -279,19 +279,17 @@ func main() {
 		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
-func newDataCatalog(schema *kruntime.Scheme) (dcclient.DataCatalog, error) {
+func newDataCatalog() (dcclient.DataCatalog, error) {
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
 	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).
 		Msg("setting data catalog client")
 	return dcclient.NewDataCatalog(
 		providerName,
-		connectorURL,
-		schema,
-	)
+		connectorURL)
 }
 
-func newPolicyManager(schema *kruntime.Scheme) (pmclient.PolicyManager, error) {
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
@@ -300,7 +298,6 @@ func newPolicyManager(schema *kruntime.Scheme) (pmclient.PolicyManager, error) {
 	return pmclient.NewOpenAPIPolicyManager(
 		mainPolicyManagerName,
 		mainPolicyManagerURL,
-		schema,
 	)
 }
 

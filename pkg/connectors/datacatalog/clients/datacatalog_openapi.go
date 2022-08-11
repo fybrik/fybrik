@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
-	kruntime "k8s.io/apimachinery/pkg/runtime"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
 	"fybrik.io/fybrik/pkg/connectors/utils"
@@ -24,7 +23,8 @@ type openAPIDataCatalog struct {
 }
 
 // NewopenApiDataCatalog creates a DataCatalog facade that connects to a openApi service
-func NewOpenAPIDataCatalog(name, connectionURL string, schema *kruntime.Scheme) DataCatalog {
+
+func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 	log := logging.LogInit(logging.SETUP, "datacatalog client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
@@ -37,7 +37,7 @@ func NewOpenAPIDataCatalog(name, connectionURL string, schema *kruntime.Scheme) 
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log, schema),
+		HTTPClient:       utils.GetHTTPClient(&log),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 

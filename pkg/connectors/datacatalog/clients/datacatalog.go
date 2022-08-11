@@ -6,8 +6,6 @@ package clients
 import (
 	"io"
 
-	kruntime "k8s.io/apimachinery/pkg/runtime"
-
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
@@ -20,7 +18,6 @@ type DataCatalog interface {
 	io.Closer
 }
 
-func NewDataCatalog(catalogProviderName, catalogConnectorAddress string,
-	schema *kruntime.Scheme) (DataCatalog, error) {
-	return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, schema), nil
+func NewDataCatalog(catalogProviderName, catalogConnectorAddress string) (DataCatalog, error) {
+	return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress), nil
 }

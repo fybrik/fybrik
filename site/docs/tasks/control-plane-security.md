@@ -25,7 +25,7 @@ For development and testing the TLS certificates and certificate keys can be gen
 
 [Cert-manager](https://cert-manager.io/) can also be used to automatically generate and renew the TLS certificate using its [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource. The following is an example of a `Certificate` resource for the opa-connector where a tls type secret named `tls-opa-connector-certs` containing the certificate and certificate key is automatically created by the cert-manager. The `issuerRef` field points to a cert-manager resource name [`Issuer`](https://cert-manager.io/docs/configuration/ca/) that holds the information about the CA that signs the certificate.
 
-```bash
+```yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -43,9 +43,9 @@ spec:
 
 #### Adding TLS Secrets
 
-The manager/connectors certificates are kept in Kubernetes secret:
+The manager/connectors certificates are kept in Kubernetes secret of type tls which are mounted to the manager/connectors pods in fybrik deployment.
 
-For each component copy its certificate into a file names tls.crt. Copy the certificate key into a file named tls.key.
+For each component copy its certificate into a file named tls.crt. Copy the certificate key into a file named tls.key. (the files names used in this example can be changed)
 
 Use kubectl with the tls secret type to create the secrets.
 
@@ -60,18 +60,21 @@ If cert-manager is used to manage the certificates then the secret is automatica
 #### Using a Private CA Signed Certificate
 
 If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.
+If no private CA certificates are provided then the system CA certificates are used, otherwise the private CA certificates replace the system CA certificates.
 
-For each component copy the CA certificate into a file named cacerts.pem and use kubectl to create the tls-ca secret in the fybrik-system namespace.
+For each component copy the CA certificate into a file and use kubectl to create or patch the tls-ca secret in the fybrik-system namespace. In the following example ca.crt file is used to create the secret:
 
 ```bash
 kubectl -n fybrik-system create secret generic tls-ca \
-  --from-file=cacerts.pem=./cacerts.pem
+  --from-file=ca.crt=./ca.crt
 ```
+
+Note that Fybrik expects that the keys of the CA certificates in the secret will end with `.crt` suffix.
 
 Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
 is created and automatically renewed by cert-manager.
 
-```bash
+```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -109,9 +112,12 @@ To use TLS the infomation about the secrets above should be inserted to the fiel
 
 Here is an example of the tls related fields in the opa-connector section that are filled based on the secrets created above:
 
-```bash
+```yaml
 opaConnector:
   tls:
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, minimal supported TLS protocol is taken as the minimum.
+    minVersion: v13
     # Specifies whether the opa connector communication should use tls.
     use_tls: true
     # Specifies whether the opa connector communication should use mutual tls.
@@ -123,14 +129,14 @@ opaConnector:
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
       certSecretName: "tls-opa-connector-certs"
-      # Name of kubernetes tls secret namespace that holds opa-connector certificate.
-      certSecretNamespace: "fybrik-system"
-      # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
-      # by opa-connector to validate the connection to the manager if mtls is enabled.
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by opa-connector to validate the connection to the manager if
+      # mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
+      # If the secret is not provided then the CA certificates are taken from the system
+      # CA certificate store, for example `/etc/ssl/certs/`.
       cacertSecretName: "tls-ca"
-      # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
-      # is used by opa-connector to validate the connection to the manager if mtls is enabled.
-      cacertSecretNamespace: "fybrik-system"
 ```
 
 ### Using Istio
