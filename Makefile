@@ -41,8 +41,8 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "validating-webhook-configuration")) = "{{ .Release.Namespace }}-validating-webhook"' - | \
 		$(TOOLBIN)/yq eval '(.webhooks.[].clientConfig.service.namespace) = "{{ .Release.Namespace }}"' - > charts/fybrik/files/webhook-configs.yaml
-	$(TOOLBIN)/kubeval --ignore-missing-schemas -d charts/fybrik-crd/templates
-	$(TOOLBIN)/kubeval --ignore-missing-schemas -d charts/fybrik-crd/charts/asset-crd/templates
+	# $(TOOLBIN)/kubeval --ignore-missing-schemas -d charts/fybrik-crd/templates
+	# $(TOOLBIN)/kubeval --ignore-missing-schemas -d charts/fybrik-crd/charts/asset-crd/templates
 
 .PHONY: docker-mirror-read
 docker-mirror-read:
