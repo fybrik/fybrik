@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	distributionref "github.com/distribution/distribution/reference"
@@ -377,7 +376,9 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	// the status is unknown yet - continue polling
 	if blueprint.Status.ObservedState.Error == "" {
 		log.Trace().Msg("blueprint.Status.ObservedState is not ready, will try again")
-		return ctrl.Result{RequeueAfter: 2 * time.Second}, nil
+		// if an error exists it is logged in LogEnvVariables and a default value is used
+		interval, _ := environment.GetResourcesPollingInterval()
+		return ctrl.Result{RequeueAfter: interval}, nil
 	}
 	return ctrl.Result{}, nil
 }

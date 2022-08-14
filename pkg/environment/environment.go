@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -38,13 +39,26 @@ const (
 	LocalZone                         string = "Zone"
 	LocalRegion                       string = "Region"
 	LocalVaultAuthPath                string = "VaultAuthPath"
+	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
+	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
 )
+
+const printValueStr = "%s set to \"%s\""
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
 const DefaultModulesNamespace = "fybrik-blueprints"
 
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
+
+// defaultPollingInterval defines the default time interval to check the status of the resources
+// deployed by the manager. The interval is specified in milliseconds.
+const defaultPollingInterval = 2000 * time.Millisecond
+
+// defaultHelmWaitTimeout defines the default time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// The timeout is specified in seconds.
+const defaultHelmWaitTimeout = 300 * time.Second
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -130,13 +144,51 @@ func GetModulesRole() string {
 	return os.Getenv(VaultModulesRoleKey)
 }
 
+// GetResourcesPollingInterval returns the time interval to check the
+// status of the resources deployed by the manager. The interval is specified
+// in milliseconds.
+// The function returns a default value if an error occurs or
+// if ResourcesPollingInterval env var is undefined.
+func GetResourcesPollingInterval() (time.Duration, error) {
+	intervalStr := os.Getenv(ResourcesPollingInterval)
+	if intervalStr == "" {
+		return defaultPollingInterval, nil
+	}
+	interval, err := strconv.Atoi(intervalStr)
+	if err != nil {
+		return defaultPollingInterval, err
+	}
+	return time.Duration(interval) * time.Millisecond, nil
+}
+
+// GetHelmWaitTimeout returns the time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// Currently used only in uninstall operation.
+// The timeout is specified in seconds.
+// The function returns a default value if an error occurs or if
+// HelmWaitTimeout env var is undefined.
+func GetHelmWaitTimeout() (time.Duration, error) {
+	timeoutStr := os.Getenv(HelmWaitTimeout)
+	if timeoutStr == "" {
+		return defaultHelmWaitTimeout, nil
+	}
+	timeout, err := strconv.Atoi(timeoutStr)
+	if err != nil {
+		return defaultHelmWaitTimeout, err
+	}
+	return time.Duration(timeout) * time.Second, nil
+}
+
 // GetVaultAddress returns the address and port of the vault system,
 // which is used for managing data set credentials
 func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
 }
 
-// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
+// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy,
+// not including transformations)
+// The function returns a default value if an error occurs or if DatapathLimitKey env var
+// is undefined.
 func GetDataPathMaxSize() (int, error) {
 	defaultLimit := 2
 	limitStr := os.Getenv(DatapathLimitKey)
@@ -168,21 +220,38 @@ func GetDataCatalogServiceAddress() string {
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
-		log.Info().Msgf("%s set to \"%s\"", key, value)
+		log.Info().Msgf(printValueStr, key, value)
 	} else {
 		log.Info().Msgf("%s is undefined", key)
 	}
 }
 
+// logEnvVarUpdatedValue logs environment variables values that might be different
+// from the values they were originally set to.
+func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error) {
+	if err != nil {
+		log.Warn().Msg("error getting " + envVar + ". Setting the default to " +
+			value)
+		return
+	}
+	log.Info().Msgf(printValueStr, envVar, value)
+}
+
 func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
-		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace,
-		MinTLSVersion}
+		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
+		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
 		logEnvVariable(log, envVar)
 	}
+
+	interval, err := GetResourcesPollingInterval()
+	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
+	timeout, err := GetHelmWaitTimeout()
+	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
+	dataPathMaxSize, err := GetDataPathMaxSize()
+	logEnvVarUpdatedValue(log, DatapathLimitKey, strconv.Itoa(dataPathMaxSize), err)
 }

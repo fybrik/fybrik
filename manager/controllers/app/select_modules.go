@@ -55,10 +55,8 @@ func (p *PathBuilder) FindPaths() []datapath.Solution {
 	nodeFromAppRequirements := p.getRequiredConnectionNode()
 
 	// find data paths of length up to DATAPATH_LIMIT from data source to the workload, not including transformations or branches
-	bound, err := environment.GetDataPathMaxSize()
-	if err != nil {
-		p.Log.Warn().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("a default value for DATAPATH_LIMIT will be used")
-	}
+	// If an error exists it is logged in LogEnvVariables and a default value is used
+	bound, _ := environment.GetDataPathMaxSize()
 	var solutions []datapath.Solution
 	if p.Asset.Context.Flow != taxonomy.WriteFlow {
 		solutions = p.findPathsWithinLimit(nodeFromAssetMetadata, nodeFromAppRequirements, bound)
