@@ -20,7 +20,6 @@ const (
 	VaultAddressKey                   string = "VAULT_ADDRESS"
 	VaultModulesRoleKey               string = "VAULT_MODULES_ROLE"
 	EnableWebhooksKey                 string = "ENABLE_WEBHOOKS"
-	ConnectionTimeoutKey              string = "CONNECTION_TIMEOUT"
 	MainPolicyManagerNameKey          string = "MAIN_POLICY_MANAGER_NAME"
 	MainPolicyManagerConnectorURLKey  string = "MAIN_POLICY_MANAGER_CONNECTOR_URL"
 	LoggingVerbosityKey               string = "LOGGING_VERBOSITY"
@@ -240,7 +239,7 @@ func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error)
 
 func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
-		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
+		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
 		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
 
