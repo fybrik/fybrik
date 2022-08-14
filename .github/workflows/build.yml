@@ -42,18 +42,18 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
-    - name: install kubeval-tool
-      run: ./hack/tools/install_kubeval.sh
+#    - name: install kubeval-tool
+#      run: ./hack/tools/install_kubeval.sh
     - name: Verify
       run: |
         make generate manifests generate-docs verify
         git diff --exit-code
-    - name: kubeval
-      uses: instrumenta/kubeval-action@master
-      with:
-        files: |
-          charts/fybrik-crd/templates
-          charts/fybrik-crd/charts/asset-crd/templates
+#    - name: kubeval
+#      uses: instrumenta/kubeval-action@master
+#      with:
+#        files: |
+#          charts/fybrik-crd/templates
+#          charts/fybrik-crd/charts/asset-crd/templates
   test:
     name: Unit tests
     runs-on: ubuntu-latest
