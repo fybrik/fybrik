@@ -42,6 +42,8 @@ jobs:
         restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
+    - name: install kubeval-tool
+      run: ./hack/tools/install_kubeval
     - name: Verify
       run: |
         make generate manifests generate-docs verify
