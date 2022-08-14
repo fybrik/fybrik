@@ -43,8 +43,6 @@ global:
   # Reference to one or more secrets to be used when pulling images.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
-  # Default connection timeout for GRPC connections.
-  connectionTimeout: 120
   # Human readable logs
   prettyLogging: false
   # zerolog verbosity level 
@@ -147,9 +145,6 @@ manager:
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
   enabled: true
   
-  # Override GRPC connection timeout in manager
-  connectionTimeout: 
-
   # Override data path limits in manager
   dataPathMaxSize: "2"
 
@@ -165,29 +160,37 @@ manager:
   # Overrides arguments to be passed to manager container
   overrideArgs:
 
+  # Set to the time interval to check the status of the resources
+  # deployed by the manager. The interval is specified in milliseconds.
+  # Default value is 2000 milliseconds.
+  resourcePollingInterval: 2000
+
+  # Maximum time to wait for helm operation on the resources deployed
+  # by the manager to complete. Currently used only in uninstall operation.
+  # The timeout is specified in seconds.
+  # Default value is 200 seconds.
+  helmWaitTimeout: 200
+
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, the system default value is used.
+    # Possible values are TLS-1.0, TLS-1.1, TLS-1.2 and TLS-1.3.
+    minVersion: TLS-1.3
     certs:
       # Name of kubernetes secret that holds the manager certificate.
       # The secret should be of `kubernetes.io/tls` type.
       # certSecretName: "test-tls-manager-certs"
       certSecretName: ""
-      # Name of kubernetes tls secret namespace that holds the manager certificate.
-      # The secret should be of `kubernetes.io/tls` type.
-      # certSecretNamespace: "fybrik-system"
-      certSecretNamespace: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
       # which are used by the manager to validate the connection to the connectors.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the certificate authority (CA)
-      # certificates which are used by the manager to validate the connection to the connectors.
-      # cacertSecretNamespace: "fybrik-system"
-      cacertSecretNamespace: ""
 
   # Extra environment variables to be set for manager container
   extraEnvs:
@@ -275,12 +278,48 @@ opaServer:
   - "--server"
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
+  # for tls support add:
+  # more information can be found in https://www.openpolicyagent.org/docs/latest/security/
+  #  - "--tls-cert-file=/data/tls-cert/tls.crt"
+  #  - "--tls-private-key-file=/data/tls-cert/tls.key"
+  #  - "--authentication=tls"
+  #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
+  #  - "--addr=https://0.0.0.0:8443"
+
+
+  tls:
+    # Specifies whether the opa-server communication should use tls.
+    # For more information please refer to https://www.openpolicyagent.org/docs/latest/security/
+    use_tls: false
+    certs:
+      # Name of kubernetes tls secret that holds the opa server certificates.
+      # The secret should be of `kubernetes.io/tls` type such that the certificates
+      # in tls.crt and tls.key are passed as parameters to opa server at startup
+      # via the command line flags `--tls-cert-file=`and `--tls-private-key-file` respectively.
+      # Relavent if tls is used.
+      # certSecretName: "test-tls-opa-server-certs"
+      certSecretName: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by opa-server to validate the connection to the clients
+      # if mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The certificates are passed as parameters to opa server at startup via
+      # the command line flags `--tls-ca-cert-file`.
+      # The provided certificates replaces the certificates in the system CA certificate store.
+      # If the secret is not provided then the CA certificates are taken from the system
+      # CA certificate store, for example `/etc/ssl/certs/`.
+      # cacertSecretName: "test-tls-ca-certs"
+      cacertSecretName: ""
+
 
   kubemgmt:
     image: openpolicyagent/kube-mgmt:0.11
 
   # Used if autoscaling is not enabled 
   replicaCount: 1
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
   
   serviceAccount:
     # Specifies whether a service account should be created
@@ -304,6 +343,7 @@ opaServer:
 
   service:
     type: ClusterIP
+    # For tls connection use port 8443
     port: 8181
 
   resources: {}
@@ -369,6 +409,10 @@ katalogConnector:
     name: katalog-connector
 
   tls:
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, the system default value is used.
+    # Possible values are TLS-1.0, TLS-1.1, TLS-1.2 and TLS-1.3.
+    minVersion: TLS-1.3
     # Specifies whether the katalog connector communication should use tls.
     use_tls: false
     # Specifies whether the katalog connector communication should use mutual tls.
@@ -379,20 +423,15 @@ katalogConnector:
       # Relavent if tls is used.
       # certSecretName: "test-tls-katalog-connector-certs"
       certSecretName: ""
-      # Name of kubernetes tls secret namespace that holds the katalog-connector certificate.
-      # certSecretNamespace: "fybrik-system"
-      certSecretNamespace: ""
-      # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
-      # by katalog-connector to validate the connection to the manager if mtls is enabled.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by katalog-connector to validate the connection to the manager 
+      # if mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
-      # is used by the server to validate the connection to the client if mtls is enabled.
-      # cacertSecretNamespace: "fybrik-system"
-      cacertSecretNamespace: ""
 
   podAnnotations: {}
 
@@ -410,6 +449,9 @@ katalogConnector:
     type: ClusterIP
     # For tls connection use port 8443
     port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -445,6 +487,7 @@ opaConnector:
 
   # Overrides the URL of the OPA server
   # Defaults to the address of the deployed OPA server
+  # If the OPA server is configured with TLS then use https://opa:8443
   serverURL:
 
   # Image name or a hub/image[:tag]
@@ -465,6 +508,10 @@ opaConnector:
     name: opa-connector
 
   tls:
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, the system default value is used.
+    # Possible values are TLS-1.0, TLS-1.1, TLS-1.2 and TLS-1.3.
+    minVersion: TLS-1.3
     # Specifies whether the opa connector communication should use tls.
     use_tls: false
     # Specifies whether the opa connector communication should use mutual tls.
@@ -477,20 +524,15 @@ opaConnector:
       # Relavent if tls is used.
       # certSecretName: "test-tls-opa-connector-certs"
       certSecretName: ""
-      # Name of kubernetes tls secret namespace that holds opa-connector certificate.
-      # certSecretNamespace: "fybrik-system"
-      certSecretNamespace: ""
-      # Name of kubernetes secret that holds the certificate authority (CA) certificate which is used
-      # by opa-connector to validate the connection to the manager if mtls is enabled.
-      # The provided certificates are used along with the certificates in the system CA certificate store.
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates 
+      # which are used by opa-connector to validate the connection to the manager if
+      # mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
       # If the secret is not provided then the CA certificates are taken from the system
       # CA certificate store, for example `/etc/ssl/certs/`.
       # cacertSecretName: "test-tls-ca-certs"
       cacertSecretName: ""
-      # Name of kubernetes secret namespace that holds the certificate authority (CA) certificate which
-      # is used by opa-connector to validate the connection to the manager if mtls is enabled.
-      # cacertSecretNamespace: "fybrik-system"
-      cacertSecretNamespace: ""
 
   podAnnotations: {}
 
@@ -508,6 +550,9 @@ opaConnector:
     type: ClusterIP
     # For tls connection use port 8443
     port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

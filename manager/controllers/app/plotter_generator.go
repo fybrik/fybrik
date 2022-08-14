@@ -15,7 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
@@ -23,6 +23,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -69,7 +70,7 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		return nil, err
 	}
 
-	cType := utils.GetDefaultConnectionType()
+	cType := managerUtils.GetDefaultConnectionType()
 	connection := taxonomy.Connection{
 		Name: cType,
 		AdditionalProperties: serde.Properties{
@@ -360,9 +361,9 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fapp.CapabilityS
 	if scope == fapp.Asset {
 		// if the scope of the module is asset then concat its id to the module name
 		// to create the instance name.
-		instanceName = utils.CreateStepName(moduleName, assetID)
+		instanceName = managerUtils.CreateStepName(moduleName, assetID)
 	}
-	releaseName := utils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+	releaseName := managerUtils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
 	releaseNamespace := environment.GetDefaultModulesNamespace()
 
 	type Release struct {

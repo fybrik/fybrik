@@ -2,7 +2,9 @@
 # This is a YAML-formatted file.
 # It overrides values that are different from the default values.yaml
 # The values used for testing read flow where the manager and connectors
-# uses tls connection. In addition, OPA server is configured to use tls.
+# uses tls connection.
+# The CA certificates are copied directly to the manager/connector code
+# and thus not specified in the values in this file.
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -21,15 +23,32 @@ coordinator:
 
 # Manager component
 manager:
+  podSecurityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    privileged: true
+    allowPrivilegeEscalation: true
+
   # Set to true to enable socat in the manager pod to forward
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
   tls:
     certs:
       certSecretName: "test-tls-manager-certs"
-      cacertSecretName: "test-tls-ca-certs"
 
 katalogConnector:
+  podSecurityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: true
+    privileged: true
+
   service:
     port: 8443
        
@@ -38,41 +57,26 @@ katalogConnector:
     use_mtls: true
     certs:
       certSecretName: "test-tls-katalog-connector-certs"
-      cacertSecretName: "test-tls-ca-certs"
 
 opaConnector:
-  serverURL: https://opa:8443
+  podSecurityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+    privileged: true
+    allowPrivilegeEscalation: true
+
   tls:
     use_tls: true
     use_mtls: true
     certs:
       certSecretName: "test-tls-opa-connector-certs"
-      cacertSecretName: "test-tls-ca-certs"
   service:
     port: 8443
 
 opaServer:
-
-  tls:
-    use_tls: true
-    certs:
-      certSecretName: "test-tls-opa-server-certs"
-      cacertSecretName: "test-tls-ca-certs"
-
-  image: "openpolicyagent/opa:0.36.0-debug"
-  args:
-  - "run"
-  - "--server"
-  - "--log-level=debug"
-  - "--set=decision_logs.console=true"
-  - "--authentication=tls"
-  - "--tls-cert-file=/data/tls-cert/tls.crt"
-  - "--tls-private-key-file=/data/tls-cert/tls.key"
-  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
-  - "--addr=https://0.0.0.0:8443"
-
-  service:
-    port: 8443
 
   # Bootstrap policies to load upon startup
   bootstrapPolicies:

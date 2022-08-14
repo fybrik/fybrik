@@ -26,11 +26,13 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/utils"
+	"fybrik.io/fybrik/pkg/vault"
 )
 
 const (
@@ -56,8 +58,8 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := sublog.With().Str(utils.FybrikAppUUID, uuid).Logger()
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := sublog.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// If the object has a scheduled deletion time, update status and return
 	if !plotter.DeletionTimestamp.IsZero() {
@@ -70,7 +72,7 @@ func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Reconcile: Installing/Updating Plotter " + plotter.GetName())
 
 	result, reconcileErrors := r.reconcile(&plotter)
-	if err := utils.UpdateStatus(ctx, r.Client, &plotter, observedStatus); err != nil {
+	if err := managerUtils.UpdateStatus(ctx, r.Client, &plotter, observedStatus); err != nil {
 		return ctrl.Result{}, errors.WrapWithDetails(err, "failed to update plotter status", "plotterStatus", plotter.Status)
 	}
 
@@ -210,8 +212,8 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *fapp.
 // getBlueprintsMap constructs a map of blueprints driven by the plotter structure.
 // The key is the cluster name.
 func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]fapp.BlueprintSpec {
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(utils.FybrikAppUUID, uuid).Logger()
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
@@ -238,7 +240,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 						var authPath string
 						for _, cluster := range clusters {
 							if clusterName == cluster.Name {
-								authPath = utils.GetAuthPath(cluster.Metadata.VaultAuthPath)
+								authPath = vault.GetAuthPath(cluster.Metadata.VaultAuthPath)
 								break
 							}
 						}
@@ -306,8 +308,8 @@ func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap m
 
 //nolint:funlen,gocyclo
 func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []error) {
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
-	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
+	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	if plotter.Status.Blueprints == nil {
 		plotter.Status.Blueprints = make(map[string]fapp.MetaBlueprint)
@@ -403,7 +405,7 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 						"razee/watch-resource": "debug",
 					},
 					Annotations: map[string]string{
-						utils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
+						managerUtils.FybrikAppUUID: uuid, // Pass on the globally unique id of the fybrikapplication instance for logging purposes
 					},
 				},
 				Spec: blueprintSpec,
@@ -486,8 +488,10 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 	}
 	// plotter is not ready
 	if r.ClusterManager.IsMultiClusterSetup() {
+		// if an error exists it is logged in LogEnvVariables and a default value is used
+		requeueAfter, _ := environment.GetResourcesPollingInterval()
 		// TODO Once a better notification mechanism exists in razee switch to that
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, errorCollection //nolint:revive // for magic numbers
+		return ctrl.Result{RequeueAfter: requeueAfter}, errorCollection
 	}
 	// don't do polling for a single cluster setup, retry in case of errors
 	return ctrl.Result{}, errorCollection

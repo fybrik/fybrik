@@ -55,33 +55,6 @@ $(TOOLBIN)/istioctl:
 	cd $(TOOLS_DIR); ./install_istio.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/protoc
-.PHONY: $(TOOLBIN)/protoc
-$(TOOLBIN)/protoc:
-	cd $(TOOLS_DIR); ./install_protoc.sh
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-doc
-$(TOOLBIN)/protoc-gen-doc:
-	GOBIN=$(ABSTOOLBIN) go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.4.1
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go
-$(TOOLBIN)/protoc-gen-go:
-	go get -d google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
-	GOBIN=$(ABSTOOLBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-go-grpc
-$(TOOLBIN)/protoc-gen-go-grpc:
-	GOBIN=$(ABSTOOLBIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
-	$(call post-install-check)
-
-INSTALL_TOOLS += $(TOOLBIN)/protoc-gen-lint
-$(TOOLBIN)/protoc-gen-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/ckaznocha/protoc-gen-lint@v0.2.1
-	$(call post-install-check)
-
 # INSTALL_TOOLS += $(TOOLBIN)/oc
 .PHONY: $(TOOLBIN)/oc
 $(TOOLBIN)/oc:
