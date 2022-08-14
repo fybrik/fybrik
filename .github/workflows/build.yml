@@ -43,7 +43,7 @@ jobs:
     - name: install json-schema-generator
       run: ./hack/tools/install_json-schema-generator.sh
     - name: install kubeval-tool
-      run: ./hack/tools/install_kubeval
+      run: ./hack/tools/install_kubeval.sh
     - name: Verify
       run: |
         make generate manifests generate-docs verify
