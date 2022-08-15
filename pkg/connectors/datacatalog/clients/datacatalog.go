@@ -5,10 +5,6 @@ package clients
 
 import (
 	"io"
-	"strings"
-	"time"
-
-	"emperror.dev/errors"
 
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
@@ -22,14 +18,6 @@ type DataCatalog interface {
 	io.Closer
 }
 
-func NewDataCatalog(catalogProviderName, catalogConnectorAddress string, connectionTimeout time.Duration) (DataCatalog, error) {
-	if strings.HasPrefix(catalogConnectorAddress, "http") {
-		return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout), nil
-	}
-
-	catalogClient, err := NewGrpcDataCatalog(catalogProviderName, catalogConnectorAddress, connectionTimeout)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create GRPC data catalog client")
-	}
-	return catalogClient, nil
+func NewDataCatalog(catalogProviderName, catalogConnectorAddress string) (DataCatalog, error) {
+	return NewOpenAPIDataCatalog(catalogProviderName, catalogConnectorAddress), nil
 }

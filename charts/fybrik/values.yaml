@@ -43,8 +43,6 @@ global:
   # Reference to one or more secrets to be used when pulling images.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
-  # Default connection timeout for GRPC connections.
-  connectionTimeout: 120
   # Human readable logs
   prettyLogging: false
   # zerolog verbosity level 
@@ -147,9 +145,6 @@ manager:
   # Defaults to true if `coordinator.enabled` or `worker.enabled` is true.
   enabled: true
   
-  # Override GRPC connection timeout in manager
-  connectionTimeout: 
-
   # Override data path limits in manager
   dataPathMaxSize: "2"
 

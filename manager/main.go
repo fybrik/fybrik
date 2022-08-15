@@ -8,11 +8,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
-	"emperror.dev/errors"
 	"github.com/fsnotify/fsnotify"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -283,44 +280,25 @@ func main() {
 }
 
 func newDataCatalog() (dcclient.DataCatalog, error) {
-	connectionTimeout, err := getConnectionTimeout()
-	if err != nil {
-		return nil, err
-	}
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
 	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).
-		Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
+		Msg("setting data catalog client")
 	return dcclient.NewDataCatalog(
 		providerName,
-		connectorURL,
-		connectionTimeout,
-	)
+		connectorURL)
 }
 
 func newPolicyManager() (pmclient.PolicyManager, error) {
-	connectionTimeout, err := getConnectionTimeout()
-	if err != nil {
-		return nil, err
-	}
-
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
 	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
-		Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
+		Msg("setting main policy manager client")
 
-	var policyManager pmclient.PolicyManager
-	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = pmclient.NewOpenAPIPolicyManager(
-			mainPolicyManagerName,
-			mainPolicyManagerURL,
-			connectionTimeout,
-		)
-	} else {
-		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	}
-
-	return policyManager, err
+	return pmclient.NewOpenAPIPolicyManager(
+		mainPolicyManagerName,
+		mainPolicyManagerURL,
+	)
 }
 
 // newClusterManager decides based on the environment variables that are set which
@@ -345,13 +323,4 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		setupLog.Info().Msg("Using local cluster manager")
 		return local.NewClusterManager(mgr.GetClient(), environment.GetSystemNamespace())
 	}
-}
-
-func getConnectionTimeout() (time.Duration, error) {
-	connectionTimeout := os.Getenv("CONNECTION_TIMEOUT")
-	timeOutInSeconds, err := strconv.Atoi(connectionTimeout)
-	if err != nil {
-		return 0, errors.Wrap(err, "Atoi conversion of CONNECTION_TIMEOUT failed")
-	}
-	return time.Duration(timeOutInSeconds) * time.Second, nil
 }

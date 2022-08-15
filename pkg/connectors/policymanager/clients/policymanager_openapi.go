@@ -6,7 +6,6 @@ package clients
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"emperror.dev/errors"
 
@@ -24,7 +23,8 @@ type openAPIPolicyManager struct {
 }
 
 // NewopenApiPolicyManager creates a PolicyManager facade that connects to a openApi service
-func NewOpenAPIPolicyManager(name, connectionURL string, connectionTimeout time.Duration) (PolicyManager, error) {
+
+func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) {
 	log := logging.LogInit(logging.SETUP, "policymanager client")
 	configuration := &openapiclient.Configuration{
 		DefaultHeader: make(map[string]string),
