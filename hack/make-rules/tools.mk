@@ -110,12 +110,6 @@ $(TOOLBIN)/json-schema-generator:
 	cd $(TOOLS_DIR); ./install_json-schema-generator.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/kubeval
-.PHONY: $(TOOLBIN)/kubeval
-$(TOOLBIN)/kubeval:
-	cd $(TOOLS_DIR); ./install_kubeval.sh
-	$(call post-install-check)
-
 .PHONY: install-tools
 install-tools: $(INSTALL_TOOLS)
 	go mod tidy
