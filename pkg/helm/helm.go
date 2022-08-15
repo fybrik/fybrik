@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	"helm.sh/helm/v3/pkg/action"
@@ -23,10 +22,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
-)
 
-// TODO add configuration
-const TIMEOUT = 300 * time.Second
+	"fybrik.io/fybrik/pkg/environment"
+)
 
 // Relevant only when helm charts are placed in
 // local directory.
@@ -156,7 +154,9 @@ func NewHelmerImpl(chartsPath string) *Impl {
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	uninstall.Wait = true
-	uninstall.Timeout = TIMEOUT
+	// If an error exists it is logged in LogEnvVariables and a default value is used
+	interval, _ := environment.GetHelmWaitTimeout()
+	uninstall.Timeout = interval
 	return uninstall.Run(releaseName)
 }
 
@@ -189,9 +189,6 @@ func (r *Impl) Install(ctx context.Context, cfg *action.Configuration, chrt *cha
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.Timeout = TIMEOUT
-	install.Wait = true
-	install.WaitForJobs = true
 
 	return install.RunWithContext(ctx, chrt, vals)
 }
@@ -201,9 +198,6 @@ func (r *Impl) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *cha
 	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.Wait = true
-	upgrade.WaitForJobs = true
-	upgrade.Timeout = TIMEOUT
 
 	return upgrade.RunWithContext(ctx, releaseName, chrt, vals)
 }

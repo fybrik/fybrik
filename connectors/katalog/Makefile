@@ -9,10 +9,16 @@ include $(ROOT_DIR)/hack/make-rules/version.mk
 .PHONY: all
 all: docker-build docker-push
 
+# Overwrite docker-build from docker.mk
 .PHONY: docker-build
 docker-build: source-build
+ifdef FROM_IMAGE
+	docker build . -t ${IMG} --build-arg image=${FROM_IMAGE}
+	rm -rf bin
+else
 	docker build . -t ${IMG}
 	rm -rf bin
+endif
 
 .PHONY: source-build
 source-build:
