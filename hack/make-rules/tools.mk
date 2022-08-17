@@ -113,6 +113,7 @@ $(TOOLBIN)/json-schema-generator:
 .PHONY: install-tools
 install-tools: $(INSTALL_TOOLS)
 	go mod tidy
+	ls -l $(TOOLS_DIR)/bin
 
 .PHONY: uninstall-tools
 uninstall-tools:
