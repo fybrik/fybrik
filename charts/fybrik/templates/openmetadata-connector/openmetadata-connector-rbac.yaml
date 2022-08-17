@@ -1,0 +1,26 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+# Grant openmetadata-connector the openmetadata-editor Role.
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.clusterScoped }}
+kind: ClusterRoleBinding
+metadata:
+  name:  {{ template "fybrik.fullname" . }}-openmetadata-connector-crb
+roleRef:
+  kind: ClusterRole
+  name: {{ template "fybrik.fullname" . }}-openmetadata-editor-cr
+{{- else }}
+kind: RoleBinding
+metadata:
+  name:  {{ template "fybrik.fullname" . }}-openmetadata-connector-rb
+  namespace: {{ .Values.applicationNamespace | default .Release.Namespace  }}
+roleRef:
+  kind: Role
+  name: {{ template "fybrik.fullname" . }}-openmetadata-editor-role
+{{- end }}
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.openmetadataConnector.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

@@ -86,7 +86,7 @@ coordinator:
   enabled: true
 
   # Configures the catalog system name to be used by the coordinator manager.
-  # Accepted values are "katalog", "egeria" or any meaningful name if a third party connector is used.
+  # Accepted values are "katalog", "openmetadata", "egeria" or any meaningful name if a third party connector is used.
   catalog: "katalog"
 
   # Overrides the catalog connector URL.
@@ -315,7 +315,7 @@ opaServer:
   kubemgmt:
     image: openpolicyagent/kube-mgmt:0.11
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
 
   # Set the size limit of the data directory.
@@ -397,7 +397,7 @@ katalogConnector:
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
   
   serviceAccount:
@@ -424,7 +424,7 @@ katalogConnector:
       # certSecretName: "test-tls-katalog-connector-certs"
       certSecretName: ""
       # Name of kubernetes secret that holds the certificate authority (CA) certificates
-      # which are used by katalog-connector to validate the connection to the manager 
+      # which are used by katalog-connector to validate the connection to the manager
       # if mtls is enabled.
       # The CA certificates key in the secret should have `.crt` suffix.
       # The provided certificates replaces the certificates in the system CA certificate store.
@@ -479,6 +479,106 @@ katalogConnector:
 
   affinity: {}
 
+# OpenMetadata connector component
+openmetadataConnector:
+  # Set to true to deploy the openmetadata connector or false to skip its deployment.
+  # Defaults to true if `coordinator.catalog` is set to "openmetadata"
+  enabled: auto
+
+  # Image name or a hub/image[:tag]
+  image: "ghcr.io/cdoron/openmetadata-connector:0.0.0"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: "Always"
+
+  # Used if autoscaling is not enabled
+  replicaCount: 1
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: openmetadata-connector
+
+  tls:
+    # MinVersion contains the minimum TLS version that is acceptable.
+    # If not provided, the system default value is used.
+    # Possible values are TLS-1.0, TLS-1.1, TLS-1.2 and TLS-1.3.
+    minVersion: TLS-1.3
+    # Specifies whether the openmetadata connector communication should use tls.
+    use_tls: false
+    # Specifies whether the openmetadata connector communication should use mutual tls.
+    use_mtls: false
+    certs:
+      # Name of kubernetes tls secret that holds the openmetadata-connector certificates.
+      # The secret should be of `kubernetes.io/tls` type.
+      # Relevant if tls is used.
+      # certSecretName: "test-tls-openmetadata-connector-certs"
+      certSecretName: ""
+      # Name of kubernetes secret that holds the certificate authority (CA) certificates
+      # which are used by openmetadata-connector to validate the connection to the manager
+      # if mtls is enabled.
+      # The CA certificates key in the secret should have `.crt` suffix.
+      # The provided certificates replaces the certificates in the system CA certificate store.
+      # If the secret is not provided then the CA certificates are taken from the system
+      # CA certificate store, for example `/etc/ssl/certs/`.
+      # cacertSecretName: "test-tls-ca-certs"
+      cacertSecretName: ""
+
+  podAnnotations: {}
+
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
+  podSecurityContext: {}
+
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext: {}
+
+  service:
+    type: ClusterIP
+    # For tls connection use port 8443
+    port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  vault:
+    address: "http://vault.fybrik-system:8200"
+    authPath: "/v1/auth/kubernetes/login"
+    role: "fybrik"
+    jwt_file_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
 # V2 OPA connector component
 opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
@@ -496,9 +596,9 @@ opaConnector:
   # Overrides `.global.imagePullPolicy`
   imagePullPolicy: "Always"
 
-  # Used if autoscaling is not enabled 
+  # Used if autoscaling is not enabled
   replicaCount: 1
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -516,7 +616,7 @@ opaConnector:
     use_tls: false
     # Specifies whether the opa connector communication should use mutual tls.
     use_mtls: false
-    # Relavent if the connection between the manager and the connectors
+    # Relevant if the connection between the manager and the connectors
     # uses tls.
     certs:
       # Name of kubernetes tls secret that holds opa-connector certificates.

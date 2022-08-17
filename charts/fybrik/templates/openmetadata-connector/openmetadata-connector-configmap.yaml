@@ -1,0 +1,16 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fybrik.fullname" . }}-openmetadata-connector-configmap
+data:
+  conf.yaml: |- 
+{{- if .Values.config_override }}
+{{ .Values.config_override  | indent 4}}
+{{- else }}
+{{ tpl ( .Files.Get "files/openmetadata-connector-conf.yaml" ) . | indent 4 }}
+{{- end -}}
+
+{{- end -}}
