@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/rs/zerolog"
 )
 
@@ -42,6 +43,7 @@ const (
 	SERVICE string = "Service" // A data plane service - the service itself, not the module that describes it
 	SETUP   string = "Setup"   // Used by main function that initializes the control plane
 	WEBHOOK string = "Webhook"
+	CALLER  string = "Caller" // for internal messages (e.g. controller-runtime)
 )
 
 // Action Types
@@ -76,7 +78,6 @@ func GetLoggingVerbosity() zerolog.Level {
 	if !ok || verbosityStr == "" {
 		return retDefault
 	}
-	fmt.Printf("verbosity %v\n", verbosityStr)
 	verbosityInt, err := strconv.Atoi(verbosityStr)
 	if err != nil {
 		fmt.Printf("Trouble reading verbosity, err = %v. Found %s. Using trace as default", err, verbosityStr)
@@ -146,4 +147,20 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, ve
 		// Log the info making sure that the calling function is listed as the caller
 		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
 	}
+}
+
+// NewLogger creates a new logr.Logger using zerolog.Logger to preserve the logging format
+func NewLogger() logr.Logger {
+	var logger zerolog.Logger
+	if PrettyLogging() {
+		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+	} else {
+		logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
+	}
+
+	writer := &Writer{
+		Log:       &logger,
+		Verbosity: zerolog.GlobalLevel(),
+	}
+	return logr.New(writer)
 }

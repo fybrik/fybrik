@@ -18,7 +18,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
@@ -273,7 +272,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	ctrl.SetLogger(logging.NewLogger())
 
 	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
 		enableApplicationController, enableBlueprintController, enablePlotterController))
