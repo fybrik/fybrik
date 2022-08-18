@@ -21,6 +21,7 @@
       "additionalProperties": true
     },
     "AssetID": {
+      "description": "Asset ID of the asset to be queried in the catalog",
       "type": "string"
     },
     "AttributeType": {

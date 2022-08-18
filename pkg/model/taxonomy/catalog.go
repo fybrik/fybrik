@@ -11,6 +11,7 @@ import (
 
 const nameKey = "name"
 
+// Asset ID of the asset to be queried in the catalog
 type AssetID string
 
 type ProcessingLocation string
