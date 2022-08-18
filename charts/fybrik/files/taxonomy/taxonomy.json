@@ -36,18 +36,21 @@
       "type": "string"
     },
     "Connection": {
+      "description": "Name of the connection to the data source",
       "type": "object",
       "required": [
         "name"
       ],
       "properties": {
         "name": {
-          "$ref": "#/definitions/ConnectionType"
+          "$ref": "#/definitions/ConnectionType",
+          "description": "Name of the connection to the data source"
         }
       },
       "additionalProperties": true
     },
     "ConnectionType": {
+      "description": "Name of the connection type to the data source",
       "type": "string"
     },
     "DataFlow": {
@@ -60,6 +63,7 @@
       ]
     },
     "DataFormat": {
+      "description": "Format of the data",
       "type": "string"
     },
     "InfrastructureElement": {
@@ -160,6 +164,7 @@
       "additionalProperties": true
     },
     "ProcessingLocation": {
+      "description": "location information",
       "type": "string"
     },
     "RangeType": {
@@ -174,6 +179,7 @@
       }
     },
     "Tags": {
+      "description": "Additional metadata for the asset/field",
       "type": "object",
       "additionalProperties": true
     },

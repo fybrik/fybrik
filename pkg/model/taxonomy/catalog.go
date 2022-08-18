@@ -14,16 +14,21 @@ const nameKey = "name"
 // Asset ID of the asset to be queried in the catalog
 type AssetID string
 
+// location information
 type ProcessingLocation string
 
+// Name of the connection type to the data source
 type ConnectionType string
 
 // +kubebuilder:pruning:PreserveUnknownFields
+// Name of the connection to the data source
 type Connection struct {
+	// Name of the connection to the data source
 	Name                 ConnectionType   `json:"name"`
 	AdditionalProperties serde.Properties `json:"-"`
 }
 
+// Format of the data
 type DataFormat string
 
 type Interface struct {
@@ -34,6 +39,7 @@ type Interface struct {
 }
 
 // +kubebuilder:pruning:PreserveUnknownFields
+// Additional metadata for the asset/field
 type Tags struct {
 	serde.Properties `json:"-"`
 }
