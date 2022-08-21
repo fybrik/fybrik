@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -225,7 +226,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Writing data via arrow flight
 	opts := make([]grpc.DialOption, 0)
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
 	flightClient, err := flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
 	g.Expect(err).To(gomega.BeNil(), "Connect to arrow-flight service")
 	defer flightClient.Close()

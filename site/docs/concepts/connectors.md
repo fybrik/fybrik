@@ -13,12 +13,8 @@ Yes. Fybrik provides some default connectors described in this page but anyone c
 
 A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors-datacatalog/README.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.
 
-In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` 
-of your connector:
-
-1. Have a `fybrik.io/componentType: connector` label 
-1. Have a `sidecar.istio.io/inject: "true"` annotation
-
+In addition, to benefit from the `Ingress traffic policy` feature mentioned in [control plane security](../tasks/control-plane-security.md) section ensure that the `Pods` of your connector have a `fybrik.io/componentType: connector` label.
+For TLS configuration please see the above link for details on how fybrik uses TLS.
 
 ## Connector types
 

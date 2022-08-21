@@ -39,7 +39,6 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	if info.ResourceMetadata != nil {
 		resourceMetadata.Geography = info.ResourceMetadata.Geography
 	}
-
 	creds := ""
 	if environment.IsVaultEnabled() {
 		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
@@ -52,11 +51,10 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		DestinationCatalogID: catalogID,
 		DestinationAssetID:   assetID,
 	}
-
-	credentialPath := ""
-	if environment.IsVaultEnabled() {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-	}
+	// credentialPath is constructed even if vault is not used for credential managment
+	// in order to enable the connector to get the credentials directly from the secret
+	// using the secret information extracted from the credentialPath string.
+	credentialPath := vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 
 	var err error
 	var response *datacatalog.CreateAssetResponse

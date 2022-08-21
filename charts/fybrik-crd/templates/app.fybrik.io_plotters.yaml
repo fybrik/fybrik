@@ -1,11 +1,8 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
   name: plotters.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -16,622 +13,484 @@ spec:
     singular: plotter
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .metadata.creationTimestamp
-      name: Age
-      type: date
-    - jsonPath: .status.observedState.ready
-      name: Ready
-      type: string
-    - jsonPath: .status.readyTimestamp
-      name: ReadySince
-      type: string
-    name: v1beta1
-    schema:
-      openAPIV3Schema:
-        description: Plotter is the Schema for the plotters API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: PlotterSpec defines the desired state of Plotter, which is
-              applied in a multi-clustered environment. Plotter declares what needs
-              to be installed and where (as blueprints running on remote clusters)
-              which provides the Data Scientist's application with secure and governed
-              access to the data requested in the FybrikApplication.
-            properties:
-              appInfo:
-                description: Application context to be transferred to the modules
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              appSelector:
-                description: Selector enables to connect the resource to the application
-                  Application labels should match the labels in the selector. For
-                  some flows the selector may not be used.
-                properties:
-                  clusterName:
-                    description: Cluster name
-                    type: string
-                  workloadSelector:
-                    description: WorkloadSelector enables to connect the resource
-                      to the application Application labels should match the labels
-                      in the selector.
-                    properties:
-                      matchExpressions:
-                        description: matchExpressions is a list of label selector
-                          requirements. The requirements are ANDed.
-                        items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
-                          properties:
-                            key:
-                              description: key is the label key that the selector
-                                applies to.
-                              type: string
-                            operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
-                              type: string
-                            values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
-                              items:
-                                type: string
-                              type: array
-                          required:
-                          - key
-                          - operator
-                          type: object
-                        type: array
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
-                        type: object
-                    type: object
-                required:
-                - workloadSelector
-                type: object
-              assets:
-                additionalProperties:
-                  description: AssetDetails is a list of assets used in the fybrikapplication.
-                    In addition to assets declared in fybrikapplication, AssetDetails
-                    list also contains assets that are allocated by the control-plane
-                    in order to serve fybrikapplication
+    - additionalPrinterColumns:
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - jsonPath: .status.observedState.ready
+          name: Ready
+          type: string
+        - jsonPath: .status.readyTimestamp
+          name: ReadySince
+          type: string
+      name: v1beta1
+      schema:
+        openAPIV3Schema:
+          description: Plotter is the Schema for the plotters API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: PlotterSpec defines the desired state of Plotter, which is applied in a multi-clustered environment. Plotter declares what needs to be installed and where (as blueprints running on remote clusters) which provides the Data Scientist's application with secure and governed access to the data requested in the FybrikApplication.
+              properties:
+                appInfo:
+                  description: Application context to be transferred to the modules
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                appSelector:
+                  description: Selector enables to connect the resource to the application Application labels should match the labels in the selector. For some flows the selector may not be used.
                   properties:
-                    advertisedAssetId:
-                      description: AdvertisedAssetID links this asset to asset from
-                        fybrikapplication and is used by user facing services
+                    clusterName:
+                      description: Cluster name
                       type: string
-                    assetDetails:
-                      description: DataStore contains the details for accesing the
-                        data that are sent by catalog connectors Credentials for accesing
-                        the data are stored in Vault, in the location represented
-                        by Vault property.
+                    workloadSelector:
+                      description: WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
                       properties:
-                        connection:
-                          description: Connection has the relevant details for accesing
-                            the data (url, table, ssl, etc.)
-                          properties:
-                            name:
-                              type: string
-                          required:
-                          - name
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                        format:
-                          description: Format represents data format (e.g. parquet)
-                            as received from catalog connectors
-                          type: string
-                        vault:
-                          additionalProperties:
-                            description: Holds details for retrieving credentials
-                              from Vault store.
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                          items:
+                            description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
                             properties:
-                              address:
-                                description: Address is Vault address
+                              key:
+                                description: key is the label key that the selector applies to.
                                 type: string
-                              authPath:
-                                description: AuthPath is the path to auth method i.e.
-                                  kubernetes
+                              operator:
+                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
                                 type: string
-                              role:
-                                description: Role is the Vault role used for retrieving
-                                  the credentials
-                                type: string
-                              secretPath:
-                                description: SecretPath is the path of the secret
-                                  holding the Credentials in Vault
-                                type: string
+                              values:
+                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                                items:
+                                  type: string
+                                type: array
                             required:
-                            - address
-                            - authPath
-                            - role
-                            - secretPath
+                              - key
+                              - operator
                             type: object
-                          description: Holds details for retrieving credentials by
-                            the modules from Vault store. It is a map so that different
-                            credentials can be stored for the different DataFlow operations.
+                          type: array
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
                           type: object
-                      required:
-                      - connection
                       type: object
                   required:
-                  - assetDetails
+                    - workloadSelector
                   type: object
-                description: Assets is a map holding information about the assets
-                  The key is the assetID
-                type: object
-              flows:
-                items:
-                  description: 'Flows is the list of data flows driven from fybrikapplication:
-                    Each element in the list holds the flow of the data requested
-                    in fybrikapplication.'
-                  properties:
-                    assetId:
-                      description: AssetID indicates the data set being used in this
-                        data flow
-                      type: string
-                    flowType:
-                      description: Type of the flow (e.g. read)
-                      enum:
-                      - read
-                      - write
-                      - delete
-                      - copy
-                      type: string
-                    name:
-                      description: Name of the flow
-                      type: string
-                    subFlows:
-                      items:
-                        description: Subflows is a list of data flows which are originated
-                          from the same data asset but are triggered differently (e.g.,
-                          one upon init trigger and one upon workload trigger)
+                assets:
+                  additionalProperties:
+                    description: AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in fybrikapplication, AssetDetails list also contains assets that are allocated by the control-plane in order to serve fybrikapplication
+                    properties:
+                      advertisedAssetId:
+                        description: AdvertisedAssetID links this asset to asset from fybrikapplication and is used by user facing services
+                        type: string
+                      assetDetails:
+                        description: DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
                         properties:
-                          flowType:
-                            description: Type of the flow (e.g. read)
-                            enum:
-                            - read
-                            - write
-                            - delete
-                            - copy
+                          connection:
+                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                            properties:
+                              name:
+                                type: string
+                            required:
+                              - name
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          format:
+                            description: Format represents data format (e.g. parquet) as received from catalog connectors
                             type: string
-                          name:
-                            description: Name of the SubFlow
-                            type: string
-                          steps:
-                            description: Steps defines a series of sequential/parallel
-                              data flow steps The first dimension represents parallel
-                              data flows. The second sequential components within
-                              the same parallel data flow.
-                            items:
+                          vault:
+                            additionalProperties:
+                              description: Holds details for retrieving credentials from Vault store.
+                              properties:
+                                address:
+                                  description: Address is Vault address
+                                  type: string
+                                authPath:
+                                  description: AuthPath is the path to auth method i.e. kubernetes
+                                  type: string
+                                role:
+                                  description: Role is the Vault role used for retrieving the credentials
+                                  type: string
+                                secretPath:
+                                  description: SecretPath is the path of the secret holding the Credentials in Vault
+                                  type: string
+                              required:
+                                - address
+                                - authPath
+                                - role
+                                - secretPath
+                              type: object
+                            description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
+                            type: object
+                        required:
+                          - connection
+                        type: object
+                    required:
+                      - assetDetails
+                    type: object
+                  description: Assets is a map holding information about the assets The key is the assetID
+                  type: object
+                flows:
+                  items:
+                    description: 'Flows is the list of data flows driven from fybrikapplication: Each element in the list holds the flow of the data requested in fybrikapplication.'
+                    properties:
+                      assetId:
+                        description: AssetID indicates the data set being used in this data flow
+                        type: string
+                      flowType:
+                        description: Type of the flow (e.g. read)
+                        enum:
+                          - read
+                          - write
+                          - delete
+                          - copy
+                        type: string
+                      name:
+                        description: Name of the flow
+                        type: string
+                      subFlows:
+                        items:
+                          description: Subflows is a list of data flows which are originated from the same data asset but are triggered differently (e.g., one upon init trigger and one upon workload trigger)
+                          properties:
+                            flowType:
+                              description: Type of the flow (e.g. read)
+                              enum:
+                                - read
+                                - write
+                                - delete
+                                - copy
+                              type: string
+                            name:
+                              description: Name of the SubFlow
+                              type: string
+                            steps:
+                              description: Steps defines a series of sequential/parallel data flow steps The first dimension represents parallel data flows. The second sequential components within the same parallel data flow.
                               items:
-                                description: DataFlowStep contains details on a single
-                                  data flow step
-                                properties:
-                                  cluster:
-                                    description: Name of the cluster this step is
-                                      executed on
-                                    type: string
-                                  name:
-                                    description: Name of the step
-                                    type: string
-                                  parameters:
-                                    description: Step parameters TODO why not flatten
-                                      the parameters into this data flow step
-                                    properties:
-                                      action:
-                                        description: Actions are the data transformations
-                                          that the module supports
-                                        items:
-                                          properties:
-                                            name:
-                                              type: string
-                                          required:
-                                          - name
-                                          type: object
-                                          x-kubernetes-preserve-unknown-fields: true
-                                        type: array
-                                      api:
-                                        description: ResourceDetails includes asset
-                                          connection details
-                                        properties:
-                                          connection:
-                                            description: Connection information
+                                items:
+                                  description: DataFlowStep contains details on a single data flow step
+                                  properties:
+                                    cluster:
+                                      description: Name of the cluster this step is executed on
+                                      type: string
+                                    name:
+                                      description: Name of the step
+                                      type: string
+                                    parameters:
+                                      description: Step parameters TODO why not flatten the parameters into this data flow step
+                                      properties:
+                                        action:
+                                          description: Actions are the data transformations that the module supports
+                                          items:
                                             properties:
                                               name:
                                                 type: string
                                             required:
-                                            - name
+                                              - name
                                             type: object
                                             x-kubernetes-preserve-unknown-fields: true
-                                          dataFormat:
-                                            description: Data format
-                                            type: string
-                                        required:
-                                        - connection
-                                        type: object
-                                      args:
-                                        items:
-                                          description: 'StepArgument describes a step:
-                                            it could be assetID or an endpoint of
-                                            another step'
+                                          type: array
+                                        api:
+                                          description: ResourceDetails includes asset connection details
                                           properties:
-                                            api:
-                                              description: API holds information for
-                                                accessing a module instance
+                                            connection:
+                                              description: Connection information
                                               properties:
-                                                connection:
-                                                  description: Connection information
-                                                  properties:
-                                                    name:
-                                                      type: string
-                                                  required:
-                                                  - name
-                                                  type: object
-                                                  x-kubernetes-preserve-unknown-fields: true
-                                                dataFormat:
-                                                  description: Data format
+                                                name:
                                                   type: string
                                               required:
-                                              - connection
+                                                - name
                                               type: object
-                                            assetId:
-                                              description: AssetID identifies the
-                                                source asset of this step
+                                              x-kubernetes-preserve-unknown-fields: true
+                                            dataFormat:
+                                              description: Data format
                                               type: string
+                                          required:
+                                            - connection
                                           type: object
-                                        type: array
-                                    type: object
-                                  template:
-                                    description: Template is the name of the template
-                                      to execute the step The full details of the
-                                      template can be extracted from Plotter.spec.templates
-                                      list field.
-                                    type: string
-                                required:
-                                - cluster
-                                - name
-                                - template
-                                type: object
+                                        args:
+                                          items:
+                                            description: 'StepArgument describes a step: it could be assetID or an endpoint of another step'
+                                            properties:
+                                              api:
+                                                description: API holds information for accessing a module instance
+                                                properties:
+                                                  connection:
+                                                    description: Connection information
+                                                    properties:
+                                                      name:
+                                                        type: string
+                                                    required:
+                                                      - name
+                                                    type: object
+                                                    x-kubernetes-preserve-unknown-fields: true
+                                                  dataFormat:
+                                                    description: Data format
+                                                    type: string
+                                                required:
+                                                  - connection
+                                                type: object
+                                              assetId:
+                                                description: AssetID identifies the source asset of this step
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                    template:
+                                      description: Template is the name of the template to execute the step The full details of the template can be extracted from Plotter.spec.templates list field.
+                                      type: string
+                                  required:
+                                    - cluster
+                                    - name
+                                    - template
+                                  type: object
+                                type: array
                               type: array
-                            type: array
-                          triggers:
-                            description: Triggers
-                            items:
-                              description: SubFlowTrigger indicates the trigger for
-                                this subflow
-                              enum:
-                              - workload
-                              - init
-                              - timer
-                              type: string
-                            type: array
-                        required:
-                        - flowType
-                        - name
-                        - steps
-                        - triggers
-                        type: object
-                      type: array
-                  required:
-                  - assetId
-                  - flowType
-                  - name
-                  - subFlows
-                  type: object
-                type: array
-              modulesNamespace:
-                description: ModulesNamespace is the namespace where modules should
-                  be allocated
-                type: string
-              templates:
-                additionalProperties:
-                  description: Template contains basic information about the required
-                    modules to serve the fybrikapplication e.g., the module helm chart
-                    name.
-                  properties:
-                    modules:
-                      description: Modules is a list of dependent modules. e.g., if
-                        a plugin module is used then the service module is used in
-                        should appear first in the modules list of the same template.
-                        If the modules list contains more than one module, the first
-                        module in the list is referred to as the "primary module"
-                        of which all the parameters to this template are sent to.
-                      items:
-                        description: ModuleInfo is a copy of FybrikModule Custom Resource.  It
-                          contains information to instantiate resource of type FybrikModule.
-                        properties:
-                          capability:
-                            description: Module capability
-                            type: string
-                          chart:
-                            description: Chart contains the information needed to
-                              use helm to install the capability
-                            properties:
-                              chartPullSecret:
-                                description: Name of secret containing helm registry
-                                  credentials
+                            triggers:
+                              description: Triggers
+                              items:
+                                description: SubFlowTrigger indicates the trigger for this subflow
+                                enum:
+                                  - workload
+                                  - init
+                                  - timer
                                 type: string
-                              name:
-                                description: Name of helm chart
-                                type: string
-                              values:
-                                additionalProperties:
-                                  type: string
-                                description: Values to pass to helm chart installation
-                                type: object
-                            required:
+                              type: array
+                          required:
+                            - flowType
                             - name
-                            type: object
-                          name:
-                            description: Name of the module
-                            type: string
-                          scope:
-                            description: 'Scope indicates at what level the capability
-                              is used: workload, asset, cluster If not indicated it
-                              is assumed to be asset'
-                            enum:
-                            - asset
-                            - workload
-                            - cluster
-                            type: string
-                          type:
-                            description: 'May be one of service, config or plugin
-                              Service: Means that the control plane deploys the component
-                              that performs the capability Config: Another pre-installed
-                              service performs the capability and the module deployed
-                              configures it for the particular workload or dataset
-                              Plugin: Indicates that this module performs a capability
-                              as part of another service or module rather than as
-                              a stand-alone module'
-                            type: string
-                        required:
-                        - capability
-                        - chart
-                        - name
-                        - type
-                        type: object
-                      type: array
-                    name:
-                      description: Name of the template
-                      type: string
-                  required:
-                  - modules
-                  type: object
-                description: Templates is a map holding the templates used in this
-                  plotter steps The key is the template name
-                type: object
-            required:
-            - assets
-            - flows
-            - modulesNamespace
-            - templates
-            type: object
-          status:
-            description: PlotterStatus defines the observed state of Plotter This
-              includes readiness, error message, and indicators received from blueprint
-              resources owned by the Plotter for cleanup and status monitoring
-            properties:
-              assets:
-                additionalProperties:
-                  description: ObservedState represents a part of the generated Blueprint/Plotter
-                    resource status that allows update of FybrikApplication status
-                  properties:
-                    error:
-                      description: Error indicates that there has been an error to
-                        orchestrate the modules and provides the error message
-                      type: string
-                    ready:
-                      description: Ready represents that the modules have been orchestrated
-                        successfully and the data is ready for usage
-                      type: boolean
-                  type: object
-                description: Assets is a map containing the status per asset. The
-                  key of this map is assetId
-                type: object
-              blueprints:
-                additionalProperties:
-                  description: MetaBlueprint defines blueprint metadata (name, namespace)
-                    and status
-                  properties:
-                    name:
-                      type: string
-                    namespace:
-                      type: string
-                    status:
-                      description: BlueprintStatus defines the observed state of Blueprint
-                        This includes readiness, error message, and indicators for
-                        the Kubernetes resources owned by the Blueprint for cleanup
-                        and status monitoring
-                      properties:
-                        modules:
-                          additionalProperties:
-                            description: ObservedState represents a part of the generated
-                              Blueprint/Plotter resource status that allows update
-                              of FybrikApplication status
-                            properties:
-                              error:
-                                description: Error indicates that there has been an
-                                  error to orchestrate the modules and provides the
-                                  error message
-                                type: string
-                              ready:
-                                description: Ready represents that the modules have
-                                  been orchestrated successfully and the data is ready
-                                  for usage
-                                type: boolean
-                            type: object
-                          description: ModulesState is a map which holds the status
-                            of each module its key is the moduleInstanceName which
-                            is the unique name for the deployed instance related to
-                            this workload
+                            - steps
+                            - triggers
                           type: object
-                        observedGeneration:
-                          description: ObservedGeneration is taken from the Blueprint
-                            metadata.  This is used to determine during reconcile
-                            whether reconcile was called because the desired state
-                            changed, or whether status of the allocated resources
-                            should be checked.
-                          format: int64
-                          type: integer
-                        observedState:
-                          description: ObservedState includes information to be reported
-                            back to the FybrikApplication resource It includes readiness
-                            and error indications, as well as user instructions
+                        type: array
+                    required:
+                      - assetId
+                      - flowType
+                      - name
+                      - subFlows
+                    type: object
+                  type: array
+                modulesNamespace:
+                  description: ModulesNamespace is the namespace where modules should be allocated
+                  type: string
+                templates:
+                  additionalProperties:
+                    description: Template contains basic information about the required modules to serve the fybrikapplication e.g., the module helm chart name.
+                    properties:
+                      modules:
+                        description: Modules is a list of dependent modules. e.g., if a plugin module is used then the service module is used in should appear first in the modules list of the same template. If the modules list contains more than one module, the first module in the list is referred to as the "primary module" of which all the parameters to this template are sent to.
+                        items:
+                          description: ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information to instantiate resource of type FybrikModule.
                           properties:
-                            error:
-                              description: Error indicates that there has been an
-                                error to orchestrate the modules and provides the
-                                error message
+                            capability:
+                              description: Module capability
                               type: string
-                            ready:
-                              description: Ready represents that the modules have
-                                been orchestrated successfully and the data is ready
-                                for usage
-                              type: boolean
+                            chart:
+                              description: Chart contains the information needed to use helm to install the capability
+                              properties:
+                                chartPullSecret:
+                                  description: Name of secret containing helm registry credentials
+                                  type: string
+                                name:
+                                  description: Name of helm chart
+                                  type: string
+                                values:
+                                  additionalProperties:
+                                    type: string
+                                  description: Values to pass to helm chart installation
+                                  type: object
+                              required:
+                                - name
+                              type: object
+                            name:
+                              description: Name of the module
+                              type: string
+                            scope:
+                              description: 'Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset'
+                              enum:
+                                - asset
+                                - workload
+                                - cluster
+                              type: string
+                            type:
+                              description: 'May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module'
+                              type: string
+                          required:
+                            - capability
+                            - chart
+                            - name
+                            - type
                           type: object
-                        releases:
-                          additionalProperties:
+                        type: array
+                      name:
+                        description: Name of the template
+                        type: string
+                    required:
+                      - modules
+                    type: object
+                  description: Templates is a map holding the templates used in this plotter steps The key is the template name
+                  type: object
+              required:
+                - assets
+                - flows
+                - modulesNamespace
+                - templates
+              type: object
+            status:
+              description: PlotterStatus defines the observed state of Plotter This includes readiness, error message, and indicators received from blueprint resources owned by the Plotter for cleanup and status monitoring
+              properties:
+                assets:
+                  additionalProperties:
+                    description: ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+                    properties:
+                      error:
+                        description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                        type: string
+                      ready:
+                        description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                        type: boolean
+                    type: object
+                  description: Assets is a map containing the status per asset. The key of this map is assetId
+                  type: object
+                blueprints:
+                  additionalProperties:
+                    description: MetaBlueprint defines blueprint metadata (name, namespace) and status
+                    properties:
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                      status:
+                        description: BlueprintStatus defines the observed state of Blueprint This includes readiness, error message, and indicators for the Kubernetes resources owned by the Blueprint for cleanup and status monitoring
+                        properties:
+                          modules:
+                            additionalProperties:
+                              description: ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+                              properties:
+                                error:
+                                  description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                                  type: string
+                                ready:
+                                  description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                                  type: boolean
+                              type: object
+                            description: ModulesState is a map which holds the status of each module its key is the moduleInstanceName which is the unique name for the deployed instance related to this workload
+                            type: object
+                          observedGeneration:
+                            description: ObservedGeneration is taken from the Blueprint metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated resources should be checked.
                             format: int64
                             type: integer
-                          description: Releases map each release to the observed generation
-                            of the blueprint containing this release. At the end of
-                            reconcile, each release should be mapped to the latest
-                            blueprint version or be uninstalled.
-                          type: object
-                      type: object
-                  required:
-                  - name
-                  - namespace
-                  - status
+                          observedState:
+                            description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+                            properties:
+                              error:
+                                description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                                type: string
+                              ready:
+                                description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                                type: boolean
+                            type: object
+                          releases:
+                            additionalProperties:
+                              format: int64
+                              type: integer
+                            description: Releases map each release to the observed generation of the blueprint containing this release. At the end of reconcile, each release should be mapped to the latest blueprint version or be uninstalled.
+                            type: object
+                        type: object
+                    required:
+                      - name
+                      - namespace
+                      - status
+                    type: object
                   type: object
-                type: object
-              conditions:
-                description: Conditions represent the possible error and failure conditions
-                items:
-                  description: Condition describes the state of a FybrikApplication
-                    at a certain point.
-                  properties:
-                    message:
-                      description: Message contains the details of the current condition
-                      type: string
-                    observedGeneration:
-                      description: ObservedGeneration is the version of the resource
-                        for which the condition has been evaluated
-                      format: int64
-                      type: integer
-                    status:
-                      default: Unknown
-                      description: Status of the condition, one of (`True`, `False`,
-                        `Unknown`).
-                      enum:
-                      - "True"
-                      - "False"
-                      - Unknown
-                      type: string
-                    type:
-                      description: Type of the condition
-                      type: string
-                  required:
-                  - type
-                  type: object
-                type: array
-              flows:
-                additionalProperties:
-                  description: FlowStatus includes information to be reported back
-                    to the FybrikApplication resource It holds the status per data
-                    flow
-                  properties:
-                    status:
-                      description: ObservedState includes information about the current
-                        flow It includes readiness and error indications, as well
-                        as user instructions
-                      properties:
-                        error:
-                          description: Error indicates that there has been an error
-                            to orchestrate the modules and provides the error message
-                          type: string
-                        ready:
-                          description: Ready represents that the modules have been
-                            orchestrated successfully and the data is ready for usage
-                          type: boolean
-                      type: object
-                    subFlows:
-                      additionalProperties:
-                        description: ObservedState represents a part of the generated
-                          Blueprint/Plotter resource status that allows update of
-                          FybrikApplication status
+                conditions:
+                  description: Conditions represent the possible error and failure conditions
+                  items:
+                    description: Condition describes the state of a FybrikApplication at a certain point.
+                    properties:
+                      message:
+                        description: Message contains the details of the current condition
+                        type: string
+                      observedGeneration:
+                        description: ObservedGeneration is the version of the resource for which the condition has been evaluated
+                        format: int64
+                        type: integer
+                      status:
+                        default: Unknown
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: Type of the condition
+                        type: string
+                    required:
+                      - type
+                    type: object
+                  type: array
+                flows:
+                  additionalProperties:
+                    description: FlowStatus includes information to be reported back to the FybrikApplication resource It holds the status per data flow
+                    properties:
+                      status:
+                        description: ObservedState includes information about the current flow It includes readiness and error indications, as well as user instructions
                         properties:
                           error:
-                            description: Error indicates that there has been an error
-                              to orchestrate the modules and provides the error message
+                            description: Error indicates that there has been an error to orchestrate the modules and provides the error message
                             type: string
                           ready:
-                            description: Ready represents that the modules have been
-                              orchestrated successfully and the data is ready for
-                              usage
+                            description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
                             type: boolean
                         type: object
-                      type: object
-                  required:
-                  - subFlows
+                      subFlows:
+                        additionalProperties:
+                          description: ObservedState represents a part of the generated Blueprint/Plotter resource status that allows update of FybrikApplication status
+                          properties:
+                            error:
+                              description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                              type: string
+                            ready:
+                              description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                              type: boolean
+                          type: object
+                        type: object
+                    required:
+                      - subFlows
+                    type: object
+                  description: Flows is a map containing the status for each flow the key is the flow name
                   type: object
-                description: Flows is a map containing the status for each flow the
-                  key is the flow name
-                type: object
-              observedGeneration:
-                description: ObservedGeneration is taken from the Plotter metadata.  This
-                  is used to determine during reconcile whether reconcile was called
-                  because the desired state changed, or whether status of the allocated
-                  blueprints should be checked.
-                format: int64
-                type: integer
-              observedState:
-                description: ObservedState includes information to be reported back
-                  to the FybrikApplication resource It includes readiness and error
-                  indications, as well as user instructions
-                properties:
-                  error:
-                    description: Error indicates that there has been an error to orchestrate
-                      the modules and provides the error message
-                    type: string
-                  ready:
-                    description: Ready represents that the modules have been orchestrated
-                      successfully and the data is ready for usage
-                    type: boolean
-                type: object
-              readyTimestamp:
-                format: date-time
-                type: string
-            type: object
-        required:
-        - spec
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+                observedGeneration:
+                  description: ObservedGeneration is taken from the Plotter metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether status of the allocated blueprints should be checked.
+                  format: int64
+                  type: integer
+                observedState:
+                  description: ObservedState includes information to be reported back to the FybrikApplication resource It includes readiness and error indications, as well as user instructions
+                  properties:
+                    error:
+                      description: Error indicates that there has been an error to orchestrate the modules and provides the error message
+                      type: string
+                    ready:
+                      description: Ready represents that the modules have been orchestrated successfully and the data is ready for usage
+                      type: boolean
+                  type: object
+                readyTimestamp:
+                  format: date-time
+                  type: string
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
 status:
   acceptedNames:
     kind: ""
