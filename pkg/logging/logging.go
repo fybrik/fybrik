@@ -65,7 +65,7 @@ const (
 	CLUSTER      string = "cluster"      // optional
 	PLOTTER      string = "plotter"      // optional
 	BLUEPRINT    string = "blueprint"    // optional
-	NAME         string = "name"         //optional
+	NAME         string = "name"         // optional
 	NAMESPACE    string = "namespace"    // optional
 	RESPONSETIME string = "responseTime" // optional
 )
