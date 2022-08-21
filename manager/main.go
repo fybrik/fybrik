@@ -16,9 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
@@ -272,8 +272,10 @@ func main() {
 		setupLog.Debug().Msg("At least one controller flag must be set!")
 		os.Exit(1)
 	}
-
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	// standard logger for internal packages
+	logger := logging.NewLogger()
+	ctrl.SetLogger(logger)
+	klog.SetLogger(logger)
 
 	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
 		enableApplicationController, enableBlueprintController, enablePlotterController))
@@ -282,7 +284,7 @@ func main() {
 func newDataCatalog() (dcclient.DataCatalog, error) {
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).
+	setupLog.Info().Str(logging.CONNECTOR, providerName).Str("URL", connectorURL).
 		Msg("setting data catalog client")
 	return dcclient.NewDataCatalog(
 		providerName,
@@ -292,7 +294,7 @@ func newDataCatalog() (dcclient.DataCatalog, error) {
 func newPolicyManager() (pmclient.PolicyManager, error) {
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
+	setupLog.Info().Str(logging.CONNECTOR, mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
 		Msg("setting main policy manager client")
 
 	return pmclient.NewOpenAPIPolicyManager(
