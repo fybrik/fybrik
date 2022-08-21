@@ -12,14 +12,18 @@ import (
 
 // Writer implements LogSink interface using zerolog.Logger
 
+const SKIP = 2
+
 type Writer struct {
 	Log       *zerolog.Logger
 	Verbosity zerolog.Level
+	Depth     int
 	Caller    string
 }
 
 // ignoring CallDepth
 func (w *Writer) Init(ri logr.RuntimeInfo) {
+	w.Depth = ri.CallDepth
 }
 
 func (w *Writer) Enabled(lvl int) bool {
@@ -55,7 +59,7 @@ func (w *Writer) Info(lvl int, msg string, keysAndVals ...interface{}) {
 	for key, val := range values {
 		l = l.Str(key, val)
 	}
-	l.Msg(msg)
+	l.CallerSkipFrame(w.Depth + SKIP).Msg(msg)
 }
 
 func (w *Writer) Error(err error, msg string, keysAndVals ...interface{}) {
@@ -70,7 +74,7 @@ func (w *Writer) Error(err error, msg string, keysAndVals ...interface{}) {
 	for key, val := range values {
 		l = l.Str(key, val)
 	}
-	l.Msg(msg)
+	l.CallerSkipFrame(w.Depth + SKIP).Msg(msg)
 }
 
 func (w *Writer) WithName(name string) logr.LogSink {
@@ -84,7 +88,9 @@ func (w *Writer) WithName(name string) logr.LogSink {
 }
 
 func (w *Writer) WithCallDepth(depth int) logr.LogSink {
-	return w
+	newLogger := *w
+	newLogger.Depth = depth
+	return &newLogger
 }
 
 func handleFields(args []interface{}) (map[string]string, error) {
