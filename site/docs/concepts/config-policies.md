@@ -1,4 +1,4 @@
-# IT Config Policies
+# IT Config Policies and Data Plane Optimization
 
 ## What are IT config policies?
 
@@ -235,7 +235,7 @@ rm -rf tmp.json
 
 In a typical Fybrik deployment there may be several possibilities to create a data plane that satisfies the user requirements, governance and configuration policies. Based on the enterprise policy, an IT administrator may affect the choice of the data plane by defining a policy with optimization goals. 
 An optimization goal attempts to minimize or maximize a specific [infrastructure attribute](../tasks/infrastructure.md#how-to-define-infrastructure-attributes).
-Data plane optimization is disabled by default. To enable data-plane optimization, the [Optimizer component](./optimizer.md) must be enabled as explained [here](../tasks/data-plane-optimization.md#enabling-the-optimizer).
+While [IT config policies](#what-are-it-config-policies) are always enforced, the data plane optimization is disabled by default. To enable data-plane optimization, the [Optimizer component](./optimizer.md) must be enabled as explained [here](../tasks/data-plane-optimization.md#enabling-the-optimizer). 
 
 ### Syntax 
 
