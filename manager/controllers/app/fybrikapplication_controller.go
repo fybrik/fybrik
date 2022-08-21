@@ -524,11 +524,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
-			if !environment.IsVaultEnabled() {
-				log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
-			} else {
-				credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-			}
+			// credentialPath is constructed even if vault is not used for credential managment
+			// in order to enable the connector to get the credentials directly from the secret
+			// using the secret information extracted from the credentialPath string.
+			credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 		}
 		var response *datacatalog.GetAssetResponse
 		request := datacatalog.GetAssetRequest{
