@@ -51,7 +51,7 @@ type PlotterReconciler struct {
 
 // Reconcile receives a Plotter CRD
 func (r *PlotterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	sublog := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str("plotter", req.NamespacedName.String()).Logger()
+	sublog := r.Log.With().Str(logging.CONTROLLER, PlotterKind).Str(logging.PLOTTER, req.NamespacedName.String()).Logger()
 
 	plotter := fapp.Plotter{}
 	if err := r.Get(ctx, req.NamespacedName, &plotter); err != nil {

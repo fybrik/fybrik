@@ -50,7 +50,7 @@ func (w *Writer) Info(lvl int, msg string, keysAndVals ...interface{}) {
 	}
 	l := w.Log.Info()
 	if w.Caller != "" {
-		l = l.Str(CALLER, w.Caller)
+		l = l.Str(SETUP, w.Caller)
 	}
 	for key, val := range values {
 		l = l.Str(key, val)
@@ -65,7 +65,7 @@ func (w *Writer) Error(err error, msg string, keysAndVals ...interface{}) {
 	}
 	l := w.Log.Error().Err(err)
 	if w.Caller != "" {
-		l = l.Str(CALLER, w.Caller)
+		l = l.Str(SETUP, w.Caller)
 	}
 	for key, val := range values {
 		l = l.Str(key, val)
