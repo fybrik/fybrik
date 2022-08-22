@@ -10,7 +10,15 @@ data:
 {{- if .Values.config_override }}
 {{ .Values.config_override  | indent 4}}
 {{- else }}
-{{ tpl ( .Files.Get "files/openmetadata-connector-conf.yaml" ) . | indent 4 }}
+    openmetadata_endpoint: {{ .Values.openmetadataConnector.openmetadata_endpoint | default "openmetadata.fybrik-system:8585/api" }}
+    openmetadata_sleep_interval: {{ .Values.openmetadataConnector.openmetadata_sleep_interval | default 100 }}
+    openmetadata_num_retries: {{ .Values.openmetadataConnector.openmetadata_num_retries | default 1000 }}
+
+    vault:
+      address: {{ .Values.openmetadataConnector.vault.address | default "http://vault.fybrik-system:8200"}}
+      authPath: {{ .Values.openmetadataConnector.vault.authPath | default "/v1/auth/kubernetes/login" }}
+      role: {{ .Values.openmetadataConnector.vault.role | default "module" }}
+      jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path | default "/var/run/secrets/kubernetes.io/serviceaccount/token" }}
 {{- end -}}
 
 {{- end -}}
