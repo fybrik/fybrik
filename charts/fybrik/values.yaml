@@ -567,6 +567,10 @@ openmetadataConnector:
     targetMemoryUtilizationPercentage:
     # targetMemoryUtilizationPercentage: 80
 
+  openmetadata_endpoint: "openmetadata.fybrik-system:8585/api"
+  openmetadata_sleep_interval: 100
+  openmetadata_num_retries: 1000
+
   vault:
     address: "http://vault.fybrik-system:8200"
     authPath: "/v1/auth/kubernetes/login"

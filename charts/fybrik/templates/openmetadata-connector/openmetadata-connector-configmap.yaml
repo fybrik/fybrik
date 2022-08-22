@@ -10,15 +10,15 @@ data:
 {{- if .Values.config_override }}
 {{ .Values.config_override  | indent 4}}
 {{- else }}
-    openmetadata_endpoint: {{ .Values.openmetadataConnector.openmetadata_endpoint | default "openmetadata.fybrik-system:8585/api" }}
-    openmetadata_sleep_interval: {{ .Values.openmetadataConnector.openmetadata_sleep_interval | default 100 }}
-    openmetadata_num_retries: {{ .Values.openmetadataConnector.openmetadata_num_retries | default 1000 }}
+    openmetadata_endpoint: {{ .Values.openmetadataConnector.openmetadata_endpoint }}
+    openmetadata_sleep_interval: {{ .Values.openmetadataConnector.openmetadata_sleep_interval }}
+    openmetadata_num_retries: {{ .Values.openmetadataConnector.openmetadata_num_retries }}
 
     vault:
-      address: {{ .Values.openmetadataConnector.vault.address | default "http://vault.fybrik-system:8200"}}
-      authPath: {{ .Values.openmetadataConnector.vault.authPath | default "/v1/auth/kubernetes/login" }}
-      role: {{ .Values.openmetadataConnector.vault.role | default "module" }}
-      jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path | default "/var/run/secrets/kubernetes.io/serviceaccount/token" }}
+      address: {{ .Values.openmetadataConnector.vault.address }}
+      authPath: {{ .Values.openmetadataConnector.vault.authPath }}
+      role: {{ .Values.openmetadataConnector.vault.role }}
+      jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path }}
 {{- end -}}
 
 {{- end -}}
