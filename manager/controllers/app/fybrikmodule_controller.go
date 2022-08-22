@@ -41,7 +41,7 @@ const (
 
 // Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.With().Str(logging.CONTROLLER, FybrikModuleKind).Str("module", req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, FybrikModuleKind).Str(logging.MODULE, req.NamespacedName.String()).Logger()
 
 	// obtain FybrikModule resource
 	moduleContext := &fapp.FybrikModule{}
