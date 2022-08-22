@@ -19,6 +19,7 @@ import (
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
@@ -55,7 +56,7 @@ func init() {
 }
 
 //nolint:funlen,gocyclo
-func run(namespace string, metricsAddr string, enableLeaderElection bool,
+func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 	environment.LogEnvVariables(&setupLog)
@@ -84,18 +85,37 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	setupLog.Info().Msg("Manager client rate limits: qps = " + fmt.Sprint(client.QPS) + " burst=" + fmt.Sprint(client.Burst))
 
+	// Set health probes address(required to run probes)
+	// and desired liveness and readiness endpoints(optional)
 	mgr, err := ctrl.NewManager(client, ctrl.Options{
-		CertDir:            environment.GetDataDir() + certSubDir,
-		Scheme:             scheme,
-		Namespace:          namespace,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "fybrik-operator-leader-election",
-		Port:               controllers.ManagerPort,
-		NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
+		CertDir:                environment.GetDataDir() + certSubDir,
+		Scheme:                 scheme,
+		Namespace:              namespace,
+		MetricsBindAddress:     metricsAddr,
+		LeaderElection:         enableLeaderElection,
+		LeaderElectionID:       "fybrik-operator-leader-election",
+		Port:                   controllers.ManagerPort,
+		HealthProbeBindAddress: healthProbeAddr,
+		LivenessEndpointName:   "health",
+		ReadinessEndpointName:  "ready",
+		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {
 		setupLog.Error().Err(err).Msg("unable to start manager")
+		return 1
+	}
+
+	// Add readiness probe
+	err = mgr.AddReadyzCheck("ready-ping", healthz.Ping)
+	if err != nil {
+		setupLog.Error().Err(err).Msg("unable add a readiness check")
+		return 1
+	}
+
+	// Add liveness probe
+	err = mgr.AddHealthzCheck("health-ping", healthz.Ping)
+	if err != nil {
+		setupLog.Error().Err(err).Msg("unable add a health check")
 		return 1
 	}
 
@@ -241,6 +261,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 func main() {
 	var namespace string
 	var metricsAddr string
+	var healthProbeAddr string
 	var enableLeaderElection bool
 	var enableApplicationController bool
 	var enableBlueprintController bool
@@ -249,6 +270,7 @@ func main() {
 	address := utils.ListeningAddress(controllers.ListeningPortAddress)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
+	flag.StringVar(&healthProbeAddr, "health-probe-addr", address, "The address the health probe binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
@@ -277,7 +299,7 @@ func main() {
 	ctrl.SetLogger(logger)
 	klog.SetLogger(logger)
 
-	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
+	os.Exit(run(namespace, metricsAddr, healthProbeAddr, enableLeaderElection,
 		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 

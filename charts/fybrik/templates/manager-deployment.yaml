@@ -78,6 +78,7 @@ spec:
             {{- if and .Values.clusterScoped .Values.manager.prometheus }}
             - "--metrics-bind-addr=127.0.0.1:8080"
             {{- end }}
+            - "--health-probe-addr=127.0.0.1:8088"
             - "--leader-elect"
             {{- if .Values.coordinator.enabled }}
             - "--enable-application-controller"

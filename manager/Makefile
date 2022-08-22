@@ -23,7 +23,7 @@ manager:
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
 run:
-	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
+	go run ./main.go --enable-all-controllers --metrics-bind-addr=0 --health-probe-addr=127.0.0.1:8088
 
 .PHONY: source-build
 source-build:
