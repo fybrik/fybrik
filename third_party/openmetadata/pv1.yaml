@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dag
+  labels:
+    app: dag
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef: # the claimRef is here to provide a "connection" between this pv and the pvc.
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: dag 
+    namespace: fybrik-system
+  hostPath:
+    path: /tmp/
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dag
+  namespace: fybrik-system
+  labels:
+    app: dag
+spec:
+        #storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      # The amount of the volume's storage to request
+      storage: 1Gi
