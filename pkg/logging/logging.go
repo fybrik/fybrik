@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/rs/zerolog"
 )
 
@@ -35,20 +36,20 @@ import (
 
 // Component Types
 const (
-	CONTROLLER string = "Controller" // A control plane controller
-	MODULE     string = "Module"     // A fybrikmodule that describes a deployable or pre-deployed service
-	CONNECTOR  string = "Connector"  // A component that connects an external system to the fybrik control plane - data governance,
+	CONTROLLER string = "controller" // A control plane controller
+	MODULE     string = "module"     // A fybrikmodule that describes a deployable or pre-deployed service
+	CONNECTOR  string = "connector"  // A component that connects an external system to the fybrik control plane - data governance,
 	// policy manager, data catalog, credential manager
-	SERVICE string = "Service" // A data plane service - the service itself, not the module that describes it
-	SETUP   string = "Setup"   // Used by main function that initializes the control plane
-	WEBHOOK string = "Webhook"
+	SERVICE string = "service" // A data plane service - the service itself, not the module that describes it
+	SETUP   string = "setup"   // Used by main function that initializes the control plane
+	WEBHOOK string = "webhook"
 )
 
 // Action Types
 const (
-	DELETE string = "Delete"
-	CREATE string = "Create"
-	UPDATE string = "Update"
+	DELETE string = "delete"
+	CREATE string = "create"
+	UPDATE string = "update"
 )
 
 // Log Entry Params - those listed in the constants below and
@@ -57,15 +58,16 @@ const (
 // Cluster will not be included since not all components know how to determine on which cluster they run.
 // Instead it will be assumed that the logging agents will add this information as they gather the logs.
 const (
-	ACTION       string = "Action"       // optional
-	DATASETID    string = "DataSetID"    // optional
-	FORUSER      string = "ForUser"      // optional
-	AUDIT        string = "Audit"        // optional
-	CLUSTER      string = "Cluster"      // optional
-	PLOTTER      string = "Plotter"      // optional
-	BLUEPRINT    string = "Blueprint"    // optional
-	NAMESPACE    string = "Namespace"    // optional
-	RESPONSETIME string = "ResponseTime" // optional
+	ACTION       string = "action"       // optional
+	DATASETID    string = "dataSetID"    // optional
+	FORUSER      string = "forUser"      // optional
+	AUDIT        string = "audit"        // optional
+	CLUSTER      string = "cluster"      // optional
+	PLOTTER      string = "plotter"      // optional
+	BLUEPRINT    string = "blueprint"    // optional
+	NAME         string = "name"         // optional
+	NAMESPACE    string = "namespace"    // optional
+	RESPONSETIME string = "responseTime" // optional
 )
 
 // GetLoggingVerbosity returns the level as per https://github.com/rs/zerolog#leveled-logging
@@ -76,7 +78,6 @@ func GetLoggingVerbosity() zerolog.Level {
 	if !ok || verbosityStr == "" {
 		return retDefault
 	}
-	fmt.Printf("verbosity %v\n", verbosityStr)
 	verbosityInt, err := strconv.Atoi(verbosityStr)
 	if err != nil {
 		fmt.Printf("Trouble reading verbosity, err = %v. Found %s. Using trace as default", err, verbosityStr)
@@ -102,28 +103,7 @@ func PrettyLogging() bool {
 // LogInit insures that all log entries have a cluster, timestamp, caller type, file and line from which it was called.
 // FybrikAppUuid is mandatory as well, but is not known when the logger is initialized.
 func LogInit(callerType, callerName string) zerolog.Logger {
-	// Get the logging verbosity level from the environment variable
-	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
-	verbosity := GetLoggingVerbosity()
-
-	var log zerolog.Logger
-	zerolog.SetGlobalLevel(verbosity)
-
-	// Initialize the logger with the parameters known at the time of its initiation
-	// All entries include timestamp and caller that generated them
-
-	// If PRETTY_LOGGING
-	// Include the filename and line if we're debugging
-	if PrettyLogging() {
-		log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str(callerType, callerName).Caller().Logger()
-	} else {
-		// UNIX Time is faster and smaller than most timestamps
-		//		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-		log = zerolog.New(os.Stdout).With().Timestamp().Str(callerType, callerName).Caller().Logger()
-	}
-
-	log.Debug().Msg("Logging verbosity level is " + log.GetLevel().String())
-	return log
+	return createLogContext().Str(callerType, callerName).Logger()
 }
 
 // LogStructure prints out the provided structure to the log in json format.
@@ -146,4 +126,33 @@ func LogStructure(argName string, argStruct interface{}, log *zerolog.Logger, ve
 		// Log the info making sure that the calling function is listed as the caller
 		log.WithLevel(verbosity).CallerSkipFrame(1).Bool(FORUSER, forUser).Bool(AUDIT, audit).Msg(argName + ": " + string(jsonStruct))
 	}
+}
+
+func createLogContext() zerolog.Context {
+	// Get the logging verbosity level from the environment variable
+	// It should be one of these: https://github.com/rs/zerolog#leveled-logging
+	verbosity := GetLoggingVerbosity()
+	zerolog.SetGlobalLevel(verbosity)
+
+	// Initialize the logger with the parameters known at the time of its initiation
+	// All entries include timestamp and caller that generated them
+
+	// If PRETTY_LOGGING
+	// Include the filename and line if we're debugging
+	if PrettyLogging() {
+		return zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Caller()
+	}
+	// UNIX Time is faster and smaller than most timestamps
+	//		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	return zerolog.New(os.Stdout).With().Timestamp().Caller()
+}
+
+// NewLogger creates a new logr.Logger using zerolog.Logger to preserve the logging format
+func NewLogger() logr.Logger {
+	logger := createLogContext().Logger()
+	writer := &Writer{
+		Log:       &logger,
+		Verbosity: zerolog.GlobalLevel(),
+	}
+	return logr.New(writer)
 }
