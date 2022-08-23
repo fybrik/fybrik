@@ -252,7 +252,7 @@ manager:
     # Set to true to enable the use of the solver by Fybrik
     enabled: false
     # Set the size limit of the directory which holds the solver image.
-    dirSizeLimit: 200Mi
+    solverVolumeSizeLimit: 200Mi
 
   # Specify a persistent volume claim, to be mounted by the manager, that can contain
   # helm charts that can be referenced by a FybrikModule.  Manager will check if a chart

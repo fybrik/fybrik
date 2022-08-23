@@ -175,7 +175,7 @@ spec:
         {{- if .Values.manager.solver.image }}
         - name: solver-volume
           emptyDir:
-            sizeLimit: {{ .Values.manager.solver.dirSizeLimit }}
+            sizeLimit: {{ .Values.manager.solver.solverVolumeSizeLimit }}
         {{- end }}
         - name: data
           emptyDir:

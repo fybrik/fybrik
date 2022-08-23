@@ -89,7 +89,7 @@ spec:
       volumes:
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.katalogConnector.dirSizeLimit }}
+            sizeLimit: {{ .Values.katalogConnector.dataDirSizeLimit }}
         {{- if .Values.katalogConnector.tls.certs.certSecretName }}
         - name: tls-cert
           secret:
