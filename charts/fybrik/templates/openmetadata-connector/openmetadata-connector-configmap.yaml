@@ -15,7 +15,7 @@ data:
     openmetadata_num_retries: {{ .Values.openmetadataConnector.openmetadata_num_retries }}
 
     vault:
-      address: {{ .Values.openmetadataConnector.vault.address }}
+      address: {{ tpl .Values.coordinator.vault.address . | quote }}
       authPath: {{ .Values.openmetadataConnector.vault.authPath }}
       role: {{ .Values.openmetadataConnector.vault.role }}
       jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path }}
