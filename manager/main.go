@@ -96,8 +96,6 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		LeaderElectionID:       "fybrik-operator-leader-election",
 		Port:                   controllers.ManagerPort,
 		HealthProbeBindAddress: healthProbeAddr,
-		LivenessEndpointName:   "health",
-		ReadinessEndpointName:  "ready",
 		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {

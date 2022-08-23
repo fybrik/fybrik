@@ -131,6 +131,24 @@ spec:
               name: webhook-server
               protocol: TCP
           {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8088
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8088
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            initialDelaySeconds: 20
           volumeMounts:
             - name: data
               mountPath: {{ include "fybrik.getDataDir" . }}
