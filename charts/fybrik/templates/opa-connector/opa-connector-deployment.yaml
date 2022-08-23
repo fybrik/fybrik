@@ -92,7 +92,7 @@ spec:
       volumes:
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.opaConnector.dirSizeLimit }}
+            sizeLimit: {{ .Values.opaConnector.dataDirSizeLimit }}
         {{- if .Values.opaConnector.tls.certs.certSecretName }}
         - name: tls-cert
           secret:
