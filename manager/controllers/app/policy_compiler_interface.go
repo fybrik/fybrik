@@ -74,11 +74,10 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		if !environment.IsVaultEnabled() {
-			appContext.Log.Error().Str("SecretRef", appContext.Application.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
-		} else {
-			creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
-		}
+		// creds is constructed even if vault is not used for credential managment
+		// in order to enable the connector to get the credentials directly from the secret
+		// using the secret information extracted from the creds string.
+		creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
 	}
 
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)

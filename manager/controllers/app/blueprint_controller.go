@@ -63,7 +63,7 @@ func (r *BlueprintReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
 	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).
-		Str("blueprint", req.NamespacedName.String()).Logger()
+		Str(logging.BLUEPRINT, req.NamespacedName.String()).Logger()
 	cfg, err := r.Helmer.GetConfig(blueprint.Spec.ModulesNamespace, log.Printf)
 	if err != nil {
 		return ctrl.Result{}, err

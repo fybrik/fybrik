@@ -109,7 +109,7 @@ func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) 
 		return nil, err
 	}
 	jsonData, err := r.con.Resources.ResourceContent(r.orgID, cluster.ClusterID, selfLink)
-	log := r.log.With().Str(clusterKey, clusterName).Str("name", name).Str("namespace", namespace).Logger()
+	log := r.log.With().Str(clusterKey, clusterName).Str(logging.NAME, name).Str(logging.NAMESPACE, namespace).Logger()
 	if err != nil {
 		log.Error().Err(err).Msg("Error while fetching resource content of blueprint")
 		return nil, err
