@@ -13,7 +13,7 @@ spec:
     apiVersion: v1
     kind: PersistentVolumeClaim
     name: logs
-    namespace: fybrik-system
+    namespace: INSTALLATION_NAMESPACE
   hostPath:
     path: /tmp/
 ---
@@ -21,7 +21,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: logs
-  namespace: fybrik-system
+  namespace: INSTALLATION_NAMESPACE
   labels:
     app: logs
 spec:
