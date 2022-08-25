@@ -9,8 +9,6 @@ mysql:
   fullnameOverride: "mysql"
   image:
     pullPolicy: "Always"
-  auth:
-    rootPassword: password    # provided by CI/CD
   primary:
     service:
       nodePort: 3306
@@ -55,9 +53,6 @@ airflow:
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dags"
     users:
     - role: Admin
-      email: spiderman@superhero.org
-      firstName: Peter
-      lastName: Parker
   web:
     readinessProbe:
       enabled: true
