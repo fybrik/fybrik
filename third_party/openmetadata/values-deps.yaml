@@ -38,7 +38,6 @@ airflow:
   airflow:
     image:
       repository: openmetadata/airflow
-      tag: 0.11.4
       pullPolicy: "IfNotPresent"
     executor: "KubernetesExecutor"
     config:
