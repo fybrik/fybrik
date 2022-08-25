@@ -5,8 +5,7 @@ package datacatalog
 
 import "fybrik.io/fybrik/pkg/model/taxonomy"
 
-// OperationType Type of operation requested for the asset
-// +kubebuilder:validation:Enum=read;
+// Type of operation requested for the asset
 type OperationType string
 
 // List of operationType

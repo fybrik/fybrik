@@ -40,8 +40,12 @@ spec:
           image: {{ include "fybrik.image" ( tuple $ .Values.opaConnector ) }}
           imagePullPolicy: {{ .Values.opaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
+            {{- if .Values.opaConnector.tls.use_tls }}
+            - name: https
+            {{- else }}
             - name: http
-              containerPort: 8080
+            {{- end }}
+              containerPort: {{ .Values.opaConnector.service.port }}
               protocol: TCP
           env:
             - name: DATA_DIR
@@ -88,7 +92,7 @@ spec:
       volumes:
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.opaConnector.dirSizeLimit }}
+            sizeLimit: {{ .Values.opaConnector.dataDirSizeLimit }}
         {{- if .Values.opaConnector.tls.certs.certSecretName }}
         - name: tls-cert
           secret:

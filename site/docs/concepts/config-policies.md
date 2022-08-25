@@ -1,8 +1,8 @@
-# Configuration Policies
+# IT Config Policies and Data Plane Optimization
 
-## What are configuration policies?
+## What are IT config policies?
 
-Configuration policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. The configuration policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
+IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
 
 ## Input to policies
 
@@ -27,7 +27,7 @@ Rules are written in the following syntax: `config[{"capability": capability, "d
 
 ```
 { 
-	"policy": {"ID": <id>, "policySetID": <setId>, "description": <description>, "version": <version>}, 
+	"policy": {"ID": <id>, "description": <description>, "version": <version>}, 
 	"deploy": <"True", "False">,
 	"restrictions": {
 		"modules": <list of restrictions>,
@@ -51,7 +51,7 @@ config[{"capability": "read", "decision": decision}] {
 ```
 
 
-`policy` provides policy metadata: unique ID, human-readable description, version and `policySetID` (see ### Policy Set ID)
+`policy` provides policy metadata: unique ID, human-readable description and version
 
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
 Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
@@ -64,11 +64,6 @@ Cluster is not a custom resource. It has the following properties:
 
 `deploy` receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.
 
-### Policy Set ID
-
-Fybrik supports evaluating different sets of policies for different FybrikApplications. It is possible to define a policy for a specific `policySetID` which will be trigered only if it matches the `policySetID` defined in FybrikApplication. 
-If a policy does not specify a policy set id, it will be considered as relevant for all FybrikApplications.
-In a similar way, all policies are relevant for a FybrikApplication that does not specify a policy set id, to support a use-case of a single policy set for all.
 
 ### Out of the box policies
 
@@ -204,7 +199,7 @@ package adminconfig
 
 # vaild from 2022.1.1, expire on 2022.6.1
 config[{"capability": "copy", "decision": decision}] {
-    policy := {"policySetID": "1", "ID": "test-1"}
+    policy := {"ID": "test-1", "description": "forbid making copies", "version": "0.1"}
     nowDate := time.now_ns()
     startDate := time.parse_rfc3339_ns("2022-01-01T00:00:00Z")
     expiration := time.parse_rfc3339_ns("2022-06-01T00:00:00Z")
@@ -215,57 +210,66 @@ config[{"capability": "copy", "decision": decision}] {
 ```
 Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
 
-## Taking infrastructure metrics into consideration
+### How to update policies after Fybrik is already deployed
 
-When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
-For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
-Infrastructure attributes and metrics are stored in the `/tmp/adminconfig/infrastructure.json` directory of the manager pod. Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.
+Updating policies is done by updating `fybrik-adminconfig` config map in the controller plane.
 
-### How to define infrastructure attributes
-
-An infrastructure attribute is defined by a JSON object that includes the following fields:
-
-- `attribute` - name of the infrastructure attribute, should be defined in the taxonomy
-- `description` 
-- `type` - value type(can be numeric, string or boolean)
-- `value` - the actual value of the metric
-- `units` - measurement units, defined in the taxonomy 
-- `object` - a resource the attribute relates to (storageaccount, module, cluster)
-- `instance` - a reference to the resource instance, e.g. storage account name
-- `scale` - a scale of values (minimum and maximum) when applicable
-
-The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the `cluster-metadata` config map). The valid values for the attribute `object` field are `storageaccount`, `module` and `cluster`, respectively.
-
-For example, the following attribute defines the storage cost of the "account-theshire" storage account. 
+To do that, first, download all files to some directory, e.g. /tmp/adminconfig, after that update the files, and finally, upload them to the config map. The steps below demonstrate how to add a new rego file `samples/adminconfig/quickstart-policies.rego`. 
 
 ```
-{
-    "attribute": "storage-cost",
-    "description": "theshire object store",
-    "value": "90",
-    "type": "numeric",
-    "units": "US Dollar per TB per month",
-    "object": "storageaccount",
-    "instance": "account-theshire"
+#!/bin/bash
+kubectl get cm fybrik-adminconfig -o json > tmp.json
+mkdir -p /tmp/adminconfig
+files=$(cat tmp.json | jq '.data' | jq -r 'keys[]')
+for k in $files; do
+    name=".data[\"$k\"]";
+    cat tmp.json | jq -r $name > /tmp/adminconfig/$k;
+done
+cp samples/adminconfig/quickstart_policies.rego /tmp/adminconfig/
+kubectl create configmap fybrik-adminconfig --from-file=/tmp/adminconfig -o yaml --dry-run=client | kubectl replace -n fybrik-system -f -
+rm -rf /tmp/adminconfig
+rm -rf tmp.json
+```
+
+## Optimization goals
+
+In a typical Fybrik deployment there may be several possibilities to create a data plane that satisfies the user requirements, governance and configuration policies. Based on the enterprise policy, an IT administrator may affect the choice of the data plane by defining a policy with optimization goals. 
+An optimization goal attempts to minimize or maximize a specific [infrastructure attribute](../tasks/infrastructure.md#how-to-define-infrastructure-attributes).
+While [IT config policies](#what-are-it-config-policies) are always enforced, the data plane optimization is disabled by default. To enable data-plane optimization, the [Optimizer component](./optimizer.md) must be enabled as explained [here](../tasks/data-plane-optimization.md#enabling-the-optimizer). 
+
+### Syntax 
+
+Optimization rules are written in rego files in a package `adminconfig`.
+
+Rules are written in the following syntax: `optimize[decision]` where
+
+- `decision` is a JSON structure with the following fields:
+- `policy` - policy metadata: unique ID, human-readable description and a version
+- list of `goals` including attribute name, optimization directive(`min` or `max`) and optionally a weight.
+
+For example, the following rule attempts to minimize storage cost in copy scenarios.
+
+```
+# minimize storage cost for copy scenarios
+optimize[decision] {
+    input.request.usage == "copy"
+    policy := {"ID": "save-cost", "description":"Save storage costs", "version": "0.1"}
+    decision := {"policy": policy, "strategy": [{"attribute": "storage-cost", "directive": "min"}]}
 }
 ```
 
-### Add a new attribute definition to the taxonomy
+### Weights
 
-See https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml for an example how to define an attribute and the corresponding measurement units. 
- 
-### Usage of infrastructure attributes in policies
-
-An infrastructure attribute can be used as the `property` value in configuration policies. For example, the following policy restricts 
-the storage account selection using the `storage-cost` infrastructure attribute:
+If more than one goal is provided, they can have a different weight. By default, all weights are equal to 1. 
+For example, the rule below defines two goals with weights in the 4:1 ratio meaning that the optimizer try to optimize distance and storage costs, but will give a higher priority to distance.
 ```
-# restrict storage costs to a maximum of $95 when copying the data
-config[{"capability": "copy", "decision": decision}] {
-    input.request.usage == "copy"
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    account_restrict := {"property": "storage-cost", "range": {"max": 95}}
-    policy := {"ID": "copy-restrict-storage", "description":"Use cheaper storage", "version": "0.1"}
-    decision := {"policy": policy, "restrictions": {"storageaccounts": [account_restrict]}}
+# minimize distance, minimize storage cost for read scenarios
+optimize[decision] {
+    input.request.usage == "read"
+    policy := {"ID": "general-strategy", "description":"focus on higher performance while saving storage costs", "version": "0.1"}
+    optimize_distance := {"attribute": "distance", "directive": "min", "weight": "0.8"}
+    optimize_storage := {"attribute": "storage-cost", "directive": "min", "weight": "0.2"}
+    decision := {"policy": policy, "strategy": [optimize_distance,optimize_storage]}
 }
 ```
 

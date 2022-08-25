@@ -52,6 +52,7 @@ spec:
                             description: Connection information
                             properties:
                               name:
+                                description: Name of the connection to the data source
                                 type: string
                             required:
                               - name

@@ -354,7 +354,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1317,7 +1317,7 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1483,7 +1483,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1928,7 +1928,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2587,7 +2587,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2912,7 +2912,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3007,7 +3007,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3860,7 +3860,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>

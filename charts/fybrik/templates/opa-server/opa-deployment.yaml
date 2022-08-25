@@ -36,7 +36,7 @@ spec:
           emptyDir: {}
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.opaServer.dirSizeLimit }}
+            sizeLimit: {{ .Values.opaServer.dataDirSizeLimit }}
         {{- if .Values.opaServer.tls.certs.certSecretName }}
         - name: tls-cert
           secret:

@@ -40,8 +40,12 @@ spec:
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
+            {{- if .Values.katalogConnector.tls.use_tls }}
+            - name: https
+            {{- else }}
             - name: http
-              containerPort: 8080
+            {{- end }}
+              containerPort: {{ .Values.katalogConnector.service.port }}
               protocol: TCP
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
@@ -89,7 +93,7 @@ spec:
       volumes:
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.katalogConnector.dirSizeLimit }}
+            sizeLimit: {{ .Values.katalogConnector.dataDirSizeLimit }}
         {{- if .Values.katalogConnector.tls.certs.certSecretName }}
         - name: tls-cert
           secret:
