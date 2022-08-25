@@ -49,15 +49,12 @@ airflow:
       # OpenMetadata Airflow Lineage Backend Configurations
       AIRFLOW__LINEAGE__BACKEND: airflow_provider_openmetadata.lineage.openmetadata.OpenMetadataLineageBackend
       AIRFLOW__LINEAGE__AIRFLOW_SERVICE_NAME: airflow_helm
-      AIRFLOW__LINEAGE__OPENMETADATA_API_ENDPOINT: http://openmetadata.fybrik-system.svc.cluster.local:8585/api
       AIRFLOW__LINEAGE__AUTH_PROVIDER_TYPE: no-auth
       # OpenMetadata Airflow Apis Plugin DAGs Configuration
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_RUNNER_TEMPLATE: "/opt/airflow/dag_templates/dag_runner.j2"
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dags"
     users:
-    - username: admin
-      password: admin
-      role: Admin
+    - role: Admin
       email: spiderman@superhero.org
       firstName: Peter
       lastName: Parker
@@ -84,10 +81,8 @@ airflow:
     enabled: false
   externalDatabase:
     type: mysql
-    host: mysql.fybrik-system.svc.cluster.local
     port: 3306
     database: airflow_db
-    user: airflow_user
     passwordSecret: airflow-mysql-secrets
     passwordSecretKey: airflow-mysql-password
   serviceAccount:
