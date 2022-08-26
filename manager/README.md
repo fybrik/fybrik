@@ -102,7 +102,7 @@ cp -R ../charts/fybrik/files/adminconfig /tmp/
 
 You can now run the manager from the `manager` folder using one of these options:
 1. `make run`
-2. `go run main.go --enable-all-controllers --metrics-bind-addr=0`
+2. `go run main.go --enable-all-controllers --metrics-bind-addr=0 --health-probe-addr=127.0.0.1:8088`
 
 ### From IDE
 
@@ -121,7 +121,7 @@ Below is a `launch.json` file for VSCode:
             "mode": "auto",
             "program": "${workspaceFolder}/manager/main.go",
             "envFile": "${workspaceFolder}/.env",
-            "args": ["--metrics-bind-addr=0", "--enable-all-controllers"]
+            "args": ["--metrics-bind-addr=0", "--health-probe-addr=127.0.0.1:8088", "--enable-all-controllers"]
         }
     ]
 }

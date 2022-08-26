@@ -8,7 +8,8 @@ import "fybrik.io/fybrik/pkg/model/taxonomy"
 type GetAssetRequest struct {
 	// Asset ID of the asset to be queried in the catalog
 	AssetID taxonomy.AssetID `json:"assetID"`
-	// Type of operation to be done on the asset
+
+	// +kubebuilder:validation:Enum=read;
 	OperationType OperationType `json:"operationType"`
 }
 
@@ -26,13 +27,18 @@ type CreateAssetRequest struct {
 	// The destination catalog id in which the new asset will be created based on the information provided
 	// in ResourceMetadata and ResourceDetails field
 	DestinationCatalogID string `json:"destinationCatalogID"`
+
 	// +kubebuilder:validation:Optional
 	// Asset ID to be used for the created asset
 	DestinationAssetID string `json:"destinationAssetID,omitempty"`
+
 	// Source asset metadata like asset name, owner, geography, etc
 	ResourceMetadata ResourceMetadata `json:"resourceMetadata"`
-	// Source asset details like connection and data format
+
+	// Source asset details like connection
+	// and data format
 	Details ResourceDetails `json:"details"`
+
 	// +kubebuilder:validation:Optional
 	// The vault plugin path where the destination data credentials will be stored as kubernetes secrets
 	Credentials string `json:"credentials"`

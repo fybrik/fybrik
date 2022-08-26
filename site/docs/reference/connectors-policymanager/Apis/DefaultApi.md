@@ -19,7 +19,7 @@ This REST API gets data governance decisions for the data sets indicated in Fybr
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **X-Request-Cred**|**String**|  | [default to null]
-**GetPolicyDecisionsRequest**|**GetPolicyDecisionsRequest**| Policy Manager Request Object. |
+**GetPolicyDecisionsRequest**|[**GetPolicyDecisionsRequest**](../Models/GetPolicyDecisionsRequest.md)| Policy Manager Request Object. |
 
 ### Return type
 

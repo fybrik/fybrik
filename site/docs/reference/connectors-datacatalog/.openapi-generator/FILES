@@ -7,7 +7,6 @@ Models/DeleteAssetRequest.md
 Models/DeleteAssetResponse.md
 Models/GetAssetRequest.md
 Models/GetAssetResponse.md
-Models/OperationType.md
 Models/ResourceColumn.md
 Models/ResourceDetails.md
 Models/ResourceMetadata.md
