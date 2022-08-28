@@ -53,6 +53,13 @@ possible CRD changes without changing its schema.
 We were able to change a required field in version v1 to an optional field in v2. In addition, we were able to add a new 
 optional field in v2. This is inline with compatibility examples from [\[5\]](#5)
 
+*Note:* If we go from previous API version to a new one without supporting the previous version, let say `v1alpha1` and 
+a cluster API server has stored objects of the previous version, we will get an error similar to the following:  
+```
+CustomResourceDefinition.apiextensions.k8s.io "plotters.app.fybrik.io" is invalid: status.storedVersions[0]: Invalid value: "v1alpha1": must appear in spec.versions
+```
+
+
 ## References
 1. Kubernetes internal, "[Changing the API](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#changing-the-api)"
 requirements<a name="1"></a>
