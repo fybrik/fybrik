@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.2">
     
     
       
@@ -1627,7 +1627,10 @@ Make a note of the service endpoint and access credentials. You will need them l
 </code></pre></div></li>
 <li>Install localstack to the currently active namespace and wait for it to be ready:
   <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
-helm install localstack localstack-charts/localstack --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> --set service.type<span class="o">=</span>ClusterIP
+helm install localstack localstack-charts/localstack <span class="se">\ </span>
+     --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> <span class="se">\</span>
+     --set service.type<span class="o">=</span>ClusterIP <span class="se">\</span>
+     --set livenessProbe.initialDelaySeconds<span class="o">=</span><span class="m">25</span>
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-notebook-sample --timeout<span class="o">=</span>120s
 </code></pre></div>
   create a port-forward to communicate with localstack server:
