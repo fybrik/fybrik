@@ -271,6 +271,19 @@ export NOTEBOOK_POD_NAME=$(kubectl get pods | grep notebook |awk '{print $1}')
 kubectl cp $FILEPATH $NOTEBOOK_POD_NAME:/tmp
 ```
 
+When referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell as shown below, `/tmp/` directory should be specified, for example:
+
+```
+file_path = "/tmp/PS_20174392719_1491204439457_log.csv"
+```
+
+Alternatively, in Jupyter notebook, there is an *`Upload Files`* button that can be used to upload `PS_20174392719_1491204439457_log.csv` to the notebook from the local machine. In that case, the path to `"PS_20174392719_1491204439457_log.csv"` should be as follows:
+
+```
+file_path = "PS_20174392719_1491204439457_log.csv"
+```
+
+
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
@@ -303,7 +316,7 @@ request = {
 }
 
 # write the new dataset
-file_path = "/tmp/PS_20174392719_1491204439457_log.csv"
+file_path = "/path/to/PS_20174392719_1491204439457_log.csv"
 my_table = csv.read_csv(file_path)
 writer, _ = client.do_put(fl.FlightDescriptor.for_command(json.dumps(request)),
                           my_table.schema)
