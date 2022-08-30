@@ -574,7 +574,6 @@ openmetadataConnector:
   openmetadata_num_retries: 1000
 
   vault:
-    authPath: "kubernetes"
     role: "fybrik"
     jwt_file_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
