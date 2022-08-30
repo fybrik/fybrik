@@ -16,7 +16,7 @@ data:
 
     vault:
       address: {{ tpl .Values.coordinator.vault.address . | quote }}
-      authPath: {{ .Values.openmetadataConnector.vault.authPath }}
+      authPath: {{ .Values.cluster.vaultAuthPath }}
       role: {{ .Values.openmetadataConnector.vault.role }}
       jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path }}
 {{- end -}}
