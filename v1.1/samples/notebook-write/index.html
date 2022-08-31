@@ -1627,7 +1627,7 @@ Make a note of the service endpoint and access credentials. You will need them l
 </code></pre></div></li>
 <li>Install localstack to the currently active namespace and wait for it to be ready:
   <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
-helm install localstack localstack-charts/localstack <span class="se">\ </span>
+helm install localstack localstack-charts/localstack <span class="se">\</span>
      --set <span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span> <span class="se">\</span>
      --set service.type<span class="o">=</span>ClusterIP <span class="se">\</span>
      --set livenessProbe.initialDelaySeconds<span class="o">=</span><span class="m">25</span>
