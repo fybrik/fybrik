@@ -59,6 +59,12 @@ a cluster API server has stored objects of the previous version, we will get an 
 CustomResourceDefinition.apiextensions.k8s.io "plotters.app.fybrik.io" is invalid: status.storedVersions[0]: Invalid value: "v1alpha1": must appear in spec.versions
 ```
 
+## Data Catalog and Policy Manager Interfaces
+Both data catalog and policy manager connectors use REST APIs. We do not expect significant API changes. Most of the 
+possible changes are covered by the Taxonomy. However, in order to cover possible changes, we need to versioning them.   
+Unfortunately, currently these interfaces are not versioned.
+
+We can extend them with a standard REST versioning, 
 
 ## References
 1. Kubernetes internal, "[Changing the API](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#changing-the-api)"
