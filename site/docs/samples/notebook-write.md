@@ -263,7 +263,16 @@ CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={
 
 This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ealaxi/paysim1) dataset[^1] as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
 
-In your **terminal**, run the following commands to copy `PS_20174392719_1491204439457_log.csv` file from your local machine into `/tmp` directory in the Jupyter notebook pod:
+To reference `PS_20174392719_1491204439457_log.csv` from Jupyter notebook as shown later on in this section do the following:
+
+Jupyter notebook has an *`Upload Files`* button that can be used to upload `PS_20174392719_1491204439457_log.csv` to the notebook from the local machine. When referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell the following should be used:
+
+```
+file_path = "PS_20174392719_1491204439457_log.csv"
+```
+
+
+Alternatively, in your **terminal**, run the following commands to copy `PS_20174392719_1491204439457_log.csv` file from your local machine into `/tmp` directory in the Jupyter notebook pod:
 
 ```bash
 export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
@@ -271,18 +280,11 @@ export NOTEBOOK_POD_NAME=$(kubectl get pods | grep notebook |awk '{print $1}')
 kubectl cp $FILEPATH $NOTEBOOK_POD_NAME:/tmp
 ```
 
-When referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell as shown below, `/tmp/` directory should be specified, for example:
+In that case, when referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell, `/tmp/` directory should be specified, for example:
 
 ```
 file_path = "/tmp/PS_20174392719_1491204439457_log.csv"
 ```
-
-Alternatively, in Jupyter notebook, there is an *`Upload Files`* button that can be used to upload `PS_20174392719_1491204439457_log.csv` to the notebook from the local machine. In that case, the path to `"PS_20174392719_1491204439457_log.csv"` should be as follows:
-
-```
-file_path = "PS_20174392719_1491204439457_log.csv"
-```
-
 
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 
