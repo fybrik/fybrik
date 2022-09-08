@@ -569,7 +569,7 @@ openmetadataConnector:
 
   dirSizeLimit: 200Mi
 
-  openmetadata_endpoint: "openmetadata.fybrik-system:8585/api"
+  openmetadata_endpoint: "openmetadata.open-metadata:8585/api"
   openmetadata_sleep_interval: 100
   openmetadata_num_retries: 1000
 
