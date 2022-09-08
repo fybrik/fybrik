@@ -1,4 +1,4 @@
-TAG := $(shell git describe --tags --abbrev=0)
+TAG := $(shell git for-each-ref --format="%(refname:short)" --sort=-authordate --count=1 refs/tags)
 
 COMMIT := $(shell git rev-list -1 HEAD)
 

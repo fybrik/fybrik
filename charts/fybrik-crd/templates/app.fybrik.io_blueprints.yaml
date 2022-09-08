@@ -98,6 +98,7 @@ spec:
                                         description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                                         properties:
                                           name:
+                                            description: Name of the connection to the data source
                                             type: string
                                         required:
                                           - name
