@@ -151,5 +151,23 @@ Install the {{ arrowFlightRelease }}[^2] release of arrow-flight-module:
 {% endif %}
 ```
 
+## Install Data Catalog
+
+Fybrik requires a data catalog in which to store metadata related to data assets. Currently, two data catalogs are supported:
+
+ 1. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog that is included in Fybrik for evaluation purposes.
+ 2. [OpenMetadata](https://open-metadata.org/): An end-to-end metadata management solution that includes data discovery, governance, data quality, observability, and people collaboration.
+
+No steps are required to install the katalog data catalog, as it is installed by default.
+
+If you prefer to use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
+```bash
+git clone https://github.com/fybrik/fybrik.git
+cd fybrik/third_party/openmetadata/
+make
+```
+
+Running `make` installs OpenMetadata in the `open-metadata` namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the `Makefile.env` file.
+
 [^1]:Fybrik version 0.6.0 and lower should use cert-manager 1.2.0
 [^2]: Refer to the [documentation](https://github.com/fybrik/arrow-flight-module/blob/master/README.md#register-as-a-fybrik-module) of arrow-flight-module for other versions
