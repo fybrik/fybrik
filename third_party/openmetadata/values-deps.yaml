@@ -98,3 +98,6 @@ airflow:
       #storageClass: "manual"
       accessMode: ReadWriteMany
       size: 1Gi
+  scheduler:
+    logCleanup:
+      enabled: false
