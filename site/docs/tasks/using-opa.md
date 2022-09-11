@@ -30,7 +30,7 @@ The verdict `allow` will be reached only if the conditions hold, and no other ru
 
 The input object includes the application properties and the requested action as well as dataset details (id, metadata).
 
-- `properties`: application/workload properties defined in FybrikApplication, e.g. `properties.intent`
+- `context`: request context includes application/workload properties defined in FybrikApplication, e.g. `context.properties.intent`
 - `action`: request action includes information about the request such as `action.actionType` as defined in policy manager taxonomy , e.g `write`, `read`, `delete` or `copy`
 - `resource`: the request id and metadata as defined in catalog taxonomy, e.g `resource.metadata.geography`
 
