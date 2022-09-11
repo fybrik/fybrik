@@ -15,7 +15,8 @@ package dataapi.authz
 rule [{}] { true }
 ```
 
-You can also add conditions like
+To add a condition a new rule named `rule` should be added as shown below.
+Note that only rules named `rule` are considered.
 
 ```yaml
  rule[{}] {
@@ -24,6 +25,14 @@ You can also add conditions like
 ```
 
 The verdict `allow` will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.
+
+## Input to policies
+
+The input object includes the application properties and the requested action as well as dataset details (id, metadata).
+
+- `properties`: application/workload properties defined in FybrikApplication, e.g. `properties.intent`
+- `action`: request action includes information about the request such as `action.actionType` as defined in policy manager taxonomy , e.g `write`, `read`, `delete` or `copy`
+- `resource`: the request id and metadata as defined in catalog taxonomy, e.g `resource.metadata.geography`
 
 ## Managing OPA policies
 
