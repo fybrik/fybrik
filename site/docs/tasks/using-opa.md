@@ -7,7 +7,8 @@ For more details on OPA policies please refer to [OPA documentation](https://www
 
 ## OPA Policies Syntax
 
-OPA policies for Fybrik are written in rego files and have the following syntax: `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is a rego object with the follwing form:
+OPA policies for Fybrik are written in rego files and have the following syntax: `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is JSON object with the following form:
+
 
 ```
 {
@@ -32,7 +33,7 @@ Here is an example Fybrik rule:
     }
 ```
 
-The following is an example of a new value that the rule above can have if it is evaluated to true:
+An example of an object that may be returned by the rule above:
 
 ```
   {
