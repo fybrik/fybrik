@@ -1,0 +1,24 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fybrik.fullname" . }}-openmetadata-connector-configmap
+data:
+  conf.yaml: |- 
+{{- if .Values.config_override }}
+{{ .Values.config_override  | indent 4}}
+{{- else }}
+    openmetadata_endpoint: {{ .Values.openmetadataConnector.openmetadata_endpoint }}
+    openmetadata_sleep_interval: {{ .Values.openmetadataConnector.openmetadata_sleep_interval }}
+    openmetadata_num_retries: {{ .Values.openmetadataConnector.openmetadata_num_retries }}
+
+    vault:
+      address: {{ tpl .Values.coordinator.vault.address . | quote }}
+      authPath: {{ .Values.cluster.vaultAuthPath }}
+      role: {{ .Values.openmetadataConnector.vault.role }}
+      jwt_file_path: {{ .Values.openmetadataConnector.vault.jwt_file_path }}
+{{- end -}}
+
+{{- end -}}

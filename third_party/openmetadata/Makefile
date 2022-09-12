@@ -3,6 +3,8 @@ include Makefile.env
 all: deploy-openmetadata
 
 deploy-openmetadata:
+	helm repo add open-metadata https://helm.open-metadata.org/ || true
+	helm repo update || true
 	kubectl create ns ${INSTALLATION_NAMESPACE} || true
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv1.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv2.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
