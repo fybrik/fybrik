@@ -5,11 +5,9 @@ When OPA is used for data governance, it is deployed as a stand-alone service.  
 
 For more details on OPA policies please refer to [OPA documentation](https://www.openpolicyagent.org/docs/latest/policy-language/) in particulate to [the basics](https://www.openpolicyagent.org/docs/latest/policy-language/#the-basics) section which explains how a policy is evaluated.
 
-## Fybrik Policies Syntax
+## OPA Policies Syntax
 
-Policies are written in rego files.
-
-Fybrik policies are written in the following syntax: `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is a rego object with the follwing form:
+OPA policies for Fybrik are written in rego files and have the following syntax: `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is a rego object with the follwing form:
 
 ```
 {
