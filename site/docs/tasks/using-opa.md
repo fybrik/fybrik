@@ -20,7 +20,7 @@ OPA policies for Fybrik are written in rego files and have the following syntax:
 ```
 
 - `name` is the name of the action. For example: "RedactAction"
-- `property` is the name of the action property as defined in the [Taxonomy](custom-taxonomy.md). For example: "columns".
+- `property` is the name of the action property as defined in the [enforcement actions taxonomy](../concepts/taxonomy.md). For example: "columns".
 
 Here is an example Fybrik rule:
 ```
