@@ -9,6 +9,7 @@ IT config policies are the mechanism via which the organization may influence th
 The `input` object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata).
 
 Available properties:
+
 - `cluster.name`: name of the workload cluster
 - `cluster.metadata.region`: region of the workload cluster
 - `properties`: application/workload properties defined in FybrikApplication, e.g. `properties.intent`
