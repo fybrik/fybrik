@@ -16,7 +16,7 @@ env:
   # the newest supported K8s version and its respective kind image
   NEW_K8S_VERSION: v1.24.0@sha256:406fd86d48eaf4c04c7280cd1d2ca1d61e7d0d61ddef0125cb097bc7b82ed6a1
   # the oldest supported K8s version and its respective kind image
-  OLD_K8S_VERSION: v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047 
+  OLD_K8S_VERSION: v1.22.9@sha256:6e57a6b0c493c7d7183a1151acff0bfa44bf37eb668826bf00da5637c55b6d5e 
   LATEST_BACKWARD_SUPPORTED_VERSION: 0.7.0
 
 jobs:
