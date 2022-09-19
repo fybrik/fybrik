@@ -1,8 +1,8 @@
 #!/bin/bash
 
 OM_VERSION=0.12.0
-OPENMETADATA_AIRFLOW_VERSION=0.12.0
-OPENMETADATA_HELM_CHART_VERSION=0.0.36
+export OPENMETADATA_AIRFLOW_VERSION=0.12.0
+export OPENMETADATA_HELM_CHART_VERSION=0.0.36
 
 if [ $# -gt 1 ]; then
     echo "Usage: "$0" [open-metadata-version]"
@@ -20,8 +20,8 @@ if [[ ! ${supported_om_version[*]} =~ ${OM_VERSION} ]]; then
 fi
 
 if [ "$OM_VERSION" = "0.11.4" ]; then
-    OPENMETADATA_AIRFLOW_VERSION=0.11.4
-    OPENMETADATA_HELM_CHART_VERSION=0.0.34
+    export OPENMETADATA_AIRFLOW_VERSION=0.11.4
+    export OPENMETADATA_HELM_CHART_VERSION=0.0.34
 fi
 
 # create temp directory
