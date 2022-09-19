@@ -30,15 +30,22 @@ tmp_dir=$(mktemp -d)
 # download files to temp directory
 cd $tmp_dir
 
-files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml values-deps.yaml)
+files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml values-deps.yaml go.mod go.sum prepare_OM_for_fybrik.go)
 for file in "${files_to_download[@]}"
     do curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/$file -o $file
 done
 
-cd -
-
 # install OM
-make -C $tmp_dir
+make
+
+kubectl port-forward svc/openmetadata -n open-metadata 8585:8585 &
+sleep 2
+JOB=$(jobs | grep "kubectl port-forward svc/openmetadata -n open-metadata 8585:8585" | cut -d"[" -f2 | cut -d"]" -f1)
+
+go run .
+
+kill %$JOB
 
 # cleanup
+cd -
 rm -Rf $tmp_dir
