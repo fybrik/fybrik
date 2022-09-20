@@ -6,6 +6,7 @@ package clients
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"emperror.dev/errors"
 
@@ -13,6 +14,13 @@ import (
 	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+)
+
+// ErrorMessages that are reported to the user
+const (
+	InvalidAssetID        string = "the asset does not exist"
+	AccessForbidden       string = "no permissions to access the data"
+	InvalidAssetDataStore string = "the asset data store is not supported"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -48,7 +56,15 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.GetAssetInfo(context.Background()).XRequestDatacatalogCred(creds).GetAssetRequest(*in).Execute()
+	resp, httpResponse, err :=
+		m.client.DefaultApi.GetAssetInfo(context.Background()).XRequestDatacatalogCred(creds).GetAssetRequest(*in).Execute()
+	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusForbidden {
+		return nil, errors.New(AccessForbidden)
+	}
+	if httpResponse.StatusCode == http.StatusNotFound {
+		return nil, errors.New(InvalidAssetID)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
 	}
@@ -56,8 +72,9 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 }
 
 func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.CreateAsset(context.Background()).
+	resp, httpResponse, err := m.client.DefaultApi.CreateAsset(context.Background()).
 		XRequestDatacatalogWriteCred(creds).CreateAssetRequest(*in).Execute()
+	defer httpResponse.Body.Close()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("create asset info from %s failed", m.name))
 	}
@@ -65,7 +82,9 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 }
 
 func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.DeleteAsset(context.Background()).XRequestDatacatalogCred(creds).DeleteAssetRequest(*in).Execute()
+	resp, httpResponse, err :=
+		m.client.DefaultApi.DeleteAsset(context.Background()).XRequestDatacatalogCred(creds).DeleteAssetRequest(*in).Execute()
+	defer httpResponse.Body.Close()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("delete asset info from %s failed", m.name))
 	}
@@ -73,8 +92,9 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 }
 
 func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
-	resp, _, err := m.client.DefaultApi.UpdateAsset(
+	resp, httpResponse, err := m.client.DefaultApi.UpdateAsset(
 		context.Background()).XRequestDatacatalogUpdateCred(creds).UpdateAssetRequest(*in).Execute()
+	defer httpResponse.Body.Close()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("update asset info from %s failed", m.name))
 	}
