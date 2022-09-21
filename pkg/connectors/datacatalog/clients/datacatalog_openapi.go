@@ -18,9 +18,9 @@ import (
 
 // ErrorMessages that are reported to the user
 const (
-	InvalidAssetID        string = "the asset does not exist"
+	AssetIDNotFound       string = "the asset does not exist"
 	AccessForbidden       string = "no permissions to access the data"
-	InvalidAssetDataStore string = "the asset data store is not supported"
+	DataStoreNotSupported string = "the asset data store is not supported"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -63,7 +63,7 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 		return nil, errors.New(AccessForbidden)
 	}
 	if httpResponse.StatusCode == http.StatusNotFound {
-		return nil, errors.New(InvalidAssetID)
+		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
@@ -81,20 +81,28 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 	return resp, nil
 }
 
+//nolint:dupl
 func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
 	resp, httpResponse, err :=
 		m.client.DefaultApi.DeleteAsset(context.Background()).XRequestDatacatalogCred(creds).DeleteAssetRequest(*in).Execute()
 	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusNotFound {
+		return nil, errors.New(AssetIDNotFound)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("delete asset info from %s failed", m.name))
 	}
 	return resp, nil
 }
 
+//nolint:dupl
 func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
 	resp, httpResponse, err := m.client.DefaultApi.UpdateAsset(
 		context.Background()).XRequestDatacatalogUpdateCred(creds).UpdateAssetRequest(*in).Execute()
 	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusNotFound {
+		return nil, errors.New(AssetIDNotFound)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("update asset info from %s failed", m.name))
 	}

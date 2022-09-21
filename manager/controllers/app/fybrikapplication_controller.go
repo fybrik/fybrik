@@ -729,7 +729,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 		return
 	}
 	switch err.Error() {
-	case dcclient.InvalidAssetID, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.InvalidAssetDataStore:
+	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
 		setErrorCondition(appContext, assetID, err.Error())
