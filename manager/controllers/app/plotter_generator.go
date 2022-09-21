@@ -395,26 +395,17 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fapp.CapabilityS
 	if err != nil {
 		return nil, errors.Wrap(err, "could not serialize values")
 	}
+	// The connection may have some of the string fields templated
+	// These templates should be resolved using APITemplateArgs
 	newConnection := taxonomy.Connection{Name: api.Connection.Name,
 		AdditionalProperties: serde.Properties{Items: make(map[string]interface{})}}
-	newProps := make(map[string]interface{})
-	props := api.Connection.AdditionalProperties.Items[string(api.Connection.Name)].(map[string]interface{})
-	for key, val := range props {
-		if templateStr, ok := val.(string); ok {
-			fieldTemplate, err := tmpl.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
-			if err != nil {
-				return nil, errors.Wrapf(err, "could not parse %s as a template", templateStr)
-			}
-			var newValue bytes.Buffer
-			if err = fieldTemplate.Execute(&newValue, values); err != nil {
-				return nil, errors.Wrapf(err, "could not process template %s", templateStr)
-			}
-			newProps[key] = newValue.String()
-		} else {
-			newProps[key] = val
+	for key, val := range api.Connection.AdditionalProperties.Items {
+		newVal, err := resolveTemplates(val, key, values)
+		if err != nil {
+			return nil, err
 		}
+		newConnection.AdditionalProperties.Items[key] = newVal
 	}
-	newConnection.AdditionalProperties.Items[string(api.Connection.Name)] = newProps
 	var service = &datacatalog.ResourceDetails{
 		Connection: newConnection,
 		DataFormat: api.DataFormat,
@@ -426,4 +417,36 @@ func generateBucketName(owner types.NamespacedName, id string) string {
 	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, bucketNameHashLength)
 	name = strings.ReplaceAll(name, ".", "-")
 	return utils.K8sConformName(name)
+}
+
+// resolve string fields that are templated using the values map
+func resolveTemplates(val interface{}, key string, values map[string]interface{}) (interface{}, error) {
+	if s, ok := val.(string); ok {
+		return resolveString(s, key, values)
+	}
+	if m, err := utils.StructToMap(val); err == nil {
+		newMap := make(map[string]interface{}, 0)
+		for k, v := range m {
+			var newVal interface{}
+			if newVal, err = resolveTemplates(v, key+"."+k, values); err != nil {
+				return nil, err
+			}
+			newMap[k] = newVal
+		}
+		return newMap, nil
+	}
+	return val, nil
+}
+
+// substitute templates with their actual values
+func resolveString(templateStr, key string, values map[string]interface{}) (interface{}, error) {
+	fieldTemplate, err := tmpl.New(key).Funcs(sprig.TxtFuncMap()).Parse(templateStr)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not parse %s as a template", templateStr)
+	}
+	var newValue bytes.Buffer
+	if err = fieldTemplate.Execute(&newValue, values); err != nil {
+		return nil, errors.Wrapf(err, "could not process template %s", templateStr)
+	}
+	return newValue.String(), nil
 }
