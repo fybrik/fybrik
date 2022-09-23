@@ -5,6 +5,8 @@ export DATA_DIR ?= /tmp
 # the latest backward compatible CRD version
 export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
 export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
+# deploy tls certs used for testing
+export DEPLOY_TLS_TEST_CERTS ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -131,13 +133,13 @@ run-notebook-readflow-tls-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-notebook-readflow-tls-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/standalone/vault-single-cluster-values-tls.yaml
+run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 	$(MAKE) cluster-prepare-wait
-	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 	$(MAKE) deploy
 	$(MAKE) -C manager run-notebook-readflow-tests
 
@@ -146,13 +148,13 @@ run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_HOSTNAME?=localhos
 run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
 run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
+run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
 	$(MAKE) cluster-prepare-wait
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
-	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 	$(MAKE) deploy
 	cd manager/testdata/notebook/read-flow-tls && ./copy-cacert-to-pods.sh
 	$(MAKE) configure-vault
@@ -205,6 +207,9 @@ run-namescope-integration-tests:
 .PHONY: cluster-prepare
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
+ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
+	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
+endif
 	$(MAKE) -C third_party/vault deploy
 	$(MAKE) -C third_party/datashim deploy
 
