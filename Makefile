@@ -130,6 +130,7 @@ run-notebook-readflow-tests:
 run-notebook-readflow-tls-tests: export DOCKER_HOSTNAME?=localhost:5000
 run-notebook-readflow-tls-tests: export DOCKER_NAMESPACE?=fybrik-system
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
+run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/standalone/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests:
 	$(MAKE) kind
 	$(MAKE) cluster-prepare
@@ -138,7 +139,6 @@ run-notebook-readflow-tls-tests:
 	$(MAKE) cluster-prepare-wait
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 	$(MAKE) deploy
-	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests

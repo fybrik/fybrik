@@ -1,5 +1,7 @@
 vault:
   server:
+    dev:
+      enabled: true
     # Enables a headless service to be used by the Vault Statefulset
     service:
       enabled: true

@@ -1,8 +1,24 @@
 vault:
-  server:
-    dev:
+  global:
+    enabled: true
+
+  standalone:
       enabled: true
-    extraArgs: '-dev-plugin-dir=/usr/local/libexec/vault'
+
+  server:
+    standalone:
+      config: |
+        plugin_directory = "/usr/local/libexec/vault"
+        ui = true
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        storage "file" {
+          path = "/vault/data"
+        }
+
     volumes:
       - name: plugins
         emptyDir: {}
@@ -22,8 +38,6 @@ vault:
       - mountPath: /etc/config/poststart.sh
         subPath: poststart.sh
         name: configvolume
-    extraEnvironmentVars:
-      OM_SERVER_URL: http://openmetadata.open-metadata:8585/api
     extraInitContainers:
       - name: kubesecrets-plugin
         image: ghcr.io/fybrik/vault-plugin-secrets-kubernetes-reader:0.5.0
@@ -42,16 +56,6 @@ vault:
         - name: configvolume
           mountPath: /etc/config
           readOnly: false
-      - name: omd-secrets-plugin
-        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
-        command: [/bin/sh, -ec]
-        args:
-          - |
-            cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader
-        volumeMounts:
-        - name: plugins
-          mountPath: /usr/local/libexec/vault
-          readOnly: false
       # Used to define commands to run after the pod is ready.
       # This can be used to automate processes such as initialization
       # or boostrapping auth methods.
@@ -63,4 +67,16 @@ vault:
         # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#discussion
         # FIXME: Use a proper way to configure Vault after Vault start-up
         sleep 5
+        # FIXME: A proper way to configure vault is as follows: the root token needs to be used for configuring Vault
+        # roles and policies and then be discarded. (it can be re-created using unseal keys later if needed)
+        # ref: https://learn.hashicorp.com/tutorials/vault/production-hardening
+        export VAULT_SKIP_VERIFY=true
+        rm -rf /vault/data/*
+        vault operator init | tee /tmp/vault.init > /dev/null
+        cat /tmp/vault.init | grep '^Unseal' | awk '{print $4}' | for key in $(cat -); do
+          vault operator unseal $key
+        done
+        token=`cat /tmp/vault.init | grep 'Initial Root Token:' | awk '{print $4}'`; vault login $token
+        rm -rf /tmp/vault.init
         /opt/config/poststart.sh
+

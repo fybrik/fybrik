@@ -8,6 +8,6 @@ kubectl -n fybrik-system apply -f katalog-connector-certificates.yaml
 kubectl -n fybrik-system apply -f opa-server-certificates.yaml
 kubectl -n fybrik-system apply -f opa-connector-certificates.yaml
 kubectl -n fybrik-system apply -f manager-certificates.yaml
-
+kubectl -n fybrik-system apply -f vault-certificates.yaml
 
 

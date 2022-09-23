@@ -19,6 +19,8 @@ global:
 coordinator:
   catalogConnectorURL: https://katalog-connector:8443
   policyManagerConnectorURL: https://opa-connector:8443
+  vault:
+    address: "https://vault.fybrik-system:8200"
 
 # Manager component
 manager:
