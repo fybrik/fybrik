@@ -14,7 +14,9 @@ data:
 {{- end }}
       # register and enable secret engine
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1)
-      vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
+      # Pass -tls-skip-verify to avoid CA certificate check in the plugin. This can be avoided by setting -ca-cert option,
+      # given that the ca certificate contains the IP of vault pod.
+      vault plugin register -sha256=$SHA256  -command="vault-plugin-secrets-kubernetes-reader -tls-skip-verify" secret vault-plugin-secrets-kubernetes-reader
       vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-omd-reader | cut -d ' ' -f1)
       vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader

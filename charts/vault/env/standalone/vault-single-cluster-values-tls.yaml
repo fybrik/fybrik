@@ -15,10 +15,9 @@ vault:
         plugin_directory = "/usr/local/libexec/vault"
         ui = true
         listener "tcp" {
-          address = "0.0.0.0:8200"
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
           tls_disable = false
-          #address = "[::]:8200"
-          #cluster_address = "[::]:8201"
           tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
           tls_key_file  = "/vault/userconfig/vault-server-tls/tls.key"
         }
@@ -88,6 +87,8 @@ vault:
         # FIXME: A proper way to configure vault is as follows: the root token needs to be used for configuring Vault 
         # roles and policies and then be discarded. (it can be re-created using unseal keys later if needed)
         # ref: https://learn.hashicorp.com/tutorials/vault/production-hardening
+        # Set VAULT_SKIP_VERIFY option to avoid CA certificate check in the client. This can be avoided by setting VAULT_CACERT option,
+        # given that the ca certificate contains the IP of vault pod.
         export VAULT_SKIP_VERIFY=true
         rm -rf /vault/data/*
         vault operator init | tee /tmp/vault.init > /dev/null
