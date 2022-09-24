@@ -149,9 +149,8 @@ You can similarly apply a directory holding multiple rego files.
 
 ## Deploy a Jupyter notebook
 
-In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
-
-=== "JupyterLab"
+In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we 
+registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
 
     1. Deploy JupyterLab:
         ```bash
@@ -167,21 +166,6 @@ In this sample a Jupyter notebook is used as the user workload and its business 
         ```
     1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
     1. Create a new notebook in the server
-
-
-=== "Kubeflow"
-
-    1. Ensure that [Kubeflow](https://www.kubeflow.org/) is installed in your cluster
-    1. Create a port-forward to communicate with Kubeflow:
-        ```bash
-        kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80 &
-        ```
-    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
-    1. Click **Start Setup** and then **Finish** (use the `anonymous` namespace).
-    1. Click **Notebook Servers** (in the left).
-    1. In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
-    1. In the notebook server creation page, set `my-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
-    1. Click **Connect** and create a new notebook in the server.
 
 
 ## Create a `FybrikApplication` resource for the notebook

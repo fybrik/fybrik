@@ -58,7 +58,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	endpoint := "http://localhost:9090"
 	bucket := "bucket1"
 	key1 := "data.csv"
-	filename := "../../../samples/kubeflow/data.csv"
+	filename := "../../testdata/data.csv"
 	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
 
 	sess := session.Must(session.NewSession(&aws.Config{

@@ -248,7 +248,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 		oldbalanceOrgField, newbalanceOrigField, nameDestField, oldbalanceDestField,
 		newbalanceDestField, isFraudField, isFlaggedFraudField}, nil)
 
-	filepath := "../../../samples/kubeflow/data.csv"
+	filepath := "../../testdata/data.csv"
 	raw, err := os.ReadFile(filepath)
 	g.Expect(err).To(gomega.BeNil(), "read data file")
 
