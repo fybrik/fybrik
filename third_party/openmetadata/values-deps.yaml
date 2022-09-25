@@ -50,6 +50,7 @@ airflow:
       # OpenMetadata Airflow Apis Plugin DAGs Configuration
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_RUNNER_TEMPLATE: "/opt/airflow/dag_templates/dag_runner.j2"
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dags"
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 5
     users:
     - role: Admin
   web:
