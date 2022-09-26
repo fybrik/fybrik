@@ -152,20 +152,20 @@ You can similarly apply a directory holding multiple rego files.
 In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we 
 registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
 
-    1. Deploy JupyterLab:
-        ```bash
-        kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
-        kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
-        kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
-        kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
-        kubectl expose deployment my-notebook --port=80 --target-port=8888
-        ```
-    1. Create a port-forward to communicate with JupyterLab:
-        ```bash
-        kubectl port-forward svc/my-notebook 8080:80 &
-        ```
-    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
-    1. Create a new notebook in the server
+1. Deploy JupyterLab:
+```bash
+kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
+kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
+kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
+kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
+kubectl expose deployment my-notebook --port=80 --target-port=8888
+```
+2. Create a port-forward to communicate with JupyterLab:
+```bash
+kubectl port-forward svc/my-notebook 8080:80 &
+```
+3. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
+4. Create a new notebook in the server
 
 
 ## Create a `FybrikApplication` resource for the notebook
