@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.5.2">
+      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-8.5.3">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.9f9400aa.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7a952b86.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
@@ -1544,41 +1544,22 @@ kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/polic
 </code></pre></div>
 <p>You can similarly apply a directory holding multiple rego files.</p>
 <h2 id="deploy-a-jupyter-notebook">Deploy a Jupyter notebook</h2>
-<p>In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">JupyterLab</label><label for="__tabbed_1_2">Kubeflow</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
+<p>In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we 
+registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:</p>
 <ol>
 <li>Deploy JupyterLab:
-    <div class="highlight"><pre><span></span><code>kubectl create deployment my-notebook --image<span class="o">=</span>jupyter/base-notebook --port<span class="o">=</span><span class="m">8888</span> -- start.sh jupyter lab --LabApp.token<span class="o">=</span><span class="s1">&#39;&#39;</span>
+<div class="highlight"><pre><span></span><code>kubectl create deployment my-notebook --image<span class="o">=</span>jupyter/base-notebook --port<span class="o">=</span><span class="m">8888</span> -- start.sh jupyter lab --LabApp.token<span class="o">=</span><span class="s1">&#39;&#39;</span>
 kubectl <span class="nb">set</span> env deployment my-notebook <span class="nv">JUPYTER_ENABLE_LAB</span><span class="o">=</span>yes
 kubectl label deployment my-notebook app.kubernetes.io/name<span class="o">=</span>my-notebook
 kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>available --timeout<span class="o">=</span>120s deployment/my-notebook
 kubectl expose deployment my-notebook --port<span class="o">=</span><span class="m">80</span> --target-port<span class="o">=</span><span class="m">8888</span>
 </code></pre></div></li>
 <li>Create a port-forward to communicate with JupyterLab:
-    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/my-notebook <span class="m">8080</span>:80 <span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code>kubectl port-forward svc/my-notebook <span class="m">8080</span>:80 <span class="p">&amp;</span>
 </code></pre></div></li>
 <li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
 <li>Create a new notebook in the server</li>
 </ol>
-</div>
-<div class="tabbed-block">
-<ol>
-<li>Ensure that <a href="https://www.kubeflow.org/">Kubeflow</a> is installed in your cluster</li>
-<li>Create a port-forward to communicate with Kubeflow:
-    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/istio-ingressgateway -n istio-system <span class="m">8080</span>:80 <span class="p">&amp;</span>
-</code></pre></div></li>
-<li>Open your browser and go to <a href="http://localhost:8080/">http://localhost:8080/</a>.</li>
-<li>Click <strong>Start Setup</strong> and then <strong>Finish</strong> (use the <code>anonymous</code> namespace).</li>
-<li>Click <strong>Notebook Servers</strong> (in the left).</li>
-<li>In the notebooks page select in the top left the <code>anonymous</code> namespace and then click <strong>New Server</strong>.</li>
-<li>In the notebook server creation page, set <code>my-notebook</code> in the <strong>Name</strong> box and then click <strong>Launch</strong>. Wait for the server to become ready.</li>
-<li>Click <strong>Connect</strong> and create a new notebook in the server.</li>
-</ol>
-</div>
-</div>
-</div>
 <h2 id="create-a-fybrikapplication-resource-for-the-notebook">Create a <code>FybrikApplication</code> resource for the notebook</h2>
 <p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik: </p>
 <!-- TODO: role field removed but code still requires it -->
@@ -1748,10 +1729,10 @@ df: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o">()</
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.39f04ddb.min.js"></script>
+      <script src="../../assets/javascripts/bundle.37e9125f.min.js"></script>
       
     
   </body>
