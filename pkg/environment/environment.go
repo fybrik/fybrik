@@ -5,6 +5,7 @@ package environment
 
 import (
 	"crypto/tls"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -41,6 +42,8 @@ const (
 	LocalVaultAuthPath                string = "VaultAuthPath"
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
+	DiscoveryBurst                    string = "DISCOVERY_BURST"
+	DiscoveryQPS                      string = "DISCOVERY_QPS"
 )
 
 const printValueStr = "%s set to \"%s\""
@@ -179,6 +182,29 @@ func GetHelmWaitTimeout() (time.Duration, error) {
 	return time.Duration(timeout) * time.Second, nil
 }
 
+// GetDiscoveryBurst returns the K8s discovery burst value if it is set, otherwise it returns -1
+func GetDiscoveryBurst() (int, error) {
+	burstStr := os.Getenv(DiscoveryBurst)
+	if burstStr == "" {
+		return -1, nil
+	}
+	return strconv.Atoi(burstStr)
+}
+
+// GetDiscoveryQPS returns the K8s discovery QPS value if it is set, otherwise it returns -1
+func GetDiscoveryQPS() (float32, error) {
+	qpsStr := os.Getenv(DiscoveryQPS)
+	if qpsStr == "" {
+		return -1, nil
+	}
+	//nolint:revive,gomnd // ignore magic numbers
+	qps, err := strconv.ParseFloat(qpsStr, 32)
+	if err == nil {
+		return float32(qps), nil
+	}
+	return -1, err
+}
+
 // GetVaultAddress returns the address and port of the vault system,
 // which is used for managing data set credentials
 func GetVaultAddress() string {
@@ -252,6 +278,10 @@ func LogEnvVariables(log *zerolog.Logger) {
 	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
 	timeout, err := GetHelmWaitTimeout()
 	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
+	discoveryBurst, err := GetDiscoveryBurst()
+	logEnvVarUpdatedValue(log, DiscoveryBurst, strconv.Itoa(discoveryBurst), err)
+	discoveryQPS, err := GetDiscoveryQPS()
+	logEnvVarUpdatedValue(log, DiscoveryQPS, fmt.Sprintf("%f", discoveryQPS), err)
 	dataPathMaxSize, err := GetDataPathMaxSize()
 	logEnvVarUpdatedValue(log, DatapathLimitKey, strconv.Itoa(dataPathMaxSize), err)
 }
