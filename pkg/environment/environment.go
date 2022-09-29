@@ -188,7 +188,14 @@ func GetDiscoveryBurst() (int, error) {
 	if burstStr == "" {
 		return -1, nil
 	}
-	return strconv.Atoi(burstStr)
+	burst, err := strconv.Atoi(burstStr)
+	if err != nil {
+		return -1, err
+	}
+	if burst <= 0 {
+		return -1, fmt.Errorf("discovery burst should be positive, got %d", burst)
+	}
+	return burst, err
 }
 
 // GetDiscoveryQPS returns the K8s discovery QPS value if it is set, otherwise it returns -1
@@ -199,10 +206,13 @@ func GetDiscoveryQPS() (float32, error) {
 	}
 	//nolint:revive,gomnd // ignore magic numbers
 	qps, err := strconv.ParseFloat(qpsStr, 32)
-	if err == nil {
-		return float32(qps), nil
+	if err != nil {
+		return -1, err
 	}
-	return -1, err
+	if qps <= 0 {
+		return -1, fmt.Errorf("discovery QPS should be positive, got %f", qps)
+	}
+	return float32(qps), err
 }
 
 // GetVaultAddress returns the address and port of the vault system,
