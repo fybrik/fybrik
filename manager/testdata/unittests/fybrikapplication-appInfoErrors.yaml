@@ -4,13 +4,13 @@ metadata:
   name: application-with-errors
   namespace: default
   labels:
-    app: kf-notebook
+    app: notebook-test
 spec:
   selector:
     clusterName: thegreendragon
     workloadSelector:
       matchLabels:
-        app: kf-notebook
+        app: notebook-test
   appInfo:
     role: Hacker
   data:
