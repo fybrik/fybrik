@@ -1,6 +1,8 @@
 # Default values for Fybrik.
 # This is a YAML-formatted file.
 # It overrides values that are different from the default values.yaml
+# The values used for testing read flow where the manager and connectors
+# uses tls connection. In addition, OPA server is configured to use tls.
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -25,9 +27,7 @@ manager:
   tls:
     certs:
       certSecretName: "test-tls-manager-certs"
-      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
-      cacertSecretNamespace: "fybrik-system"      
 
 katalogConnector:
   service:
@@ -38,23 +38,41 @@ katalogConnector:
     use_mtls: true
     certs:
       certSecretName: "test-tls-katalog-connector-certs"
-      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
-      cacertSecretNamespace: "fybrik-system"
 
 opaConnector:
+  serverURL: https://opa:8443
   tls:
     use_tls: true
     use_mtls: true
     certs:
       certSecretName: "test-tls-opa-connector-certs"
-      certSecretNamespace: "fybrik-system"
       cacertSecretName: "test-tls-ca-certs"
-      cacertSecretNamespace: "fybrik-system"
   service:
     port: 8443
 
 opaServer:
+
+  tls:
+    use_tls: true
+    certs:
+      certSecretName: "test-tls-opa-server-certs"
+      cacertSecretName: "test-tls-ca-certs"
+
+  image: "openpolicyagent/opa:0.36.0-debug"
+  args:
+  - "run"
+  - "--server"
+  - "--log-level=debug"
+  - "--set=decision_logs.console=true"
+  - "--authentication=tls"
+  - "--tls-cert-file=/data/tls-cert/tls.crt"
+  - "--tls-private-key-file=/data/tls-cert/tls.key"
+  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
+  - "--addr=https://0.0.0.0:8443"
+
+  service:
+    port: 8443
 
   # Bootstrap policies to load upon startup
   bootstrapPolicies:

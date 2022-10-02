@@ -35,7 +35,10 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
     2. Install localstack to the currently active namespace and wait for it to be ready:
       ```bash
       helm repo add localstack-charts https://localstack.github.io/helm-charts
-      helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+      helm install localstack localstack-charts/localstack \
+           --set startServices="s3" \
+           --set service.type=ClusterIP \
+           --set livenessProbe.initialDelaySeconds=25
       kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
       ```
     3. Create a port-forward to communicate with localstack server:
@@ -146,39 +149,23 @@ You can similarly apply a directory holding multiple rego files.
 
 ## Deploy a Jupyter notebook
 
-In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
+In this sample a Jupyter notebook is used as the user workload and its business logic requires reading the asset that we 
+registered (e.g., for creating a fraud detection model). Deploy a notebook to your cluster:
 
-=== "JupyterLab"
-
-    1. Deploy JupyterLab:
-        ```bash
-        kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
-        kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
-        kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
-        kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
-        kubectl expose deployment my-notebook --port=80 --target-port=8888
-        ```
-    1. Create a port-forward to communicate with JupyterLab:
-        ```bash
-        kubectl port-forward svc/my-notebook 8080:80 &
-        ```
-    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
-    1. Create a new notebook in the server
-
-
-=== "Kubeflow"
-
-    1. Ensure that [Kubeflow](https://www.kubeflow.org/) is installed in your cluster
-    1. Create a port-forward to communicate with Kubeflow:
-        ```bash
-        kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80 &
-        ```
-    1. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
-    1. Click **Start Setup** and then **Finish** (use the `anonymous` namespace).
-    1. Click **Notebook Servers** (in the left).
-    1. In the notebooks page select in the top left the `anonymous` namespace and then click **New Server**.
-    1. In the notebook server creation page, set `my-notebook` in the **Name** box and then click **Launch**. Wait for the server to become ready.
-    1. Click **Connect** and create a new notebook in the server.
+1. Deploy JupyterLab:
+```bash
+kubectl create deployment my-notebook --image=jupyter/base-notebook --port=8888 -- start.sh jupyter lab --LabApp.token=''
+kubectl set env deployment my-notebook JUPYTER_ENABLE_LAB=yes
+kubectl label deployment my-notebook app.kubernetes.io/name=my-notebook
+kubectl wait --for=condition=available --timeout=120s deployment/my-notebook
+kubectl expose deployment my-notebook --port=80 --target-port=8888
+```
+2. Create a port-forward to communicate with JupyterLab:
+```bash
+kubectl port-forward svc/my-notebook 8080:80 &
+```
+3. Open your browser and go to [http://localhost:8080/](http://localhost:8080/).
+4. Create a new notebook in the server
 
 
 ## Create a `FybrikApplication` resource for the notebook

@@ -25,6 +25,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -42,7 +43,8 @@ type ArrowRequest struct {
 func TestS3NotebookReadFlow(t *testing.T) {
 	if s, ok := os.LookupEnv("VALUES_FILE"); !ok ||
 		(s != "charts/fybrik/notebook-test-readflow.values.yaml" &&
-			s != "charts/fybrik/notebook-test-readflow.tls.values.yaml") {
+			s != "charts/fybrik/notebook-test-readflow.tls.values.yaml" &&
+			s != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
 		t.Skip("Only executed for notebook tests")
 	}
 	gomega.RegisterFailHandler(Fail)
@@ -56,7 +58,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	endpoint := "http://localhost:9090"
 	bucket := "bucket1"
 	key1 := "data.csv"
-	filename := "../../../samples/kubeflow/data.csv"
+	filename := "../../testdata/data.csv"
 	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -172,7 +174,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
 	flightClient, err := flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
 	g.Expect(err).To(gomega.BeNil(), "Connect to arrow-flight service")
 	defer flightClient.Close()

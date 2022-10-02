@@ -79,7 +79,6 @@ const (
 
 // ErrorMessages that are reported to the user
 const (
-	InvalidAssetID              string = "the asset does not exist"
 	ReadAccessDenied            string = "governance policies forbid access to the data"
 	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
 	WriteNotAllowed             string = "governance policies forbid writing of the data"
@@ -87,7 +86,6 @@ const (
 	ModuleNotFound              string = "no module has been registered"
 	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
-	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -524,11 +522,10 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
-			if !environment.IsVaultEnabled() {
-				log.Error().Str("SecretRef", input.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
-			} else {
-				credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-			}
+			// credentialPath is constructed even if vault is not used for credential managment
+			// in order to enable the connector to get the credentials directly from the secret
+			// using the secret information extracted from the credentialPath string.
+			credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 		}
 		var response *datacatalog.GetAssetResponse
 		request := datacatalog.GetAssetRequest{
@@ -732,7 +729,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 		return
 	}
 	switch err.Error() {
-	case InvalidAssetID, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, InvalidAssetDataStore:
+	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
 		setErrorCondition(appContext, assetID, err.Error())

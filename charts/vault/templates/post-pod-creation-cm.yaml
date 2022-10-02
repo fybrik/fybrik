@@ -26,6 +26,8 @@ data:
       EOF
       # allow modules running in fybrik-blueprints namespace to access dataset credentials
       vault write auth/kubernetes/role/module bound_service_account_names="*" bound_service_account_namespaces="{{ .Values.modulesNamespace }}" policies="allow-all-dataset-creds" ttl=24h
+      # allow modules running in fybrik-system namespace to access dataset credentials
+      vault write auth/kubernetes/role/fybrik bound_service_account_names="*" bound_service_account_namespaces="{{ .Release.Namespace }}" policies="allow-all-dataset-creds" ttl=24h
       # enable userpass auth method
       vault auth enable userpass
       vault write auth/userpass/users/data_provider password=password policies="allow-all-dataset-creds"

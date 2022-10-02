@@ -23,7 +23,7 @@ manager:
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
 run:
-	go run ./main.go --enable-all-controllers --metrics-bind-addr=0
+	go run ./main.go --enable-all-controllers --metrics-bind-addr=0 --health-probe-addr=127.0.0.1:8088
 
 .PHONY: source-build
 source-build:
@@ -32,8 +32,13 @@ source-build:
 # Overwrite docker-build from docker.mk
 .PHONY: docker-build
 docker-build: source-build
+ifdef FROM_IMAGE
+	docker build . -t ${IMG} -f Dockerfile --build-arg image=${FROM_IMAGE}
+	rm manager
+else
 	docker build . -t ${IMG} -f Dockerfile
 	rm manager
+endif
 
 .PHONY: wait_for_manager
 wait_for_manager: $(TOOLBIN)/kubectl

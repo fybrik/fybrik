@@ -23,10 +23,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
-)
 
-// TODO add configuration
-const TIMEOUT = 300 * time.Second
+	"fybrik.io/fybrik/pkg/environment"
+)
 
 // Relevant only when helm charts are placed in
 // local directory.
@@ -146,17 +145,27 @@ func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake
 type Impl struct {
 	// if set, the "Load" and "pull" methods will try to check locally mounted charts
 	localChartsMountPath string
+	discoveryBurst       int
+	discoveryQPS         float32
+	waitTimeout          time.Duration
 }
 
 func NewHelmerImpl(chartsPath string) *Impl {
-	return &Impl{localChartsMountPath: chartsPath}
+	impl := Impl{localChartsMountPath: chartsPath}
+	// If an error exists it is logged in LogEnvVariables and a default value is used
+	impl.waitTimeout, _ = environment.GetHelmWaitTimeout()
+	// If an error exists it is logged in LogEnvVariables
+	impl.discoveryBurst, _ = environment.GetDiscoveryBurst()
+	// If an error exists it is logged in LogEnvVariables
+	impl.discoveryQPS, _ = environment.GetDiscoveryQPS()
+	return &impl
 }
 
 // Uninstall helm release
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	uninstall.Wait = true
-	uninstall.Timeout = TIMEOUT
+	uninstall.Timeout = r.waitTimeout
 	return uninstall.Run(releaseName)
 }
 
@@ -189,9 +198,6 @@ func (r *Impl) Install(ctx context.Context, cfg *action.Configuration, chrt *cha
 	install := action.NewInstall(cfg)
 	install.ReleaseName = releaseName
 	install.Namespace = kubeNamespace
-	install.Timeout = TIMEOUT
-	install.Wait = true
-	install.WaitForJobs = true
 
 	return install.RunWithContext(ctx, chrt, vals)
 }
@@ -201,9 +207,6 @@ func (r *Impl) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *cha
 	releaseName string, vals map[string]interface{}) (*release.Release, error) {
 	upgrade := action.NewUpgrade(cfg)
 	upgrade.Namespace = kubeNamespace
-	upgrade.Wait = true
-	upgrade.WaitForJobs = true
-	upgrade.Timeout = TIMEOUT
 
 	return upgrade.RunWithContext(ctx, releaseName, chrt, vals)
 }
@@ -305,6 +308,13 @@ func (r *Impl) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Con
 	config := &genericclioptions.ConfigFlags{
 		Namespace: &kubeNamespace,
 	}
+	if r.discoveryBurst != -1 {
+		config.WithDiscoveryBurst(r.discoveryBurst)
+	}
+	if r.discoveryQPS != -1 {
+		config.WithDiscoveryQPS(r.discoveryQPS)
+	}
+
 	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
 		return nil, err

@@ -1,11 +1,8 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
   name: fybrikmodules.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -16,282 +13,228 @@ spec:
     singular: fybrikmodule
   scope: Namespaced
   versions:
-  - name: v1beta1
-    schema:
-      openAPIV3Schema:
-        description: FybrikModule is a description of an injectable component. the
-          parameters it requires, as well as the specification of how to instantiate
-          such a component. It is used as metadata only.  There is no status nor reconciliation.
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: FybrikModuleSpec contains the info common to all modules,
-              which are one of the components that process, load, write, audit, monitor
-              the data used by the data scientist's application.
-            properties:
-              capabilities:
-                description: Capabilities declares what this module knows how to do
-                  and the types of data it knows how to handle The key to the map
-                  is a CapabilityType string
-                items:
-                  description: Capability declares what this module knows how to do
-                    and the types of data it knows how to handle
-                  properties:
-                    actions:
-                      description: Actions are the data transformations that the module
-                        supports
-                      items:
-                        properties:
-                          name:
-                            description: Unique name of an action supported by the
-                              module
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      type: array
-                    api:
-                      description: API indicates to the application how to access
-                        the capabilities provided by the module
-                      properties:
-                        connection:
-                          description: Connection information
+    - name: v1beta1
+      schema:
+        openAPIV3Schema:
+          description: FybrikModule is a description of an injectable component. the parameters it requires, as well as the specification of how to instantiate such a component. It is used as metadata only.  There is no status nor reconciliation.
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: FybrikModuleSpec contains the info common to all modules, which are one of the components that process, load, write, audit, monitor the data used by the data scientist's application.
+              properties:
+                capabilities:
+                  description: Capabilities declares what this module knows how to do and the types of data it knows how to handle The key to the map is a CapabilityType string
+                  items:
+                    description: Capability declares what this module knows how to do and the types of data it knows how to handle
+                    properties:
+                      actions:
+                        description: Actions are the data transformations that the module supports
+                        items:
                           properties:
                             name:
+                              description: Unique name of an action supported by the module
                               type: string
                           required:
-                          - name
+                            - name
                           type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                        dataFormat:
-                          description: Data format
-                          type: string
-                      required:
-                      - connection
-                      type: object
-                    capability:
-                      description: 'Capability declares what this module knows how
-                        to do - ex: read, write, transform...'
-                      type: string
-                    plugins:
-                      description: Plugins enable the module to add libraries to perform
-                        actions rather than implementing them by itself
-                      items:
+                        type: array
+                      api:
+                        description: API indicates to the application how to access the capabilities provided by the module
                         properties:
+                          connection:
+                            description: Connection information
+                            properties:
+                              name:
+                                description: Name of the connection to the data source
+                                type: string
+                            required:
+                              - name
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
                           dataFormat:
-                            description: DataFormat indicates the format of data the
-                              plugin knows how to process
-                            type: string
-                          pluginType:
-                            description: PluginType indicates the technology used
-                              for the module and the plugin to interact The values
-                              supported should come from the module taxonomy Examples
-                              of such mechanisms are vault plugins, wasm, etc
+                            description: Data format
                             type: string
                         required:
-                        - dataFormat
-                        - pluginType
+                          - connection
                         type: object
-                      type: array
-                    scope:
-                      description: 'Scope indicates at what level the capability is
-                        used: workload, asset, cluster If not indicated it is assumed
-                        to be asset'
-                      enum:
-                      - asset
-                      - workload
-                      - cluster
-                      type: string
-                    supportedInterfaces:
-                      description: Copy should have one or more instances in the list,
-                        and its content should have source and sink Read should have
-                        one or more instances in the list, each with source populated
-                        Write should have one or more instances in the list, each
-                        with sink populated This field may not be required if not
-                        handling data
-                      items:
-                        description: ModuleInOut specifies the protocol and format
-                          of the data input and output by the module - if any
-                        properties:
-                          sink:
-                            description: Sink specifies the output data protocol and
-                              format
-                            properties:
-                              dataformat:
-                                description: DataFormat defines the data format type
-                                type: string
-                              protocol:
-                                description: Protocol defines the interface protocol
-                                  used for data transactions
-                                type: string
-                            required:
-                            - protocol
-                            type: object
-                          source:
-                            description: Source specifies the input data protocol
-                              and format
-                            properties:
-                              dataformat:
-                                description: DataFormat defines the data format type
-                                type: string
-                              protocol:
-                                description: Protocol defines the interface protocol
-                                  used for data transactions
-                                type: string
-                            required:
-                            - protocol
-                            type: object
-                        type: object
-                      type: array
-                  required:
-                  - capability
-                  type: object
-                type: array
-              chart:
-                description: Reference to a Helm chart that allows deployment of the
-                  resources required for this module
-                properties:
-                  chartPullSecret:
-                    description: Name of secret containing helm registry credentials
-                    type: string
-                  name:
-                    description: Name of helm chart
-                    type: string
-                  values:
-                    additionalProperties:
-                      type: string
-                    description: Values to pass to helm chart installation
+                      capability:
+                        description: 'Capability declares what this module knows how to do - ex: read, write, transform...'
+                        type: string
+                      plugins:
+                        description: Plugins enable the module to add libraries to perform actions rather than implementing them by itself
+                        items:
+                          properties:
+                            dataFormat:
+                              description: DataFormat indicates the format of data the plugin knows how to process
+                              type: string
+                            pluginType:
+                              description: PluginType indicates the technology used for the module and the plugin to interact The values supported should come from the module taxonomy Examples of such mechanisms are vault plugins, wasm, etc
+                              type: string
+                          required:
+                            - dataFormat
+                            - pluginType
+                          type: object
+                        type: array
+                      scope:
+                        description: 'Scope indicates at what level the capability is used: workload, asset, cluster If not indicated it is assumed to be asset'
+                        enum:
+                          - asset
+                          - workload
+                          - cluster
+                        type: string
+                      supportedInterfaces:
+                        description: Copy should have one or more instances in the list, and its content should have source and sink Read should have one or more instances in the list, each with source populated Write should have one or more instances in the list, each with sink populated This field may not be required if not handling data
+                        items:
+                          description: ModuleInOut specifies the protocol and format of the data input and output by the module - if any
+                          properties:
+                            sink:
+                              description: Sink specifies the output data protocol and format
+                              properties:
+                                dataformat:
+                                  description: DataFormat defines the data format type
+                                  type: string
+                                protocol:
+                                  description: Protocol defines the interface protocol used for data transactions
+                                  type: string
+                              required:
+                                - protocol
+                              type: object
+                            source:
+                              description: Source specifies the input data protocol and format
+                              properties:
+                                dataformat:
+                                  description: DataFormat defines the data format type
+                                  type: string
+                                protocol:
+                                  description: Protocol defines the interface protocol used for data transactions
+                                  type: string
+                              required:
+                                - protocol
+                              type: object
+                          type: object
+                        type: array
+                    required:
+                      - capability
                     type: object
-                required:
-                - name
-                type: object
-              dependencies:
-                description: Other components that must be installed in order for
-                  this module to work
-                items:
-                  description: Dependency details another component on which this
-                    module relies - i.e. a pre-requisit
+                  type: array
+                chart:
+                  description: Reference to a Helm chart that allows deployment of the resources required for this module
                   properties:
+                    chartPullSecret:
+                      description: Name of secret containing helm registry credentials
+                      type: string
                     name:
-                      description: Name is the name of the dependent component
+                      description: Name of helm chart
                       type: string
-                    type:
-                      description: Type provides information used in determining how
-                        to instantiate the component
-                      enum:
-                      - module
-                      - connector
-                      - feature
-                      type: string
+                    values:
+                      additionalProperties:
+                        type: string
+                      description: Values to pass to helm chart installation
+                      type: object
                   required:
-                  - name
-                  - type
+                    - name
                   type: object
-                type: array
-              description:
-                description: An explanation of what this module does
-                type: string
-              pluginType:
-                description: 'Plugin type indicates the plugin technology used to
-                  invoke the capabilities Ex: vault, fybrik-wasm... Should be provided
-                  if type is plugin'
-                type: string
-              statusIndicators:
-                description: StatusIndicators allow to check status of a non-standard
-                  resource that can not be computed by helm/kstatus
-                items:
-                  description: ResourceStatusIndicator is used to determine the status
-                    of an orchestrated resource
-                  properties:
-                    errorMessage:
-                      description: ErrorMessage specifies the resource field to check
-                        for an error, e.g. status.errorMsg
-                      type: string
-                    failureCondition:
-                      description: FailureCondition specifies a condition that indicates
-                        the resource failure It uses kubernetes label selection syntax
-                        (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-                      type: string
-                    kind:
-                      description: Kind provides information about the resource kind
-                      type: string
-                    successCondition:
-                      description: SuccessCondition specifies a condition that indicates
-                        that the resource is ready It uses kubernetes label selection
-                        syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
-                      type: string
-                  required:
-                  - kind
-                  - successCondition
-                  type: object
-                type: array
-              type:
-                description: 'May be one of service, config or plugin Service: Means
-                  that the control plane deploys the component that performs the capability
-                  Config: Another pre-installed service performs the capability and
-                  the module deployed configures it for the particular workload or
-                  dataset Plugin: Indicates that this module performs a capability
-                  as part of another service or module rather than as a stand-alone
-                  module'
-                type: string
-            required:
-            - capabilities
-            - chart
-            - type
-            type: object
-          status:
-            description: FybrikModuleStatus defines the observed state of FybrikModule.
-            properties:
-              conditions:
-                description: Conditions indicate the module states with respect to
-                  validation
-                items:
-                  description: Condition describes the state of a FybrikApplication
-                    at a certain point.
-                  properties:
-                    message:
-                      description: Message contains the details of the current condition
-                      type: string
-                    observedGeneration:
-                      description: ObservedGeneration is the version of the resource
-                        for which the condition has been evaluated
-                      format: int64
-                      type: integer
-                    status:
-                      default: Unknown
-                      description: Status of the condition, one of (`True`, `False`,
-                        `Unknown`).
-                      enum:
-                      - "True"
-                      - "False"
-                      - Unknown
-                      type: string
-                    type:
-                      description: Type of the condition
-                      type: string
-                  required:
-                  - type
-                  type: object
-                type: array
-            type: object
-        required:
-        - spec
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+                dependencies:
+                  description: Other components that must be installed in order for this module to work
+                  items:
+                    description: Dependency details another component on which this module relies - i.e. a pre-requisit
+                    properties:
+                      name:
+                        description: Name is the name of the dependent component
+                        type: string
+                      type:
+                        description: Type provides information used in determining how to instantiate the component
+                        enum:
+                          - module
+                          - connector
+                          - feature
+                        type: string
+                    required:
+                      - name
+                      - type
+                    type: object
+                  type: array
+                description:
+                  description: An explanation of what this module does
+                  type: string
+                pluginType:
+                  description: 'Plugin type indicates the plugin technology used to invoke the capabilities Ex: vault, fybrik-wasm... Should be provided if type is plugin'
+                  type: string
+                statusIndicators:
+                  description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+                  items:
+                    description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
+                    properties:
+                      errorMessage:
+                        description: ErrorMessage specifies the resource field to check for an error, e.g. status.errorMsg
+                        type: string
+                      failureCondition:
+                        description: FailureCondition specifies a condition that indicates the resource failure It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                        type: string
+                      kind:
+                        description: Kind provides information about the resource kind
+                        type: string
+                      successCondition:
+                        description: SuccessCondition specifies a condition that indicates that the resource is ready It uses kubernetes label selection syntax (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
+                        type: string
+                    required:
+                      - kind
+                      - successCondition
+                    type: object
+                  type: array
+                type:
+                  description: 'May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module'
+                  type: string
+              required:
+                - capabilities
+                - chart
+                - type
+              type: object
+            status:
+              description: FybrikModuleStatus defines the observed state of FybrikModule.
+              properties:
+                conditions:
+                  description: Conditions indicate the module states with respect to validation
+                  items:
+                    description: Condition describes the state of a FybrikApplication at a certain point.
+                    properties:
+                      message:
+                        description: Message contains the details of the current condition
+                        type: string
+                      observedGeneration:
+                        description: ObservedGeneration is the version of the resource for which the condition has been evaluated
+                        format: int64
+                        type: integer
+                      status:
+                        default: Unknown
+                        description: Status of the condition, one of (`True`, `False`, `Unknown`).
+                        enum:
+                          - "True"
+                          - "False"
+                          - Unknown
+                        type: string
+                      type:
+                        description: Type of the condition
+                        type: string
+                    required:
+                      - type
+                    type: object
+                  type: array
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
 status:
   acceptedNames:
     kind: ""

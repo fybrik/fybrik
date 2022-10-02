@@ -13,12 +13,8 @@ Yes. Fybrik provides some default connectors described in this page but anyone c
 
 A connector needs to implement one or more of the interfaces described in the [API documentation](../reference/connectors-datacatalog/README.md), depending on the connector type. Note that a single Kubernetes service can implement all interfaces if the system it connects to supports the required functionality, but it can also be different services.
 
-In addition, to benefit from the [control plane security](../tasks/control-plane-security.md) feature ensure that the `Pods` 
-of your connector:
-
-1. Have a `fybrik.io/componentType: connector` label 
-1. Have a `sidecar.istio.io/inject: "true"` annotation
-
+In addition, to benefit from the `Ingress traffic policy` feature mentioned in [control plane security](../tasks/control-plane-security.md) section ensure that the `Pods` of your connector have a `fybrik.io/componentType: connector` label.
+For TLS configuration please see the above link for details on how fybrik uses TLS.
 
 ## Connector types
 
@@ -37,7 +33,7 @@ The connector might need to read credentials stored in HashiCorp Vault. The para
 
 * address: Vault address
 * authPath: Path to [`kubernetes` auth method](https://www.vaultproject.io/docs/auth/kubernetes) used to login to Vault
-* role: connector role used to login to Vault
+* role: connector role used to login to Vault - configured to be "fybrik"
 * secretPath: Path of the secret holding the credentials in Vault
 
 The parameters should be known to the connector upon startup time except from the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
