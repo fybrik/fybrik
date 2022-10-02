@@ -1,0 +1,32 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+{{- if .Values.openmetadataConnector.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: openmetadata-connector
+  labels:
+    app.kubernetes.io/component: openmetadata-connector
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: openmetadata-connector
+  minReplicas: {{ .Values.openmetadataConnector.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.openmetadataConnector.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.openmetadataConnector.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.openmetadataConnector.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.openmetadataConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.openmetadataConnector.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+{{- end }}

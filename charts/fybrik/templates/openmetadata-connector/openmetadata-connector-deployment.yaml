@@ -1,0 +1,112 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmetadata-connector
+  labels:
+    app.kubernetes.io/component: openmetadata-connector
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.openmetadataConnector.autoscaling.enabled }}
+  replicas: {{ .Values.openmetadataConnector.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: openmetadata-connector
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.openmetadataConnector.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        fybrik.io/componentType: connector
+        app.kubernetes.io/component: openmetadata-connector
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.openmetadataConnector.serviceAccount.name }}
+      securityContext:
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.openmetadataConnector.podSecurityContext) | nindent 8 }}
+      containers:
+        - name: openmetadata-connector
+          securityContext:
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.openmetadataConnector.containerSecurityContext | toYaml | nindent 12 }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.openmetadataConnector ) }}
+          imagePullPolicy: {{ .Values.openmetadataConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.openmetadataConnector.resources | nindent 12 }}
+          env:
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
+            - name: SERVICE_PORT
+              value: {{ .Values.openmetadataConnector.service.port | quote }}
+            - name: PRETTY_LOGGING
+              value: {{ .Values.global.prettyLogging | quote }}
+            - name: LOGGING_VERBOSITY
+              value: {{ .Values.global.loggingVerbosity | quote }}
+            - name: USE_TLS
+              value: {{ .Values.openmetadataConnector.tls.use_tls | quote | toString }}
+            - name: USE_MTLS
+              value: {{ .Values.openmetadataConnector.tls.use_mtls | quote | toString }}
+            - name: TLS_MIN_VERSION
+              value: {{ .Values.openmetadataConnector.tls.minVersion }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            {{- if .Values.openmetadataConnector.tls.certs.certSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cert" ) }}
+              name: tls-cert
+              readOnly: true
+            {{- end }}
+            {{- if .Values.openmetadataConnector.tls.certs.cacertSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cacert" ) }}
+              name: tls-cacert
+              readOnly: true
+            {{- end }}
+            - readOnly: true
+              mountPath: /etc/conf
+              name: config
+
+      {{- with .Values.openmetadataConnector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.openmetadataConnector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.openmetadataConnector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: {{ .Values.openmetadataConnector.dirSizeLimit }}
+        {{- if .Values.openmetadataConnector.tls.certs.certSecretName }}
+        - name: tls-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.openmetadataConnector.tls.certs.certSecretName }}
+        {{- end }}
+        {{- if .Values.openmetadataConnector.tls.certs.cacertSecretName }}
+        - name: tls-cacert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.openmetadataConnector.tls.certs.cacertSecretName }}
+        {{- end }}
+        - name: config
+          configMap:
+            name: {{ template "fybrik.fullname" . }}-openmetadata-connector-configmap
+
+{{- end }}
