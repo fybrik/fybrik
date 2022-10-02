@@ -5,9 +5,9 @@ Fybrik interacts with multiple external components, such as the data catalog, da
 A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system:
 
 * FybrikApplication yaml - information provided about the workload and the datasets
-* Fybrik manager (FybrikApplication controller)
-* Data catalog
-* Data Governance Policy Manager
+* Fybrik manager (FybrikApplication controller) - validates that the data is used in accord with the data governance policies and the IT config policies
+* Data catalog - provides metadata about the asset
+* Data Governance Policy Manager - 
 * Config Policy Manager
 * FybrikModules
 

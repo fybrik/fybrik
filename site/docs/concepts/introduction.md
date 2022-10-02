@@ -1,33 +1,38 @@
 # Introduction
 
-Fybrik is a cloud native platform to unify data access and governance, enabling business agility while securing enterprise data. By providing access and use of data only via the platform, Fybrik brings together access and governance for data, greatly reducing risk of data loss. 
+Fybrik is a cloud native platform to unify data access and governance, enabling business agility while securing enterprise data. By providing access and use of data only via the platform, Fybrik brings together access and governance for data, greatly reducing risk of data loss or infringements of data regulations. 
 
 Fybrik allows:
 
-* **Data users** to use data in a self-service model without manual processes, without needing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.
-* **Data stewards** to control data usage by applications. Use the organization's _policy manager_ and _data catalog_ of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.
-* **Data operators** to automate data lifecycle management removing the need for manual processes and custom jobs created by data operators, providing them with [config policies](./config-policies.md) to optimize the data flows orchestrated by fybrik.
+* **Data users** to use data in a self-service model without manual processes.  
+Fybrik eliminates the need of a data user to confer with data stewards, and to deal with credentials. The data user can use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.
+* **Data stewards** to control data usage by applications.  
+The data steward can use the organization's _policy manager_ and _data catalog_ of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.
+* **Data operators** to automate data lifecycle management.  
+Fybrik eliminates the need for manual processes and custom jobs created by data operators. Instead, Fybrik provids data operators with [config policies](./config-policies.md) to optimize the data flows orchestrated by fybrik.
 
 ## How does it work?
 
 ![Concept](../static/general-concept.png)
 
-The inputs to Fybrik are declarative definitions with separation of aspects:
+The inputs to Fybrik are **declarative definitions** with separation of aspects:
 
-- Data stewards input definitions related to data governance and security
-- Data users input definitions related to data usage in the business logic of their applications
-- Data operators input definitions related to infrastructure and available resources
+- Data stewards input definitions related to data governance and security.
+- Data users input definitions related to data usage in the business logic of their applications.
+- Data operators input definitions related to infrastructure and available resources.
 
-Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane). 
-The plotter augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a data path that:
+Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane).  
+The plotter augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a **data path** that:
 
 - Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.
-- Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where
+- Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where.
 - Makes data available in locations where it is needed. Thus, in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.
+
+## Modularity
 
 Fybrik is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable [modules](./modules.md) and the [connectors](./connectors.md) to external systems (e.g., to a data catalog) can all be third party.
 
-The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via [config policies](./config-policies.md)
+The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via [config policies](./config-policies.md).
 
 ## Applications
 
