@@ -38,3 +38,6 @@
 
 ### Storage management
 - [Dynamic Bucket Allocation](https://docs.google.com/document/d/1PzaQtED9NUq10REfxl0wMFOl247SKc0XvAUHpxjSYjY/edit#heading=h.img5h5xmx8ok)
+
+### Fybrik Integration with Kubeflow Pipelines
+- Scenario: [Read/Write Cataloged Data](https://drive.google.com/file/d/1xn7pGe5pEAEZxnIzDdom9r7K6s78alcP/view)
