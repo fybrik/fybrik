@@ -36,7 +36,7 @@ the same release tag and goLang module tag, we have chosen goLang releases modul
 Fybrik will support up to 2 backward minor releases, e.g. the version v1.5.x should be able to work with releases v1.4.x
 and v1.3.x
 
-## Fybrik components or features that can influence on compatability 
+## Fybrik components or features that can influence compatability 
 
 *Note:* the list is not closed, and can be extended
 
