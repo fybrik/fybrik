@@ -8,7 +8,8 @@ and Z is the patch release number.
 - Major Releases - released less frequently, indicate that **backward-incompatible public API changes**. This release 
 carries no guarantee that it will be backward compatible with preceding major versions.
 - Minor Releases - indicate **backward-compatible public API changes**. This release guarantees backward compatibility 
-and stability.
+and stability. The backward compatibility policy is defined in a separate document [ADD link] but in general, Fybrik
+supports 2 previous minor releases.
 - Patch Releases - should not change main functionality, mostly for security or bug fixes, and therefore guarantee 
 backward compatibility.
 
@@ -48,9 +49,12 @@ specific versioning guidelines, however the more commonly used approaches fall i
 - Versioning using the “Accept” header
 For examples and explanations, see [REST API Versioning](https://restfulapi.net/versioning/)
 
+Traditionally, REST APIs do not the support semantic version model, each new version is a single number. For connectors 
+REST API, we suggest using URI versioning as the most commonly used and easiest to check.
+Which means, all REST requests to for example, version 3 will have URI prefix `/v3` 
 *Note:* current implementation of controllers REST API does not support any versioning. When we define a new API version 
 we will have to choose one of the REST API versioning mechanisms and assume that missing version information is the 
 current (old) version.  
 
 ## Other Components
-TBD
+Work in progress, TBD
