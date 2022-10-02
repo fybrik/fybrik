@@ -34,7 +34,7 @@ $(TOOLBIN)/golangci-lint:
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
 .PHONY: $(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl
-$(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl:
+$(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl: $(TOOLBIN)/yq
 	cd $(TOOLS_DIR); ./install_kubebuilder.sh
 	$(call post-install-check)
 
