@@ -1,7 +1,7 @@
 # Connectors
 
 The project currently has two extension mechanisms, namely connectors and modules.
-This page describes what connectors are and what connectors are installed using the default Fybrik installation.
+This page describes what connectors are and how connectors are installed using the default Fybrik installation.
 
 ## What are connectors?
 
@@ -36,7 +36,7 @@ The connector might need to read credentials stored in HashiCorp Vault. The para
 * role: connector role used to login to Vault - configured to be "fybrik"
 * secretPath: Path of the secret holding the credentials in Vault
 
-The parameters should be known to the connector upon startup time except from the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
+The parameters should be known to the connector upon startup time, except for the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
 
 An example for Vault Login API call which uses the Vault parameters is as follows:
 
@@ -50,7 +50,7 @@ An example for Vault Read Secret API call which uses the Vault parameters is as 
 $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 ```
 
-More about `kubenertes` auth method and vault roles can be found in Vault [documentation](https://www.vaultproject.io/docs/auth/kubernetes).
+More about `kubenertes` auth method and vault roles can be found in the Vault [documentation](https://www.vaultproject.io/docs/auth/kubernetes).
 
 ### Policy manager
 

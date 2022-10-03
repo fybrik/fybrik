@@ -1,6 +1,6 @@
 # Introduction
 
-Fybrik is a cloud native platform to unify data access and governance, enabling business agility while securing enterprise data. By providing access and use of data only via the platform, Fybrik brings together access and governance for data, greatly reducing risk of data loss or infringements of data regulations. 
+Fybrik is a cloud native platform to unify data access and governance, enabling business agility while securing enterprise data. By providing access and use of data only via the platform, Fybrik brings together access and governance for data, greatly reducing risk of data loss. 
 
 Fybrik allows:
 
@@ -21,7 +21,8 @@ The inputs to Fybrik are **declarative definitions** with separation of aspects:
 - Data users input definitions related to data usage in the business logic of their applications.
 - Data operators input definitions related to infrastructure and available resources.
 
-Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane).  
+Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane).
+
 The plotter augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a **data path** that:
 
 - Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.

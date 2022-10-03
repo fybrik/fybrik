@@ -2,14 +2,18 @@
 
 Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
 
-A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system:
+A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system.
 
-* FybrikApplication yaml - information provided about the workload and the datasets
-* Fybrik manager (FybrikApplication controller) - validates that the data is used in accord with the data governance policies and the IT config policies
-* Data catalog - provides metadata about the asset
-* Data Governance Policy Manager - 
-* Config Policy Manager
-* FybrikModules
+some components that use taxonomy:
+
+* [FybrikApplication](../architecture/#fybrikapplication) yaml - information provided about the workload and the datasets.
+* Fybrik manager ([FybrikApplication controller](../architecture/#fybrikapplication)) - validates that the data is used in accord with the data governance policies and the IT config policies.
+* [Data catalog](../connectors/#data-catalog) - provides metadata about the asset.
+* [Data Governance Policy Manager](../connectors/#policy-manager) - defines the governance policies to follow.
+* [Config Policy Manager](./config-policies.md) - defines the IT policies to follow.
+* [FybrikModules](./modules.md) - describes capabilities that can be included in a data plane.
+
+Default taxonomies are provided by fybrik in a JSON file format, and are and are meant as a starting point on which to [expand](../../tasks/custom-taxonomy).
 
 ## Issues Addressed by Taxonomy
 
@@ -31,9 +35,7 @@ Different actors and components define the contents of different parts of the ta
 
 If, for example, a Data Governance Officer writes a policy that limits the use of sensitive data for marketing, then the possible valid intents such as marketing would be defined by him in the Data Policy Manager.  These values must be added to fybrik's taxonomy, either manually or via an automated feed, so that fybrik can validate the intent provided in a FybrikApplication yaml when a user's workload requests data.
 
-As new capabilities, transforms, data types, and protocols are made available via FybrikModules fybrik's module taxonomy must be updated.  Once updated these capabilities are available for use by other components, such as the Data Catalog and Data Governance Policy manager should they choose to leverage them.
-
-Default taxonomies are provided by fybrik, and are meant as a starting point on which to expand.
+As new capabilities, transforms, data types, and protocols are made available via FybrikModules, fybrik's module taxonomy must be updated.  Once updated these capabilities are available for use by other components, such as the Data Catalog and Data Governance Policy manager should they choose to leverage them.
 
 ## Validation Points
 

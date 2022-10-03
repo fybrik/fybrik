@@ -1,7 +1,7 @@
 # Modules
 
 The project currently has two extension mechanisms, namely connectors and modules. 
-This page describes what modules are and how they are leveraged by the control plane to build the data plane flow.  
+This page describes what modules are and how they are leveraged by the fybrik's control plane to build the data plane flow.  
 
 ## What are modules?
 
@@ -38,8 +38,9 @@ kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/ma
 ## When is a module used?
 
 There are three main data flows in which modules may be used:
-* Read - preparing data to be read and/or actually reading the data
-* Write - writing a new data set or appending data to an existing data set
+
+* Read - preparing data to be read and/or actually reading the data.
+* Write - writing a new data set or appending data to an existing data set.
 * Copy - for performing an implicit data copy on behalf of the application.  The decision to do an implicit copy is made by the control plane, typically for performance or governance reasons.
 
 A module may be used in one or more of these flows, as is indicated in the module's yaml file.
@@ -57,7 +58,7 @@ Name | Description | FybrikModule | Prerequisite
 [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) | reading and writing datasets while performing data transformations | https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml |
 [airbyte-module](https://github.com/fybrik/airbyte-module) | reading datasets from data sources supported by the [Airbyte](https://airbyte.com) tool | https://raw.githubusercontent.com/fybrik/airbyte-module/main/module.yaml |
 [delete-module](https://github.com/fybrik/delete-module) | deletes s3 objects | https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml |
-[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
+[implicit-copy](https://github.com/fybrik/mover) | copies data between any two supported data stores, for example S3 and Kafka, and applies transformations. | https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml | - [Datashim](https://github.com/datashim-io/datashim) deployment.<br>- [`FybrikStorageAccount`](../../reference/crds#fybrikstorageaccount) resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.
 
 ## Contributing
 
