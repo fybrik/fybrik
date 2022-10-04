@@ -20,6 +20,8 @@ vault:
       - mountPath: /etc/config/poststart.sh
         subPath: poststart.sh
         name: configvolume
+    extraEnvironmentVars:
+      OM_SERVER_URL: http://openmetadata.open-metadata:8585/api
     extraInitContainers:
       - name: kubesecrets-plugin
         image: ghcr.io/fybrik/vault-plugin-secrets-kubernetes-reader:0.5.0
