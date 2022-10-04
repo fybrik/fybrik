@@ -23,6 +23,15 @@ vault:
         - name: plugins
           mountPath: /usr/local/libexec/vault
           readOnly: false
+      - name: omd-secrets-plugin
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
+        command: [/bin/sh, -ec]
+        args:
+          - cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
     # Used to define commands to run after the pod is ready.
     # This can be used to automate processes such as initialization
     # or boostrapping auth methods.
@@ -37,3 +46,6 @@ vault:
         SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1) &&
         vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
         vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
+        SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-omd-reader | cut -d ' ' -f1) &&
+        vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader
+        vault secrets enable -path=omd-secrets vault-plugin-secrets-omd-reader

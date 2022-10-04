@@ -16,11 +16,17 @@ data:
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1)
       vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
       vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
+      SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-omd-reader | cut -d ' ' -f1)
+      vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader
+      vault secrets enable -path=omd-secrets vault-plugin-secrets-omd-reader
       # create policy to access secrets
       # NOTE: fybrik/dataset-creds/ secret engine is enabled by the manager and is used temporarily
       # to store dataset credentials.
       vault policy write "allow-all-dataset-creds" - <<EOF
       path "kubernetes-secrets/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+      }
+      path "omd-secrets/*" {
       capabilities = ["create", "read", "update", "delete", "list"]
       }
       EOF

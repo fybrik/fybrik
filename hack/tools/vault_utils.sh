@@ -81,6 +81,9 @@ create_policy_with_plugin_path() {
         path "$2" {
         capabilities = ["create", "read", "update", "delete", "list"]
         }
+        path "$3" {
+        capabilities = ["create", "read", "update", "delete", "list"]
+        }
 EOF
 }
 
