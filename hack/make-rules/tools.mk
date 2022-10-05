@@ -46,7 +46,7 @@ $(TOOLBIN)/kustomize:
 
 INSTALL_TOOLS += $(TOOLBIN)/kind
 $(TOOLBIN)/kind:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.11.1
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.13.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/istioctl
