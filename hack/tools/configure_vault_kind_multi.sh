@@ -26,7 +26,7 @@ source ./vault_utils.sh
 # use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
 # path kubernetes-secrets.
 : ${PLUGIN_PATH:=kubernetes-secrets}
-: ${OMD_PLUGIN_PATH:=kubernetes-secrets}
+: ${OMD_PLUGIN_PATH:=omd-secrets}
 : ${DATA_PROVIDER_USERNAME:=data_provider}
 : ${DATA_PROVIDER_PASSWORD:=password}
 
