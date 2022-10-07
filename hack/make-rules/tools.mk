@@ -34,7 +34,7 @@ $(TOOLBIN)/golangci-lint:
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
 .PHONY: $(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl
-$(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl:
+$(TOOLBIN)/kubebuilder $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/kubectl: $(TOOLBIN)/yq
 	cd $(TOOLS_DIR); ./install_kubebuilder.sh
 	$(call post-install-check)
 
@@ -46,7 +46,7 @@ $(TOOLBIN)/kustomize:
 
 INSTALL_TOOLS += $(TOOLBIN)/kind
 $(TOOLBIN)/kind:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.11.1
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.13.0
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/istioctl
