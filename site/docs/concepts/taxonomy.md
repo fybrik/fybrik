@@ -1,8 +1,9 @@
 # Taxonomy
 
-Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
-
 A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system.
+
+Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  
+For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
 
 some components that use taxonomy:
 
@@ -41,7 +42,7 @@ As new capabilities, transforms, data types, and protocols are made available vi
 
 Fybrik validates the structures and values it receives from all external components.  
 
-For interface components (FybrikApplication and FybrikModule), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with webhooks or not.
+For interface components (`FybrikApplication` and `FybrikModule`), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with [webhooks](https://en.wikipedia.org/wiki/Webhook) or not.
 
 1. If webhooks are deployed, errors are received from the kubernetes command (ex: `kubectl apply` ) and no resource is created.  
 2. If webhooks are *not* deployed, validation is done in the resource's controller.  If there is an error, the resource is created but its status will contain the error.  (Note: These resources will need to manually be removed by the person creating them.)
