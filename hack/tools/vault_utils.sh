@@ -72,9 +72,10 @@ EOF
 
 # Create a policy to allow access to Vault plugin path as well as
 # for the path where dataset credentials resides. This is temporary
-# until dataset credentials path become obselete.
+# until dataset credentials path become obsolete.
 # $1 - policy name
 # $2 - plugin path
+# $3 - additional plugin path (e.g. OMD plugin)
 create_policy_with_plugin_path() {
         echo "creating policy $1, to access the secrets in: $2"
         bin/vault policy write "$1" - <<EOF
@@ -82,7 +83,7 @@ create_policy_with_plugin_path() {
         capabilities = ["create", "read", "update", "delete", "list"]
         }
         path "$3" {
-        capabilities = ["create", "read", "update", "delete", "list"]
+        capabilities = ["read", "list"]
         }
 EOF
 }
