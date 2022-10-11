@@ -27,7 +27,7 @@ The catalog provides metadata about the asset such as security tags. It also pro
 Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
 The default installation of Fybrik installs [Katalog](../reference/katalog.md), a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available.
 
-#### Credential management
+### Credential management
 
 The connector might need to read credentials stored in HashiCorp Vault. The parameters to [login](https://www.vaultproject.io/api-docs/auth/kubernetes#login) to vault and to [read secret](https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret) are as follows:
 
