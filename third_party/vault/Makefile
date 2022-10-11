@@ -5,7 +5,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 KUBE_NAMESPACE ?= fybrik-system
 WITH_OPENSHIFT ?= false
 
-VAULT_VALUES_FILE ?= charts/vault/env/dev/plugin-secrets-values.yaml
+VAULT_VALUES_FILE ?= charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml
 
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm

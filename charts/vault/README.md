@@ -8,7 +8,7 @@ The dataset credentials in the fybrik project are retrieved from where they are 
 
 The helm chart values in the env/dev/ directory contain the setup of the plugins as the following describes:
 
-- `plugin-secrets-values.yaml` file contains helm chart values to deploy vault with  [vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) and [vault-plugin-secrets-omd-reader](https://github.com/fybrik/vault-plugin-secrets-omd-reader) plugins.
+- `plugin-secrets-kubernetes-reader-values.yaml` file contains helm chart values to deploy vault with  [vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin.
 - `vault-single-cluster-values.yaml` file contains values to deploy Vault on a single cluster setup. This includes the following:
   - enabling [vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin.
   - enable kueberentes auth method for the cluster.
