@@ -29,4 +29,5 @@ deploy-openmetadata:
 --set global.airflow.host=${AIRFLOW_ENDPOINT} \
 --set global.airflow.openmetadata.serverHostApiUrl=${OPENMETADATA_ENDPOINT} \
 --set global.database.auth.username=${OPENMETADATA_MYSQL_USER} \
---set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} || true
+--set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} \
+--set extraEnvs[0].name=AUTHORIZER_ADMIN_PRINCIPALS,extraEnvs[0].value='[${OPENMETADATA_USER}:${OPENMETADATA_PASSWORD}]' || true
