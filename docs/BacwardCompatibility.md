@@ -38,7 +38,9 @@ and Z is the patch release number.
   backward compatibility.
 
 *Note:* Kubernetes uses similar semantic version model, but its versions do not have the "v" prefix. In order to use
-the same release tag and goLang module tag, we have chosen goLang releases modules pattern with the "v" prefix.
+the same release tag and goLang module tag, we have chosen goLang releases modules pattern with the "v" prefix. The same
+version pattern will be used by all others, except CRDa, versioned Fybrik components. CRDs use its proprietary defined 
+by Kubernetes versioning.   
 
 ### Backward compatibility policy
 Fybrik will support up to 2 backward minor releases. For example, the version v1.5.x should be able to work with 
@@ -48,17 +50,25 @@ releases v1.4.x and v1.3.x, on another hand it might work with releases v1.2.x, 
 
 *Note:* the list is not closed, and can be extended
 
-- Fybrik control plane [Kubernetes Custom Resources](#kubernetes-custom-resource-versions-and-upgrade-plan)
-- [Connectors](#connectors): are Open API services that the Fybrik control plane uses to connect to external systems. These connector 
-services are deployed alongside the Fybrik control plane.
+*Note:* some components, listed below, are external integration points, changes in them impacts not only on the backward 
+compatibility, but on external development process. We emphasized these components with the label `external connector`.  
+
+- Fybrik control plane [Kubernetes Custom Resources](#kubernetes-custom-resource-versions-and-upgrade-plan) 
+`FybrikApplication` is a Fybrik entry point and `FybrikModule` is a definition for externally developed modules, 
+therefore these CRDs are external connectors. 
+- [Connectors](#connectors): are Open API services that the Fybrik control plane uses to connect to external systems. 
+These connector services are deployed alongside the Fybrik control plane, and as we can see from their name, all of them 
+are external connectors
   - Data Catalog connector
   - Policy Manager connector
   - Credential Management connector
-- [Default Taxonomy](#default-taxonomy)
+- [Default Taxonomy](#default-taxonomy). Terms and values defined by taxonomy are part of Connectors APIs and CRDs 
+validations, therefore we can see taxonomy as part of external connectivity.  
 - [Default Policies](#default-policies)
-  - [OPA Policies Rules](#default-opa-policies-rules)
+  - [OPA Policies Rules](#default-opa-policy-rules)
   - [IT Configuration Policies](#default-it-config-policies)
-- [Fybrik Logs format](#fybrik-logs-format)
+- [Fybrik Logs format](#fybrik-logs-format). If Fybrik logs are used by external analytic tools, they will be part of 
+external connectivity too.
 
 ## Kubernetes Custom Resource Versions and Upgrade Plan
 
@@ -98,17 +108,19 @@ and migrating your objects from one version to another see
 The first step of adding a new version is to "pick a conversion strategy. Since custom resource objects need to be able 
 to be served at both versions, that means they will sometimes be served at a different version than their storage 
 version. In order for this to be possible, the custom resource objects must sometimes be converted between the version 
-they are stored at and the version they are served at. If the conversion involves schema changes and requires custom 
-logic, a conversion **Webhook** should be used. If there are no schema changes, the default **None** conversion strategy may 
-be used and only the apiVersion field will be modified when serving different versions."
+they are stored at and the version they are served at." If the conversion does not involve CRD schema changes, 
+the default **None** conversion strategy may be used and only the apiVersion field will be modified when serving 
+different versions.
+If the conversion does change schema and requires custom logic, Kubernetes suggests using webhooks to implement this 
+custom conversation, and setting the conversation strategy as **Webhook**. However, due to some Fybrik customers' 
+limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate
+possible CRD changes without changing its schema. Adn in the future will check possible in-house solutions. 
 
-Due to some Fybrik customers' limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate 
-possible CRD changes without changing its schema. 
 
 #### CRD changes with None conversation strategy
 When we use the None conversation strategy, we are able to change a required field in version v1 to an optional field in 
 v2. In addition, we are able to add a new  optional field in v2. These changes are inline with compatibility examples 
-from [\[5\]](#5)
+from [\[5\]](#references)
 
 *Note:* If we go from previous API version to a new one without supporting the previous version, let say `v1alpha1` and 
 a cluster API server has stored objects of the previous version, we will get an error similar to the following:  
@@ -125,7 +137,7 @@ There are three different connectors types:
 
 Fybrik manager communicates with connectors over REST APIs. 
 
-REST doesn’t provide any specific versioning guidelines, however the more commonly used approaches fall into three 
+REST does not provide any specific versioning guidelines, however the more commonly used approaches fall into three 
 categories:
 - URI Versioning
 - Versioning using Custom Request Header
@@ -169,19 +181,19 @@ validated for backward compatibility.
 autogenerated from the both above sources. However, users are able to overwrite it, as describe by [Using a Custom 
 Taxonomy for Resource Validation](https://fybrik.io/v1.1/tasks/custom-taxonomy/). 
 
-Unfortunately all these files do not have version definition and it can be complicated to separate files from different 
+Unfortunately all these files do not have version definition, and it can be complicated to separate files from different 
 releases. In order to be able to compare the files, I suggest to add an entry `version` and modify the 
 [json-schema-generator](https://github.com/fybrik/json-schema-generator) project to generate the entry. It's an optional 
 entry, so we don't have to change the go structures, but will be able to validate the content of the 
-`fybrik-taxonomy-config` configuration map. Due to possibility of user modifications of the basic taxonomy file I suggest 
-in addition to the version, add the data of the file generation and maybe its CRC. 
+`fybrik-taxonomy-config` configuration map. Due to possibility of user modifications of the basic taxonomy file we propose 
+in addition to the version, add the data of the file generation, and maybe its CRC. 
 
 *Note:* Should we create a taxonomy json file for the Credential Management connector?
 *Note:* Should we provide a [default metric taxonomy](https://fybrik.io/v1.1/tasks/infrastructure/#add-a-new-attribute-definition-to-the-taxonomy)
 
 ## Default Policies
 Fybrik is installed with a set of different default policies. Most of the change in the policies do not prevent Fybrik 
-operation, but can chnage its default behaviour and therefore influence on its users.
+operation, but can change its default behaviour and therefore influence on its users.
 
 ### Default OPA Policy Rules
 The [default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
@@ -192,13 +204,13 @@ defines Fybrik behavior if no other rules are not provided by users.
 influence the construction of the data plane, taking into account infrastructure capabilities and costs.
 Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, 
 such as read, write, copy and delete.
-The default IT policies and the default infrastructure definitions locates at 
+The default IT policies and the default infrastructure definitions located at 
 [./charts/fybrik/adminconfig](https://github.com/fybrik/fybrik/tree/master/charts/fybrik/files/adminconfig)
 
 *Note:* in order to update the IT config policies and define infrastructure, Fybrik 
 [recommends](https://fybrik.io/v1.1/concepts/config-policies/#how-to-provide-custom-policies) to overwrite the files in 
-the `./charts/fybrik/adminconfig` or direct changes in the `fybrik-adminconfig` configmap. However, fybrik updates will 
-remove these changes. We have to provide a different mechanism, which will automatically merge default and user defined 
+the `./charts/fybrik/adminconfig` or direct changes in the `fybrik-adminconfig` configmap. However, fybrik updates will
+overwrite these changes. We have to provide a different mechanism, which will automatically merge default and user defined 
 settings.  
 
 ## Fybrik logs format
@@ -211,7 +223,7 @@ can break log analytics tools.
 - Include in the Fybrik logs its version, it will help to parse historical logs.
 - Avoid changes in the log format
 - Use a graceful period (2 minor versions) for deprecated log entries
-- For renamed log entries, use both the old and teh new definitions during the graceful period. 
+- For renamed log entries, use both the old and the new definitions during the graceful period. 
 
 ## References
 1. Kubernetes internal, "[Changing the API](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#changing-the-api)"
