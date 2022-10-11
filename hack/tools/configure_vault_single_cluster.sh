@@ -28,6 +28,7 @@ source ./vault_utils.sh
 # use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
 # path kubernetes-secrets.
 : ${PLUGIN_PATH:=kubernetes-secrets}
+: ${OMD_PLUGIN_PATH:=omd-secrets}
 : ${DATA_PROVIDER_USERNAME:=data_provider}
 : ${DATA_PROVIDER_PASSWORD:=password}
 
@@ -43,7 +44,7 @@ enable_k8s_auth_for_cluster() {
 # configure_vault enables kv secret engine to hold the dataset credentails
 # and creates policy to access them
 configure_vault() {
-	create_policy_with_plugin_path "allow-all-dataset-creds" "$PLUGIN_PATH/*"
+	create_policy_with_plugin_path "allow-all-dataset-creds" "$PLUGIN_PATH/*" "$OMD_PLUGIN_PATH/*"
 }
 
 # add_role adds a role to bind policy to identity.
