@@ -6,9 +6,9 @@ metadata:
 spec:
   dnsNames:
   - vault
-  - vauit.fybrik-system
-  - vauit.fybrik-system.svc
-  - vauit.fybrik-system.svc.cluster.local
+  - vault.fybrik-system
+  - vault.fybrik-system.svc
+  - vault.fybrik-system.svc.cluster.local
   ipAddresses:
   - 127.0.0.1
   issuerRef:
