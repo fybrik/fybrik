@@ -191,6 +191,16 @@ manager:
   # Default value is 200 seconds.
   helmWaitTimeout: 200
 
+  # Allows increasing burst used for discovery, this is useful in clusters with many registered resources
+  # Fybrik manager uses it during modules helm operations
+  # value is int
+  discoveryBurst: ""
+
+  # Allows increasing qps used for discovery, this is useful in clusters with many registered resources
+  # Fybrik manager uses it during modules helm operations
+  # value is float32
+  discoveryQPS: ""
+
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
