@@ -1364,8 +1364,8 @@ This project uses secrets plugins to retrieve dataset credentials by the running
 <p><a href="https://www.vaultproject.io/docs/commands/login">Login into Vault</a></p>
 </li>
 <li>
-<p>Enable the plugin during Vault server initialization in a specific path. 
-<br/>An example of that can be found in helm chart <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
+<p>Enable plugins during Vault server initialization.
+<br/>An example of that can be found in helm chart <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/plugin-secrets-values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
 <div class="highlight"><pre><span></span><code>      vault secrets <span class="nb">enable</span> -path<span class="o">=</span>kubernetes-secrets vault-plugin-secrets-kubernetes-reader
 </code></pre></div></p>
 </li>
