@@ -36,7 +36,7 @@ func TestValidApplicationWithBaseTaxonomy(t *testing.T) {
 func TestValidApplicationWithEnhancedTaxonomy(t *testing.T) {
 	t.Parallel()
 
-	filename := "../../../../samples/kubeflow/fybrikapplication.yaml"
+	filename := "../../../../testdata/fybrikapplication.yaml"
 	applicationYaml, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)

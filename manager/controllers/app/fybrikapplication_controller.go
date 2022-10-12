@@ -79,7 +79,6 @@ const (
 
 // ErrorMessages that are reported to the user
 const (
-	InvalidAssetID              string = "the asset does not exist"
 	ReadAccessDenied            string = "governance policies forbid access to the data"
 	CopyNotAllowed              string = "copy of the data is required but can not be done according to the governance policies"
 	WriteNotAllowed             string = "governance policies forbid writing of the data"
@@ -87,7 +86,6 @@ const (
 	ModuleNotFound              string = "no module has been registered"
 	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
-	InvalidAssetDataStore       string = "the asset data store is not supported"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -731,7 +729,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 		return
 	}
 	switch err.Error() {
-	case InvalidAssetID, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, InvalidAssetDataStore:
+	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
 		setErrorCondition(appContext, assetID, err.Error())
