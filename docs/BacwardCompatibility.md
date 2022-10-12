@@ -51,24 +51,24 @@ releases v1.4.x and v1.3.x, on another hand it might work with releases v1.2.x, 
 *Note:* the list is not closed, and can be extended
 
 *Note:* some components, listed below, are external integration points, changes in them impacts not only on the backward 
-compatibility, but on external development process. We emphasized these components with the label `external connector`.  
+compatibility, but on external development process. We emphasized these components with the label `integration point`.  
 
 - Fybrik control plane [Kubernetes Custom Resources](#kubernetes-custom-resource-versions-and-upgrade-plan) 
 `FybrikApplication` is a Fybrik entry point and `FybrikModule` is a definition for externally developed modules, 
-therefore these CRDs are external connectors. 
+therefore these CRDs are integration points. 
 - [Connectors](#connectors): are Open API services that the Fybrik control plane uses to connect to external systems. 
 These connector services are deployed alongside the Fybrik control plane, and as we can see from their name, all of them 
-are external connectors
+are external integration points
   - Data Catalog connector
   - Policy Manager connector
   - Credential Management connector
 - [Default Taxonomy](#default-taxonomy). Terms and values defined by taxonomy are part of Connectors APIs and CRDs 
-validations, therefore we can see taxonomy as part of external connectivity.  
+validations, therefore we can see taxonomy as part of external connectivity and an integration point.  
 - [Default Policies](#default-policies)
-  - [OPA Policies Rules](#default-opa-policy-rules)
+  - [Data Access Policies](#default-data-access-policies)
   - [IT Configuration Policies](#default-it-config-policies)
 - [Fybrik Logs format](#fybrik-logs-format). If Fybrik logs are used by external analytic tools, they will be part of 
-external connectivity too.
+external integration point too.
 
 ## Kubernetes Custom Resource Versions and Upgrade Plan
 
@@ -195,9 +195,12 @@ in addition to the version, add the data of the file generation, and maybe its C
 Fybrik is installed with a set of different default policies. Most of the change in the policies do not prevent Fybrik 
 operation, but can change its default behaviour and therefore influence on its users.
 
-### Default OPA Policy Rules
-The [default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
-defines Fybrik behavior if no other rules are not provided by users.
+### Default Data Access Policies
+Fybrik can be deployed with different policy managers, for example it can be Open Policy Agent ([OPA](https://www.openpolicyagent.org/)), 
+or some other agent. However, usually any deployment contains some default setting, which can be all allowed, or all denied, 
+or other default policies settings. How it was set, depends on the used policy agent. When fybrik deployed with OPA, 
+the [default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
+deployed as well and define Fybrik behavior if no other rules are not provided by users.
 
 ### Default IT Config Policies 
 [IT config policies](https://fybrik.io/v1.1/concepts/config-policies/) are the mechanism via which the organization may 
