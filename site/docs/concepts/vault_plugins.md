@@ -15,8 +15,8 @@ The following steps are for configuring a new secret plug-in for Fybrik:
 
 1. [Login into Vault](https://www.vaultproject.io/docs/commands/login)
 
-2. Enable the plugin during Vault server initialization in a specific path. 
-<br/>An example of that can be found in helm chart [values.yaml](https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/plugin-secrets-kubernetes-reader-values.yaml) file in the project where [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin is enabled in `kubernetes-secrets` path:
+2. Enable plugins during Vault server initialization.
+<br/>An example of that can be found in helm chart [values.yaml](https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/plugin-secrets-values.yaml) file in the project where [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin is enabled in `kubernetes-secrets` path:
 ```bash
       vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
 ```
