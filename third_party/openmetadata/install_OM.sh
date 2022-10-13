@@ -4,8 +4,8 @@ OM_VERSION=0.12.1
 export OPENMETADATA_AIRFLOW_VERSION=0.12.1
 export OPENMETADATA_HELM_CHART_VERSION=0.0.39
 
-export FYBRIK_BRANCH ?= master
-export FYBRIK_NAMESPACE ?= fybrik
+export export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
+export export FYBRIK_NAMESPACE="${FYBRIK_NAMESPACE:-fybrik}"
 
 if [ $# -gt 1 ]; then
     echo "Usage: "$0" [open-metadata-version]"
