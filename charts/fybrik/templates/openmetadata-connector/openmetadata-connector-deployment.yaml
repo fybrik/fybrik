@@ -40,9 +40,25 @@ spec:
           image: {{ include "fybrik.image" ( tuple $ .Values.openmetadataConnector ) }}
           imagePullPolicy: {{ .Values.openmetadataConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
+            {{- if .Values.openmetadataConnector.tls.use_tls }}
+            - name: https
+            {{- else }}
             - name: http
-              containerPort: 8080
+            {{- end }}
+              containerPort: {{ .Values.openmetadataConnector.service.port }}
               protocol: TCP
+          readinessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.openmetadataConnector.readinessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          livenessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.openmetadataConnector.livenessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
           resources:
             {{- toYaml .Values.openmetadataConnector.resources | nindent 12 }}
           env:

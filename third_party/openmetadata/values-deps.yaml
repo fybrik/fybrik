@@ -10,6 +10,8 @@ mysql:
   image:
     pullPolicy: "Always"
   primary:
+    persistence:
+      size: 50Gi
     service:
       nodePort: 3306
 
@@ -22,6 +24,7 @@ elasticsearch:
   fullnameOverride: "elasticsearch"
   imagePullPolicy: "Always"
   esJavaOpts: "-Xmx128m -Xms128m"
+  maxUnavailable: 0
   clusterHealthCheckParams: "wait_for_status=yellow&timeout=20s"
   resources:
     requests:
@@ -37,16 +40,12 @@ airflow:
   enabled: true
   airflow:
     image:
-      repository: openmetadata/airflow
+      repository: openmetadata/ingestion
       pullPolicy: "IfNotPresent"
     executor: "KubernetesExecutor"
     config:
       # This is required for OpenMetadata UI to fetch status of DAGs
       AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
-      # OpenMetadata Airflow Lineage Backend Configurations
-      AIRFLOW__LINEAGE__BACKEND: airflow_provider_openmetadata.lineage.openmetadata.OpenMetadataLineageBackend
-      AIRFLOW__LINEAGE__AIRFLOW_SERVICE_NAME: airflow_helm
-      AIRFLOW__LINEAGE__AUTH_PROVIDER_TYPE: no-auth
       # OpenMetadata Airflow Apis Plugin DAGs Configuration
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_RUNNER_TEMPLATE: "/opt/airflow/dag_templates/dag_runner.j2"
       AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dags"
