@@ -47,6 +47,18 @@ spec:
             {{- end }}
               containerPort: {{ .Values.katalogConnector.service.port }}
               protocol: TCP
+          readinessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.katalogConnector.readinessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          livenessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.katalogConnector.livenessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
           env:

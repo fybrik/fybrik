@@ -47,6 +47,18 @@ spec:
             {{- end }}
               containerPort: {{ .Values.opaConnector.service.port }}
               protocol: TCP
+          readinessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.opaConnector.readinessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          livenessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.opaConnector.livenessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
           env:
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}
