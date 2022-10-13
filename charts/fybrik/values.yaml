@@ -374,7 +374,18 @@ opaServer:
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
+  # In OPA server, readiness is defined by HTTPS request when using TLS
+  # which means that certificates verification is required
+  # between kubelet (the client) and OPA server.
+  # Avoid configurating kubelet by setting enabled to false.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   enableReadinessProbe: true
+
+  # In OPA server, liveness is defined by HTTPS request when using TLS
+  # which means that certificates verification is required
+  # between kubelet (the client) and OPA server.
+  # Avoid configurating kubelet by setting enabled to false.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   enableLivenessProbe: true
   readinessProbe: {}
   livenessProbe: {}
