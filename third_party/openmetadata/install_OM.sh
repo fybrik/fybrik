@@ -5,7 +5,7 @@ export OPENMETADATA_AIRFLOW_VERSION=0.12.1
 export OPENMETADATA_HELM_CHART_VERSION=0.0.39
 
 export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
-export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_NAMESPACE:-fybrik}"
+export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
 if [ $# -gt 1 ]; then
     echo "Usage: "$0" [open-metadata-version]"
