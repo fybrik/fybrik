@@ -1807,6 +1807,18 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 </code></pre></div>
 <h3 id="write-the-data-from-the-notebook">Write the data from the notebook</h3>
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
+<p>To reference <code>PS_20174392719_1491204439457_log.csv</code> from Jupyter notebook cells as shown later in this section do the following:</p>
+<p>Jupyter notebook has an <em><code>Upload Files</code></em> button that can be used to upload <code>PS_20174392719_1491204439457_log.csv</code> to the notebook from the local machine. When referencing <code>PS_20174392719_1491204439457_log.csv</code> in the notebook cell the following should be used:</p>
+<div class="highlight"><pre><span></span><code>file_path = &quot;PS_20174392719_1491204439457_log.csv&quot;
+</code></pre></div>
+<p>Alternatively, in your <strong>terminal</strong>, run the following commands to copy <code>PS_20174392719_1491204439457_log.csv</code> file from your local machine into <code>/tmp</code> directory in the Jupyter notebook pod:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;/path/to/PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="nb">export</span> <span class="nv">NOTEBOOK_POD_NAME</span><span class="o">=</span><span class="k">$(</span>kubectl get pods <span class="p">|</span> grep notebook <span class="p">|</span>awk <span class="s1">&#39;{print $1}&#39;</span><span class="k">)</span>
+kubectl cp <span class="nv">$FILEPATH</span> <span class="nv">$NOTEBOOK_POD_NAME</span>:/tmp
+</code></pre></div>
+<p>In that case, when referencing <code>PS_20174392719_1491204439457_log.csv</code> in the notebook cell, <code>/tmp/</code> directory should be specified, for example:</p>
+<div class="highlight"><pre><span></span><code>file_path = &quot;/tmp/PS_20174392719_1491204439457_log.csv&quot;
+</code></pre></div>
 <p>In your <strong>terminal</strong>, run the following command to print the <a href="../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey">endpoint</a> to use for reading the data. It fetches the code from the <code>FybrikApplication</code> resource:
 <div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.new-data.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
 <span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.new-data.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
