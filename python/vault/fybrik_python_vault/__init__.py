@@ -15,8 +15,7 @@ def get_jwt_from_file(file_name):
     with open(file_name) as f:
         return f.read()
 
-def make_http_request(request_type, url, data=None, headers=None,
-                      tls_min_version=None, verify=None, cert=None):
+def make_http_request(request_type, url, tls_min_version, data=None, headers=None, verify=None, cert=None):
     """
     Making http request call.
     ref: https://requests.readthedocs.io/en/latest/user/advanced/#transport-adapters
@@ -31,8 +30,7 @@ def make_http_request(request_type, url, data=None, headers=None,
     response = s.send(prep, verify=verify, cert=cert)
     return response
 
-def vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID,
-                   tls_min_version=None, verify=None, cert=None):
+def vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID, tls_min_version, verify=None, cert=None):
     """Authenticate against Vault using a JWT token (i.e., k8s sa token)"""
     full_auth_path = vault_address + vault_path
     st = ' '
@@ -42,8 +40,7 @@ def vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID,
         extra={'full_auth_path': str(full_auth_path),
                DataSetID: datasetID, 'verify': verify, 'cert' : st})
     json = {"jwt": jwt, "role": role}
-    response = make_http_request("POST", full_auth_path, data=json,
-                                 tls_min_version=tls_min_version, verify=verify, cert=cert)
+    response = make_http_request("POST", full_auth_path, tls_min_version, data=json, verify=verify, cert=cert)
     if response.status_code == 200:
         return response.json()
     logger.error("vault authentication failed",
@@ -51,8 +48,8 @@ def vault_jwt_auth(jwt, vault_address, vault_path, role, datasetID,
                DataSetID: datasetID, ForUser: True})
     return None
 
-def get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_path, role, datasetID,
-                              tls_min_version=None, verify=None, cert=None):
+def get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_path, role, datasetID, tls_min_version,
+                              verify=None, cert=None):
     """Get a raw secret from vault by providing a valid jwt token"""
     st = ' '
     if cert:
@@ -79,8 +76,7 @@ def get_raw_secret_from_vault(jwt, secret_path, vault_address, vault_path, role,
     client_token = vault_auth_response["auth"]["client_token"]
     secret_full_path = vault_address + secret_path
     headers={"X-Vault-Token" : client_token}
-    response = make_http_request("GET", secret_full_path, headers=headers,
-                                 tls_min_version=tls_min_version, verify=verify, cert=cert)
+    response = make_http_request("GET", secret_full_path, tls_min_version, headers=headers, verify=verify, cert=cert)
     logger.debug('Response received from vault when accessing credentials: ' + str(response.status_code),
         extra={'credentials_path': str(secret_full_path),
                DataSetID: datasetID, ForUser: True})
