@@ -24,7 +24,7 @@ Ensure that you have the following:
 
 - [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.20 or newer must be installed on your machine.
-- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator.
+- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator. Kubernetes version support range is 1.24-1.22 although older versions may work well.
 
 
 ## Add required Helm repositories

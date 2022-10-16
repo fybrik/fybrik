@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"emperror.dev/errors"
 	"helm.sh/helm/v3/pkg/action"
@@ -144,19 +145,27 @@ func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake
 type Impl struct {
 	// if set, the "Load" and "pull" methods will try to check locally mounted charts
 	localChartsMountPath string
+	discoveryBurst       int
+	discoveryQPS         float32
+	waitTimeout          time.Duration
 }
 
 func NewHelmerImpl(chartsPath string) *Impl {
-	return &Impl{localChartsMountPath: chartsPath}
+	impl := Impl{localChartsMountPath: chartsPath}
+	// If an error exists it is logged in LogEnvVariables and a default value is used
+	impl.waitTimeout, _ = environment.GetHelmWaitTimeout()
+	// If an error exists it is logged in LogEnvVariables
+	impl.discoveryBurst, _ = environment.GetDiscoveryBurst()
+	// If an error exists it is logged in LogEnvVariables
+	impl.discoveryQPS, _ = environment.GetDiscoveryQPS()
+	return &impl
 }
 
 // Uninstall helm release
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
 	uninstall.Wait = true
-	// If an error exists it is logged in LogEnvVariables and a default value is used
-	interval, _ := environment.GetHelmWaitTimeout()
-	uninstall.Timeout = interval
+	uninstall.Timeout = r.waitTimeout
 	return uninstall.Run(releaseName)
 }
 
@@ -299,6 +308,13 @@ func (r *Impl) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Con
 	config := &genericclioptions.ConfigFlags{
 		Namespace: &kubeNamespace,
 	}
+	if r.discoveryBurst != -1 {
+		config.WithDiscoveryBurst(r.discoveryBurst)
+	}
+	if r.discoveryQPS != -1 {
+		config.WithDiscoveryQPS(r.discoveryQPS)
+	}
+
 	err := actionConfig.Init(config, kubeNamespace, os.Getenv("HELM_DRIVER"), log)
 	if err != nil {
 		return nil, err

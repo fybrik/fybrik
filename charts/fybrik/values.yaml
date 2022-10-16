@@ -69,6 +69,26 @@ global:
       drop:
       - ALL
 
+  # Settings for readinessProbe. This is the default setting for all containers, and can be
+  # overwritten by a specific readinessProbe settings.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  readinessProbe:
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    initialDelaySeconds: 20
+
+  # Settings for livenessProbe. This is the default setting for all containers, and can be
+  # overwritten by a specific livenessProbe settings.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    initialDelaySeconds: 20
+
 # Cluster metadata values
 cluster:
   # Set to the name of the cluster.
@@ -171,6 +191,16 @@ manager:
   # Default value is 200 seconds.
   helmWaitTimeout: 200
 
+  # Allows increasing burst used for discovery, this is useful in clusters with many registered resources
+  # Fybrik manager uses it during modules helm operations
+  # value is int
+  discoveryBurst: ""
+
+  # Allows increasing qps used for discovery, this is useful in clusters with many registered resources
+  # Fybrik manager uses it during modules helm operations
+  # value is float32
+  discoveryQPS: ""
+
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
@@ -220,6 +250,9 @@ manager:
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
+
+  readinessProbe: {}
+  livenessProbe: {}
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -341,6 +374,22 @@ opaServer:
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
+  # In OPA server, readiness is defined by HTTPS request when using TLS
+  # which means that certificates verification is required
+  # between kubelet (the client) and OPA server.
+  # Avoid configurating kubelet by setting enabled to false.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  enableReadinessProbe: true
+
+  # In OPA server, liveness is defined by HTTPS request when using TLS
+  # which means that certificates verification is required
+  # between kubelet (the client) and OPA server.
+  # Avoid configurating kubelet by setting enabled to false.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  enableLivenessProbe: true
+  readinessProbe: {}
+  livenessProbe: {}
+
   service:
     type: ClusterIP
     # For tls connection use port 8443
@@ -445,6 +494,9 @@ katalogConnector:
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
 
+  readinessProbe: {}
+  livenessProbe: {}
+
   service:
     type: ClusterIP
     # For tls connection use port 8443
@@ -538,6 +590,9 @@ openmetadataConnector:
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
+
+  readinessProbe: {}
+  livenessProbe: {}
 
   service:
     type: ClusterIP
@@ -649,6 +704,9 @@ opaConnector:
   # the equivalent fields of .Values.global.containerSecurityContext.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
   containerSecurityContext: {}
+
+  readinessProbe: {}
+  livenessProbe: {}
 
   service:
     type: ClusterIP

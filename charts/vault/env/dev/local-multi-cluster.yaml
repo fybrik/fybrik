@@ -13,12 +13,23 @@ vault:
       - mountPath: /usr/local/libexec/vault
         name: plugins
         readOnly: false
+    extraEnvironmentVars:
+      OM_SERVER_URL: http://openmetadata.open-metadata:8585/api
     extraInitContainers:
       - name: kubesecrets-plugin
         image: ghcr.io/fybrik/vault-plugin-secrets-kubernetes-reader:0.5.0
         command: [/bin/sh, -ec]
         args:
           - cp /vault-plugin-secrets-kubernetes-reader /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
+      - name: omd-secrets-plugin
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
+        command: [/bin/sh, -ec]
+        args:
+          - cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader
         volumeMounts:
         - name: plugins
           mountPath: /usr/local/libexec/vault
@@ -37,3 +48,6 @@ vault:
         SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1) &&
         vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
         vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
+        SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-omd-reader | cut -d ' ' -f1) &&
+        vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader
+        vault secrets enable -path=omd-secrets vault-plugin-secrets-omd-reader
