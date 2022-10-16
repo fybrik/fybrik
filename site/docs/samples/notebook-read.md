@@ -57,7 +57,13 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
 
 In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
 
-Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
+
+If you use OpenMetadata directly through the UI, and use its discovery mechanism to add asset tables, you can determine an asset ID through the corresponding OpenMetadata table URL. If, for instance, the URL for the table is: `http://localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`, then the corresponding asset ID is `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
+
+If you registered the dataset directly through the OpenMetadata UI, you can skip to the next section.
+
+We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -72,116 +78,72 @@ stringData:
 EOF
 ```
 
-Next, register the data asset itself in the data catalog. The way to do it depends on whether you use katalog or OpenMetadata as your data catalog:
-
-=== "katalog"
-    
-    Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
-    
-    ```yaml
-    cat << EOF | kubectl apply -f -
-    apiVersion: katalog.fybrik.io/v1alpha1
-    kind: Asset
-    metadata:
-      name: paysim-csv
-    spec:
-      secretRef:
-        name: paysim-csv
-      details:
-        dataFormat: csv
-        connection:
-          name: s3
-          s3:
-            endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
-            bucket: "demo"
-            object_key: "PS_20174392719_1491204439457_log.csv"
-      metadata:
-        name: Synthetic Financial Datasets For Fraud Detection
-        geography: theshire
-        tags:
-          finance: true
-        columns:
-          - name: nameOrig
-            tags:
-              PII: true
-          - name: oldbalanceOrg
-            tags:
-              PII: true
-          - name: newbalanceOrig
-            tags:
-              PII: true
-    EOF
-    ```
-    
-    The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
-
-=== "OpenMetadata"
-
-    We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-    ```bash
-    kubectl port-forward svc/openmetadata-nnector -n fybrik-system 8081:8080 &
-    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-    {
-      "destinationCatalogID": "openmetadata",
-      "destinationAssetID": "paysim-csv",
-      "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
-      "details": {
-        "dataFormat": "csv",
-        "connection": {
-          "name": "s3",
-          "s3": {
-            "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
-            "bucket": "demo",
-    	"object_key": "PS_20174392719_1491204439457_log.csv"
-          }
-        }
-      },
-      "resourceMetadata": {
-        "name": "Synthetic Financial Datasets For Fraud Detection",
-        "geography": "theshire ",
-        "tags": {
-          "finance": "true"
-        },
-        "columns": [
-          {
-            "name": "nameOrig",
-            "tags": {
-              "PII": "true"
-            }
-          },
-          {
-            "name": "oldbalanceOrg",
-            "tags": {
-              "PII": "true"
-            }
-          },
-          {
-            "name": "newbalanceOrig",
-            "tags": {
-              "PII": "true"
-            }
-          }
-        ]
+Next, register the data asset itself in the data catalog.
+We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+```bash
+kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+{
+  "destinationCatalogID": "openmetadata",
+  "destinationAssetID": "paysim-csv",
+  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+  "details": {
+    "dataFormat": "csv",
+    "connection": {
+      "name": "s3",
+      "s3": {
+        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
+        "bucket": "demo",
+        "object_key": "PS_20174392719_1491204439457_log.csv"
       }
     }
-    EOF
-    ```
+  },
+  "resourceMetadata": {
+    "name": "Synthetic Financial Datasets For Fraud Detection",
+    "geography": "theshire ",
+    "tags": {
+      "finance": "true"
+    },
+    "columns": [
+      {
+        "name": "nameOrig",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "oldbalanceOrg",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "newbalanceOrig",
+        "tags": {
+          "PII": "true"
+        }
+      }
+    ]
+  }
+}
+EOF
+```
 
-    The response from the OpenMetadata connector should look like this:
-    ```bash
-    {"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
-    ```
+The response from the OpenMetadata connector should look like this:
+```bash
+{"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+```
     The asset is now registered in the catalog. Please make note of the asset ID. You will use that ID in the `FybrikApplication` later.
 
-Notice the `metadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+Notice the `resourceMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
-For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
+For example, in the json above, the `geography` is set to `theshire`. You need make sure that it is same as the region of your fybrik control plane. You can get this information using the following command:
 
 ```shell
 kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
 ```
 
-[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the yaml above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
+[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the json above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
 
 ## Define data access policies
 
@@ -232,7 +194,7 @@ kubectl port-forward svc/my-notebook 8080:80 &
 
 ## Create a `FybrikApplication` resource for the notebook
 
-Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik. The value you place in the `dataSetID` field depends on the data catalog you are using. If you use katalog, the `dataSetID` should be `"fybrik-notebook-sample/paysim-csv"`. If you use OpenMetadata, enter the `assetID` which was returned to you by the OpenMetadata connector, e.g. `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
+Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik. The value you place in the `dataSetID` field is your asset ID, as explained above. If you registered your dataset through the OpenMetadata connector, enter the `assetID` which was returned to you by the OpenMetadata connector, e.g. `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
