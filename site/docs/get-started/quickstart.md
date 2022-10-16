@@ -110,18 +110,16 @@ Run the following to install vault and the plugin in development mode:
 
 ## Install data catalog
 
-Fybrik requires a data catalog in which to store metadata related to data assets. Currently, two data catalogs are supported:
+Fybrik assumes the existence of a data catalog that contains the metadata and connection information for data assets. Fybrik currently supports:
 
- 1. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog that is included in Fybrik for evaluation purposes.
- 2. [OpenMetadata](https://open-metadata.org/): An end-to-end metadata management solution that includes data discovery, governance, data quality, observability, and people collaboration.
+ 1. [OpenMetadata](https://open-metadata.org/): An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.
+ 2. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog that is included in Fybrik for evaluation purposes.
 
-No steps are required to install the katalog data catalog, as it is installed by default.
+In this guide we use the OpenMetadata data catalog.
 
-If you prefer to use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
+To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
 ```bash
-git clone https://github.com/fybrik/fybrik.git
-cd fybrik/third_party/openmetadata/
-make
+curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh | bash -
 ```
 
 The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
@@ -130,53 +128,27 @@ Running `make` installs OpenMetadata in the `open-metadata` namespace. To instal
 
 ## Install control plane
 
-The instructions for installing the Fybrik control plane vary slightly depending on the data catalog you are using (katalog or OpenMetadata):
+When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`. If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in the helm installation command.
 
-=== "katalog"
-    
-    ??? tip "Install latest development version from GitHub"
-    
-        The published Helm charts are only available for released versions.
-        To install the `dev` version install the charts from the source code.
-        For example:
-        ```bash
-        git clone https://github.com/fybrik/fybrik.git
-        cd fybrik
-        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-        helm install fybrik charts/fybrik --set global.tag=master -n fybrik-system --wait
-        ```
-    
-    The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
-    Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
-    
+??? tip "Install latest development version from GitHub"
+
+    The published Helm charts are only available for released versions.
+    To install the `dev` version install the charts from the source code.
+    For example:
     ```bash
-    helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
-    helm install fybrik fybrik-charts/fybrik -n fybrik-system {{ fybrikVersionFlag }} --wait
+    git clone https://github.com/fybrik/fybrik.git
+    cd fybrik
+    helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+    helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
     ```
 
-=== "OpenMetadata"
-
-    When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`. If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in the helm installation command.
+The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
+Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
     
-    ??? tip "Install latest development version from GitHub"
-    
-        The published Helm charts are only available for released versions.
-        To install the `dev` version install the charts from the source code.
-        For example:
-        ```bash
-        git clone https://github.com/fybrik/fybrik.git
-        cd fybrik
-        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-        helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
-        ```
-    
-    The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
-    Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
-    
-    ```bash
-    helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
-    helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system {{ fybrikVersionFlag }} --wait
-    ```
+```bash
+helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
+helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system {{ fybrikVersionFlag }} --wait
+```
 
 ## Install modules
 
