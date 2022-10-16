@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 
 setup(name='fybrik_python_vault',
-      version=os.environ.get('VERSION', '0.3.0'),
+      version=os.environ.get('VERSION', '0.2.0'),
       description='Python Vault Package for Fybrik Components',
       long_description='## Python Vault Package for Fybrik Components',
       long_description_content_type='text/markdown',

@@ -5,7 +5,7 @@ export DATA_DIR ?= /tmp
 # the latest backward compatible CRD version
 export LATEST_BACKWARD_SUPPORTED_CRD_VERSION ?= 0.7.0
 export FYBRIK_CHARTS ?= https://fybrik.github.io/charts
-# deploy tls certs used for testing
+# Indicate whether to deploy tls certs used for testing
 export DEPLOY_TLS_TEST_CERTS ?= 0
 
 .PHONY: all
