@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 // +kubebuilder:validation:Enum=True;False;Unknown

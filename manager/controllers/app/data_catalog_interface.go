@@ -4,12 +4,12 @@
 package app
 
 import (
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	"github.com/rs/zerolog/log"
+
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/vault"
-
-	"github.com/rs/zerolog/log"
 )
 
 // RegisterAsset registers a new asset in the specified catalog
@@ -21,7 +21,7 @@ import (
 // - an error if happened
 // - the new asset identifier
 func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID string,
-	info *app.DatasetDetails, input *app.FybrikApplication) (string, error) {
+	info *fapp.DatasetDetails, input *fapp.FybrikApplication) (string, error) {
 	r.Log.Trace().Msg("RegisterAsset")
 	details := datacatalog.ResourceDetails{}
 	if info.Details != nil {
@@ -39,7 +39,6 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	if info.ResourceMetadata != nil {
 		resourceMetadata.Geography = info.ResourceMetadata.Geography
 	}
-
 	creds := ""
 	if environment.IsVaultEnabled() {
 		creds = vault.PathForReadingKubeSecret(info.SecretRef.Namespace, info.SecretRef.Name)
@@ -52,11 +51,10 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		DestinationCatalogID: catalogID,
 		DestinationAssetID:   assetID,
 	}
-
-	credentialPath := ""
-	if environment.IsVaultEnabled() {
-		credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
-	}
+	// credentialPath is constructed even if vault is not used for credential managment
+	// in order to enable the connector to get the credentials directly from the secret
+	// using the secret information extracted from the credentialPath string.
+	credentialPath := vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
 
 	var err error
 	var response *datacatalog.CreateAssetResponse

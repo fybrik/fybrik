@@ -16,10 +16,9 @@ spec:
       {{- include "fybrik.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.manager.podAnnotations }}
+      {{- if .Values.manager.podAnnotations }}
       annotations:
-        sidecar.istio.io/inject: "true"
-        {{- toYaml . | nindent 8 }}
+      {{- .Values.manager.podAnnotations | toYaml | nindent 8 }}
       {{- end }}
       labels:
         control-plane: controller-manager
@@ -77,8 +76,9 @@ spec:
             {{- toYaml .Values.manager.overrideArgs | nindent 12 }}
             {{- else }}
             {{- if and .Values.clusterScoped .Values.manager.prometheus }}
-            - "--metrics-bind-addr=127.0.0.1:8080"
+            - "--metrics-bind-addr=:8080"
             {{- end }}
+            - "--health-probe-addr=:8088"
             - "--leader-elect"
             {{- if .Values.coordinator.enabled }}
             - "--enable-application-controller"
@@ -98,14 +98,6 @@ spec:
                 name: razee-credentials
             {{- end }}
           env:
-            - name: CACERT_SECRET_NAME
-              value: {{ .Values.manager.tls.certs.cacertSecretName }}
-            - name: CACERT_SECRET_NAMESPACE
-              value: {{ .Values.manager.tls.certs.cacertSecretNamespace }}
-            - name: CERT_SECRET_NAME
-              value: {{ .Values.manager.tls.certs.certSecretName }}
-            - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.manager.tls.certs.certSecretNamespace }}
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
@@ -126,7 +118,6 @@ spec:
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
             {{- end }}
-
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}
@@ -140,12 +131,22 @@ spec:
               name: webhook-server
               protocol: TCP
           {{- end }}
+          readinessProbe:
+          {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.manager.readinessProbe | toYaml | nindent 12 }}
+            httpGet:
+              path: /readyz
+              port: 8088
+          livenessProbe:
+          {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.manager.livenessProbe | toYaml | nindent 12 }}
+            httpGet:
+              path: /healthz
+              port: 8088
           volumeMounts:
             - name: data
               mountPath: {{ include "fybrik.getDataDir" . }}
            {{- if .Values.clusterScoped }}
             - mountPath: {{ include "fybrik.getDataSubdir" (tuple "k8s-webhook-server" ) }}
-              name: cert
+              name: webhook-cert
               readOnly: true
             {{- end }}
             - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "taxonomy" ) }}
@@ -160,6 +161,16 @@ spec:
             - mountPath: {{ include "fybrik.localChartsMountPath" . }}
               name: charts
             {{- end }}
+            {{- if .Values.manager.tls.certs.certSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cert" ) }}
+              name: tls-cert
+              readOnly: true
+            {{- end }}
+            {{- if .Values.manager.tls.certs.cacertSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cacert" ) }}
+              name: tls-cacert
+              readOnly: true
+            {{- end }}
           securityContext:
           {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.manager.containerSecurityContext | toYaml | nindent 12 }}
           resources:
@@ -167,7 +178,7 @@ spec:
       terminationGracePeriodSeconds: 10
       volumes:
         {{- if .Values.clusterScoped }}
-        - name: cert
+        - name: webhook-cert
           secret:
             defaultMode: 420
             secretName: webhook-server-cert
@@ -190,6 +201,18 @@ spec:
         - name: charts
           persistentVolumeClaim:
             claimName: "{{ .Values.manager.chartsPersistentVolumeClaim }}"
+        {{- end }}
+        {{- if .Values.manager.tls.certs.certSecretName }}
+        - name: tls-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.manager.tls.certs.certSecretName }}
+        {{- end }}
+        {{- if .Values.manager.tls.certs.cacertSecretName }}
+        - name: tls-cacert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.manager.tls.certs.cacertSecretName }}
         {{- end }}
       {{- with .Values.manager.nodeSelector }}
       nodeSelector:

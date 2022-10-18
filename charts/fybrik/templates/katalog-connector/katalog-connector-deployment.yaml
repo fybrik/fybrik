@@ -40,12 +40,30 @@ spec:
           image: {{ include "fybrik.image" ( tuple $ .Values.katalogConnector ) }}
           imagePullPolicy: {{ .Values.katalogConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
           ports:
+            {{- if .Values.katalogConnector.tls.use_tls }}
+            - name: https
+            {{- else }}
             - name: http
-              containerPort: 8080
+            {{- end }}
+              containerPort: {{ .Values.katalogConnector.service.port }}
               protocol: TCP
+          readinessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.katalogConnector.readinessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          livenessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.katalogConnector.livenessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
           resources:
             {{- toYaml .Values.katalogConnector.resources | nindent 12 }}
           env:
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
             - name: SERVICE_PORT
               value: {{ .Values.katalogConnector.service.port | quote }}
             - name: PRETTY_LOGGING
@@ -56,14 +74,21 @@ spec:
               value: {{ .Values.katalogConnector.tls.use_tls | quote | toString }}
             - name: USE_MTLS
               value: {{ .Values.katalogConnector.tls.use_mtls | quote | toString }}
-            - name: CERT_SECRET_NAME
-              value: {{ .Values.katalogConnector.tls.certs.certSecretName }}
-            - name: CERT_SECRET_NAMESPACE
-              value: {{ .Values.katalogConnector.tls.certs.certSecretNamespace }}
-            - name: CACERT_SECRET_NAME
-              value: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
-            - name: CACERT_SECRET_NAMESPACE
-              value: {{ .Values.katalogConnector.tls.certs.cacertSecretNamespace }}
+            - name: TLS_MIN_VERSION
+              value: {{ .Values.katalogConnector.tls.minVersion }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            {{- if .Values.katalogConnector.tls.certs.certSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cert" ) }}
+              name: tls-cert
+              readOnly: true
+            {{- end }}
+            {{- if .Values.katalogConnector.tls.certs.cacertSecretName }}
+            - mountPath: {{ include "fybrik.getDataSubdir" ( tuple "tls-cacert" ) }}
+              name: tls-cacert
+              readOnly: true
+            {{- end }}
 
       {{- with .Values.katalogConnector.nodeSelector }}
       nodeSelector:
@@ -77,4 +102,21 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: {{ .Values.katalogConnector.dataDirSizeLimit }}
+        {{- if .Values.katalogConnector.tls.certs.certSecretName }}
+        - name: tls-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.katalogConnector.tls.certs.certSecretName }}
+        {{- end }}
+        {{- if .Values.katalogConnector.tls.certs.cacertSecretName }}
+        - name: tls-cacert
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.katalogConnector.tls.certs.cacertSecretName }}
+        {{- end }}
+
 {{- end }}

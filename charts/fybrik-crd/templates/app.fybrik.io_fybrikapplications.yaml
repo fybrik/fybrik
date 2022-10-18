@@ -1,11 +1,8 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
   name: fybrikapplications.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -16,440 +13,353 @@ spec:
     singular: fybrikapplication
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: FybrikApplication provides information about the application
-          whose data is being operated on, the nature of the processing, and the data
-          sets chosen for processing by the application. The FybrikApplication controller
-          obtains instructions regarding any governance related changes that must
-          be performed on the data, identifies the modules capable of performing such
-          changes, and finally generates the Plotter which defines the secure runtime
-          environment and all the components in it.  This runtime environment provides
-          the application with access to the data requested in a secure manner and
-          without having to provide any credentials for the data sets.  The credentials
-          are obtained automatically by the manager from the credential management
-          system.
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: FybrikApplicationSpec defines data flows needed by the application,
-              the purpose and other contextual information about the application.
-            properties:
-              appInfo:
-                description: AppInfo contains information describing the reasons for
-                  the processing that will be done by the application.
-                type: object
-                x-kubernetes-preserve-unknown-fields: true
-              data:
-                description: Data contains the identifiers of the data to be used
-                  by the Data Scientist's application, and the protocol used to access
-                  it and the format expected.
-                items:
-                  description: DataContext indicates data set being processed by the
-                    workload and includes information about the data format and technologies
-                    used to access the data.
-                  properties:
-                    dataSetID:
-                      description: DataSetID is a unique identifier of the dataset
-                        chosen from the data catalog. For data catalogs that support
-                        multiple sub-catalogs, it includes the catalog id and the
-                        dataset id. When writing a new dataset it is the name provided
-                        by the user or workload generating it.
-                      minLength: 1
-                      type: string
-                    flow:
-                      description: 'Flows indicates what is being done with the particular
-                        dataset - ex: read, write, copy (ingest), delete This is optional
-                        for the purpose of backward compatibility. If nothing is provided,
-                        read is assumed.'
-                      enum:
-                      - read
-                      - write
-                      - delete
-                      - copy
-                      type: string
-                    requirements:
-                      description: Requirements from the system
-                      properties:
-                        flowParams:
-                          description: FlowParams include the requirements for particular
-                            data flows
-                          properties:
-                            catalog:
-                              description: Catalog indicates that the data asset must
-                                be cataloged, and in which catalog to register it
-                              type: string
-                            isNewDataSet:
-                              description: IsNewDataSet if true indicates that the
-                                DataContext.DataSetID is user provided and not a full
-                                catalog / dataset ID. Relevant when writing. A unique
-                                ID from the catalog will be provided in the FybrikApplication
-                                Status after a new catalog entry is created.
-                              type: boolean
-                            metadata:
-                              description: Source asset metadata like asset name,
-                                owner, geography, etc Relevant when writing new asset.
-                              properties:
-                                columns:
-                                  description: Columns associated with the asset
-                                  items:
-                                    description: ResourceColumn represents a column
-                                      in a tabular resource
-                                    properties:
-                                      name:
-                                        description: Name of the column
-                                        type: string
-                                      tags:
-                                        description: Tags associated with the column
-                                        type: object
-                                        x-kubernetes-preserve-unknown-fields: true
-                                    required:
-                                    - name
+    - name: v1beta1
+      schema:
+        openAPIV3Schema:
+          description: FybrikApplication provides information about the application whose data is being operated on, the nature of the processing, and the data sets chosen for processing by the application. The FybrikApplication controller obtains instructions regarding any governance related changes that must be performed on the data, identifies the modules capable of performing such changes, and finally generates the Plotter which defines the secure runtime environment and all the components in it.  This runtime environment provides the application with access to the data requested in a secure manner and without having to provide any credentials for the data sets.  The credentials are obtained automatically by the manager from the credential management system.
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: FybrikApplicationSpec defines data flows needed by the application, the purpose and other contextual information about the application.
+              properties:
+                appInfo:
+                  description: AppInfo contains information describing the reasons for the processing that will be done by the application.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                data:
+                  description: Data contains the identifiers of the data to be used by the Data Scientist's application, and the protocol used to access it and the format expected.
+                  items:
+                    description: DataContext indicates data set being processed by the workload and includes information about the data format and technologies used to access the data.
+                    properties:
+                      dataSetID:
+                        description: DataSetID is a unique identifier of the dataset chosen from the data catalog. For data catalogs that support multiple sub-catalogs, it includes the catalog id and the dataset id. When writing a new dataset it is the name provided by the user or workload generating it.
+                        minLength: 1
+                        type: string
+                      flow:
+                        description: 'Flows indicates what is being done with the particular dataset - ex: read, write, copy (ingest), delete This is optional for the purpose of backward compatibility. If nothing is provided, read is assumed.'
+                        enum:
+                          - read
+                          - write
+                          - delete
+                          - copy
+                        type: string
+                      requirements:
+                        description: Requirements from the system
+                        properties:
+                          flowParams:
+                            description: FlowParams include the requirements for particular data flows
+                            properties:
+                              catalog:
+                                description: Catalog indicates that the data asset must be cataloged, and in which catalog to register it
+                                type: string
+                              isNewDataSet:
+                                description: IsNewDataSet if true indicates that the DataContext.DataSetID is user provided and not a full catalog / dataset ID. Relevant when writing. A unique ID from the catalog will be provided in the FybrikApplication Status after a new catalog entry is created.
+                                type: boolean
+                              metadata:
+                                description: Source asset metadata like asset name, owner, geography, etc Relevant when writing new asset.
+                                properties:
+                                  columns:
+                                    description: Columns associated with the asset
+                                    items:
+                                      description: ResourceColumn represents a column in a tabular resource
+                                      properties:
+                                        name:
+                                          description: Name of the column
+                                          type: string
+                                        tags:
+                                          description: Tags associated with the column
+                                          type: object
+                                          x-kubernetes-preserve-unknown-fields: true
+                                      required:
+                                        - name
+                                      type: object
+                                    type: array
+                                  geography:
+                                    description: Geography of the resource
+                                    type: string
+                                  name:
+                                    description: Name of the resource
+                                    type: string
+                                  owner:
+                                    description: Owner of the resource
+                                    type: string
+                                  tags:
+                                    description: Tags associated with the asset
                                     type: object
-                                  type: array
-                                geography:
-                                  description: Geography of the resource
+                                    x-kubernetes-preserve-unknown-fields: true
+                                type: object
+                              storageEstimate:
+                                description: Storage estimate indicates the estimated amount of storage in MB, GB, TB required when writing new data.
+                                format: int64
+                                type: integer
+                            type: object
+                          interface:
+                            description: Interface indicates the protocol and format expected by the data user
+                            properties:
+                              dataformat:
+                                description: DataFormat defines the data format type
+                                type: string
+                              protocol:
+                                description: Protocol defines the interface protocol used for data transactions
+                                type: string
+                            required:
+                              - protocol
+                            type: object
+                        type: object
+                    required:
+                      - dataSetID
+                      - requirements
+                    type: object
+                  type: array
+                secretRef:
+                  description: SecretRef points to the secret that holds credentials for each system the user has been authenticated with. The secret is deployed in FybrikApplication namespace.
+                  type: string
+                selector:
+                  description: Selector enables to connect the resource to the application Application labels should match the labels in the selector.
+                  properties:
+                    clusterName:
+                      description: Cluster name
+                      type: string
+                    workloadSelector:
+                      description: WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+                      properties:
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                          items:
+                            description: A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.
+                            properties:
+                              key:
+                                description: key is the label key that the selector applies to.
+                                type: string
+                              operator:
+                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                                type: string
+                              values:
+                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                                items:
                                   type: string
-                                name:
-                                  description: Name of the resource
-                                  type: string
-                                owner:
-                                  description: Owner of the resource
-                                  type: string
-                                tags:
-                                  description: Tags associated with the asset
-                                  type: object
-                                  x-kubernetes-preserve-unknown-fields: true
-                              type: object
-                            storageEstimate:
-                              description: Storage estimate indicates the estimated
-                                amount of storage in MB, GB, TB required when writing
-                                new data.
-                              format: int64
-                              type: integer
-                          type: object
-                        interface:
-                          description: Interface indicates the protocol and format
-                            expected by the data user
-                          properties:
-                            dataformat:
-                              description: DataFormat defines the data format type
-                              type: string
-                            protocol:
-                              description: Protocol defines the interface protocol
-                                used for data transactions
-                              type: string
-                          required:
-                          - protocol
+                                type: array
+                            required:
+                              - key
+                              - operator
+                            type: object
+                          type: array
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
                           type: object
                       type: object
                   required:
-                  - dataSetID
-                  - requirements
+                    - workloadSelector
                   type: object
-                type: array
-              secretRef:
-                description: SecretRef points to the secret that holds credentials
-                  for each system the user has been authenticated with. The secret
-                  is deployed in FybrikApplication namespace.
-                type: string
-              selector:
-                description: Selector enables to connect the resource to the application
-                  Application labels should match the labels in the selector.
-                properties:
-                  clusterName:
-                    description: Cluster name
-                    type: string
-                  workloadSelector:
-                    description: WorkloadSelector enables to connect the resource
-                      to the application Application labels should match the labels
-                      in the selector.
+              required:
+                - appInfo
+                - data
+              type: object
+            status:
+              description: FybrikApplicationStatus defines the observed state of FybrikApplication.
+              properties:
+                assetStates:
+                  additionalProperties:
+                    description: AssetState defines the observed state of an asset
                     properties:
-                      matchExpressions:
-                        description: matchExpressions is a list of label selector
-                          requirements. The requirements are ANDed.
+                      catalogedAsset:
+                        description: CatalogedAsset provides a new asset identifier after being registered in the enterprise catalog
+                        type: string
+                      conditions:
+                        description: Conditions indicate the asset state (Ready, Deny, Error)
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: Condition describes the state of a FybrikApplication at a certain point.
                           properties:
-                            key:
-                              description: key is the label key that the selector
-                                applies to.
+                            message:
+                              description: Message contains the details of the current condition
                               type: string
-                            operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                            observedGeneration:
+                              description: ObservedGeneration is the version of the resource for which the condition has been evaluated
+                              format: int64
+                              type: integer
+                            status:
+                              default: Unknown
+                              description: Status of the condition, one of (`True`, `False`, `Unknown`).
+                              enum:
+                                - "True"
+                                - "False"
+                                - Unknown
                               type: string
-                            values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
-                              items:
-                                type: string
-                              type: array
+                            type:
+                              description: Type of the condition
+                              type: string
                           required:
-                          - key
-                          - operator
+                            - type
                           type: object
                         type: array
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
-                        type: object
-                    type: object
-                required:
-                - workloadSelector
-                type: object
-            required:
-            - appInfo
-            - data
-            type: object
-          status:
-            description: FybrikApplicationStatus defines the observed state of FybrikApplication.
-            properties:
-              assetStates:
-                additionalProperties:
-                  description: AssetState defines the observed state of an asset
-                  properties:
-                    catalogedAsset:
-                      description: CatalogedAsset provides a new asset identifier
-                        after being registered in the enterprise catalog
-                      type: string
-                    conditions:
-                      description: Conditions indicate the asset state (Ready, Deny,
-                        Error)
-                      items:
-                        description: Condition describes the state of a FybrikApplication
-                          at a certain point.
+                      endpoint:
+                        description: Endpoint provides the endpoint spec from which the asset will be served to the application
                         properties:
-                          message:
-                            description: Message contains the details of the current
-                              condition
-                            type: string
-                          observedGeneration:
-                            description: ObservedGeneration is the version of the
-                              resource for which the condition has been evaluated
-                            format: int64
-                            type: integer
-                          status:
-                            default: Unknown
-                            description: Status of the condition, one of (`True`,
-                              `False`, `Unknown`).
-                            enum:
-                            - "True"
-                            - "False"
-                            - Unknown
-                            type: string
-                          type:
-                            description: Type of the condition
+                          name:
+                            description: Name of the connection to the data source
                             type: string
                         required:
-                        - type
-                        type: object
-                      type: array
-                    endpoint:
-                      description: Endpoint provides the endpoint spec from which
-                        the asset will be served to the application
-                      properties:
-                        name:
-                          type: string
-                      required:
-                      - name
-                      type: object
-                      x-kubernetes-preserve-unknown-fields: true
-                  type: object
-                description: AssetStates provides a status per asset
-                type: object
-              errorMessage:
-                description: ErrorMessage indicates that an error has happened during
-                  the reconcile, unrelated to a specific asset
-                type: string
-              generated:
-                description: Generated resource identifier
-                properties:
-                  appVersion:
-                    description: Version of FybrikApplication that has generated this
-                      resource
-                    format: int64
-                    type: integer
-                  kind:
-                    description: Kind of the resource (Blueprint, Plotter)
-                    type: string
-                  name:
-                    description: Name of the resource
-                    type: string
-                  namespace:
-                    description: Namespace of the resource
-                    type: string
-                required:
-                - appVersion
-                - kind
-                - name
-                - namespace
-                type: object
-              observedGeneration:
-                description: ObservedGeneration is taken from the FybrikApplication
-                  metadata.  This is used to determine during reconcile whether reconcile
-                  was called because the desired state changed, or whether the Blueprint
-                  status changed.
-                format: int64
-                type: integer
-              provisionedStorage:
-                additionalProperties:
-                  description: DatasetDetails holds details of the provisioned storage
-                  properties:
-                    datasetRef:
-                      description: Reference to a Dataset resource containing the
-                        request to provision storage
-                      type: string
-                    details:
-                      description: Dataset information
-                      properties:
-                        connection:
-                          description: Connection has the relevant details for accesing
-                            the data (url, table, ssl, etc.)
-                          properties:
-                            name:
-                              type: string
-                          required:
                           - name
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                        format:
-                          description: Format represents data format (e.g. parquet)
-                            as received from catalog connectors
-                          type: string
-                        vault:
-                          additionalProperties:
-                            description: Holds details for retrieving credentials
-                              from Vault store.
-                            properties:
-                              address:
-                                description: Address is Vault address
-                                type: string
-                              authPath:
-                                description: AuthPath is the path to auth method i.e.
-                                  kubernetes
-                                type: string
-                              role:
-                                description: Role is the Vault role used for retrieving
-                                  the credentials
-                                type: string
-                              secretPath:
-                                description: SecretPath is the path of the secret
-                                  holding the Credentials in Vault
-                                type: string
-                            required:
-                            - address
-                            - authPath
-                            - role
-                            - secretPath
-                            type: object
-                          description: Holds details for retrieving credentials by
-                            the modules from Vault store. It is a map so that different
-                            credentials can be stored for the different DataFlow operations.
-                          type: object
-                      required:
-                      - connection
-                      type: object
-                    resourceMetadata:
-                      description: Resource Metadata
-                      properties:
-                        columns:
-                          description: Columns associated with the asset
-                          items:
-                            description: ResourceColumn represents a column in a tabular
-                              resource
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                    type: object
+                  description: AssetStates provides a status per asset
+                  type: object
+                errorMessage:
+                  description: ErrorMessage indicates that an error has happened during the reconcile, unrelated to a specific asset
+                  type: string
+                generated:
+                  description: Generated resource identifier
+                  properties:
+                    appVersion:
+                      description: Version of FybrikApplication that has generated this resource
+                      format: int64
+                      type: integer
+                    kind:
+                      description: Kind of the resource (Blueprint, Plotter)
+                      type: string
+                    name:
+                      description: Name of the resource
+                      type: string
+                    namespace:
+                      description: Namespace of the resource
+                      type: string
+                  required:
+                    - appVersion
+                    - kind
+                    - name
+                    - namespace
+                  type: object
+                observedGeneration:
+                  description: ObservedGeneration is taken from the FybrikApplication metadata.  This is used to determine during reconcile whether reconcile was called because the desired state changed, or whether the Blueprint status changed.
+                  format: int64
+                  type: integer
+                provisionedStorage:
+                  additionalProperties:
+                    description: DatasetDetails holds details of the provisioned storage
+                    properties:
+                      datasetRef:
+                        description: Reference to a Dataset resource containing the request to provision storage
+                        type: string
+                      details:
+                        description: Dataset information
+                        properties:
+                          connection:
+                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
                             properties:
                               name:
-                                description: Name of the column
+                                description: Name of the connection to the data source
                                 type: string
-                              tags:
-                                description: Tags associated with the column
-                                type: object
-                                x-kubernetes-preserve-unknown-fields: true
                             required:
-                            - name
+                              - name
                             type: object
-                          type: array
-                        geography:
-                          description: Geography of the resource
-                          type: string
-                        name:
-                          description: Name of the resource
-                          type: string
-                        owner:
-                          description: Owner of the resource
-                          type: string
-                        tags:
-                          description: Tags associated with the asset
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                      type: object
-                    secretRef:
-                      description: Reference to a secret where the credentials are
-                        stored
-                      properties:
-                        name:
-                          description: Secret name
-                          type: string
-                        namespace:
-                          description: Secret Namespace
-                          type: string
-                      required:
-                      - name
-                      - namespace
-                      type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          format:
+                            description: Format represents data format (e.g. parquet) as received from catalog connectors
+                            type: string
+                          vault:
+                            additionalProperties:
+                              description: Holds details for retrieving credentials from Vault store.
+                              properties:
+                                address:
+                                  description: Address is Vault address
+                                  type: string
+                                authPath:
+                                  description: AuthPath is the path to auth method i.e. kubernetes
+                                  type: string
+                                role:
+                                  description: Role is the Vault role used for retrieving the credentials
+                                  type: string
+                                secretPath:
+                                  description: SecretPath is the path of the secret holding the Credentials in Vault
+                                  type: string
+                              required:
+                                - address
+                                - authPath
+                                - role
+                                - secretPath
+                              type: object
+                            description: Holds details for retrieving credentials by the modules from Vault store. It is a map so that different credentials can be stored for the different DataFlow operations.
+                            type: object
+                        required:
+                          - connection
+                        type: object
+                      resourceMetadata:
+                        description: Resource Metadata
+                        properties:
+                          columns:
+                            description: Columns associated with the asset
+                            items:
+                              description: ResourceColumn represents a column in a tabular resource
+                              properties:
+                                name:
+                                  description: Name of the column
+                                  type: string
+                                tags:
+                                  description: Tags associated with the column
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                              required:
+                                - name
+                              type: object
+                            type: array
+                          geography:
+                            description: Geography of the resource
+                            type: string
+                          name:
+                            description: Name of the resource
+                            type: string
+                          owner:
+                            description: Owner of the resource
+                            type: string
+                          tags:
+                            description: Tags associated with the asset
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                        type: object
+                      secretRef:
+                        description: Reference to a secret where the credentials are stored
+                        properties:
+                          name:
+                            description: Secret name
+                            type: string
+                          namespace:
+                            description: Secret Namespace
+                            type: string
+                        required:
+                          - name
+                          - namespace
+                        type: object
+                    type: object
+                  description: ProvisionedStorage maps a dataset (identified by AssetID) to the new provisioned bucket. It allows FybrikApplication controller to manage buckets in case the spec has been modified, an error has occurred, or a delete event has been received. ProvisionedStorage has the information required to register the dataset once the owned plotter resource is ready
                   type: object
-                description: ProvisionedStorage maps a dataset (identified by AssetID)
-                  to the new provisioned bucket. It allows FybrikApplication controller
-                  to manage buckets in case the spec has been modified, an error has
-                  occurred, or a delete event has been received. ProvisionedStorage
-                  has the information required to register the dataset once the owned
-                  plotter resource is ready
-                type: object
-              ready:
-                description: Ready is true if all specified assets are either ready
-                  to be used or are denied access.
-                type: boolean
-              validApplication:
-                description: ValidApplication indicates whether the FybrikApplication
-                  is valid given the defined taxonomy
-                type: string
-              validatedGeneration:
-                description: ValidatedGeneration is the version of the FyrbikApplication
-                  that has been validated with the taxonomy defined.
-                format: int64
-                type: integer
-            type: object
-        required:
-        - spec
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+                ready:
+                  description: Ready is true if all specified assets are either ready to be used or are denied access.
+                  type: boolean
+                validApplication:
+                  description: ValidApplication indicates whether the FybrikApplication is valid given the defined taxonomy
+                  type: string
+                validatedGeneration:
+                  description: ValidatedGeneration is the version of the FyrbikApplication that has been validated with the taxonomy defined.
+                  format: int64
+                  type: integer
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
 status:
   acceptedNames:
     kind: ""

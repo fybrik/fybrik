@@ -1,16 +1,16 @@
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
   name: application-with-errors-2
   namespace: default
   labels:
-    app: kf-notebook
+    app: notebook-test
 spec:
   selector:
     clusterName: thegreendragon
     workloadSelector:
       matchLabels:
-        app: kf-notebook
+        app: notebook-test
   appInfo:
     intent: Fraud Detection
     role: Sales

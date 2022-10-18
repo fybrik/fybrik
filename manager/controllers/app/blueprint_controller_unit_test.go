@@ -19,19 +19,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/logging"
 )
 
-func readBlueprint(f string) (*app.Blueprint, error) {
+func readBlueprint(f string) (*fapp.Blueprint, error) {
 	blueprintYAML, err := os.ReadFile(f)
 	if err != nil {
 		return nil, err
 	}
-	blueprint := &app.Blueprint{}
+	blueprint := &fapp.Blueprint{}
 	err = yaml.Unmarshal(blueprintYAML, blueprint)
 	if err != nil {
 		return nil, err
@@ -95,29 +95,29 @@ func TestBlueprintReconcile(t *testing.T) {
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	modules := map[string]app.BlueprintModule{"dataFlowInstance1": {
+	modules := map[string]fapp.BlueprintModule{"dataFlowInstance1": {
 		Name:  "dataFlow",
-		Chart: app.ChartSpec{Name: "thechart"},
-		Arguments: app.ModuleArguments{
-			Assets: []app.AssetContext{},
+		Chart: fapp.ChartSpec{Name: "thechart"},
+		Arguments: fapp.ModuleArguments{
+			Assets: []fapp.AssetContext{},
 		},
 	}}
 
-	blueprint := app.Blueprint{
+	blueprint := fapp.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "appns-app-mybp",
+			Name: "appns-fapp-mybp",
 			Labels: map[string]string{
-				app.ApplicationNameLabel:      "my-app",
-				app.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      "my-app",
+				utils.ApplicationNamespaceLabel: "default",
 			},
 		},
-		Spec: app.BlueprintSpec{
+		Spec: fapp.BlueprintSpec{
 			Cluster: "cluster1",
 			Modules: modules,
 		},
 	}
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "dataFlowInstance1")
+	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "dataFlowInstance1")
 	g.Expect(relName).To(gomega.Equal("my-app-default-dataFlowInstance1"))
 }
 
@@ -125,31 +125,31 @@ func TestShortReleaseName(t *testing.T) {
 func TestLongReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	blueprint := app.Blueprint{
+	blueprint := fapp.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
 			Labels: map[string]string{
-				app.ApplicationNameLabel:      "my-app",
-				app.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      "my-app",
+				utils.ApplicationNamespaceLabel: "default",
 			},
 		},
-		Spec: app.BlueprintSpec{
+		Spec: fapp.BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: map[string]app.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {
+			Modules: map[string]fapp.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {
 				Name:      "longname",
-				Arguments: app.ModuleArguments{Assets: []app.AssetContext{}},
-				Chart:     app.ChartSpec{Name: "start-image"}}},
+				Arguments: fapp.ModuleArguments{Assets: []fapp.AssetContext{}},
+				Chart:     fapp.ChartSpec{Name: "start-image"}}},
 		},
 	}
 
-	relName := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
+	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
-	relName2 := utils.GetReleaseName(blueprint.Labels[app.ApplicationNameLabel],
-		blueprint.Labels[app.ApplicationNamespaceLabel], "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
+	relName2 := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
+		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
 	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }

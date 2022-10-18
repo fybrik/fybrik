@@ -17,7 +17,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
@@ -41,7 +41,7 @@ const (
 
 // Reconcile validates FybrikModule CRD
 func (r *FybrikModuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.With().Str(logging.CONTROLLER, FybrikModuleKind).Str("module", req.NamespacedName.String()).Logger()
+	log := r.Log.With().Str(logging.CONTROLLER, FybrikModuleKind).Str(logging.MODULE, req.NamespacedName.String()).Logger()
 
 	// obtain FybrikModule resource
 	moduleContext := &fapp.FybrikModule{}

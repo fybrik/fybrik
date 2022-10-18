@@ -28,7 +28,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	appapi "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
@@ -88,7 +88,7 @@ var _ = BeforeSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cfg).ToNot(BeNil())
 
-		err = appapi.AddToScheme(scheme.Scheme)
+		err = fapp.AddToScheme(scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
 
 		// +kubebuilder:scaffold:scheme
@@ -112,9 +112,9 @@ var _ = BeforeSuite(func() {
 				Scheme:             scheme.Scheme,
 				MetricsBindAddress: "localhost:8086",
 				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-					&appapi.FybrikModule{}:         {Field: systemNamespaceSelector},
-					&appapi.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-					&corev1.Secret{}:               {Field: workerNamespaceSelector},
+					&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
+					&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+					&corev1.Secret{}:             {Field: workerNamespaceSelector},
 				}}),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -188,7 +188,6 @@ func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
 	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
-	SetIfNotSet(environment.ConnectionTimeoutKey, "120", t)
 	SetIfNotSet(environment.MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
 	SetIfNotSet(environment.MainPolicyManagerNameKey, "MOCK", t)
 	SetIfNotSet(environment.LoggingVerbosityKey, "-1", t)

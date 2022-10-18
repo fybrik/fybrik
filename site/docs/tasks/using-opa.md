@@ -5,6 +5,43 @@ When OPA is used for data governance, it is deployed as a stand-alone service.  
 
 For more details on OPA policies please refer to [OPA documentation](https://www.openpolicyagent.org/docs/latest/policy-language/) in particulate to [the basics](https://www.openpolicyagent.org/docs/latest/policy-language/#the-basics) section which explains how a policy is evaluated.
 
+## OPA Policies Syntax
+
+OPA policies for Fybrik are written in rego files and have the following syntax: `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is JSON object with the following form:
+
+
+```
+{
+	"name": <name>,
+	<property>: <value>,
+	<property>: <value>,
+	...
+}
+```
+
+- `name` is the name of the action. For example: "RedactAction"
+- `property` is the name of the action property as defined in the [enforcement actions taxonomy](../concepts/taxonomy.md). For example: "columns".
+
+Here is an example Fybrik rule:
+```
+  rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
+        description := "Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account"
+        input.action.actionType == "write"
+        input.resource.metadata.tags.finance
+        input.action.destination != "neverland"
+        column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
+    }
+```
+
+An example of an object that may be returned by the rule above:
+
+```
+  {
+     "action": {"name":"RedactAction","columns": ["Address","Name"]},
+     "policy": "Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account"}
+  }
+```
+
 ## Fybrik Default Policies
 
 Fybrik ***denys by default*** any request if no rule is triggered. This behavior can be changed to ***allow by default*** by creating the following rule and upload it to OPA using methods described in this page:
@@ -15,15 +52,15 @@ package dataapi.authz
 rule [{}] { true }
 ```
 
-You can also add conditions like
-
-```yaml
- rule[{}] {
-  // conditions here
- }
-```
-
 The verdict `allow` will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.
+
+## Input to policies
+
+The input object includes the application properties and the requested action as well as dataset details (id, metadata).
+
+- `context`: request context includes application/workload properties defined in FybrikApplication, e.g. `context.properties.intent`
+- `action`: request action includes information about the request such as `action.actionType` as defined in policy manager taxonomy , e.g `write`, `read`, `delete` or `copy`
+- `resource`: the request id and metadata as defined in catalog taxonomy, e.g `resource.metadata.geography`
 
 ## Managing OPA policies
 

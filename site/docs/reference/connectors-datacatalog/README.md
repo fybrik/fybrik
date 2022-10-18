@@ -23,7 +23,6 @@ Class | Method | HTTP request | Description
  - [DeleteAssetResponse](Models/DeleteAssetResponse.md)
  - [GetAssetRequest](Models/GetAssetRequest.md)
  - [GetAssetResponse](Models/GetAssetResponse.md)
- - [OperationType](Models/OperationType.md)
  - [ResourceColumn](Models/ResourceColumn.md)
  - [ResourceDetails](Models/ResourceDetails.md)
  - [ResourceMetadata](Models/ResourceMetadata.md)

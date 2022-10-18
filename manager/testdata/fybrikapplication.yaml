@@ -1,0 +1,20 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: notebook-test
+  labels:
+    app: notebook-test
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: notebook-test
+  appInfo:
+    intent: Fraud Detection
+    role: Security
+  data:
+    - dataSetID: "{\"ServerName\":\"mds1\",\"AssetGuid\":\"ASSET_ID\"}"
+      requirements:
+        interface: 
+          protocol: fybrik-arrow-flight

@@ -14,10 +14,9 @@ on:
 env:
   GO_VERSION: 1.17
   # the newest supported K8s version and its respective kind image
-  NEW_K8S_VERSION: v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047
+  NEW_K8S_VERSION: v1.24.0@sha256:406fd86d48eaf4c04c7280cd1d2ca1d61e7d0d61ddef0125cb097bc7b82ed6a1
   # the oldest supported K8s version and its respective kind image
-  OLD_K8S_VERSION: v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729
-
+  OLD_K8S_VERSION: v1.22.9@sha256:6e57a6b0c493c7d7183a1151acff0bfa44bf37eb668826bf00da5637c55b6d5e 
   LATEST_BACKWARD_SUPPORTED_VERSION: 0.7.0
 
 jobs:
@@ -33,15 +32,16 @@ jobs:
       with:
         fetch-depth: 0
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+    - name: Install tools
+      run: make install-tools
     - name: Verify
       run: |
         make generate manifests generate-docs verify
@@ -55,18 +55,21 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
     - name: Test
       run: make test
 
@@ -86,13 +89,14 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Namescope integration tests
@@ -138,54 +142,55 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests old
       if: ${{ matrix.k8s_version == 'old' }}
       env:
         K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
-      run: make run-notebook-readflow-tls-tests
+      run: make run-notebook-readflow-tests
     - name: Read flow notebook tests new
       if: ${{ matrix.k8s_version == 'new' }}
       env:
         K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
       run: make run-notebook-readflow-tests
 
-  notebook-backward-sample-read-flow:
-    name: Read flow notebook backward sample
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    steps:
-    - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
-    - name: Cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
-    - name: Install tools
-      run: make install-tools
-    - name: Read flow notebook tests bc version
-      env:
-        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
-        LATEST_BACKWARD_SUPPORTED_AFM_VERSION: v${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
-        LATEST_BACKWARD_SUPPORTED_CRD_VERSION: ${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
-      run: make run-notebook-readflow-bc-tests
+#  notebook-backward-sample-read-flow:
+#    name: Read flow notebook backward sample
+#    runs-on: ubuntu-latest
+#    env:
+#      DOCKER_HOSTNAME: "localhost:5000"
+#      DOCKER_NAMESPACE: fybrik-system
+#    steps:
+#    - name: Install Go
+#      uses: actions/setup-go@v3
+#      with:
+#        go-version: ${{ env.GO_VERSION }}
+#    - uses: actions/checkout@v3
+#    - name: Cache dependencies
+#      uses: actions/cache@v3
+#      with:
+#        path: |
+#          ~/go/pkg/mod
+#          ${{ github.workspace }}/hack/tools/bin
+#          ${{ github.workspace }}/hack/tools/lib
+#        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+#    - name: Install tools
+#      run: make install-tools
+#    - name: Read flow notebook tests bc version
+#      env:
+#        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
+#        LATEST_BACKWARD_SUPPORTED_AFM_VERSION: v${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
+#        LATEST_BACKWARD_SUPPORTED_CRD_VERSION: ${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
+#      run: make run-notebook-readflow-bc-tests
 
   notebook-sample-write-flow:
     name: Write flow notebook sample
@@ -200,17 +205,72 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Write flow notebook tests
       run: make run-notebook-writeflow-tests
+
+  notebook-sample-read-flow-tls:
+    name: Read flow notebook sample with tls
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+    - name: Install tools
+      run: make install-tools
+    - name: Read flow notebook tests with tls
+      run: make run-notebook-readflow-tls-tests
+
+  notebook-sample-read-flow-tls-system-ca:
+    name: Read flow notebook sample with tls using system CA certs
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+    - name: Install tools
+      run: make install-tools
+    - name: Read flow notebook tests with tls using system CA certs
+      run: make run-notebook-readflow-tls-system-cacerts-tests
 
   tekton-pipelines:
     name: Tekton Tests
@@ -224,20 +284,23 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
     - uses: actions/checkout@v3
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - name: install nfs rpms
       run: sudo apt-get update && sudo apt-get install -y nfs-kernel-server nfs-common && sudo modprobe nfsd && sudo modprobe nfs
     - name: Cache dependencies
+      id: cache
       uses: actions/cache@v3
       with:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
-        key: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-t-${{ hashFiles('hack/make-rules/tools.mk') }}-go
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
-    - name: install json-schema-generator
-      run: ./hack/tools/install_json-schema-generator.sh
     - name: Integration tests
       env:
         image_source_repo_password: "fake"

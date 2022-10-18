@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install Python
-        uses: actions/setup-python@v4.1.0
+        uses: actions/setup-python@v4.3.0
         with:
           python-version: 3.8
       - name: Install Material for MkDocs
@@ -46,7 +46,7 @@ jobs:
           text:  ${{ steps.release.outputs.version }}
           regex: '^v[0-9]+\.[0-9]+(\.[0-9]+)*'
       - name: Sub (tag)
-        uses: bluwy/substitute-string-action@v1
+        uses: bluwy/substitute-string-action@v2
         if: ${{ startsWith(steps.release.outputs.version, steps.regex-match.outputs.match) }}
         with:
           _input-file: ${{ env.EXTERNAL_FILE }}

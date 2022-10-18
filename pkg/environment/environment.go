@@ -4,9 +4,12 @@
 package environment
 
 import (
+	"crypto/tls"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -18,7 +21,6 @@ const (
 	VaultAddressKey                   string = "VAULT_ADDRESS"
 	VaultModulesRoleKey               string = "VAULT_MODULES_ROLE"
 	EnableWebhooksKey                 string = "ENABLE_WEBHOOKS"
-	ConnectionTimeoutKey              string = "CONNECTION_TIMEOUT"
 	MainPolicyManagerNameKey          string = "MAIN_POLICY_MANAGER_NAME"
 	MainPolicyManagerConnectorURLKey  string = "MAIN_POLICY_MANAGER_CONNECTOR_URL"
 	LoggingVerbosityKey               string = "LOGGING_VERBOSITY"
@@ -33,21 +35,33 @@ const (
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
 	UseTLS                            string = "USE_TLS"
 	UseMTLS                           string = "USE_MTLS"
-	CertSecretName                    string = "CERT_SECRET_NAME"
-	CertSecretNamespace               string = "CERT_SECRET_NAMESPACE"
-	CACERTSecretName                  string = "CACERT_SECRET_NAME"      //nolint:gosec
-	CACERTSecretNamespace             string = "CACERT_SECRET_NAMESPACE" //nolint:gosec
+	MinTLSVersion                     string = "MIN_TLS_VERSION"
 	LocalClusterName                  string = "ClusterName"
 	LocalZone                         string = "Zone"
 	LocalRegion                       string = "Region"
 	LocalVaultAuthPath                string = "VaultAuthPath"
+	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
+	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
+	DiscoveryBurst                    string = "DISCOVERY_BURST"
+	DiscoveryQPS                      string = "DISCOVERY_QPS"
 )
+
+const printValueStr = "%s set to \"%s\""
 
 // DefaultModulesNamespace defines a default namespace where module resources will be allocated
 const DefaultModulesNamespace = "fybrik-blueprints"
 
 // DefaultControllerNamespace defines a default namespace where fybrik control plane is running
 const DefaultControllerNamespace = "fybrik-system"
+
+// defaultPollingInterval defines the default time interval to check the status of the resources
+// deployed by the manager. The interval is specified in milliseconds.
+const defaultPollingInterval = 2000 * time.Millisecond
+
+// defaultHelmWaitTimeout defines the default time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// The timeout is specified in seconds.
+const defaultHelmWaitTimeout = 300 * time.Second
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -95,28 +109,27 @@ func IsUsingMTLS() bool {
 	return strings.ToLower(os.Getenv(UseMTLS)) == "true"
 }
 
-// GetCertSecretName returns the name of the kubernetes secret which holds the
-// manager/connectors.
-func GetCertSecretName() string {
-	return os.Getenv(CertSecretName)
-}
-
-// GetCertSecretNamespace returns the namespace of the kubernetes secret which holds the
-// manager/connectors.
-func GetCertSecretNamespace() string {
-	return os.Getenv(CertSecretNamespace)
-}
-
-// GetCACERTSecretName returns the name of the kubernetes secret that holds the CA certificates
-// used by the client/server to validate the manager to the manager/connectors.
-func GetCACERTSecretName() string {
-	return os.Getenv(CACERTSecretName)
-}
-
-// GetCACERTSecretNamespace returns the namespace of the kubernetes secret that holds the CA certificate
-// used by the client/server to validate the manager to the manager/connectors.
-func GetCACERTSecretNamespace() string {
-	return os.Getenv(CACERTSecretNamespace)
+// GetMinTLSVersion returns the minimum TLS version that is acceptable.
+// if not provided it returns zero which means that
+// the system default value is used.
+func GetMinTLSVersion(log *zerolog.Logger) uint16 {
+	minVersion := os.Getenv(MinTLSVersion)
+	rv := uint16(0)
+	switch minVersion {
+	case "TLS-1.0":
+		rv = tls.VersionTLS10
+	case "TLS-1.1":
+		rv = tls.VersionTLS11
+	case "TLS-1.2":
+		rv = tls.VersionTLS12
+	case "TLS-1.3":
+		rv = tls.VersionTLS13
+	default:
+		log.Info().Msg("MinTLSVersion is set to the system default value")
+		return rv
+	}
+	log.Info().Msg("MinTLSVersion is set to " + minVersion)
+	return rv
 }
 
 // GetDataDir returns the directory where the data resides.
@@ -134,13 +147,84 @@ func GetModulesRole() string {
 	return os.Getenv(VaultModulesRoleKey)
 }
 
+// GetResourcesPollingInterval returns the time interval to check the
+// status of the resources deployed by the manager. The interval is specified
+// in milliseconds.
+// The function returns a default value if an error occurs or
+// if ResourcesPollingInterval env var is undefined.
+func GetResourcesPollingInterval() (time.Duration, error) {
+	intervalStr := os.Getenv(ResourcesPollingInterval)
+	if intervalStr == "" {
+		return defaultPollingInterval, nil
+	}
+	interval, err := strconv.Atoi(intervalStr)
+	if err != nil {
+		return defaultPollingInterval, err
+	}
+	return time.Duration(interval) * time.Millisecond, nil
+}
+
+// GetHelmWaitTimeout returns the time to wait for helm operation
+// on the resources deployed by the manager to complete.
+// Currently used only in uninstall operation.
+// The timeout is specified in seconds.
+// The function returns a default value if an error occurs or if
+// HelmWaitTimeout env var is undefined.
+func GetHelmWaitTimeout() (time.Duration, error) {
+	timeoutStr := os.Getenv(HelmWaitTimeout)
+	if timeoutStr == "" {
+		return defaultHelmWaitTimeout, nil
+	}
+	timeout, err := strconv.Atoi(timeoutStr)
+	if err != nil {
+		return defaultHelmWaitTimeout, err
+	}
+	return time.Duration(timeout) * time.Second, nil
+}
+
+// GetDiscoveryBurst returns the K8s discovery burst value if it is set, otherwise it returns -1
+func GetDiscoveryBurst() (int, error) {
+	burstStr := os.Getenv(DiscoveryBurst)
+	if burstStr == "" {
+		return -1, nil
+	}
+	burst, err := strconv.Atoi(burstStr)
+	if err != nil {
+		return -1, err
+	}
+	if burst <= 0 {
+		return -1, fmt.Errorf("discovery burst should be positive, got %d", burst)
+	}
+	return burst, err
+}
+
+// GetDiscoveryQPS returns the K8s discovery QPS value if it is set, otherwise it returns -1
+func GetDiscoveryQPS() (float32, error) {
+	qpsStr := os.Getenv(DiscoveryQPS)
+	if qpsStr == "" {
+		return -1, nil
+	}
+	//nolint:revive,gomnd // ignore magic numbers
+	qps, err := strconv.ParseFloat(qpsStr, 32)
+	if err != nil {
+		return -1, err
+	}
+	if qps <= 0 {
+		return -1, fmt.Errorf("discovery QPS should be positive, got %f", qps)
+	}
+	return float32(qps), err
+}
+
 // GetVaultAddress returns the address and port of the vault system,
 // which is used for managing data set credentials
 func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
 }
 
-// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy, not including transformations)
+// GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy,
+// not including transformations)
+// The function returns a default value if an error occurs or if DatapathLimitKey env var
+// is undefined.
 func GetDataPathMaxSize() (int, error) {
 	defaultLimit := 2
 	limitStr := os.Getenv(DatapathLimitKey)
@@ -172,20 +256,42 @@ func GetDataCatalogServiceAddress() string {
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
-		log.Info().Msgf("%s set to \"%s\"", key, value)
+		log.Info().Msgf(printValueStr, key, value)
 	} else {
 		log.Info().Msgf("%s is undefined", key)
 	}
 }
 
+// logEnvVarUpdatedValue logs environment variables values that might be different
+// from the values they were originally set to.
+func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error) {
+	if err != nil {
+		log.Warn().Msg("error getting " + envVar + ". Setting the default to " +
+			value)
+		return
+	}
+	log.Info().Msgf(printValueStr, envVar, value)
+}
+
 func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
-		EnableWebhooksKey, ConnectionTimeoutKey, MainPolicyManagerConnectorURLKey,
-		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey, DatapathLimitKey,
-		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace}
+		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
+		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
+		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
 		logEnvVariable(log, envVar)
 	}
+
+	interval, err := GetResourcesPollingInterval()
+	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
+	timeout, err := GetHelmWaitTimeout()
+	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
+	discoveryBurst, err := GetDiscoveryBurst()
+	logEnvVarUpdatedValue(log, DiscoveryBurst, strconv.Itoa(discoveryBurst), err)
+	discoveryQPS, err := GetDiscoveryQPS()
+	logEnvVarUpdatedValue(log, DiscoveryQPS, fmt.Sprintf("%f", discoveryQPS), err)
+	dataPathMaxSize, err := GetDataPathMaxSize()
+	logEnvVarUpdatedValue(log, DatapathLimitKey, strconv.Itoa(dataPathMaxSize), err)
 }

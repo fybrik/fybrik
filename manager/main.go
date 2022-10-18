@@ -8,26 +8,23 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
-	"emperror.dev/errors"
 	"github.com/fsnotify/fsnotify"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	appv1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
@@ -40,6 +37,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 const certSubDir = "/k8s-webhook-server"
@@ -52,13 +50,13 @@ var (
 )
 
 func init() {
-	_ = appv1.AddToScheme(scheme)
+	_ = fapp.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
 
 //nolint:funlen,gocyclo
-func run(namespace string, metricsAddr string, enableLeaderElection bool,
+func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bool,
 	enableApplicationController, enableBlueprintController, enablePlotterController bool) int {
 	setupLog.Info().Msg("creating manager. based on: gitTag=" + gitTag + ", latest gitCommit=" + gitCommit)
 	environment.LogEnvVariables(&setupLog)
@@ -72,13 +70,13 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&appv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&appv1.Plotter{}:              {Field: systemNamespaceSelector},
-		&appv1.FybrikModule{}:         {Field: systemNamespaceSelector},
-		&appv1.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:           {Field: systemNamespaceSelector},
-		&appv1.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:              {Field: systemNamespaceSelector},
+		&fapp.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&fapp.Plotter{}:              {Field: systemNamespaceSelector},
+		&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:          {Field: systemNamespaceSelector},
+		&fapp.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:             {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -87,18 +85,35 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 
 	setupLog.Info().Msg("Manager client rate limits: qps = " + fmt.Sprint(client.QPS) + " burst=" + fmt.Sprint(client.Burst))
 
+	// Set health probes address(required to run probes)
+	// and desired liveness and readiness endpoints(optional)
 	mgr, err := ctrl.NewManager(client, ctrl.Options{
-		CertDir:            environment.GetDataDir() + certSubDir,
-		Scheme:             scheme,
-		Namespace:          namespace,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "fybrik-operator-leader-election",
-		Port:               controllers.ManagerPort,
-		NewCache:           cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
+		CertDir:                environment.GetDataDir() + certSubDir,
+		Scheme:                 scheme,
+		Namespace:              namespace,
+		MetricsBindAddress:     metricsAddr,
+		LeaderElection:         enableLeaderElection,
+		LeaderElectionID:       "fybrik-operator-leader-election",
+		Port:                   controllers.ManagerPort,
+		HealthProbeBindAddress: healthProbeAddr,
+		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {
 		setupLog.Error().Err(err).Msg("unable to start manager")
+		return 1
+	}
+
+	// Add readiness probe
+	err = mgr.AddReadyzCheck("ready-ping", healthz.Ping)
+	if err != nil {
+		setupLog.Error().Err(err).Msg("unable add a readiness check")
+		return 1
+	}
+
+	// Add liveness probe
+	err = mgr.AddHealthzCheck("health-ping", healthz.Ping)
+	if err != nil {
+		setupLog.Error().Err(err).Msg("unable add a health check")
 		return 1
 	}
 
@@ -117,7 +132,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		setupLog.Trace().Msg("creating FybrikApplication controller")
 
 		// Initialize PolicyManager interface
-		policyManager, err := newPolicyManager(scheme)
+		policyManager, err := newPolicyManager()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create policy manager facade")
 			return 1
@@ -129,7 +144,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 		}()
 
 		// Initialize DataCatalog interface
-		catalog, err := newDataCatalog(scheme)
+		catalog, err := newDataCatalog()
 		if err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create data catalog facade")
 			return 1
@@ -167,11 +182,11 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err = (&appv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fapp.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err = (&appv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fapp.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}
@@ -244,6 +259,7 @@ func run(namespace string, metricsAddr string, enableLeaderElection bool,
 func main() {
 	var namespace string
 	var metricsAddr string
+	var healthProbeAddr string
 	var enableLeaderElection bool
 	var enableApplicationController bool
 	var enableBlueprintController bool
@@ -252,6 +268,7 @@ func main() {
 	address := utils.ListeningAddress(controllers.ListeningPortAddress)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-addr", address, "The address the metric endpoint binds to.")
+	flag.StringVar(&healthProbeAddr, "health-probe-addr", address, "The address the health probe binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableApplicationController, "enable-application-controller", false,
@@ -275,54 +292,35 @@ func main() {
 		setupLog.Debug().Msg("At least one controller flag must be set!")
 		os.Exit(1)
 	}
+	// standard logger for internal packages
+	logger := logging.NewLogger()
+	ctrl.SetLogger(logger)
+	klog.SetLogger(logger)
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
-
-	os.Exit(run(namespace, metricsAddr, enableLeaderElection,
+	os.Exit(run(namespace, metricsAddr, healthProbeAddr, enableLeaderElection,
 		enableApplicationController, enableBlueprintController, enablePlotterController))
 }
 
-func newDataCatalog(schema *kruntime.Scheme) (dcclient.DataCatalog, error) {
-	connectionTimeout, err := getConnectionTimeout()
-	if err != nil {
-		return nil, err
-	}
+func newDataCatalog() (dcclient.DataCatalog, error) {
 	providerName := os.Getenv("CATALOG_PROVIDER_NAME")
 	connectorURL := os.Getenv("CATALOG_CONNECTOR_URL")
-	setupLog.Info().Str("Name", providerName).Str("URL", connectorURL).
-		Str("Timeout", connectionTimeout.String()).Msg("setting data catalog client")
+	setupLog.Info().Str(logging.CONNECTOR, providerName).Str("URL", connectorURL).
+		Msg("setting data catalog client")
 	return dcclient.NewDataCatalog(
 		providerName,
-		connectorURL,
-		connectionTimeout,
-		schema,
-	)
+		connectorURL)
 }
 
-func newPolicyManager(schema *kruntime.Scheme) (pmclient.PolicyManager, error) {
-	connectionTimeout, err := getConnectionTimeout()
-	if err != nil {
-		return nil, err
-	}
-
+func newPolicyManager() (pmclient.PolicyManager, error) {
 	mainPolicyManagerName := os.Getenv("MAIN_POLICY_MANAGER_NAME")
 	mainPolicyManagerURL := os.Getenv("MAIN_POLICY_MANAGER_CONNECTOR_URL")
-	setupLog.Info().Str("Name", mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
-		Str("Timeout", connectionTimeout.String()).Msg("setting main policy manager client")
+	setupLog.Info().Str(logging.CONNECTOR, mainPolicyManagerName).Str("URL", mainPolicyManagerURL).
+		Msg("setting main policy manager client")
 
-	var policyManager pmclient.PolicyManager
-	if strings.HasPrefix(mainPolicyManagerURL, "http") {
-		policyManager, err = pmclient.NewOpenAPIPolicyManager(
-			mainPolicyManagerName,
-			mainPolicyManagerURL,
-			connectionTimeout,
-			schema,
-		)
-	} else {
-		policyManager, err = pmclient.NewGrpcPolicyManager(mainPolicyManagerName, mainPolicyManagerURL, connectionTimeout)
-	}
-
-	return policyManager, err
+	return pmclient.NewOpenAPIPolicyManager(
+		mainPolicyManagerName,
+		mainPolicyManagerURL,
+	)
 }
 
 // newClusterManager decides based on the environment variables that are set which
@@ -347,13 +345,4 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		setupLog.Info().Msg("Using local cluster manager")
 		return local.NewClusterManager(mgr.GetClient(), environment.GetSystemNamespace())
 	}
-}
-
-func getConnectionTimeout() (time.Duration, error) {
-	connectionTimeout := os.Getenv("CONNECTION_TIMEOUT")
-	timeOutInSeconds, err := strconv.Atoi(connectionTimeout)
-	if err != nil {
-		return 0, errors.Wrap(err, "Atoi conversion of CONNECTION_TIMEOUT failed")
-	}
-	return time.Duration(timeOutInSeconds) * time.Second, nil
 }

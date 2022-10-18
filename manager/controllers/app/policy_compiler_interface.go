@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	connectors "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
@@ -26,7 +26,7 @@ import (
 
 var PolicyManagerTaxonomy = environment.GetDataDir() + "/taxonomy/policymanager.json#/definitions/GetPolicyDecisionsResponse"
 
-func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *app.FybrikApplication,
+func ConstructOpenAPIReq(datasetID string, resourceMetadata *datacatalog.ResourceMetadata, input *fapp.FybrikApplication,
 	operation *policymanager.RequestAction) *policymanager.GetPolicyDecisionsRequest {
 	return &policymanager.GetPolicyDecisionsRequest{
 		Context: taxonomy.PolicyManagerRequestContext{Properties: input.Spec.AppInfo.Properties},
@@ -74,11 +74,10 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		if !environment.IsVaultEnabled() {
-			appContext.Log.Error().Str("SecretRef", appContext.Application.Spec.SecretRef).Msg("SecretRef defined [%s], but vault is disabled")
-		} else {
-			creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
-		}
+		// creds is constructed even if vault is not used for credential managment
+		// in order to enable the connector to get the credentials directly from the secret
+		// using the secret information extracted from the creds string.
+		creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
 	}
 
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
@@ -102,9 +101,9 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			var message string
 			switch openapiReq.Action.ActionType {
 			case taxonomy.ReadFlow:
-				message = app.ReadAccessDenied
+				message = ReadAccessDenied
 			case taxonomy.WriteFlow:
-				message = app.WriteNotAllowed
+				message = WriteNotAllowed
 			}
 			return actions, errors.New(message)
 		}

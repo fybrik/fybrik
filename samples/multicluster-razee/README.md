@@ -152,12 +152,18 @@ Setup localstack on both clusters, `kind-control` and `kind-kind`.
     ```bash
     kubectl config use-context kind-control
     helm repo add localstack-charts https://localstack.github.io/helm-charts
-    helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+    helm install localstack localstack-charts/localstack \
+         --set startServices="s3" \
+         --set service.type=ClusterIP \
+         --set livenessProbe.initialDelaySeconds=25 
     kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
 
     kubectl config use-context kind-kind
     helm repo add localstack-charts https://localstack.github.io/helm-charts
-    helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+    helm install localstack localstack-charts/localstack \
+         --set startServices="s3" \
+         --set service.type=ClusterIP \
+         --set livenessProbe.initialDelaySeconds=25
     kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
     ```
 
@@ -227,7 +233,7 @@ Register a `FybrikStorageAccount` on the cluster `kind-control` for creating AWS
 kubectl config use-context kind-control
 
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1alpha1
+apiVersion:   app.fybrik.io/v1beta1
 kind:         FybrikStorageAccount
 metadata:
   name: storage-account
@@ -377,7 +383,7 @@ Create a [`FybrikApplication`](https://fybrik.io/dev/reference/crds/#fybrikappli
 kubectl config use-context kind-control
 
 cat <<EOF | kubectl apply -f -
-apiVersion: app.fybrik.io/v1alpha1
+apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
   name: my-notebook

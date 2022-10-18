@@ -7,10 +7,10 @@ hide:
 
 Packages:
 
-- [app.fybrik.io/v1alpha1](#appfybrikiov1alpha1)
+- [app.fybrik.io/v1beta1](#appfybrikiov1beta1)
 - [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
 
-## app.fybrik.io/v1alpha1
+## app.fybrik.io/v1beta1
 
 Resource Types:
 
@@ -28,7 +28,7 @@ Resource Types:
 
 
 ### Blueprint
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
 
 
@@ -49,7 +49,7 @@ Blueprint is the Schema for the blueprints API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
+      <td>app.fybrik.io/v1beta1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -354,7 +354,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -663,7 +663,7 @@ ObservedState includes information to be reported back to the FybrikApplication 
 </table>
 
 ### FybrikApplication
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
 
 
@@ -684,7 +684,7 @@ FybrikApplication provides information about the application whose data is being
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
+      <td>app.fybrik.io/v1beta1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1317,7 +1317,7 @@ Endpoint provides the endpoint spec from which the asset will be served to the a
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1483,7 +1483,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1661,7 +1661,7 @@ Reference to a secret where the credentials are stored
 </table>
 
 ### FybrikModule
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
 
 
@@ -1682,7 +1682,7 @@ FybrikModule is a description of an injectable component. the parameters it requ
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
+      <td>app.fybrik.io/v1beta1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -1928,7 +1928,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2276,7 +2276,7 @@ Condition describes the state of a FybrikApplication at a certain point.
 </table>
 
 ### FybrikStorageAccount
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
 
 
@@ -2297,7 +2297,7 @@ FybrikStorageAccount defines a storage account used for copying data. Only S3 ba
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
+      <td>app.fybrik.io/v1beta1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2377,7 +2377,7 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
 </table>
 
 ### Plotter
-<sup><sup>[↩ Parent](#appfybrikiov1alpha1 )</sup></sup>
+<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
 
 
@@ -2398,7 +2398,7 @@ Plotter is the Schema for the plotters API
     <tbody><tr>
       <td><b>apiVersion</b></td>
       <td>string</td>
-      <td>app.fybrik.io/v1alpha1</td>
+      <td>app.fybrik.io/v1beta1</td>
       <td>true</td>
       </tr>
       <tr>
@@ -2587,7 +2587,7 @@ Connection has the relevant details for accesing the data (url, table, ssl, etc.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2912,7 +2912,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3007,7 +3007,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3860,7 +3860,7 @@ Connection information
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Name of the connection to the data source<br/>
         </td>
         <td>true</td>
       </tr></tbody>

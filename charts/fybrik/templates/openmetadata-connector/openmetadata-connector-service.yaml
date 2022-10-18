@@ -1,0 +1,24 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "openmetadata") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.openmetadataConnector.enabled $autoFlag) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "openmetadata-connector"
+  labels:
+    app.kubernetes.io/component: openmetadata-connector
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.openmetadataConnector.service.type }}
+  ports:
+    - port: {{ .Values.openmetadataConnector.service.port }}
+      targetPort: 8081
+      protocol: TCP
+      {{- if .Values.openmetadataConnector.tls.use_tls }}
+      name: https
+      {{- else }}
+      name: http
+      {{- end }}
+  selector:
+    app.kubernetes.io/component: openmetadata-connector
+    {{- include "fybrik.selectorLabels" . | nindent 4 }}
+{{- end }}

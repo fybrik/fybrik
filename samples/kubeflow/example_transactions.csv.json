@@ -1,9 +1,0 @@
-{
-    "class": "NewCSVFileAssetRequestBody",
-    "displayName": "transactions.csv",
-    "description": "Synthetic Financial Dataset For Fraud Detection",
-    "fullPath": "{\"data_store\":\"S3\", \"bucket\":\"fybrik-bucket-example\", \"endpoint\":\"s3.eu-de.cloud-object-storage.appdomain.cloud\", \"object_key\":\"data.csv\", \"region\":\"eu\", \"data_location\": \"US\"}",
-    "columnHeaders": [
-        "step", "type", "amount", "nameOrig", "oldbalanceOrg", "newbalanceOrig", "nameDest", "oldbalanceDest", "newbalanceDest","isFraud","isFlaggedFraud"
-    ]
-}

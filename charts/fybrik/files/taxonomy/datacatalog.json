@@ -77,7 +77,9 @@
         },
         "operationType": {
           "$ref": "#/definitions/OperationType",
-          "description": "Type of operation to be done on the asset"
+          "enum": [
+            "read"
+          ]
         }
       }
     },
@@ -104,11 +106,8 @@
       }
     },
     "OperationType": {
-      "description": "OperationType Type of operation requested for the asset",
-      "type": "string",
-      "enum": [
-        "read"
-      ]
+      "description": "Type of operation requested for the asset",
+      "type": "string"
     },
     "ResourceColumn": {
       "description": "ResourceColumn represents a column in a tabular resource",

@@ -25,13 +25,13 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	apiv1alpha1 "fybrik.io/fybrik/manager/apis/app/v1alpha1"
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -43,7 +43,8 @@ type ArrowRequest struct {
 func TestS3NotebookReadFlow(t *testing.T) {
 	if s, ok := os.LookupEnv("VALUES_FILE"); !ok ||
 		(s != "charts/fybrik/notebook-test-readflow.values.yaml" &&
-			s != "charts/fybrik/notebook-test-readflow.tls.values.yaml") {
+			s != "charts/fybrik/notebook-test-readflow.tls.values.yaml" &&
+			s != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
 		t.Skip("Only executed for notebook tests")
 	}
 	gomega.RegisterFailHandler(Fail)
@@ -57,7 +58,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	endpoint := "http://localhost:9090"
 	bucket := "bucket1"
 	key1 := "data.csv"
-	filename := "../../../samples/kubeflow/data.csv"
+	filename := "../../testdata/data.csv"
 	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -93,7 +94,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		log.Println("Object already exists in S3!")
 	}
 
-	err = apiv1alpha1.AddToScheme(scheme.Scheme)
+	err = fapp.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -110,42 +111,42 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	application := &apiv1alpha1.FybrikApplication{}
+	application := &fapp.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
 	applicationKey := client.ObjectKeyFromObject(application)
 
 	// Create FybrikApplication and FybrikModule
-	fmt.Printf("Expecting application creation to succeed")
+	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		fybrikApplication := &apiv1alpha1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
 		_ = k8sClient.Delete(context.Background(), fybrikApplication)
 	}()
 
-	fmt.Printf("Expecting application to be created")
+	fmt.Println("Expecting application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), applicationKey, application)
 	}, timeout, interval).Should(gomega.Succeed())
-	fmt.Printf("Expecting plotter to be constructed")
-	g.Eventually(func() *apiv1alpha1.ResourceReference {
+	fmt.Println("Expecting plotter to be constructed")
+	g.Eventually(func() *fapp.ResourceReference {
 		_ = k8sClient.Get(context.Background(), applicationKey, application)
 		return application.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter := &apiv1alpha1.Plotter{}
+	plotter := &fapp.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
-	fmt.Printf("Expecting plotter to be fetchable")
+	fmt.Println("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
-	fmt.Printf("Expecting application to be ready")
+	fmt.Println("Expecting application to be ready")
 	g.Eventually(func() bool {
 		err = k8sClient.Get(context.Background(), applicationKey, application)
 		if err != nil {
@@ -165,7 +166,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Printf("Starting kubectl port-forward for arrow-flight")
+	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
 	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
@@ -173,7 +174,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
 	flightClient, err := flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
 	g.Expect(err).To(gomega.BeNil(), "Connect to arrow-flight service")
 	defer flightClient.Close()

@@ -17,6 +17,7 @@ import (
 
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
+	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
 const (
@@ -30,12 +31,26 @@ type ConnectorController struct {
 	Log          zerolog.Logger
 }
 
-func NewConnectorController(opaServerURL string) *ConnectorController {
+func NewConnectorController(opaServerURL string) (*ConnectorController, error) {
+	log := logging.LogInit(logging.CONNECTOR, "opa-connector")
+	retryClient := retryablehttp.NewClient()
+	if strings.HasPrefix(opaServerURL, "https") {
+		config, err := fybrikTLS.GetClientTLSConfig(&log)
+		if err != nil {
+			log.Error().Err(err)
+			return nil, err
+		}
+		if config != nil {
+			log.Info().Msg("Set TLS config for opa connector as a client")
+			retryClient.HTTPClient.Transport = &http.Transport{TLSClientConfig: config}
+		}
+	}
+
 	return &ConnectorController{
 		OpaServerURL: opaServerURL,
-		OpaClient:    retryablehttp.NewClient(),
-		Log:          logging.LogInit(logging.CONNECTOR, "opa-connector"),
-	}
+		OpaClient:    retryClient,
+		Log:          log,
+	}, nil
 }
 
 func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {

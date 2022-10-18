@@ -6,13 +6,16 @@ metadata:
 data:
   PRETTY_LOGGING: {{ .Values.global.prettyLogging | quote }}
   LOGGING_VERBOSITY: {{ .Values.global.loggingVerbosity | quote }}
-  
+  RESOURCE_POLLING_INTERVAL: {{ .Values.manager.resourcePollingInterval | quote }}
+  HELM_WAIT_TIMEOUT: {{ .Values.manager.helmWaitTimeout | quote }}
+  DISCOVERY_BURST: {{ .Values.manager.discoveryBurst | quote }}
+  DISCOVERY_QPS: {{ .Values.manager.discoveryQPS | quote }}
+  MIN_TLS_VERSION:  {{ .Values.manager.tls.minVersion }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   {{- if .Values.manager.solver.image }}
   USE_CSP: {{ .Values.manager.solver.enabled | quote }}
   {{- end }}
-  CONNECTION_TIMEOUT: {{ .Values.manager.connectionTimeout | default .Values.global.connectionTimeout | quote }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "http://%s-connector:8080" .Values.coordinator.catalog) | quote }}
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}

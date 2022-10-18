@@ -19,7 +19,7 @@ license: $(TOOLBIN)/license_finder
 
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
-	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1alpha1/ -o charts/fybrik/files/taxonomy/
+	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 
@@ -31,8 +31,15 @@ generate-docs:
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
 	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./manager/apis/...
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_blueprints.yaml
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikapplications.yaml
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikmodules.yaml
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikstorageaccounts.yaml
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_plotters.yaml
 	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/charts/asset-crd/templates/ paths=./connectors/katalog/pkg/apis/katalog/...
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/charts/asset-crd/templates/katalog.fybrik.io_assets.yaml
 	$(TOOLBIN)/controller-gen webhook paths=./manager/apis/... output:stdout | \
+		$(TOOLBIN)/yq eval 'del(.metadata.creationTimestamp)' - | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."certmanager.k8s.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \
 		$(TOOLBIN)/yq eval '(.metadata.name | select(. == "mutating-webhook-configuration")) = "{{ .Release.Namespace }}-mutating-webhook"' - | \
@@ -108,6 +115,23 @@ run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_CERTS=1
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
+	$(MAKE) -C manager run-notebook-readflow-tests
+
+.PHONY: run-notebook-readflow-tls-system-cacerts-tests
+run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_HOSTNAME?=localhost:5000
+run-notebook-readflow-tls-system-cacerts-tests: export DOCKER_NAMESPACE?=fybrik-system
+run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
+run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
+run-notebook-readflow-tls-system-cacerts-tests:
+	$(MAKE) kind
+	$(MAKE) cluster-prepare
+	$(MAKE) cluster-prepare-wait
+	$(MAKE) docker-build docker-push
+	$(MAKE) -C test/services docker-build docker-push
+	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
+	$(MAKE) deploy
+	cd manager/testdata/notebook/read-flow-tls && ./copy-cacert-to-pods.sh
+	$(MAKE) configure-vault
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests

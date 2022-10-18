@@ -1,0 +1,103 @@
+# Default values for deps.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# MQSQL configurations for helm dependency
+# you can find more details about this here https://artifacthub.io/packages/helm/bitnami/mysql
+mysql:
+  enabled: true
+  fullnameOverride: "mysql"
+  image:
+    pullPolicy: "Always"
+  primary:
+    persistence:
+      size: 50Gi
+    service:
+      nodePort: 3306
+
+# ElasticSearch configurations for helm dependency
+# you can find more details about this here https://artifacthub.io/packages/helm/elastic/elasticsearch
+elasticsearch:
+  enabled: true
+  replicas: 1
+  minimumMasterNodes: 1
+  fullnameOverride: "elasticsearch"
+  imagePullPolicy: "Always"
+  esJavaOpts: "-Xmx128m -Xms128m"
+  maxUnavailable: 0
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=20s"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256M"
+    limits:
+      cpu: "1000m"
+      memory: "1024M"
+
+# Airflow configurations for helm dependency
+# you can find more details about this here https://github.com/airflow-helm/charts
+airflow:
+  enabled: true
+  airflow:
+    image:
+      repository: openmetadata/ingestion
+      pullPolicy: "IfNotPresent"
+    executor: "KubernetesExecutor"
+    config:
+      # This is required for OpenMetadata UI to fetch status of DAGs
+      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
+      # OpenMetadata Airflow Apis Plugin DAGs Configuration
+      AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_RUNNER_TEMPLATE: "/opt/airflow/dag_templates/dag_runner.j2"
+      AIRFLOW__OPENMETADATA_AIRFLOW_APIS__DAG_GENERATED_CONFIGS: "/opt/airflow/dags"
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 5
+    users:
+    - role: Admin
+  web:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 360
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 360
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 10
+  postgresql:
+    enabled: false
+  workers:
+    enabled: false
+  flower:
+    enabled: false
+  redis:
+    enabled: false
+  externalDatabase:
+    type: mysql
+    port: 3306
+    database: airflow_db
+    passwordSecret: airflow-mysql-secrets
+    passwordSecretKey: airflow-mysql-password
+  serviceAccount:
+    create: true
+    name: "airflow"
+  dags:
+    persistence:
+      enabled: true
+      existingClaim: dag
+      # NOTE: "" means cluster-default
+      #storageClass: "manual"
+      accessMode: ReadWriteMany
+      size: 1Gi
+  logs:
+    persistence:
+      enabled: true
+      existingClaim: logs
+      # empty string means cluster-default
+      #storageClass: "manual"
+      accessMode: ReadWriteMany
+      size: 1Gi
+  scheduler:
+    logCleanup:
+      enabled: false
