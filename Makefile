@@ -133,7 +133,6 @@ run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik
 run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests: export COPY_TEST_CACERTS=1
-run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
