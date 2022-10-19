@@ -257,6 +257,7 @@ Run the following command to extract the new cataloged asset id from fybrikappli
 
 ```bash
 CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+CATALOGED_ASSET=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
 ```
 
 ### Write the data from the notebook
@@ -381,7 +382,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: fybrik-notebook-sample/${CATALOGED_ASSET}
+    - dataSetID: ${CATALOGED_ASSET}
       flow: read
       requirements:
         interface:
@@ -393,16 +394,16 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook-read -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-while [[ $(kubectl get fybrikapplication my-notebook-read -o "jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for fybrik-notebook-sample/${CATALOGED_ASSET} asset" && sleep 5; done
+while [[ $(kubectl get fybrikapplication my-notebook-read -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ### Read the dataset from the notebook
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.port})
 printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to read the data in a python notebook.
@@ -422,7 +423,7 @@ The next steps use the endpoint to read the data in a python notebook.
 
   # Prepare the request
   request = {
-      "asset": "fybrik-notebook-sample/<CATALOGED_ASSET>",
+      "asset": "<CATALOGED_ASSET>",
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }
