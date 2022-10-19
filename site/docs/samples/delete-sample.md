@@ -6,7 +6,7 @@ This sample demonstrate how to delete an S3 object from a bucket.
 
 To apply the latest development version of arrow-flight-module:
 ```bash
-kubectl apply -f -n fybrik-system https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml
+kubectl apply -f https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml -n fybrik-system
 ```
 
 ## Prepare dataset
@@ -77,7 +77,13 @@ You should see the new created object:
 
 In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
 
-Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
+
+If you use OpenMetadata directly through the UI, and use its discovery mechanism to add asset tables, you can determine an asset ID through the corresponding OpenMetadata table URL. If, for instance, the URL for the table is: `http://localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`, then the corresponding asset ID is `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
+
+If you registered the dataset directly through the OpenMetadata UI, you can skip to the next section.
+
+We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -92,46 +98,77 @@ stringData:
 EOF
 ```
 
-Then, register the data asset itself in the data catalog `katalog` used for samples. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
-
-```yaml
-cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1alpha1
-kind: Asset
-metadata:
-  name: paysim-csv
-spec:
-  secretRef: 
-    name: paysim-csv
-  details:
-    dataFormat: csv
-    connection:
-      name: s3
-      s3:
-        endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
-        bucket: "demo"
-        object_key: "PS_20174392719_1491204439457_log.csv"
-  metadata:
-    name: Synthetic Financial Datasets For Fraud Detection
-    geography: theshire 
-    tags:
-      finance: true
+Next, register the data asset itself in the data catalog.
+We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+```bash
+kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+{
+  "destinationCatalogID": "openmetadata",
+  "destinationAssetID": "paysim-csv",
+  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+  "details": {
+    "dataFormat": "csv",
+    "connection": {
+      "name": "s3",
+      "s3": {
+        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
+        "bucket": "demo",
+        "object_key": "PS_20174392719_1491204439457_log.csv"
+      }
+    }
+  },
+  "resourceMetadata": {
+    "name": "Synthetic Financial Datasets For Fraud Detection",
+    "geography": "theshire ",
+    "tags": {
+      "finance": "true"
+    },
+    "columns": [
+      {
+        "name": "nameOrig",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "oldbalanceOrg",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "newbalanceOrig",
+        "tags": {
+          "PII": "true"
+        }
+      }
+    ]
+  }
+}
 EOF
 ```
 
-The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
+The response from the OpenMetadata connector should look like this:
+```bash
+{"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+```
+Store the asset ID in a `CATALOGED_ASSET` variable:
+```bash
+CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+```
 
-Notice the `metadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+The asset is now registered in the catalog.
 
-For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
+Notice the `resourceMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+
+For example, in the json above, the `geography` is set to `theshire`. You need make sure that it is same as the region of your fybrik control plane. You can get this information using the following command:
 
 ```shell
 kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
 ```
 
-[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the yaml above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
-
-
+[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the json above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
 
 ## Define data access policy
 
@@ -178,7 +215,7 @@ spec:
     intent: Fraud Detection
     role: Security
   data:
-    - dataSetID: 'fybrik-notebook-sample/paysim-csv'
+    - dataSetID: ${CATALOGED_ASSET}
       flow: delete
       requirements: {}
 EOF
@@ -190,7 +227,8 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication delete-app -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-while [[ $(kubectl get fybrikapplication delete-app -o 'jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for fybrik-notebook-sample/paysim-csv asset" && sleep 5; done
+CATALOGED_ASSET=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+while [[ $(kubectl get fybrikapplication delete-app -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ## Ensure the object is deleted
@@ -199,4 +237,4 @@ Now the object should be deleted. We can check again with [AWS CLI](https://aws.
 ```
 aws --endpoint-url=${ENDPOINT} s3api list-objects --bucket=${BUCKET}
 ```
-Now you should see that the object is no longer in the list (or no list at all if the bukcet is empty).
+Now you should see that the object is no longer in the list (or that the bucket is empty).

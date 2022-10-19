@@ -213,7 +213,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: "fybrik-notebook-sample/paysim-csv"
+    - dataSetID: "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
