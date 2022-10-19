@@ -29,13 +29,60 @@ Suppose we want to create a new REST API:  <span style="color:#FF0000">createNew
 
 Then we can define the API in  <span style="color:#FF0000">datacatalog\.spec\.yaml</span>  under  <span style="color:#FF0000">fybrik</span>  <span style="color:#FF0000">/connectors/</span>  <span style="color:#FF0000">api</span>  <span style="color:#FF0000"> </span> folder as follows:
 
-![](img/Taxonomy-addRESTAPIinFybrik-v11.png)
+---
+    /createNewComponent:
+      patch:
+        summary: This REST API is a test method
+        operationId: createNewComponent
+        parameters:
+          - in: header
+            name: X-Request-CreateNewComponent-Cred
+            description: This header carries credential information.
+            schema:
+              type: string
+            required: true
+        requestBody:
+          description: create new component
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateNewComponentRequest"
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "../../charts/fybrik/files/taxonomy/datacatalog.json#/definitions/CreateNewComponentResponse"
+          '400':
+            description: Bad request - server cannot process the request due to client error
+          '404':
+            description: id not found
+          '401':
+            description: Unauthorized
+---
 
 ### <span style="color:blue">Step 2</span>: Define request and response objects
 
 Edit  <span style="color:#FF0000">pkg/model/</span>  <span style="color:#FF0000">datacatalog</span>  <span style="color:#FF0000">/</span>  <span style="color:#FF0000">api\.go</span>  <span style="color:#FF0000"> </span>
 
-![](img/Taxonomy-addRESTAPIinFybrik-v12.png)
+```
+type CreateNewComponentRequest struct {
+	// The destination catalog id in which the new asset will be created
+	DestinationCatalogID string `json:"destinationCatalogID"`
+
+	// +kubebuilder:validation:Optional
+	// Asset ID to be used for the created asset
+	DestinationAssetID string `json:"destinationAssetID,omitempty"`
+}
+
+type CreateNewComponentResponse struct {
+	// +kubebuilder:validation:Optional
+	// Status of the response
+	Status string `json:"status,omitempty"`
+}
+```
 
 ### <span style="color:blue">Step 3</span>: Generate the taxonomy files
 
@@ -55,11 +102,37 @@ Run  <span style="color:#FF0000">make generate </span> in  <span style="color:#F
 
 Define the new method  <span style="color:#FF0000">CreateComponent</span>  in  <span style="color:#FF0000">datacatalog\.go</span>  <span style="color:#FF0000"> </span> in  <span style="color:#FF0000">pkg/connectors/datacatalog/clients/</span>
 
-![](img/Taxonomy-addRESTAPIinFybrik-v13.png)
+```
+
+// DataCatalog is an interface of a facade to a data catalog.
+type DataCatalog interface {
+	GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error)
+	CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error)
+	DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error)
+	UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error)
+	CreateNewComponent(in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error)
+	io.Closer
+}
+
+```
 
 Add the implementation of <span style="color:#795E26"> </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26">\(\) method \(client side\) in </span>  <span style="color:#795E26">datacatalog\_openapi\.go</span>  <span style="color:#795E26"> </span>
 
-![](img/Taxonomy-addRESTAPIinFybrik-v14.png)
+```
+func (m *openAPIDataCatalog) CreateNewComponent(in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error) {
+	resp, httpResponse, err := m.client.DefaultApi.CreateNewComponent(
+		context.Background()).XRequestCreateNewComponentCred(creds).CreateNewComponentRequest(*in).Execute()
+	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode == http.StatusNotFound {
+		return nil, errors.New(AssetIDNotFound)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("update asset info from %s failed", m.name))
+	}
+	return resp, nil
+}
+
+```
 
 ### <span style="color:blue">Step 6</span>: Add server side  logic for the REST API
 
@@ -67,11 +140,17 @@ Add server side implementation of  <span style="color:#795E26">CreateNewComponen
 
 ![](img/Taxonomy-addRESTAPIinFybrik-v15.png)
 
-### <span style="color:blue">Step 7</span>: Add test / dummy implementation of REST API in manager/mockup
+### <span style="color:blue">Step 7</span>: Add test/dummy implementation of REST API in manager/mockup
 
-<span style="color:#795E26">Add </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26"> implementation in manager/controllers/</span>  <span style="color:#795E26">mockup</span>  <span style="color:#795E26"> </span>
+<span style="color:#795E26">Add </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26"> implementation in manager/controllers/mockup</span>  <span style="color:#795E26"> </span>
 
-![](img/Taxonomy-addRESTAPIinFybrik-v16.png)
+```
+func (m *DataCatalogDummy) CreateNewComponent(in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error) {
+	// TODO: will be provided a proper implementation once the implementation of UpdateAsset in katalog-connector
+	// is completed in a future PR. Till then a dummy implementation is provided.
+	return &datacatalog.CreateNewComponentResponse{Status: "CreateNewComponent not implemented in DataCatalogDummy"}, nil
+}
+```
 
 ### <span style="color:blue">Step 8</span>: Verify the changes
 
