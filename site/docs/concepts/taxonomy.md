@@ -14,7 +14,7 @@ some components that use taxonomy:
 * [Config Policy Manager](./config-policies.md) - defines the IT policies to follow.
 * [FybrikModules](./modules.md) - describes capabilities that can be included in a data plane.
 
-Default taxonomies are provided by fybrik in a JSON file format, and are and are meant as a starting point on which to [expand](../../tasks/custom-taxonomy).
+Default taxonomies are provided by fybrik in a JSON file format, and are meant as a starting point. Different actors can [expand](../../tasks/custom-taxonomy) these.
 
 ## Issues Addressed by Taxonomy
 
@@ -42,7 +42,7 @@ As new capabilities, transforms, data types, and protocols are made available vi
 
 Fybrik validates the structures and values it receives from all external components.  
 
-For interface components (`FybrikApplication` and `FybrikModule`), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with [webhooks](https://en.wikipedia.org/wiki/Webhook) or not.
+For interface components (`FybrikApplication` and `FybrikModule`), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with [webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#what-are-admission-webhooks) or not.
 
 1. If webhooks are deployed, errors are received from the kubernetes command (ex: `kubectl apply` ) and no resource is created.  
 2. If webhooks are *not* deployed, validation is done in the resource's controller.  If there is an error, the resource is created but its status will contain the error.  (Note: These resources will need to manually be removed by the person creating them.)

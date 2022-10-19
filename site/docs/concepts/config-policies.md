@@ -20,7 +20,9 @@ Available properties:
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
 
-Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where `capability` represents a required module capability, such as "read", "write", "transform" and "copy".
+Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where -
+
+`capability` represents a required module capability, such as "read", "write", "transform" and "copy".
 
 `decision` is a JSON structure that matches `Decision` defined above. 
 

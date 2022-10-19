@@ -37,11 +37,12 @@ kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/ma
 
 ## When is a module used?
 
-There are three main data flows in which modules may be used:
+There are four main data flows in which modules may be used:
 
 * Read - preparing data to be read and/or actually reading the data.
 * Write - writing a new data set or appending data to an existing data set.
 * Copy - for performing an implicit data copy on behalf of the application.  The decision to do an implicit copy is made by the control plane, typically for performance or governance reasons.
+* Delete - for deleting objects or data sets.
 
 A module may be used in one or more of these flows, as is indicated in the module's yaml file.
 
