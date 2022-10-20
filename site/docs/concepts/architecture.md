@@ -20,7 +20,7 @@ Modules may also perform actions to enforce data governance policy decisions, su
 ## [Connectors](./connectors.md)
 Fybrik connects to external services to receive data governance decisions, metadata about datasets and credentials. Policies, assets and access credentials to the assets have to be defined before the user can run an application.
 
-The current abstraction supports 2 different [connectors](./connectors.md): one for data catalog (2) and one for policy manager (3). It is designed in an open way so that multiple different catalog and policy frameworks of all kinds of cloud and on-prem systems can be supported.
+The current abstraction supports 4 different [connectors](./connectors.md): one for data catalog (2), one for policy manager (3), one for credential management (6) and one for CSP (7). It is designed in an open way so that multiple different catalog, policy, credentials and CSP frameworks of all kinds of cloud and on-prem systems can be supported.
 
 The data steward configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using [Vault API](https://www.vaultproject.io/api) (6). Vault uses a custom secret engine implemented with [HashiCorp Vault plugins system](./vault_plugins.md) to retrieve the credentials from where they are stored (data catalog for example).
 

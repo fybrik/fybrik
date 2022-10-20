@@ -62,4 +62,6 @@ Fybrik supports a wide and extendable set of enforcement actions to perform on d
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
 Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 
 
+### CSP
 
+Making an optmiziation goal is optional, therefore Fybrik has a default CSP solver but supports options for others, as explained [here](./optimizer.md).
