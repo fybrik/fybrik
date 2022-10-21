@@ -1,18 +1,19 @@
 # Fybrik Versions, Compatibility Requirements and Implementation Plan
 
 ## Disclaimer
-This document was created according to the Fybrik release v1.1.0, future releases may require updates code pointers
+This document was created according to the Fybrik release v1.1.0, future releases may require updates of its links to 
+web pages
 
 ## What is Compatibility
 Before talking about how to provide compatability, it is worthwhile to clarify what we mean by compatibility. 
 Fybrik is required to provide forwards and backwards compatibility in its behaviour. Compatibility is hard, especially 
 handling issues around rollback-safety. 
-Let's try to define compatability in this way:
+Let's try to define compatibility in this way:
 - Existing clients need not be aware of a new change in order to continue to function as they did previously, 
 even when the change is in use.
 - Any Fybrik operation that succeeded before the new change must succeed after the change.
-- Any Fybrik operation that does not use the new change must behave the same as it did before the change.
-- Any Fybrik operation that use the new change must not cause problems (e.g. crash or degrade behavior) when issued 
+- Any Fybrik operation that does not use the new change must behave in the same way as it did before the change.
+- Any Fybrik operation that uses the new change must not cause problems (e.g. crash or degrade behavior) when issued 
 against Fybrik objects, e.g. FybrikModules, Plotters, Blueprints and FybrikApplications created before the functionality was added.
 The objects should be smoothly promoted to the new version (if required).
 - It must be possible to round-trip Fybrik version changes (convert to different API versions and back) with no loss of 
@@ -32,8 +33,8 @@ and Z is the patch release number.
 - Major Releases - released less frequently, indicate that **backward-incompatible public API changes**. This release
   carries no guarantee that it will be backward compatible with preceding major versions.
 - Minor Releases - indicate **backward-compatible public API changes**. This release guarantees backward compatibility
-  and stability. The backward compatibility policy is defined in a separate document [ADD link] but in general, Fybrik
-  supports 2 previous minor releases.
+  and stability. The backward compatibility policy is defined below, but in general, Fybrik supports 2 previous minor 
+releases.
 - Patch Releases - should not change main functionality, mostly for security or bug fixes, and therefore guarantee
   backward compatibility.
 
@@ -46,11 +47,11 @@ by Kubernetes versioning.
 Fybrik will support up to 2 backward minor releases. For example, the version v1.5.x should be able to work with 
 releases v1.4.x and v1.3.x, on another hand it might work with releases v1.2.x, but it is not guaranteed 
 
-## Fybrik components or features that can influence compatability 
+## Fybrik components or features that can influence compatibility 
 
 *Note:* the list is not closed, and can be extended
 
-*Note:* some components, listed below, are external integration points, changes in them impacts not only on the backward 
+*Note:* some components, listed below, are external integration points, changes in them have impact not only on the backward 
 compatibility, but on external development process. We emphasized these components with the label `integration point`.  
 
 - Fybrik control plane [Kubernetes Custom Resources](#kubernetes-custom-resource-versions-and-upgrade-plan) 
@@ -68,7 +69,7 @@ validations, therefore we can see taxonomy as part of external connectivity and 
   - [Data Access Policies](#default-data-access-policies)
   - [IT Configuration Policies](#default-it-config-policies)
 - [Fybrik Logs format](#fybrik-logs-format). If Fybrik logs are used by external analytic tools, they will be part of 
-external integration point too.
+external integration points too.
 
 ## Kubernetes Custom Resource Versions and Upgrade Plan
 
@@ -95,7 +96,7 @@ Fybrik for its Kubernetes API objects (CRDs) uses API versioning like one used b
     - The stable versions of features appear in released software for many subsequent versions.
 ### Relations between CRD changes and Fybrik releases
 Based on the above definitions, the relation between CRD versions and Fybrik versions is unidirectional. Which means,
-CRD API changes requires at least minor Fybrik release, on the other hand not each Fybrik release requires a new CRD
+CRD API changes require at least minor Fybrik release, on the other hand not each Fybrik release requires a new CRD
 version.
 
 ### Upgrade Plan
@@ -151,7 +152,7 @@ have the versioning prefix. We can assume that requests without the prefix relat
 *Notes:* 
 - The current implementation of controllers REST API does not support any versioning. The new incompatible versions will 
 start from the "/v2" prefix, and we will assume that missing version information is the current (old) version.
-- We do not expect significant API changes. Most of the possible changes are covered by the Taxonomy
+- We do not expect significant API changes. Most of the possible changes are covered by the Taxonomy.
 - OpenApi [specification](https://swagger.io/specification/) includes `version` entry in the `Info`, however, the object 
 > "provides metadata about the API. The metadata MAY be used by the clients if needed, and MAY be presented in editing or 
 documentation generation tools for convenience." 
@@ -159,7 +160,7 @@ documentation generation tools for convenience."
 We will update the OpenAPI version values, but they cannot be used for API communications.
 
 ## Default Taxonomy
-Fybrik widely uses [Taxonomy](https://fybrik.io/v1.1/concepts/taxonomy/) to defines the terms and related values that 
+Fybrik widely uses [Taxonomy](https://fybrik.io/v1.1/concepts/taxonomy/) to define the terms and related values that 
 need to be commonly understood and supported across the components in the system. Taxonomy provides a mechanism for all 
 Fybrik components to interact using a common dialect. Taxonomy defines a set of immutable structural JSON schemas, or 
 "taxonomies" for resources deployed in Fybrik. However, since the taxonomy is meant to be configurable, a taxonomy.json 
@@ -173,15 +174,15 @@ customization (e.g.: tags, actions).
 The structural JSON schemas are autogenerated files in the 
 [taxonomy](https://github.com/fybrik/fybrik/tree/master/charts/fybrik/files/taxonomy) direction.
 - The `fybrik_application.json` and `fybrik_module.json` files are generated from corresponded CRDs, so their 
-compatability is covered by the CRDs compatibility.
+compatibility is covered by the CRDs compatibility.
 - The `datacatalog.json`, `infraatributes.json` and `policymanager.json` files are generated form files in the 
 [pkg/model](https://github.com/fybrik/fybrik/tree/master/pkg/model), therefore any changes in the directory should be  
 validated for backward compatibility.
 - The basic [taxonomy file](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json), is
-autogenerated from the both above sources. However, users are able to overwrite it, as describe by [Using a Custom 
+autogenerated from the both above sources. However, users are able to overwrite it, as describe in [Using a Custom 
 Taxonomy for Resource Validation](https://fybrik.io/v1.1/tasks/custom-taxonomy/). 
 
-Unfortunately all these files do not have version definition, and it can be complicated to separate files from different 
+Unfortunately, all these files do not have version definition, and it can be complicated to separate files from different 
 releases. In order to be able to compare the files, I suggest to add an entry `version` and modify the 
 [json-schema-generator](https://github.com/fybrik/json-schema-generator) project to generate the entry. It's an optional 
 entry, so we don't have to change the go structures, but will be able to validate the content of the 
@@ -192,22 +193,23 @@ in addition to the version, add the data of the file generation, and maybe its C
 *Note:* Should we provide a [default metric taxonomy](https://fybrik.io/v1.1/tasks/infrastructure/#add-a-new-attribute-definition-to-the-taxonomy)
 
 ## Default Policies
-Fybrik is installed with a set of different default policies. Most of the change in the policies do not prevent Fybrik 
-operation, but can change its default behaviour and therefore influence on its users.
+Fybrik is installed with a set of different default policies. Most of the changes in the policies do not prevent Fybrik 
+operation, but can change its default behaviour and therefore have influence on its users.
 
 ### Default Data Access Policies
-Fybrik can be deployed with different policy managers, for example it can be Open Policy Agent ([OPA](https://www.openpolicyagent.org/)), 
-or some other agent. However, usually any deployment contains some default setting, which can be all allowed, or all denied, 
-or other default policies settings. How it was set, depends on the used policy agent. When fybrik deployed with OPA, 
-the [default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
-deployed as well and define Fybrik behavior if no other rules are not provided by users.
+Fybrik can be deployed with different policy managers, for example, it can be Open Policy Agent ([OPA](https://www.openpolicyagent.org/)), 
+or some other policy manager. However, usually any deployment contains some default setting which can be allowed by default, 
+or denied by default, or some other default policy settings. How it was set, depends on the used policy manager. 
+When fybrik deployed with OPA, the 
+[default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
+are deployed as well and define Fybrik behavior if no other rules are provided by users.
 
 ### Default IT Config Policies 
 [IT config policies](https://fybrik.io/v1.1/concepts/config-policies/) are the mechanism via which the organization may 
 influence the construction of the data plane, taking into account infrastructure capabilities and costs.
 Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, 
 such as read, write, copy and delete.
-The default IT policies and the default infrastructure definitions located at 
+The default IT policies and the default infrastructure definitions exist at 
 [./charts/fybrik/adminconfig](https://github.com/fybrik/fybrik/tree/master/charts/fybrik/files/adminconfig)
 
 *Note:* in order to update the IT config policies and define infrastructure, Fybrik 
@@ -222,7 +224,7 @@ separate version mechanism for the files format. They will be inline with the Fy
 [component types](https://github.com/fybrik/fybrik/blob/b19f114988fc318819ddb6fa42059bf7e473ae63/pkg/logging/logging.go#L38)
 or log [entry parameters](https://github.com/fybrik/fybrik/blob/b19f114988fc318819ddb6fa42059bf7e473ae63/pkg/logging/logging.go#L60) 
 can break log analytics tools.   
-### Backward compatability strategy
+### Backward compatibility strategy
 - Include in the Fybrik logs its version, it will help to parse historical logs.
 - Avoid changes in the log format
 - Use a graceful period (2 minor versions) for deprecated log entries
