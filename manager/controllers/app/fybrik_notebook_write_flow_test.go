@@ -355,7 +355,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Reading data via arrow flight
 	opts = make([]grpc.DialOption, 0)
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
 	flightClient, err = flight.NewFlightClient(net.JoinHostPort("localhost", listenPort), nil, opts...)
 	g.Expect(err).To(gomega.BeNil(), "Connect to arrow-flight service")
 	defer flightClient.Close()
