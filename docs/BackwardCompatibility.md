@@ -5,7 +5,7 @@ This document was created according to the Fybrik release v1.1.0, future release
 web pages
 
 ## What is Compatibility
-Before talking about how to provide compatability, it is worthwhile to clarify what we mean by compatibility. 
+Before talking about how to provide compatibility, it is worthwhile to clarify what we mean by compatibility. 
 Fybrik is required to provide forwards and backwards compatibility in its behaviour. Compatibility is hard, especially 
 handling issues around rollback-safety. 
 Let's try to define compatibility in this way:
@@ -45,7 +45,7 @@ by Kubernetes versioning.
 
 ### Backward compatibility policy
 Fybrik will support up to 2 backward minor releases. For example, the version v1.5.x should be able to work with 
-releases v1.4.x and v1.3.x, on another hand it might work with releases v1.2.x, but it is not guaranteed 
+releases v1.4.x and v1.3.x, on another hand it might work with releases v1.2.x, but it is not guaranteed.
 
 ## Fybrik components or features that can influence compatibility 
 
@@ -57,9 +57,9 @@ compatibility, but on external development process. We emphasized these componen
 - Fybrik control plane [Kubernetes Custom Resources](#kubernetes-custom-resource-versions-and-upgrade-plan) 
 `FybrikApplication` is a Fybrik entry point and `FybrikModule` is a definition for externally developed modules, 
 therefore these CRDs are integration points. 
-- [Connectors](#connectors): are Open API services that the Fybrik control plane uses to connect to external systems. 
+- [Connectors](#connectors) are Open API services that the Fybrik control plane uses to connect to external systems. 
 These connector services are deployed alongside the Fybrik control plane, and as we can see from their name, all of them 
-are external integration points
+are external integration points:
   - Data Catalog connector
   - Policy Manager connector
   - Credential Management connector
@@ -104,7 +104,7 @@ The CustomResourceDefinition API provides a workflow for introducing and upgradi
 CustomResourceDefinition. For more information about 
 [serving multiple versions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#serving-multiple-versions-of-a-crd) of your CustomResourceDefinition 
 and migrating your objects from one version to another see 
-[Versions in CustomResourceDefinitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/)
+[Versions in CustomResourceDefinitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/).
 
 The first step of adding a new version is to "pick a conversion strategy. Since custom resource objects need to be able 
 to be served at both versions, that means they will sometimes be served at a different version than their storage 
@@ -115,7 +115,7 @@ different versions.
 If the conversion does change schema and requires custom logic, Kubernetes suggests using webhooks to implement this 
 custom conversation, and setting the conversation strategy as **Webhook**. However, due to some Fybrik customers' 
 limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate
-possible CRD changes without changing its schema. Adn in the future will check possible in-house solutions. 
+possible CRD changes without changing its schema. And in the future will check possible in-house solutions. 
 
 
 #### CRD changes with None conversation strategy
