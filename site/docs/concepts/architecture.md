@@ -10,10 +10,12 @@ The primary interaction object for a data user is the `FybrikApplication` custom
 
 ![Architecture](../static/architecture.png)
 
-Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) Fybrik and modules.  
-[Modules](./modules.md) (M) describe capabilities that can be included in a data plane. 
+Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) Fybrik and modules; and to configure Fybrik connectors. 
+ 
 
 ## [Modules](./modules.md)
+[Modules](./modules.md) (M) describe capabilities that can be included in a data plane.
+
 These modules may be existing open source or third party services, or custom ones. The module of a service indicates the capabilities it supports, the formats and interfaces, and how to deploy the service.  Modules may describe externally deployed services, or services deployed by fybrik.  Examples of modules are those that provide read/write access or produce implicit copies that serve as lower latency caches of remote assets.  
 Modules may also perform actions to enforce data governance policy decisions, such as masking or redaction as examples.
 
