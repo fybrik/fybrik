@@ -6,3 +6,4 @@ This project uses secrets plugins to retrieve dataset credentials by the running
 [Vault-plugin-secrets-kubernetes-reader](https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader) plugin is an example of Vault custom secret plugin which retrieves dataset credentials stored in a kubernetes secret.
 
 Additional secret plugins can be developed to retrieve credentials additional location. This [tutorial](https://learn.hashicorp.com/tutorials/vault/plugin-backends?in=vault/app-integration) can serve as a good starting point to learn about Vault plugin development.
+
