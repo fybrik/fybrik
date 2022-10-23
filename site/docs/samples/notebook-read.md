@@ -133,7 +133,12 @@ The response from the OpenMetadata connector should look like this:
 ```bash
 {"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
 ```
-    The asset is now registered in the catalog. Please make note of the asset ID. You will use that ID in the `FybrikApplication` later.
+Store the asset ID in a `CATALOGED_ASSET` variable:
+```bash
+CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+```
+
+The asset is now registered in the catalog.
 
 Notice the `resourceMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
 
@@ -213,7 +218,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+    - dataSetID: ${CATALOGED_ASSET}
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
@@ -231,16 +236,17 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for fybrik-notebook-sample/paysim-csv asset" && sleep 5; done
+CATALOGED_ASSET=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.assetStates.${CATALOGED_ASSET}.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.port})
 printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to read the data in a python notebook
@@ -260,7 +266,7 @@ The next steps use the endpoint to read the data in a python notebook
 
   # Prepare the request
   request = {
-      "asset": "fybrik-notebook-sample/paysim-csv",
+      "asset": "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\"",
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }
