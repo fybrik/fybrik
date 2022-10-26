@@ -190,10 +190,6 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return ctrl.Result{}, nil
 }
 
-func getBucketResourceRef(name string) *types.NamespacedName {
-	return &types.NamespacedName{Name: name, Namespace: environment.GetSystemNamespace()}
-}
-
 func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fapp.ObservedState) {
 	if applicationContext.Application.Status.AssetStates == nil {
 		initStatus(applicationContext.Application)
@@ -222,32 +218,30 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			// mark the bucket as persistent and register the asset
-			provisionedBucketRef, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
+			provisioned, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
 			if !found {
 				message := "No storage has been allocated for the asset " + assetID + " required to be registered"
 				setErrorCondition(applicationContext, assetID, message)
 				continue
 			}
-			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				setErrorCondition(applicationContext, assetID, err.Error())
-				continue
-			}
+			provisioned.Persistent = true
+			applicationContext.Application.Status.ProvisionedStorage[assetID] = provisioned
 			reqResource := dataCtx.Requirements.FlowParams.ResourceMetadata
 			if reqResource != nil {
 				// we assume to have only the geography field set at this point
 				// in the provisionedBucket ResourceMetadata
-				geo := provisionedBucketRef.ResourceMetadata.Geography
+				geo := provisioned.ResourceMetadata.Geography
 				if reqResource.Geography != "" && geo != reqResource.Geography {
 					// log conflict in Geography field
 					applicationContext.Log.Warn().Msg("Geography field from application flow requirements " +
 						"does not match provisioned bucket Geography and thus ignored")
 				}
-				provisionedBucketRef.ResourceMetadata = reqResource.DeepCopy()
-				provisionedBucketRef.ResourceMetadata.Geography = geo
+				provisioned.ResourceMetadata = reqResource.DeepCopy()
+				provisioned.ResourceMetadata.Geography = geo
 			}
 			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
-				&provisionedBucketRef, applicationContext.Application); err == nil {
+				&provisioned, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -309,7 +303,11 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	var deletedKeys []string
 	var errMsgs []string
 	for datasetID, datasetDetails := range applicationContext.Application.Status.ProvisionedStorage {
-		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
+		var err error
+		if !datasetDetails.Persistent {
+			err = r.Provision.DeleteConnection(datasetDetails.Details.Connection, &datasetDetails.SecretRef)
+		}
+		if err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
 			deletedKeys = append(deletedKeys, datasetID)
@@ -774,9 +772,13 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	provisionedStorage map[string]NewAssetInfo) (bool, error) {
 	// update allocated storage in the status
 	// clean irrelevant buckets
-	for datasetID, details := range applicationContext.Application.Status.ProvisionedStorage {
+	for datasetID, provisioned := range applicationContext.Application.Status.ProvisionedStorage {
 		if _, found := provisionedStorage[datasetID]; !found {
-			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
+			if !provisioned.Persistent {
+				if err := r.Provision.DeleteConnection(provisioned.Details.Connection, &provisioned.SecretRef); err != nil {
+					return false, err
+				}
+			}
 			delete(applicationContext.Application.Status.ProvisionedStorage, datasetID)
 		}
 	}
@@ -788,25 +790,10 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fapp.DatasetDetails{
-			DatasetRef:       info.Storage.Name,
-			SecretRef:        fapp.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+			SecretRef:        fapp.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
 			Details:          details,
-			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
-		}
-	}
-	// check that the buckets have been created successfully using Dataset status
-	for id, details := range applicationContext.Application.Status.ProvisionedStorage {
-		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
-		if err != nil {
-			return false, nil
-		}
-		if !res.Provisioned {
-			applicationContext.Log.Warn().Err(errors.New(res.ErrorMsg)).Str(logging.ACTION, logging.CREATE).
-				Str(logging.DATASETID, id).Msg("No bucket has been provisioned")
-			if res.ErrorMsg != "" {
-				return false, errors.New(res.ErrorMsg)
-			}
-			return false, nil
+			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Region)},
+			Persistent:       info.Persistent,
 		}
 	}
 	return true, nil

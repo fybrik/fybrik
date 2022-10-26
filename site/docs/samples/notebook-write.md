@@ -50,13 +50,6 @@ Make a note of the service endpoint and access credentials. You will need them l
 
 ## Deploy resources for write scenarios
 
-Deploy [Datashim](https://github.com/datashim-io/datashim): 
-```yaml
-kubectl apply -f https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/datashim/dlf.yaml
-```
-
-For more deployment options of Datashim based on your environment please refer to the [datashim site](https://github.com/datashim-io/datashim).
-
 Register the credentials required for accessing the object storage. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
@@ -69,9 +62,7 @@ metadata:
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
-  accessKeyID: "${ACCESS_KEY}"
   secret_key: "${SECRET_KEY}"
-  secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
 Then, register two storage accounts: one in `theshire` and one in `neverland`. Replace the value for `endpoint` with value from the object storage service that you used and run:

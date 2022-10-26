@@ -5,7 +5,6 @@ package app
 
 import (
 	"bytes"
-	"strings"
 	tmpl "text/template"
 
 	"emperror.dev/errors"
@@ -28,14 +27,14 @@ import (
 )
 
 const (
-	objectKeyHashLength  = 10
-	bucketNameHashLength = 10
+	objectKeyHashLength = 10
 )
 
-// NewAssetInfo points to the provisoned storage and hold information about the new asset
+// NewAssetInfo points to the provisoned storage and information about the new asset
 type NewAssetInfo struct {
-	Storage *storage.ProvisionedBucket
-	Details *fapp.DataStore
+	StorageAccount *fapp.FybrikStorageAccountSpec
+	Details        *fapp.DataStore
+	Persistent     bool
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
@@ -47,44 +46,21 @@ type PlotterGenerator struct {
 	ProvisionedStorage map[string]NewAssetInfo
 }
 
-// AllocateStorage creates a Dataset for bucket allocation
+// AllocateStorage creates a new connection based on the selected account
 func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
 	account *fapp.FybrikStorageAccountSpec) (*fapp.DataStore, error) {
 	// provisioned storage
-	var genBucketName, genObjectKeyName string
+	var genName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
-		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
+		genName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
 	} else {
-		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
+		genName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
 	}
-	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
-	bucket := &storage.ProvisionedBucket{
-		Name:      genBucketName,
-		Endpoint:  account.Endpoint,
-		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
-		Region:    string(account.Region),
-	}
-	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
-	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
-		p.Log.Error().Err(err).Msg("Dataset creation failed")
+	connection, err := p.Provision.CreateConnection(account, genName, &p.Owner)
+	if err != nil {
 		return nil, err
 	}
-
-	cType := managerUtils.GetDefaultConnectionType()
-	connection := taxonomy.Connection{
-		Name: cType,
-		AdditionalProperties: serde.Properties{
-			Items: map[string]interface{}{
-				string(cType): map[string]interface{}{
-					"endpoint":   bucket.Endpoint,
-					"bucket":     bucket.Name,
-					"object_key": genObjectKeyName,
-				},
-			},
-		},
-	}
-
-	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
+	vaultSecretPath := vault.PathForReadingKubeSecret(environment.GetSystemNamespace(), account.SecretRef)
 	vaultMap := make(map[string]fapp.Vault)
 	if environment.IsVaultEnabled() {
 		vaultMap[string(taxonomy.WriteFlow)] = fapp.Vault{
@@ -108,8 +84,8 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		Format:     destinationInterface.DataFormat,
 	}
 	assetInfo := NewAssetInfo{
-		Storage: bucket,
-		Details: datastore,
+		StorageAccount: account,
+		Details:        datastore,
 	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)
@@ -411,12 +387,6 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fapp.CapabilityS
 		DataFormat: api.DataFormat,
 	}
 	return service, nil
-}
-
-func generateBucketName(owner types.NamespacedName, id string) string {
-	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, bucketNameHashLength)
-	name = strings.ReplaceAll(name, ".", "-")
-	return utils.K8sConformName(name)
 }
 
 // resolve string fields that are templated using the values map
