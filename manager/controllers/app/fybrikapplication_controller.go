@@ -225,7 +225,6 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				continue
 			}
 			provisioned.Persistent = true
-			applicationContext.Application.Status.ProvisionedStorage[assetID] = provisioned
 			reqResource := dataCtx.Requirements.FlowParams.ResourceMetadata
 			if reqResource != nil {
 				// we assume to have only the geography field set at this point
@@ -239,6 +238,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				provisioned.ResourceMetadata = reqResource.DeepCopy()
 				provisioned.ResourceMetadata.Geography = geo
 			}
+			applicationContext.Application.Status.ProvisionedStorage[assetID] = provisioned
 			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
 				&provisioned, applicationContext.Application); err == nil {
