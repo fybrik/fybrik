@@ -84,8 +84,8 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		Format:     destinationInterface.DataFormat,
 	}
 	assetInfo := NewAssetInfo{
-		StorageAccount: account,
-		Details:        datastore,
+		StorageAccount: account.DeepCopy(),
+		Details:        datastore.DeepCopy(),
 	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)

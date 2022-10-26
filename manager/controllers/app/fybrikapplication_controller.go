@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
@@ -412,10 +411,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{}, err
 	}
 
-	// clean irrelevant buckets and check that the provisioned storage is ready
-	storageReady, allocationErr := r.updateProvisionedStorageStatus(applicationContext, provisionedStorage)
-	if !storageReady {
-		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocationErr
+	// clean irrelevant buckets and update the application status with the provisioned storage
+	if err := r.updateProvisionedStorageStatus(applicationContext, provisionedStorage); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
@@ -769,14 +767,14 @@ func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fapp.FybrikStorag
 }
 
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext,
-	provisionedStorage map[string]NewAssetInfo) (bool, error) {
+	provisionedStorage map[string]NewAssetInfo) error {
 	// update allocated storage in the status
 	// clean irrelevant buckets
 	for datasetID, provisioned := range applicationContext.Application.Status.ProvisionedStorage {
 		if _, found := provisionedStorage[datasetID]; !found {
 			if !provisioned.Persistent {
 				if err := r.Provision.DeleteConnection(provisioned.Details.Connection, &provisioned.SecretRef); err != nil {
-					return false, err
+					return err
 				}
 			}
 			delete(applicationContext.Application.Status.ProvisionedStorage, datasetID)
@@ -796,7 +794,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 			Persistent:       info.Persistent,
 		}
 	}
-	return true, nil
+	return nil
 }
 
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *datapath.Environment,
