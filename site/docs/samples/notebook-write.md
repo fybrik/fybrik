@@ -438,5 +438,55 @@ The next steps use the endpoint to read the data in a python notebook.
   ```
   df_read
   ```
-5. Execute all notebook cells and notice that the `oldbalanceOrg`  column do not appear because it was redacted.
+5. Execute all notebook cells and notice that the `oldbalanceOrg` column does not appear because it was redacted.
 
+## Cleanup
+You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and objects created in this sample.
+
+To list all the created objects, run:
+```bash
+BUCKET=$(echo $CATALOGED_ASSET | awk -F"." '{print $3}')
+aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} list-objects
+```
+
+The output should look something like:
+```bash
+{
+    "Contents": [
+        {
+            "Key": "my-notebook-write5b9b855b5b/",
+            "LastModified": "2022-10-27T12:40:01+00:00",
+            "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+            "Size": 0,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        },
+        {
+            "Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0",
+            "LastModified": "2022-10-27T12:40:01+00:00",
+            "ETag": "\"a91aefdb4bf09a1a94254a9c8b6ba473-1\"",
+            "Size": 8396,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        }
+    ]
+}
+```
+
+Given the object keys returned by the previous command, run:
+```bash
+aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "my-notebook-write5b9b855b5b/"}, {"Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0"}]}'
+```
+
+Be sure to replace the keys in the previous command with those returned by the AWS `list-objects` command above.
+
+Finally, remove the bucket by running:
+```bash
+aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} delete-bucket
+```
