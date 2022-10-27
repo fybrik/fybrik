@@ -227,8 +227,8 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication delete-app -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-CATALOGED_ASSET=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
-while [[ $(kubectl get fybrikapplication delete-app -o "jsonpath={.status.assetStates.${CATALOGED_ASSET}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
+CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+while [[ $(kubectl get fybrikapplication delete-app -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ## Ensure the object is deleted
