@@ -8,7 +8,7 @@ The core parts of Fybrik are based on Kubernetes controllers and Custom Resource
 
 The primary interaction object for a data user is the `FybrikApplication` custom resource (1) where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
 
-![Architecture](../static/architecture.png)
+![Architecture](../static/architecture.png) 
 
 Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) Fybrik and modules; and to configure Fybrik connectors. 
  
