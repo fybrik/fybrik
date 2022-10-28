@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-8.5.6">
+      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
     
     
       
@@ -1641,7 +1641,10 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
   <div class="highlight"><pre><span></span><code>kubectl port-forward svc/localstack <span class="m">4566</span>:4566 <span class="p">&amp;</span>
 </code></pre></div></li>
 <li>Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to configure localstack server:
-  <div class="highlight"><pre><span></span><code>aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span> <span class="o">&amp;&amp;</span> aws configure <span class="nb">set</span> aws_secret_access_key <span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span>
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">REGION</span><span class="o">=</span>theshire
+aws configure <span class="nb">set</span> aws_access_key_id <span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span>
+aws configure <span class="nb">set</span> aws_secret_access_key <span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span>
+aws configure <span class="nb">set</span> region <span class="si">${</span><span class="nv">REGION</span><span class="si">}</span>
 </code></pre></div></li>
 </ol>
 </details>
@@ -2043,10 +2046,10 @@ df_read: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o"
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.078830c0.min.js"></script>
+      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
       
     
   </body>
