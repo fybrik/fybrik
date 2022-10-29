@@ -6,6 +6,10 @@ deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true
 	helm repo update || true
 	kubectl create ns ${INSTALLATION_NAMESPACE} || true
+	oc adm policy add-scc-to-user anyuid -z airflow -n ${INSTALLATION_NAMESPACE}
+	oc adm policy add-scc-to-user anyuid -z mysql -n ${INSTALLATION_NAMESPACE}
+# to add anyuid scc to all user accounts in the namespace replace the previous 2 commands by the next one
+#	oc adm policy add-scc-to-user anyuid system:serviceaccounts:${INSTALLATION_NAMESPACE}
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv1.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv2.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	kubectl create secret generic airflow-mysql-secrets --from-literal=airflow-mysql-password=${AIRFLOW_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
@@ -23,14 +27,14 @@ deploy-openmetadata:
 --set airflow.externalDatabase.host=${MYSQL_ENDPOINT} \
 --set mysql.auth.rootPassword=${MYSQL_ROOT_PASSWORD} || true
 
-	kubectl create secret generic mysql-secrets --from-literal=openmetadata-mysql-password=${OPENMETADATA_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
-	kubectl create secret generic airflow-secrets --from-literal=openmetadata-airflow-password=${OPENMETADATA_AIRFLOW_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
-	helm install openmetadata open-metadata/openmetadata --version ${OPENMETADATA_HELM_CHART_VERSION} --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
---set global.airflow.host=${AIRFLOW_ENDPOINT} \
---set global.airflow.openmetadata.serverHostApiUrl=${OPENMETADATA_ENDPOINT} \
---set global.database.auth.username=${OPENMETADATA_MYSQL_USER} \
---set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} \
---set extraEnvs[0].name=AUTHORIZER_ADMIN_PRINCIPALS,extraEnvs[0].value='[${OPENMETADATA_USER}:${OPENMETADATA_PASSWORD}]' || true
+	 kubectl create secret generic mysql-secrets --from-literal=openmetadata-mysql-password=${OPENMETADATA_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
+	 kubectl create secret generic airflow-secrets --from-literal=openmetadata-airflow-password=${OPENMETADATA_AIRFLOW_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
+	 helm install openmetadata open-metadata/openmetadata --version ${OPENMETADATA_HELM_CHART_VERSION} --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
+ --set global.airflow.host=${AIRFLOW_ENDPOINT} \
+ --set global.airflow.openmetadata.serverHostApiUrl=${OPENMETADATA_ENDPOINT} \
+ --set global.database.auth.username=${OPENMETADATA_MYSQL_USER} \
+ --set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} \
+ --set extraEnvs[0].name=AUTHORIZER_ADMIN_PRINCIPALS,extraEnvs[0].value='[${OPENMETADATA_USER}:${OPENMETADATA_PASSWORD}]' || true
 
 define JOB_YAML
 apiVersion: batch/v1
