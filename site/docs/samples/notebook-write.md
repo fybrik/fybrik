@@ -44,7 +44,10 @@ Make a note of the service endpoint and access credentials. You will need them l
       ```
     3. Use [AWS CLI](https://aws.amazon.com/cli/) to configure localstack server:
       ```bash
-      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+      export REGION=theshire
+      aws configure set aws_access_key_id ${ACCESS_KEY}
+      aws configure set aws_secret_access_key ${SECRET_KEY}
+      aws configure set region ${REGION}
       ```
 
 
