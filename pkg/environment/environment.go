@@ -41,7 +41,6 @@ const (
 	LocalRegion                       string = "Region"
 	LocalVaultAuthPath                string = "VaultAuthPath"
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
-	HelmWaitTimeout                   string = "HELM_WAIT_TIMEOUT"
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
 )
@@ -164,24 +163,6 @@ func GetResourcesPollingInterval() (time.Duration, error) {
 	return time.Duration(interval) * time.Millisecond, nil
 }
 
-// GetHelmWaitTimeout returns the time to wait for helm operation
-// on the resources deployed by the manager to complete.
-// Currently used only in uninstall operation.
-// The timeout is specified in seconds.
-// The function returns a default value if an error occurs or if
-// HelmWaitTimeout env var is undefined.
-func GetHelmWaitTimeout() (time.Duration, error) {
-	timeoutStr := os.Getenv(HelmWaitTimeout)
-	if timeoutStr == "" {
-		return defaultHelmWaitTimeout, nil
-	}
-	timeout, err := strconv.Atoi(timeoutStr)
-	if err != nil {
-		return defaultHelmWaitTimeout, err
-	}
-	return time.Duration(timeout) * time.Second, nil
-}
-
 // GetDiscoveryBurst returns the K8s discovery burst value if it is set, otherwise it returns -1
 func GetDiscoveryBurst() (int, error) {
 	burstStr := os.Getenv(DiscoveryBurst)
@@ -286,8 +267,6 @@ func LogEnvVariables(log *zerolog.Logger) {
 
 	interval, err := GetResourcesPollingInterval()
 	logEnvVarUpdatedValue(log, ResourcesPollingInterval, interval.String(), err)
-	timeout, err := GetHelmWaitTimeout()
-	logEnvVarUpdatedValue(log, HelmWaitTimeout, timeout.String(), err)
 	discoveryBurst, err := GetDiscoveryBurst()
 	logEnvVarUpdatedValue(log, DiscoveryBurst, strconv.Itoa(discoveryBurst), err)
 	discoveryQPS, err := GetDiscoveryQPS()
