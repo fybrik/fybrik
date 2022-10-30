@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	"helm.sh/helm/v3/pkg/action"
@@ -147,13 +146,10 @@ type Impl struct {
 	localChartsMountPath string
 	discoveryBurst       int
 	discoveryQPS         float32
-	waitTimeout          time.Duration
 }
 
 func NewHelmerImpl(chartsPath string) *Impl {
 	impl := Impl{localChartsMountPath: chartsPath}
-	// If an error exists it is logged in LogEnvVariables and a default value is used
-	impl.waitTimeout, _ = environment.GetHelmWaitTimeout()
 	// If an error exists it is logged in LogEnvVariables
 	impl.discoveryBurst, _ = environment.GetDiscoveryBurst()
 	// If an error exists it is logged in LogEnvVariables
@@ -164,8 +160,6 @@ func NewHelmerImpl(chartsPath string) *Impl {
 // Uninstall helm release
 func (r *Impl) Uninstall(cfg *action.Configuration, releaseName string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(cfg)
-	uninstall.Wait = true
-	uninstall.Timeout = r.waitTimeout
 	return uninstall.Run(releaseName)
 }
 
