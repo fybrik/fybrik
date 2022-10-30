@@ -155,7 +155,7 @@ The response from the OpenMetadata connector should look like this:
 ```
 Store the asset ID in a `CATALOGED_ASSET` variable:
 ```bash
-CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
 ```
 
 The asset is now registered in the catalog.

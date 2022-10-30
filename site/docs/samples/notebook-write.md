@@ -490,3 +490,5 @@ Finally, remove the bucket by running:
 ```bash
 aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} delete-bucket
 ```
+
+Removing the dataset object does not remove the corresponding entry from OpenMetadata. To do so, go to the OpenMetadata UI through your browser. Choose your data asset table. At the top right, press the three vertical dots and choose `Delete`. Type `DELETE` into the form to confirm deletion.
