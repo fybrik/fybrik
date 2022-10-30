@@ -89,7 +89,7 @@ func (r *ProvisionImpl) NewClient(endpointArg string, secretKey types.Namespaced
 
 // CreateConnection creates a new connection
 func (r *ProvisionImpl) CreateConnection(sa *fapp.FybrikStorageAccountSpec,
-	datasetName string, owner *types.NamespacedName) (taxonomy.Connection, error) {
+	genName string, owner *types.NamespacedName) (taxonomy.Connection, error) {
 	endpoint := sa.Endpoint
 	key := types.NamespacedName{Name: sa.SecretRef, Namespace: environment.GetSystemNamespace()}
 	// Initialize minio client object.
@@ -110,7 +110,7 @@ func (r *ProvisionImpl) CreateConnection(sa *fapp.FybrikStorageAccountSpec,
 				string(cType): map[string]interface{}{
 					"endpoint":   sa.Endpoint,
 					"bucket":     genBucketName,
-					"object_key": datasetName,
+					"object_key": genName,
 				},
 			},
 		},
@@ -131,7 +131,12 @@ func (r *ProvisionImpl) DeleteConnection(conn taxonomy.Connection, secretRef *fa
 	if !exists {
 		return client.IgnoreNotFound(err)
 	}
-	return minioClient.RemoveBucketWithOptions(context.Background(), bucket, minio.RemoveBucketOptions{ForceDelete: true})
+	for object := range minioClient.ListObjects(context.Background(), bucket, minio.ListObjectsOptions{Recursive: true}) {
+		if err := minioClient.RemoveObject(context.Background(), bucket, object.Key, minio.RemoveObjectOptions{}); err != nil {
+			return err
+		}
+	}
+	return minioClient.RemoveBucket(context.Background(), bucket)
 }
 
 // ProvisionTest is an implementation of ProvisionInterface used for testing

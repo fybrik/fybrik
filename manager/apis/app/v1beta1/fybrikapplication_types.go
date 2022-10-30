@@ -116,6 +116,10 @@ type SecretRef struct {
 
 // DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
+	// Reference to a CR representing the allocated storage; deprecated
+	// +optional
+	DatasetRef string `json:"datasetRef,omitempty"`
+
 	// Reference to a secret where the credentials are stored
 	// +optional
 	SecretRef SecretRef `json:"secretRef,omitempty"`

@@ -247,6 +247,9 @@ spec:
                   additionalProperties:
                     description: DatasetDetails holds details of the provisioned storage
                     properties:
+                      datasetRef:
+                        description: Reference to a CR representing the allocated storage; deprecated
+                        type: string
                       details:
                         description: Dataset information
                         properties:

@@ -1391,6 +1391,13 @@ DatasetDetails holds details of the provisioned storage
         </tr>
     </thead>
     <tbody><tr>
+        <td><b>datasetRef</b></td>
+        <td>string</td>
+        <td>
+          Reference to a CR representing the allocated storage; deprecated<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetails">details</a></b></td>
         <td>object</td>
         <td>

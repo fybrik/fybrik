@@ -260,9 +260,7 @@ metadata:
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
-  accessKeyID: "${ACCESS_KEY}"
   secret_key: "${SECRET_KEY}"
-  secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
 
