@@ -1,7 +1,7 @@
 # Modules
 
 The project currently has two extension mechanisms, namely connectors and modules. 
-This page describes what modules are and how they are leveraged by the fybrik's control plane to build the data plane flow.  
+This page describes what modules are and how they are leveraged by the Fybrik control plane to build the data plane flow.  
 
 ## What are modules?
 

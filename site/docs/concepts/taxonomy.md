@@ -5,14 +5,14 @@ A taxonomy defines the terms and related values that need to be commonly underst
 Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  
 For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
 
-some components that use taxonomy:
+Some components that use taxonomy:
 
 * [FybrikApplication](../architecture/#fybrikapplication) yaml - information provided about the workload and the datasets.
 * Fybrik manager ([FybrikApplication controller](../architecture/#fybrikapplication)) - validates that the data is used in accord with the data governance policies and the IT config policies.
 * [Data catalog](../connectors/#data-catalog) - provides metadata about the asset.
 * [Data Governance Policy Manager](../connectors/#policy-manager) - defines the governance policies to follow.
 * [Config Policy Manager](./config-policies.md) - defines the IT policies to follow.
-* [FybrikModules](./modules.md) - describes capabilities that can be included in a data plane.
+* [FybrikModules](./modules.md) - describe capabilities that can be included in a data plane.
 
 Default taxonomies are provided by fybrik in a JSON file format, and are meant as a starting point. Different actors can [expand](../../tasks/custom-taxonomy) these.
 

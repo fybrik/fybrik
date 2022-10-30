@@ -50,9 +50,9 @@ An example for Vault Read Secret API call which uses the Vault parameters is as 
 $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 ```
 
-More about `kubenertes` auth method and vault roles can be found in the Vault [documentation](https://www.vaultproject.io/docs/auth/kubernetes).
+More about `kubenertes` auth method and vault roles can be found in Vault [documentation](https://www.vaultproject.io/docs/auth/kubernetes).
 
-### Data Policy
+### Policy manager
 
 Data governance policies are defined externally in the data governance manager of choice. 
 
@@ -60,8 +60,4 @@ Enforcing data governance policies requires a Policy Decision Point (PDP) that d
 Fybrik supports a wide and extendable set of enforcement actions to perform on data read, copy, (future) write or delete. These include transformation of data, verification of the data, and various restrictions on the external activity of an application that can access the data.
 
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
-Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers (Data policy) via connectors, to cover some or even all policy types. 
-
-### CSP
-
-Making an optmiziation goal is optional, therefore Fybrik has a default CSP solver but supports options for others, as explained [here](./optimizer.md).
+Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 
