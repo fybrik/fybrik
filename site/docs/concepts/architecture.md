@@ -26,8 +26,8 @@ Fybrik connects to external services to receive data governance decisions, metad
 
 The data steward configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using [Vault API](https://www.vaultproject.io/api). Vault uses a custom secret engine implemented with [HashiCorp Vault plugins system](./vault_plugins.md) to retrieve the credentials from where they are stored (data catalog for example).
 
-## FybrikApplication
-Once Fybrik is deployed and configured, including catalogs, modules and connectors, a developer can submit a `FybrikApplication` CRD to Kubernetes.
+## [FybrikApplication](../../reference/crds/#fybrikapplication)
+Once Fybrik is deployed and configured, including catalogs, modules and connectors, a developer can submit a `FybrikApplication` Custom Resource to Kubernetes.
 
 The `FybrikApplication` holds metadata about the application such as the data assets required by the application, the processing purpose and the method of access the user wishes (protocol e.g. S3 or Arrow flight). 
 
@@ -35,13 +35,13 @@ The `FybrikApplicationController` will make sure that all the specs are fulfille
 
 The controller uses the information provided in the `FybrikApplication`, to check with the data-governance policy manager if the data flow requested is allowed and whether restrictive actions such as masking or hashing have to be applied. Taking into account these governance actions, as well as application requirements, dataset specification, available infrastructure and the [IT config policies](./config-policies.md) defined, the controller compiles a plotter.  
 
-## Plotter
+## [Plotter](../../reference/crds/#plotter)
 The plotter specifies a data plane connecting the application to the datasets it requires. More specifically, the plotter lists the modules to use, the capabilities required from these modules, the cluster on which each module should be deployed, as well as the flow of data between the asset and the workload through the chosen modules. 
 
 For the plotter to be optimal in terms of the defined optimization goals (a.k.a. [IT config soft policies](../config-policies/#optimization-goals)), the controller may use a [CSP-based optimizer](./optimizer.md). 
 If no CSP engine is installed, optimization goals will not be taken into account, and the manager will use the first (but not necessarily optimal) solution that meets all of the other requirements.
 
-## Blueprint
+## [Blueprint](../../reference/crds/#blueprint)
 As data assets may reside in different clusters/clouds a `Blueprint` CRD is created for each cluster, containing the information regarding the services to be deployed or configured in the given cluster. Depending on the setup the `PlotterController` will use various methods to distribute the blueprints. 
 
 A single [blueprint](../reference/crds.md#blueprint) contains the specification of all assets that shall be accessed in a single cluster by a single application.
