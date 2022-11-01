@@ -115,12 +115,7 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 	if err != nil {
 		return nil, errors.Wrap(err, printErr)
 	}
-<<<<<<< HEAD
 	return &resp, nil
-=======
-
-	return resp, nil
->>>>>>> 46778214c8976c1088ddd4e900cf8265d0b4e35b
 }
 
 //nolint:dupl
