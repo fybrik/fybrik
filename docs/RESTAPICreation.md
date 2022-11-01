@@ -138,7 +138,7 @@ func (m *openAPIDataCatalog) CreateNewComponent(in *datacatalog.CreateNewCompone
 
 Add server side implementation of  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26">\(\) in any connector </span>
 
-![](img/Taxonomy-addRESTAPIinFybrik-v15.png)
+![](dirstructure-serversidecode.png)
 
 ### <span style="color:blue">Step 7</span>: Add test/dummy implementation of REST API in manager/mockup
 

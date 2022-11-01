@@ -7,10 +7,6 @@ include makeenv
 ABS_ROOT_DIR := $(abspath ${ROOT_DIR})
 OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v${OPENAPI_GENERATOR_VERSION}
 
-# charts/taxonomy.json:
-# 	go run $(ROOT_DIR)/main.go taxonomy compile --base ./base/base.yaml --out $(ROOT_DIR)/charts/fybrik/files/taxonomy/taxonomy.json
-# go run $(ROOT_DIR)/main.go taxonomy validate $(ROOT_DIR)/charts/fybrik/files/taxonomy/policy_manager_request.json
-
 .PHONY: generate-client-datacatalog
 generate-client-datacatalog: clean $(TOOLBIN)/openapi-generator-cli
 	mkdir -p $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient
