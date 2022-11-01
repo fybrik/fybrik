@@ -7,7 +7,17 @@ vault:
       enabled: true
 
   server:
-    standalone:
+    ha:
+      enabled: true
+      replicas: 1
+
+      # Set the api_addr configuration for Vault HA
+      # See https://www.vaultproject.io/docs/configuration#api_addr
+      # If set to null, this will be set to the Pod IP Address
+      apiAddr: "https://vault.fybrik-system.svc.cluster.local:8200"
+
+      # To enable mutual tls tls_require_and_verify_client_cert should be set
+      # to true.
       config: |
         plugin_directory = "/usr/local/libexec/vault"
         ui = true
@@ -17,11 +27,8 @@ vault:
           tls_disable = false
           tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
           tls_key_file  = "/vault/userconfig/vault-server-tls/tls.key"
-          # TLS client verification is optional with default settings and is not enforced.
+          tls_client_ca_file = "/vault/userconfig/vault-server-tls/ca.crt"
         }
-        # Advertise the non-loopback interface
-        api_addr = "[::]:8200" 
-        cluster_addr = "[::]:8201"
         storage "file" {
           path = "/vault/data"
         }
@@ -70,6 +77,22 @@ vault:
         - name: configvolume
           mountPath: /etc/config
           readOnly: false
+      - name: omd-secrets-plugin
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
+        command: [/bin/sh, -ec]
+        args:
+          - |
+            cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
+    extraEnvironmentVars:
+      OM_SERVER_URL: http://openmetadata.open-metadata:8585/api
+      CERTS_DIR: /vault/userconfig/vault-server-tls
+      VAULT_CACERT: /vault/userconfig/vault-server-tls/ca.crt
+      VAULT_CLIENT_CERT: /vault/userconfig/vault-server-tls/tls.crt
+      VAULT_CLIENT_KEY: /vault/userconfig/vault-server-tls/tls.key
       # Used to define commands to run after the pod is ready.
       # This can be used to automate processes such as initialization
       # or boostrapping auth methods.
@@ -85,9 +108,6 @@ vault:
         # and then discard the token.
         # ref: https://learn.hashicorp.com/tutorials/vault/production-hardening
         #
-        # Set VAULT_SKIP_VERIFY option to avoid CA certificate check in the client. This can be avoided by setting VAULT_CACERT option,
-        # given that the ca certificate contains the IP of vault pod.
-        export VAULT_SKIP_VERIFY=true
         # FIXME: Deleting the files in /vault/data/ deletes the unseal keys and root token if they
         # already exist. Instead, the unseal keys and root token should be temporarily stored into Consul KV as shown in
         # https://github.com/hashicorp/best-practices/blob/master/packer/config/vault/scripts/setup_vault.sh.
@@ -99,4 +119,3 @@ vault:
         token=`cat /tmp/vault.init | grep 'Initial Root Token:' | awk '{print $4}'`; vault login $token
         rm -rf /tmp/vault.init
         /opt/config/poststart.sh
-

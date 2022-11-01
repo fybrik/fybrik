@@ -122,7 +122,7 @@ run-notebook-readflow-tests:
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests: export VAULT_CA_CERT_SECRET=test-tls-vault-certs
-run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/standalone/vault-single-cluster-values-tls.yaml
+run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster

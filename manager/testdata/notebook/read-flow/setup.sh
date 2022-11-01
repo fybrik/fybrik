@@ -23,6 +23,9 @@ fi
 # If vault server uses tls then copy its CA certificate to
 # a secret in fybrik-blueprints namespace and configure the arrow flight module
 # to use it when getting connecting to Vault.
+# FIXME: a mechanism for syncing secrets across namespaces should be used here
+# instead of coping the secret.
+# ref: https://cert-manager.io/docs/tutorials/syncing-secrets-across-namespaces
 if ! [[ -z "$VAULT_CA_CERT_SECRET" ]]; then
   # Create a secret in fybrik-blueprints namespace with vault server CA certificate.
   CACERT=$(kubectl get secret "$VAULT_CA_CERT_SECRET" -n fybrik-system -o jsonpath="{.data.ca\.crt}" | base64 -d)
