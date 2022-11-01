@@ -1,6 +1,6 @@
 include Makefile.env
 
-all: deploy-openmetadata
+all: prepare-openmetadata-for-fybrik
 
 deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true
@@ -29,4 +29,36 @@ deploy-openmetadata:
 --set global.airflow.host=${AIRFLOW_ENDPOINT} \
 --set global.airflow.openmetadata.serverHostApiUrl=${OPENMETADATA_ENDPOINT} \
 --set global.database.auth.username=${OPENMETADATA_MYSQL_USER} \
---set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} || true
+--set global.airflow.auth.username=${OPENMETADATA_AIRFLOW_USER} \
+--set extraEnvs[0].name=AUTHORIZER_ADMIN_PRINCIPALS,extraEnvs[0].value='[${OPENMETADATA_USER}:${OPENMETADATA_PASSWORD}]' || true
+
+define JOB_YAML
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prepare-openmetadata
+  namespace: $(INSTALLATION_NAMESPACE)
+spec:
+  template:
+    spec:
+      containers:
+      - name: prepare-openmetadata
+        image: 'ghcr.io/fybrik/openmetadata-connector:0.0.0'
+        command: ["/openmetadata-connector", "prepare", "--customization", "/customization.yaml"]
+        env:
+        - name: OPENMETADATA_ENDPOINT
+          value: http://openmetadata.$(INSTALLATION_NAMESPACE):8585/api
+        - name: OPENMETADATA_USER
+          value: $(OPENMETADATA_USER)
+        - name: OPENMETADATA_PASSWORD
+          value: $(OPENMETADATA_PASSWORD)
+      restartPolicy: Never
+  backoffLimit: 4
+endef
+
+export JOB_YAML
+
+prepare-openmetadata-for-fybrik: deploy-openmetadata
+	@echo "$$JOB_YAML" | kubectl apply -f -
+	kubectl wait --for=condition=complete job/prepare-openmetadata -n open-metadata
+	kubectl delete job prepare-openmetadata -n open-metadata

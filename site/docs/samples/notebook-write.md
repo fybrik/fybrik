@@ -44,7 +44,10 @@ Make a note of the service endpoint and access credentials. You will need them l
       ```
     3. Use [AWS CLI](https://aws.amazon.com/cli/) to configure localstack server:
       ```bash
-      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+      export REGION=theshire
+      aws configure set aws_access_key_id ${ACCESS_KEY}
+      aws configure set aws_secret_access_key ${SECRET_KEY}
+      aws configure set region ${REGION}
       ```
 
 
@@ -262,6 +265,29 @@ CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={
 ### Write the data from the notebook
 
 This sample uses the [Synthetic Financial Datasets For Fraud Detection](https://www.kaggle.com/ealaxi/paysim1) dataset[^1] as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named `PS_20174392719_1491204439457_log.csv`. Alternatively, use a sample of 100 lines of the same dataset by downloading [`PS_20174392719_1491204439457_log.csv`](https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv) from GitHub.
+
+To reference `PS_20174392719_1491204439457_log.csv` from Jupyter notebook cells as shown later in this section do the following:
+
+Jupyter notebook has an *`Upload Files`* button that can be used to upload `PS_20174392719_1491204439457_log.csv` to the notebook from the local machine. When referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell the following should be used:
+
+```
+file_path = "PS_20174392719_1491204439457_log.csv"
+```
+
+
+Alternatively, in your **terminal**, run the following commands to copy `PS_20174392719_1491204439457_log.csv` file from your local machine into `/tmp` directory in the Jupyter notebook pod:
+
+```bash
+export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
+export NOTEBOOK_POD_NAME=$(kubectl get pods | grep notebook |awk '{print $1}')
+kubectl cp $FILEPATH $NOTEBOOK_POD_NAME:/tmp
+```
+
+In that case, when referencing `PS_20174392719_1491204439457_log.csv` in the notebook cell, `/tmp/` directory should be specified, for example:
+
+```
+file_path = "/tmp/PS_20174392719_1491204439457_log.csv"
+```
 
 [^1]: Created by NTNU and shared under the ***CC BY-SA 4.0*** license.
 

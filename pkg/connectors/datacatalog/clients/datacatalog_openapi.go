@@ -56,8 +56,16 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 }
 
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
+	printErr := fmt.Sprintf("get asset info from %s failed", m.name)
+
 	resp, httpResponse, err :=
 		m.client.DefaultApi.GetAssetInfo(context.Background()).XRequestDatacatalogCred(creds).GetAssetRequest(*in).Execute()
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr)
+		}
+		return nil, errors.New(printErr)
+	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusForbidden {
 		return nil, errors.New(AccessForbidden)
@@ -66,45 +74,72 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("get asset info from %s failed", m.name))
+		return nil, errors.Wrap(err, printErr)
 	}
 	return &resp, nil
 }
 
 func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
+	printErr := fmt.Sprintf("create asset info from %s failed", m.name)
 	resp, httpResponse, err := m.client.DefaultApi.CreateAsset(context.Background()).
 		XRequestDatacatalogWriteCred(creds).CreateAssetRequest(*in).Execute()
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr)
+		}
+		return nil, errors.New(printErr)
+	}
 	defer httpResponse.Body.Close()
+
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("create asset info from %s failed", m.name))
+		return nil, errors.Wrap(err, printErr)
 	}
 	return &resp, nil
 }
 
 //nolint:dupl
 func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, creds string) (*datacatalog.DeleteAssetResponse, error) {
+	printErr := fmt.Sprintf("delete asset info from %s failed", m.name)
 	resp, httpResponse, err :=
 		m.client.DefaultApi.DeleteAsset(context.Background()).XRequestDatacatalogCred(creds).DeleteAssetRequest(*in).Execute()
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr)
+		}
+		return nil, errors.New(printErr)
+	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("delete asset info from %s failed", m.name))
+		return nil, errors.Wrap(err, printErr)
 	}
+<<<<<<< HEAD
 	return &resp, nil
+=======
+
+	return resp, nil
+>>>>>>> 46778214c8976c1088ddd4e900cf8265d0b4e35b
 }
 
 //nolint:dupl
 func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
 	resp, httpResponse, err := m.client.DefaultApi.UpdateAsset(
 		context.Background()).XRequestDatacatalogUpdateCred(creds).UpdateAssetRequest(*in).Execute()
+	printErr := fmt.Sprintf("update asset info from %s failed", m.name)
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr)
+		}
+		return nil, errors.New(printErr)
+	}
 	defer httpResponse.Body.Close()
 	if httpResponse.StatusCode == http.StatusNotFound {
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("update asset info from %s failed", m.name))
+		return nil, errors.Wrap(err, printErr)
 	}
 	return &resp, nil
 }
