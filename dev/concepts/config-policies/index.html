@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -1514,7 +1514,7 @@
 
 <h1 id="it-config-policies-and-data-plane-optimization">IT Config Policies and Data Plane Optimization</h1>
 <h2 id="what-are-it-config-policies">What are IT config policies?</h2>
-<p>IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.</p>
+<p>IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and the selection of the most appropriate module that implements the capability.</p>
 <h2 id="input-to-policies">Input to policies</h2>
 <p>The <code>input</code> object includes general application data such as workload cluster and application properties, as well as dataset details (user requirements, metadata).</p>
 <p>Available properties:</p>
@@ -1527,7 +1527,7 @@
 </ul>
 <h2 id="syntax">Syntax</h2>
 <p>Policies are written in rego files. Each file declares a package <code>adminconfig</code>.</p>
-<p>Rules are written in the following syntax: <code>config[{"capability": capability, "decision": decision}]</code> where</p>
+<p>Rules are written in the following syntax: <code>config[{"capability": capability, "decision": decision}]</code> where -</p>
 <p><code>capability</code> represents a required module capability, such as "read", "write", "transform" and "copy".</p>
 <p><code>decision</code> is a JSON structure that matches <code>Decision</code> defined above. </p>
 <p><div class="highlight"><pre><span></span><code>{ 
@@ -1553,12 +1553,14 @@
 <p><code>policy</code> provides policy metadata: unique ID, human-readable description and version</p>
 <p><code>restrictions</code> provides restrictions for <code>modules</code>, <code>clusters</code> and <code>storageaccounts</code>.
 Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
-Properties of a module can be found inside <a href="../../reference/crds/#fybrikmodule"><code>FybrikModule</code></a> Spec.
-Properties of a storage account are listed inside <a href="../../reference/crds/#fybrikstorageaccount"><code>FybrikStorageAccount</code></a>.
-Cluster is not a custom resource. It has the following properties:
-- name: cluster name
-- metadata.region: cluster region
-- metadata.zone: cluster zone</p>
+Properties of a module can be found inside <a href="../../reference/crds/#fybrikmodule"><code>FybrikModule</code></a> Spec.</p>
+<p>Properties of a storage account are listed inside <a href="../../reference/crds/#fybrikstorageaccount"><code>FybrikStorageAccount</code></a>.  </p>
+<p>Cluster is not a custom resource. It has the following properties:</p>
+<ul>
+<li>name: cluster name</li>
+<li>metadata.region: cluster region</li>
+<li>metadata.zone: cluster zone</li>
+</ul>
 <p><code>deploy</code> receives "True"/"False" values. These values indicate whether the capability should or should not be deployed. If not specified in the policy, it's up to Fybrik to decide on the capability deployment.</p>
 <h3 id="out-of-the-box-policies">Out of the box policies</h3>
 <p>Out of the box policies come with the fybrik deployment. They define the deployment of basic capabilities, such as read, write, copy and delete. </p>
@@ -1656,10 +1658,10 @@ config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision
 }
 </code></pre></div>
 <h3 id="how-to-provide-custom-policies">How to provide custom policies</h3>
-<p>In order to deploy Fybrik with customized policies, perform the following steps </p>
+<p>In order to deploy Fybrik with customized policies, perform the following steps:</p>
 <ol>
 <li>Clone the github repository of Fybrik for the required release: <code>git clone -b releases/&lt;version&gt; https://github.com/fybrik/fybrik.git</code></li>
-<li>Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder </li>
+<li>Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder. </li>
 <li>Install Fybrik:
 <div class="highlight"><pre><span></span><code>cd fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
@@ -1685,7 +1687,7 @@ config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision
     decision := {&quot;policy&quot;: policy, &quot;deploy&quot;: &quot;False&quot;}
 }
 </code></pre></div>
-Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. </p>
+Note that an empty <code>ConfigDecisions</code> map will be returned if the expiration date is exceeded by the time when the policy is applied. </p>
 <h3 id="how-to-update-policies-after-fybrik-is-already-deployed">How to update policies after Fybrik is already deployed</h3>
 <p>Updating policies is done by updating <code>fybrik-adminconfig</code> config map in the controller plane.</p>
 <p>To do that, first, download all files to some directory, e.g. /tmp/adminconfig, after that update the files, and finally, upload them to the config map. The steps below demonstrate how to add a new rego file <code>samples/adminconfig/quickstart-policies.rego</code>. </p>
@@ -1711,7 +1713,7 @@ While <a href="#what-are-it-config-policies">IT config policies</a> are always e
 <p>Rules are written in the following syntax: <code>optimize[decision]</code> where</p>
 <ul>
 <li><code>decision</code> is a JSON structure with the following fields:</li>
-<li><code>policy</code> - policy metadata: unique ID, human-readable description and a version</li>
+<li><code>policy</code> - policy metadata: unique ID, human-readable description and a version.</li>
 <li>list of <code>goals</code> including attribute name, optimization directive(<code>min</code> or <code>max</code>) and optionally a weight.</li>
 </ul>
 <p>For example, the following rule attempts to minimize storage cost in copy scenarios.</p>

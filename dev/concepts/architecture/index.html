@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -561,9 +561,68 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Architecture
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Architecture
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    Modules
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connectors" class="md-nav__link">
+    Connectors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fybrikapplication" class="md-nav__link">
+    FybrikApplication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plotter" class="md-nav__link">
+    Plotter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blueprint" class="md-nav__link">
+    Blueprint
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1284,6 +1343,49 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#modules" class="md-nav__link">
+    Modules
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connectors" class="md-nav__link">
+    Connectors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fybrikapplication" class="md-nav__link">
+    FybrikApplication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plotter" class="md-nav__link">
+    Plotter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blueprint" class="md-nav__link">
+    Blueprint
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1305,22 +1407,36 @@
 <h1 id="architecture">Architecture</h1>
 <p>Fybrik takes a modular approach to provide an open platform for controlling
 and securing the use of data across an organization. The figure below showcases the
-current architecture of the Fybrik platform, running on top of Kubernetes. </p>
+current architecture of the Fybrik platform, running on top of Kubernetes.</p>
 <p>The core parts of Fybrik are based on Kubernetes controllers and Custom Resource Definitions (CRDs) in order to define its work items and reconcile the state of them.</p>
-<p>The primary interaction object for a data user is the <code>FybrikApplication</code> custom resource (1) where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.</p>
-<p><img alt="Architecture" src="../../static/architecture.png" /></p>
-<p>Before the data user can perform any actions a data operator has to <a href="../../get-started/quickstart/">install</a> Fybrik and modules. 
-<a href="../modules/">Modules</a> (M) describe capabilities that can be included in a data plane.  These may be existing open source or third party services, or custom ones.  The module of a service indicates the capabilities it supports, the formats and interfaces, and how to deploy the service.  Modules may describe externally deployed services, or services deployed by fybrik.  Examples of modules are those that provide read/write access or produce implicit copies that serve as lower latency caches of remote assets. Modules may also perform actions to enforce data governance policy decisions, such as masking or redaction as examples.</p>
-<p>Fybrik connects to external services to receive data governance decisions, metadata about datasets and credentials. Policies, assets and access credentials to the assets have to be defined before the user can run an application. The current abstraction supports 2 different <a href="../connectors/">connectors</a>: one for data catalog (2) and one for policy manager (3). It is designed in an open way so that multiple different catalog and policy frameworks of all kinds of cloud and on-prem systems can be supported. The data steward configures policies in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using <a href="https://www.vaultproject.io/api">Vault API</a> (6). Vault uses a custom secret engine implemented with <a href="../vault_plugins/">HashiCorp Vault plugins system</a> to retrieve the credentials from where they are stored (data catalog for example).</p>
-<p>Once a developer submits a <code>FybrikApplication</code> CRD to Kubernetes, the FybrikApplicationController will make sure that all the specs are fulfilled and that the data is read/written/copied/deleted in accord with the data governance policies and the IT config policies. The <code>FybrikApplication</code> holds metadata about the application such as the data assets required by the application, the processing purpose and the method of access the user wishes (protocol e.g. S3 or Arrow flight). 
-The controller uses this information to check with the data-governance policy manager if the data flow requested is allowed
-and whether restrictive actions such as masking or hashing have to be applied. Taking into account these governance actions, as well as application requirements, dataset specification, available infrastructure (5) and the <a href="../config-policies/">IT config policies</a> defined (4), the controller compiles a plotter (9). The plotter specifies a data plane connecting the application to the datasets it requires. More specifically, the plotter lists the modules to use, the capabilities required from these modules, the cluster on which each module should be deployed, as well as the flow of data between the asset and the workload through the chosen modules. For the plotter to be optimal in terms of the defined optimization goals (a.k.a. IT config soft policies), the controller may use a <a href="../optimizer/">CSP-based optimizer</a> (7).  If no CSP engine is installed, optimization goals will not be taken into account, and the manager will use the first (but not necessarily optimal) solution that meets all of the other requirements.</p>
-<p>As data assets may reside in different clusters/clouds a <code>Blueprint</code> CRD is created for each cluster, containing the information regarding the services to be deployed or configured in the given cluster. Depending on the setup the <code>PlotterController</code> will use various methods to distribute the blueprints. In a multi cluster setup the default distribution implementation is using <a href="http://razee.io">Razee</a> to control remote blueprints, but several multi-cloud tools
-could be used as a replacement. The <code>PlotterController</code> also collects statuses and distributes
-updates of said blueprints. Once all the blueprints on all clusters are ready the plotter is marked as ready, and the overall status is propagated back to the user in the <code>FybrikApplication</code> status.</p>
+<p>The primary interaction object for a data user is the <code>FybrikApplication</code> custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.</p>
+<p><img alt="Architecture" src="../../static/architecture.png" /> </p>
+<p>Before the data user can perform any actions a data operator has to <a href="../../get-started/quickstart/">install</a> Fybrik and modules. </p>
+<h2 id="modules"><a href="../modules/">Modules</a></h2>
+<p><a href="../modules/">Modules</a> (M) describe capabilities that can be included in a data plane.</p>
+<p>These modules may be existing open source or third party services, or custom ones. The module of a service indicates the capabilities it supports, the formats and interfaces, and how to deploy the service.  Modules may describe externally deployed services, or services deployed by fybrik.  Examples of modules are those that provide read/write access or produce implicit copies that serve as lower latency caches of remote assets.<br />
+Modules may also perform actions to enforce data governance policy decisions, such as masking or redaction as examples.</p>
+<h2 id="connectors"><a href="../connectors/">Connectors</a></h2>
+<p>Fybrik connects to external services to receive data governance decisions, metadata about datasets and credentials. Policies, assets and access credentials to the assets have to be defined before the user can run an application.</p>
+<p>The current abstraction supports 2 different  <a href="../connectors/">connectors</a>: one for data catalog and one for policy manager. It is designed in an open way so that multiple different catalog and policy frameworks of all kinds of cloud and on-prem systems can be supported.</p>
+<p>The data steward configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using <a href="https://www.vaultproject.io/api">Vault API</a>. Vault uses a custom secret engine implemented with <a href="../vault_plugins/">HashiCorp Vault plugins system</a> to retrieve the credentials from where they are stored (data catalog for example).</p>
+<h2 id="fybrikapplication"><a href="../../reference/crds/#fybrikapplication">FybrikApplication</a></h2>
+<p>Once Fybrik is deployed and configured, including catalogs, modules and connectors, a developer can submit a <code>FybrikApplication</code> Custom Resource to Kubernetes.</p>
+<p>The <code>FybrikApplication</code> holds metadata about the application such as the data assets required by the application, the processing purpose and the method of access the user wishes (protocol e.g. S3 or Arrow flight). </p>
+<p>The <code>FybrikApplicationController</code> will make sure that all the specs are fulfilled and that the data is read/written/copied/deleted in accord with the data governance policies and the IT config policies.</p>
+<p>The controller uses the information provided in the <code>FybrikApplication</code>, to check with the data-governance policy manager if the data flow requested is allowed and whether restrictive actions such as masking or hashing have to be applied. Taking into account these governance actions, as well as application requirements, dataset specification, available infrastructure and the <a href="../config-policies/">IT config policies</a> defined, the controller compiles a plotter.  </p>
+<h2 id="plotter"><a href="../../reference/crds/#plotter">Plotter</a></h2>
+<p>The plotter specifies a data plane connecting the application to the datasets it requires. More specifically, the plotter lists the modules to use, the capabilities required from these modules, the cluster on which each module should be deployed, as well as the flow of data between the asset and the workload through the chosen modules. </p>
+<p>For the plotter to be optimal in terms of the defined optimization goals (a.k.a. <a href="../config-policies/#optimization-goals">IT config soft policies</a>), the controller may use a <a href="../optimizer/">CSP-based optimizer</a>. 
+If no CSP engine is installed, optimization goals will not be taken into account, and the manager will use the first (but not necessarily optimal) solution that meets all of the other requirements.</p>
+<h2 id="blueprint"><a href="../../reference/crds/#blueprint">Blueprint</a></h2>
+<p>As data assets may reside in different clusters/clouds a <code>Blueprint</code> CRD is created for each cluster, containing the information regarding the services to be deployed or configured in the given cluster. Depending on the setup the <code>PlotterController</code> will use various methods to distribute the blueprints. </p>
 <p>A single <a href="../../reference/crds/#blueprint">blueprint</a> contains the specification of all assets that shall be accessed in a single cluster by a single application.
 The <code>BlueprintController</code> makes sure that a blueprint can deploy all needed modules and tracks their status. Once e.g. an implicit-copy module finishes the copy the blueprint is also in a ready state.
-A read or write module is in ready state as soon as the proxy service such as the arrow-flight module is running. </p>
+A read or write module is in ready state as soon as the proxy service such as the arrow-flight module is running.</p>
+<p>In a multi cluster setup the default distribution implementation is using <a href="http://razee.io">Razee</a> to control remote blueprints, but other multi-cluster tools could be used as a replacement.</p>
+<p>The <code>PlotterController</code> also collects statuses and distributes updates of said blueprints.<br />
+Once all the blueprints on all clusters are ready the plotter is marked as ready, and the overall status is propagated back to the user in the <code>FybrikApplication</code> status.</p>
 
 
 

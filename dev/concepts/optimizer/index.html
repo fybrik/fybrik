@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -1303,12 +1303,14 @@
 
 
 <h1 id="optimizer">Optimizer</h1>
-<p>The optimizer component builds an optimal data-plane plotter for a given <code>FybrikApplication</code> custom resource, taking into account:
-* Available resources (modules, clusters, storage accounts)
-* Application specification (e.g., geography, data access protocol)
-* Specifications of the datasets required by the application
-* Governance actions required by the data-governance policy manager
-* <a href="./config-policies">IT Configuration policies</a>, including optimization goals</p>
+<p>The optimizer component builds an optimal data-plane plotter for a given <code>FybrikApplication</code> custom resource, taking into account:</p>
+<ul>
+<li>Available resources (modules, clusters, storage accounts)</li>
+<li>Application specification (e.g., geography, data access protocol)</li>
+<li>Specifications of the datasets required by the application</li>
+<li>Governance actions required by the data-governance policy manager</li>
+<li><a href="../config-policies">IT Configuration policies</a>, including optimization goals</li>
+</ul>
 <p>The optimizer translates all the above inputs into a monolith <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">Constraint Satisfaction Problem (CSP)</a> and solves it using a third-party CSP solver. The solver returns an optimal solution in terms of the specified optimization goals. The solution is then translated into a plotter. The plotter specifies which modules should be deployed in which clusters, using which storage accounts and which configuration. It also describes how data flows between the modules. Finally, the plotter is deployed to the specified clusters (via cluster-specific blueprints), resulting in a data plane that connects the required datasets to the application.</p>
 <p><strong>Note:</strong> The optimizer component is currently disabled by default, meaning all optimization goals are being ignored. Enabling it is simple and is explained <a href="../../tasks/data-plane-optimization/#enabling-the-optimizer">here</a>. Also note that in the rare case of the CSP solver failing to produce any solution (which is not due to conflicting polices), Fybrik will fall back to producing a plotter without the CSP solver, but while ignoring all optimization goals.</p>
 <p>The Constraint Satisfaction Problem is written as a <a href="https://www.minizinc.org/doc-latest/en/fzn-spec.html">FlatZinc model</a>. This allows using any CSP solver that supports the FlatZinc format. Currently, the default solver is the one provided by <a href="https://developers.google.com/optimization">Google OR-Tools</a>. Check <a href="https://www.minizinc.org/software.html#flatzinc">this list</a> for other solvers supporting FlatZinc. Configuring a solver different than the default solver is explained <a href="../../tasks/data-plane-optimization/#using-a-custom-csp-solver">here</a>.</p>

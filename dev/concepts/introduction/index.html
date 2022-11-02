@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -574,6 +574,13 @@
         <li class="md-nav__item">
   <a href="#how-does-it-work" class="md-nav__link">
     How does it work?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modularity" class="md-nav__link">
+    Modularity
   </a>
   
 </li>
@@ -1350,6 +1357,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#modularity" class="md-nav__link">
+    Modularity
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#applications" class="md-nav__link">
     Applications
   </a>
@@ -1394,27 +1408,31 @@
 <p>Fybrik is a cloud native platform to unify data access and governance, enabling business agility while securing enterprise data. By providing access and use of data only via the platform, Fybrik brings together access and governance for data, greatly reducing risk of data loss. </p>
 <p>Fybrik allows:</p>
 <ul>
-<li><strong>Data users</strong> to use data in a self-service model without manual processes, without needing to confer with data stewards, and without dealing with credentials. Use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.</li>
-<li><strong>Data stewards</strong> to control data usage by applications. Use the organization's <em>policy manager</em> and <em>data catalog</em> of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.</li>
-<li><strong>Data operators</strong> to automate data lifecycle management removing the need for manual processes and custom jobs created by data operators, providing them with <a href="../config-policies/">config policies</a> to optimize the data flows orchestrated by fybrik.</li>
+<li><strong>Data users</strong> to use data in a self-service model without manual processes.<br />
+Fybrik eliminates the need of a data user to confer with data stewards, and to deal with credentials. The data user can use common tools and frameworks for reading from and exporting data to data lakes or data warehouses.</li>
+<li><strong>Data stewards</strong> to control data usage by applications.<br />
+The data steward can use the organization's <em>policy manager</em> and <em>data catalog</em> of choice and let Fybrik automatically enforce data governance policies, whether they be based on laws, industry standards or enterprise policies.</li>
+<li><strong>Data operators</strong> to automate data lifecycle management.<br />
+Fybrik eliminates the need for manual processes and custom jobs created by data operators. Instead, Fybrik provids data operators with <a href="../config-policies/">config policies</a> to optimize the data flows orchestrated by fybrik.</li>
 </ul>
 <h2 id="how-does-it-work">How does it work?</h2>
 <p><img alt="Concept" src="../../static/general-concept.png" /></p>
-<p>The inputs to Fybrik are declarative definitions with separation of aspects:</p>
+<p>The inputs to Fybrik are <strong>declarative definitions</strong> with separation of aspects:</p>
 <ul>
-<li>Data stewards input definitions related to data governance and security</li>
-<li>Data users input definitions related to data usage in the business logic of their applications</li>
-<li>Data operators input definitions related to infrastructure and available resources</li>
+<li>Data stewards input definitions related to data governance and security.</li>
+<li>Data users input definitions related to data usage in the business logic of their applications.</li>
+<li>Data operators input definitions related to infrastructure and available resources.</li>
 </ul>
-<p>Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane). 
-The plotter augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a data path that:</p>
+<p>Upon creation or change of any definition, Fybrik compiles together relevant inputs into a plotter describing the flow of data between the application and the data sources/destinations (data plane).</p>
+<p>The plotter augments the application workload and data sources with additional services and functions packed as pluggable modules. This creates a <strong>data path</strong> that:</p>
 <ul>
 <li>Integrates business logic with non-functional data centric requirements such as enabling data access regardless of its physical location, caching, lineage tracking, etc.</li>
-<li>Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where</li>
+<li>Enforces governance relating to the data and its lifecycle; including limiting what data the business logic can access, performing transformations as needed, controlling what the business logic can export and to where.</li>
 <li>Makes data available in locations where it is needed. Thus, in a multi cluster scenario it may copy data from one location to another, something known as an implicit copy.  The implicit copy is deleted when no longer needed.</li>
 </ul>
+<h2 id="modularity">Modularity</h2>
 <p>Fybrik is an open solution that can be extended to work with a wide range of tools and data stores. For example, the injectable <a href="../modules/">modules</a> and the <a href="../connectors/">connectors</a> to external systems (e.g., to a data catalog) can all be third party.</p>
-<p>The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via <a href="../config-policies/">config policies</a></p>
+<p>The logic used by fybrik to generate the data planes is customizable.  An organization can determine how best its infrastructure should be leveraged via <a href="../config-policies/">config policies</a>.</p>
 <h2 id="applications">Applications</h2>
 <p>Fybrik considers applications as first level entities. Before running a workload, an application needs to be registered to a Fybrik control plane by applying a <code>FybrikApplication</code> resource. This is the declarative definition provided by the data user. The registration provides context about the application such as the purpose for which it's running, the data assets that it accesses, and a selector to identify the workload. Additional context such as geo-location is extracted from the platform. </p>
 <p>The actions taken by Fybrik are based on policies and the context of the application. Specifically, Fybrik does not consider end-users of an application. It is the responsibility of the application to implement mechanisms such as end user authentication if required, e.g. using Istio <a href="https://istio.io/docs/tasks/security/authorization/authz-jwt/">authorization with JWT</a>.</p>

@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -1436,7 +1436,7 @@
 
 <h1 id="modules">Modules</h1>
 <p>The project currently has two extension mechanisms, namely connectors and modules. 
-This page describes what modules are and how they are leveraged by the control plane to build the data plane flow.  </p>
+This page describes what modules are and how they are leveraged by the Fybrik control plane to build the data plane flow.  </p>
 <h2 id="what-are-modules">What are modules?</h2>
 <p>As described in the <a href="../architecture/">architecture</a> page, the control plane generates a description of a data plane based on policies and application requirements. This is known as a blueprint, and includes components that are deployed by the control plane to fulfill different data-centric requirements.  For example, a component that can mask data can be used to enforce a data masking policy, or a component that copies data may be used to create a local data copy to meet performance requirements, etc. </p>
 <p>Modules are the way to describe such data plane components and make them available to the control plane. A module is packaged as a <a href="https://helm.sh/">Helm</a> chart that the control plane can install to a workload's data plane. To make a module available to the control plane it must be <a href="#registering-a-module">registered</a> by applying a <a href="../../reference/crds/#fybrikmodule"><code>FybrikModule</code></a> custom resource.</p>
@@ -1460,10 +1460,13 @@ Can be a client to the external component(s) or be independent.</li>
 <div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 </code></pre></div></p>
 <h2 id="when-is-a-module-used">When is a module used?</h2>
-<p>There are three main data flows in which modules may be used:
-* Read - preparing data to be read and/or actually reading the data
-* Write - writing a new data set or appending data to an existing data set
-* Copy - for performing an implicit data copy on behalf of the application.  The decision to do an implicit copy is made by the control plane, typically for performance or governance reasons.</p>
+<p>There are four main data flows in which modules may be used:</p>
+<ul>
+<li>Read - preparing data to be read and/or actually reading the data.</li>
+<li>Write - writing a new data set or appending data to an existing data set.</li>
+<li>Copy - for performing an implicit data copy on behalf of the application.  The decision to do an implicit copy is made by the control plane, typically for performance or governance reasons.</li>
+<li>Delete - for deleting objects or data sets.</li>
+</ul>
 <p>A module may be used in one or more of these flows, as is indicated in the module's yaml file.</p>
 <h2 id="control-plane-choice-of-modules">Control plane choice of modules</h2>
 <p>A user workload description <code>FybrikApplicaton</code> includes a list of the data sets required, the technologies that will be used to access them, the access type (e.g. read, copy), information about the location and reason for the use of the data.  This information together with input from data and <a href="../config-policies/">enterprise policies</a>, determine which modules are chosen by the control plane and where they are deployed. </p>
@@ -1501,7 +1504,7 @@ Can be a client to the external component(s) or be independent.</li>
 <td><a href="https://github.com/fybrik/mover">implicit-copy</a></td>
 <td>copies data between any two supported data stores, for example S3 and Kafka, and applies transformations.</td>
 <td>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml</td>
-<td>- <a href="https://github.com/datashim-io/datashim">Datashim</a> deployment.<br>- <a href="../reference/crds#fybrikstorageaccount"><code>FybrikStorageAccount</code></a> resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.</td>
+<td>- <a href="https://github.com/datashim-io/datashim">Datashim</a> deployment.<br>- <a href="../../reference/crds#fybrikstorageaccount"><code>FybrikStorageAccount</code></a> resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.</td>
 </tr>
 </tbody>
 </table>

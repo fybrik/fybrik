@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
     
     
       
@@ -668,18 +668,12 @@
     Data catalog
   </a>
   
-    <nav class="md-nav" aria-label="Data catalog">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#credential-management" class="md-nav__link">
     Credential management
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1397,18 +1391,12 @@
     Data catalog
   </a>
   
-    <nav class="md-nav" aria-label="Data catalog">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#credential-management" class="md-nav__link">
     Credential management
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1446,7 +1434,7 @@
 
 <h1 id="connectors">Connectors</h1>
 <p>The project currently has two extension mechanisms, namely connectors and modules.
-This page describes what connectors are and what connectors are installed using the default Fybrik installation.</p>
+This page describes what connectors are and how connectors are installed using the default Fybrik installation.</p>
 <h2 id="what-are-connectors">What are connectors?</h2>
 <p>Connectors are <a href="https://www.openapis.org/">Open API</a> services that the Fybrik control plane uses to connect to external systems. Specifically, the control plane needs connectors to a data catalog and a data governance policy manager. These connector services are deployed alongside the control plane.</p>
 <h2 id="can-i-write-my-own-connectors">Can I write my own connectors?</h2>
@@ -1460,7 +1448,7 @@ For TLS configuration please see the above link for details on how fybrik uses T
 <p>The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Fybrik uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making data governance policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.</p>
 <p>Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
 The default installation of Fybrik installs <a href="../../reference/katalog/">Katalog</a>, a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to <a href="https://www.odpi.org/projects/egeria">ODPi Egeria</a> is also available.</p>
-<h4 id="credential-management">Credential management</h4>
+<h3 id="credential-management">Credential management</h3>
 <p>The connector might need to read credentials stored in HashiCorp Vault. The parameters to <a href="https://www.vaultproject.io/api-docs/auth/kubernetes#login">login</a> to vault and to <a href="https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret">read secret</a> are as follows:</p>
 <ul>
 <li>address: Vault address</li>
@@ -1468,7 +1456,7 @@ The default installation of Fybrik installs <a href="../../reference/katalog/">K
 <li>role: connector role used to login to Vault - configured to be "fybrik"</li>
 <li>secretPath: Path of the secret holding the credentials in Vault</li>
 </ul>
-<p>The parameters should be known to the connector upon startup time except from the vault secret path (<code>SecretPath</code>) which is passed as a parameter in each call to the connector usually under <code>Credentials</code> name.</p>
+<p>The parameters should be known to the connector upon startup time, except for the vault secret path (<code>SecretPath</code>) which is passed as a parameter in each call to the connector usually under <code>Credentials</code> name.</p>
 <p>An example for Vault Login API call which uses the Vault parameters is as follows:</p>
 <div class="highlight"><pre><span></span><code>$ curl -v -X POST &lt;address&gt;/&lt;authPath&gt; -H &quot;Content-Type: application/json&quot; --data &#39;{&quot;jwt&quot;: &lt;connector service account token&gt;, &quot;role&quot;: &lt;role&gt;}&#39;
 </code></pre></div>
