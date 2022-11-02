@@ -46,7 +46,11 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
       export BUCKET="demo"
       export OBJECT_KEY="PS_20174392719_1491204439457_log.csv"
       export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
-      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY} && aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} && aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
+      export REGION=theshire
+      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+      aws configure set region ${REGION}
+      aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
+      aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
       ```
 
 Before we delete the object, we make sure it's been created.
