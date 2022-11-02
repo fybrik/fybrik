@@ -4,7 +4,7 @@
 # The values used for testing read flow where the manager and connectors
 # uses mutual tls connection.
 # The CA certificates of the componenets in `fybrik-system` namespace are copied
-# directly to `/etc/ssl/certs/` direcory in the manager/connector pods and thus
+# directly to `/etc/ssl/certs/` directory in the manager/connector pods and thus
 # not specified in the values in this file as shown in
 # [`manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh`](https://github.com/fybrik/fybrik/blob/master/manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh).
 

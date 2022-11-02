@@ -20,18 +20,14 @@ else
   kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}/module.yaml -n fybrik-system
 fi
 
-# If vault server uses tls then copy its CA certificate to
-# a secret in fybrik-blueprints namespace and configure the arrow flight module
-# to use it when getting connecting to Vault.
-# FIXME: a mechanism for syncing secrets across namespaces should be used here
-# instead of coping the secret.
+# When Vault uses mutual TLS the certificates and private key for the arrow-flight-module
+# are stored in a secret in fybrik-system namespace and copied to fybrik-blueprint namespace
+# using a mechanism for syncing secrets across namespaces.
 # ref: https://cert-manager.io/docs/tutorials/syncing-secrets-across-namespaces
-if ! [[ -z "$VAULT_CA_CERT_SECRET" ]]; then
-  # Create a secret in fybrik-blueprints namespace with vault server CA certificate.
-  CACERT=$(kubectl get secret "$VAULT_CA_CERT_SECRET" -n fybrik-system -o jsonpath="{.data.ca\.crt}" | base64 -d)
-  kubectl create secret generic ca-cert-secret --from-literal=ca.crt="$CACERT"  -n fybrik-blueprints
+if ! [[ -z "$PATCH_FYBRIK_MODULE" ]]; then
   # Patch FybrikModule to use the secret
-  kubectl patch fybrikmodules.app.fybrik.io arrow-flight-module -n fybrik-system -p "{\"spec\": {\"chart\":{\"values\":{\"tls.certs.cacertSecretName\":\"ca-cert-secret\"}}}}" --type="merge"
+  kubectl patch fybrikmodules.app.fybrik.io arrow-flight-module -n fybrik-system -p "{\"spec\": {\"chart\":{\"values\":{\"tls.certs.cacertSecretName\":\"test-tls-arrow-flight-certs\"}}}}" --type="merge"
+  kubectl patch fybrikmodules.app.fybrik.io arrow-flight-module -n fybrik-system -p "{\"spec\": {\"chart\":{\"values\":{\"tls.certs.certSecretName\":\"test-tls-arrow-flight-certs\"}}}}" --type="merge"
 fi
 
 # Forward port of test S3 instance

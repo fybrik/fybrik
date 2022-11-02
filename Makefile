@@ -17,7 +17,6 @@ export COPY_TEST_CACERTS ?= 0
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
 
-
 .PHONY: all
 all: generate manifests generate-docs verify
 
@@ -121,9 +120,9 @@ run-notebook-readflow-tests:
 .PHONY: run-notebook-readflow-tls-tests
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
-run-notebook-readflow-tls-tests: export VAULT_CA_CERT_SECRET=test-tls-vault-certs
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
+run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
@@ -179,6 +178,7 @@ endif
 cluster-prepare:
 	$(MAKE) -C third_party/cert-manager deploy
 ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
+	$(MAKE) -C third_party/kubernetes-reflector deploy
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
 	$(MAKE) -C third_party/vault deploy

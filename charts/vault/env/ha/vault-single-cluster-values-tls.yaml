@@ -16,8 +16,6 @@ vault:
       # If set to null, this will be set to the Pod IP Address
       apiAddr: "https://vault.fybrik-system.svc.cluster.local:8200"
 
-      # To enable mutual tls tls_require_and_verify_client_cert should be set
-      # to true.
       config: |
         plugin_directory = "/usr/local/libexec/vault"
         ui = true
@@ -28,6 +26,7 @@ vault:
           tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
           tls_key_file  = "/vault/userconfig/vault-server-tls/tls.key"
           tls_client_ca_file = "/vault/userconfig/vault-server-tls/ca.crt"
+          tls_require_and_verify_client_cert = true
         }
         storage "file" {
           path = "/vault/data"

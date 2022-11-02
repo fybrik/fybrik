@@ -12,5 +12,6 @@ kubectl -n ${FYBRIK_NAMESPACE} apply -f opa-server-certificates.yaml
 kubectl -n ${FYBRIK_NAMESPACE} apply -f opa-connector-certificates.yaml
 kubectl -n ${FYBRIK_NAMESPACE} apply -f manager-certificates.yaml
 kubectl -n ${FYBRIK_NAMESPACE} apply -f vault-certificates.yaml
+kubectl -n ${FYBRIK_NAMESPACE} apply -f arrow-flight-module-certificates.yaml
 
 
