@@ -6,8 +6,18 @@ deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true
 	helm repo update || true
 	kubectl create ns ${INSTALLATION_NAMESPACE} || true
+ifeq ($(OPENSHIFT_INSTALLATION), true)
+	oc adm policy add-scc-to-user anyuid -z airflow -n ${INSTALLATION_NAMESPACE}
+	oc adm policy add-scc-to-user anyuid -z mysql -n ${INSTALLATION_NAMESPACE}
+	oc adm policy add-scc-to-user ibm-privileged-scc -z default -n ${INSTALLATION_NAMESPACE}
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pvc3.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pvc4.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
+else
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv1.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv2.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
+endif
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pvc1.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pvc2.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	kubectl create secret generic airflow-mysql-secrets --from-literal=airflow-mysql-password=${AIRFLOW_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
 	helm install openmetadata-dependencies open-metadata/openmetadata-dependencies --version ${OPENMETADATA_HELM_CHART_VERSION} --values values-deps.yaml --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
 --set airflow.airflow.image.tag=${OPENMETADATA_AIRFLOW_VERSION} \

@@ -28,7 +28,7 @@ tmp_dir=$(mktemp -d)
 # download files to temp directory
 cd $tmp_dir
 
-files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml values-deps.yaml)
+files_to_download=(Makefile Makefile.env pv1.yaml pvc1.yaml pv2.yaml pvc2.yaml pvc3.yaml pvc4.yaml values-deps.yaml)
 for file in "${files_to_download[@]}"
     do curl https://raw.githubusercontent.com/${FYBRIK_GITHUB_ORGANIZATION}/fybrik/${FYBRIK_BRANCH}/third_party/openmetadata/$file -o $file
 done
