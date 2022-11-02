@@ -1,8 +1,10 @@
 # Discovering an S3 asset through the OpenMetadata UI
 
-This page explains how to discover an existing S3 asset through the OpenMetadata UI. The screenshots refer to `localstack` cloud storage, but the explanations also apply to other S3 services.
+This page explains how to discover an existing S3 asset through the OpenMetadata UI. This is useful when running workloads such as the one described in [Notebook sample for the read flow](../../samples/notebook-read/#register-the-dataset-in-a-data-catalog).
 
-Begin by opening your browser to the OpenMetadata UI. If you installed OpenMetadata in your kubernetes cluster in the `open-metadata` namespace, go to http://localhost:8585 after running:
+The screenshots refer to the `localstack` cloud storage, but the explanations also apply to other S3 services.
+
+Begin by opening your browser to the OpenMetadata UI. If you installed OpenMetadata in your kubernetes cluster in the `open-metadata` namespace, go to [http://localhost:8585](http://localhost:8585) after running:
 ```
 kubectl port-forward svc/openmetadata -n open-metadata 8585:8585 &
 ```
