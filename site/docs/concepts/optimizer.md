@@ -1,11 +1,12 @@
 # Optimizer
 
 The optimizer component builds an optimal data-plane plotter for a given `FybrikApplication` custom resource, taking into account:
+
 * Available resources (modules, clusters, storage accounts)
 * Application specification (e.g., geography, data access protocol)
 * Specifications of the datasets required by the application
 * Governance actions required by the data-governance policy manager
-* [IT Configuration policies](./config-policies), including optimization goals
+* [IT Configuration policies](../config-policies), including optimization goals
 
 The optimizer translates all the above inputs into a monolith [Constraint Satisfaction Problem (CSP)](https://en.wikipedia.org/wiki/Constraint_satisfaction_problem) and solves it using a third-party CSP solver. The solver returns an optimal solution in terms of the specified optimization goals. The solution is then translated into a plotter. The plotter specifies which modules should be deployed in which clusters, using which storage accounts and which configuration. It also describes how data flows between the modules. Finally, the plotter is deployed to the specified clusters (via cluster-specific blueprints), resulting in a data plane that connects the required datasets to the application.
 
