@@ -3,8 +3,10 @@
 # It overrides values that are different from the default values.yaml
 # The values used for testing read flow where the manager and connectors
 # uses mutual tls connection.
-# The CA certificates are copied directly to the manager/connector code
-# and thus not specified in the values in this file.
+# The CA certificates of the componenets in `fybrik-system` namespace are copied
+# directly to `/etc/ssl/certs/` direcory in the manager/connector pods and thus
+# not specified in the values in this file as shown in
+# [`manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh`](https://github.com/fybrik/fybrik/blob/master/manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh).
 
 # Global configuration applies to multiple components installed by this chart
 global:
