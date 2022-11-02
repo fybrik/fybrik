@@ -1,15 +1,20 @@
 # Taxonomy
 
-Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
+A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system.
 
-A taxonomy defines the terms and related values that need to be commonly understood and supported across the components in the system:
+Fybrik interacts with multiple external components, such as the data catalog, data governance policy manager, and modules.  In order for fybrik to orchestrate the data plane of a given workload it is essential that all the components involved use common terms.  
+For example, if a data governance policy refers to a particular transform it is crucial that the module implementing that transform refer to it in the same way, or for fybrik to be able to map between the disparate terms.
 
-* FybrikApplication yaml - information provided about the workload and the datasets
-* Fybrik manager (FybrikApplication controller)
-* Data catalog
-* Data Governance Policy Manager
-* Config Policy Manager
-* FybrikModules
+Some components that use taxonomy:
+
+* [FybrikApplication](../architecture/#fybrikapplication) yaml - information provided about the workload and the datasets.
+* Fybrik manager ([FybrikApplication controller](../architecture/#fybrikapplication)) - validates that the data is used in accord with the data governance policies and the IT config policies.
+* [Data catalog](../connectors/#data-catalog) - provides metadata about the asset.
+* [Data Governance Policy Manager](../connectors/#policy-manager) - defines the governance policies to follow.
+* [Config Policy Manager](./config-policies.md) - defines the IT policies to follow.
+* [FybrikModules](./modules.md) - describe capabilities that can be included in a data plane.
+
+Default taxonomies are provided by fybrik in a JSON file format, and are meant as a starting point. Different actors can [expand](../../tasks/custom-taxonomy) these.
 
 ## Issues Addressed by Taxonomy
 
@@ -31,15 +36,13 @@ Different actors and components define the contents of different parts of the ta
 
 If, for example, a Data Governance Officer writes a policy that limits the use of sensitive data for marketing, then the possible valid intents such as marketing would be defined by him in the Data Policy Manager.  These values must be added to fybrik's taxonomy, either manually or via an automated feed, so that fybrik can validate the intent provided in a FybrikApplication yaml when a user's workload requests data.
 
-As new capabilities, transforms, data types, and protocols are made available via FybrikModules fybrik's module taxonomy must be updated.  Once updated these capabilities are available for use by other components, such as the Data Catalog and Data Governance Policy manager should they choose to leverage them.
-
-Default taxonomies are provided by fybrik, and are meant as a starting point on which to expand.
+As new capabilities, transforms, data types, and protocols are made available via FybrikModules, fybrik's module taxonomy must be updated.  Once updated these capabilities are available for use by other components, such as the Data Catalog and Data Governance Policy manager should they choose to leverage them.
 
 ## Validation Points
 
 Fybrik validates the structures and values it receives from all external components.  
 
-For interface components (FybrikApplication and FybrikModule), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with webhooks or not.
+For interface components (`FybrikApplication` and `FybrikModule`), validation occurs when the resource is created, updated or deleted.  How validation errors are received depends on whether fybrik is deployed with [webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#what-are-admission-webhooks) or not.
 
 1. If webhooks are deployed, errors are received from the kubernetes command (ex: `kubectl apply` ) and no resource is created.  
 2. If webhooks are *not* deployed, validation is done in the resource's controller.  If there is an error, the resource is created but its status will contain the error.  (Note: These resources will need to manually be removed by the person creating them.)
