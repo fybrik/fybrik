@@ -4,7 +4,7 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 .PHONY: deploy
 deploy: $(TOOLBIN)/helm
-	@echo "Installing vault ..."
+	@echo "Installing reflector ..."
 	$(TOOLBIN)/helm repo add emberstack https://emberstack.github.io/helm-charts
 	$(TOOLBIN)/helm repo update
 	$(TOOLBIN)/helm upgrade --install reflector emberstack/reflector -n default
