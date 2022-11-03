@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 
 setup(name='fybrik_python_tls',
-      version=os.environ.get('VERSION', '0.1.0'),
+      version=os.environ.get('FYBRIK_PYTHON_TLS_VERSION', '0.1.0'),
       description='Python TLS Package for Fybrik Components',
       long_description='## Python TLS Package for Fybrik Components',
       long_description_content_type='text/markdown',
