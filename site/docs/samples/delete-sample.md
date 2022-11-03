@@ -4,7 +4,7 @@ This sample demonstrate how to delete an S3 object from a bucket.
 
 ## Install module
 
-To apply the latest development version of arrow-flight-module:
+To apply the latest development version of the delete-module:
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml -n fybrik-system
 ```
@@ -83,10 +83,9 @@ In this step you are performing the role of the data owner, registering his data
 
 In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
 
-If you use OpenMetadata directly through the UI, and use its discovery mechanism to add asset tables, you can determine an asset ID through the corresponding OpenMetadata table URL. If, for instance, the URL for the table is: `http://localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`, then the corresponding asset ID is `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
+To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.
 
-If you registered the dataset directly through the OpenMetadata UI, you can skip to the next section.
-
+### Registering Dataset via Connector
 We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml

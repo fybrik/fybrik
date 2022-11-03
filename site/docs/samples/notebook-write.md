@@ -331,6 +331,10 @@ writer, _ = client.do_put(fl.FlightDescriptor.for_command(json.dumps(request)),
 writer.write_table(my_table)
 writer.close()
 ```
+
+### View new asset through OpenMetadata UI
+The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
+
 ### Cleanup scenario two
 
 ```bash

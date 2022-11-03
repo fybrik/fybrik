@@ -113,7 +113,7 @@ Run the following to install vault and the plugin in development mode:
 Fybrik assumes the existence of a data catalog that contains the metadata and connection information for data assets. Fybrik currently supports:
 
  1. [OpenMetadata](https://open-metadata.org/): An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.
- 2. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog that is included in Fybrik for evaluation purposes.
+ 2. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog stub used for testing and evaluation purposes.
 
 In this guide we use the OpenMetadata data catalog.
 
