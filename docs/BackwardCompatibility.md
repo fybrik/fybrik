@@ -113,13 +113,13 @@ they are stored at and the version they are served at." If the conversion does n
 the default **None** conversion strategy may be used and only the apiVersion field will be modified when serving 
 different versions.
 If the conversion does change schema and requires custom logic, Kubernetes suggests using webhooks to implement this 
-custom conversation, and setting the conversation strategy as **Webhook**. However, due to some Fybrik customers' 
+custom conversion, and setting the conversion strategy as **Webhook**. However, due to some Fybrik customers' 
 limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate
 possible CRD changes without changing its schema. And in the future will check possible in-house solutions. 
 
 
-#### CRD changes with None conversation strategy
-When we use the None conversation strategy, we are able to change a required field in version v1 to an optional field in 
+#### CRD changes with None conversion strategy
+When we use the None conversion strategy, we are able to change a required field in version v1 to an optional field in 
 v2. In addition, we are able to add a new  optional field in v2. These changes are inline with compatibility examples 
 from [\[4\]](#references).
 
