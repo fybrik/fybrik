@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.8">
     
     
       
@@ -22,7 +22,7 @@
       <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.815d1a91.min.css">
         
           
           
@@ -561,6 +561,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#view-new-asset-through-openmetadata-ui" class="md-nav__link">
+    View new asset through OpenMetadata UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cleanup-scenario-two" class="md-nav__link">
     Cleanup scenario two
   </a>
@@ -603,6 +610,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    Cleanup
+  </a>
   
 </li>
       
@@ -1545,6 +1559,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#view-new-asset-through-openmetadata-ui" class="md-nav__link">
+    View new asset through OpenMetadata UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#cleanup-scenario-two" class="md-nav__link">
     Cleanup scenario two
   </a>
@@ -1587,6 +1608,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    Cleanup
+  </a>
   
 </li>
       
@@ -1821,6 +1849,7 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 </code></pre></div>
 <p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-write -o <span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
+<span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$CATALOGED_ASSET</span> <span class="p">|</span> sed <span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
 </code></pre></div>
 <h3 id="write-the-data-from-the-notebook">Write the data from the notebook</h3>
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
@@ -1873,6 +1902,8 @@ writer.write_table(my_table)
 writer.close()
 </code></pre></div></li>
 </ol>
+<h3 id="view-new-asset-through-openmetadata-ui">View new asset through OpenMetadata UI</h3>
+<p>The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found <a href="../../tasks/omd-discover-s3-asset/">here</a>. It begins with an explanation how to connect to the UI and login. Once you are logged in, choose <code>Tables</code> on the menu on the left and you will see all the registered assets.</p>
 <h3 id="cleanup-scenario-two">Cleanup scenario two</h3>
 <div class="highlight"><pre><span></span><code>kubectl delete cm sample-policy-write -n fybrik-system
 kubectl delete fybrikapplications.app.fybrik.io my-notebook-write -n fybrik-notebook-sample
@@ -1913,7 +1944,7 @@ kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/
 <span class="s">  appInfo:</span>
 <span class="s">    intent: Fraud Detection</span>
 <span class="s">  data:</span>
-<span class="s">    - dataSetID: fybrik-notebook-sample/${CATALOGED_ASSET}</span>
+<span class="s">    - dataSetID: ${CATALOGED_ASSET}</span>
 <span class="s">      flow: read</span>
 <span class="s">      requirements:</span>
 <span class="s">        interface:</span>
@@ -1922,13 +1953,13 @@ kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/
 </code></pre></div>
 <p>Run the following command to wait until the <code>FybrikApplication</code> is ready:</p>
 <div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for FybrikApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
-<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="s2">&quot;jsonpath={.status.assetStates.fybrik-notebook-sample/</span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span><span class="s2">.conditions[?(@.type == &#39;Ready&#39;)].status}&quot;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for fybrik-notebook-sample/</span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span><span class="s2"> asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="s2">&quot;jsonpath={.status.assetStates.</span><span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span><span class="s2">.conditions[?(@.type == &#39;Ready&#39;)].status}&quot;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for </span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span><span class="s2"> asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <h3 id="read-the-dataset-from-the-notebook">Read the dataset from the notebook</h3>
 <p>In your <strong>terminal</strong>, run the following command to print the <a href="../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey">endpoint</a> to use for reading the data. It fetches the code from the <code>FybrikApplication</code> resource:
-<div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
+<div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-notebook-read -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
 <span class="nb">printf</span> <span class="s2">&quot;\n</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">\n\n&quot;</span>
 </code></pre></div>
 The next steps use the endpoint to read the data in a python notebook.</p>
@@ -1946,7 +1977,7 @@ import pandas as pd
 
 <span class="c1"># Prepare the request</span>
 <span class="nv">request</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;fybrik-notebook-sample/&lt;CATALOGED_ASSET&gt;&quot;</span>,
+    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;&lt;CATALOGED_ASSET&gt;&quot;</span>,
     <span class="c1"># To request specific columns add to the request a &quot;columns&quot; key with a list of column names</span>
     <span class="c1"># &quot;columns&quot;: [...]</span>
 <span class="o">}</span>
@@ -1960,8 +1991,50 @@ df_read: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o"
 <li>Insert a new notebook cell with the following command to visualize the result:
   <div class="highlight"><pre><span></span><code>df_read
 </code></pre></div></li>
-<li>Execute all notebook cells and notice that the <code>oldbalanceOrg</code>  column do not appear because it was redacted.</li>
+<li>Execute all notebook cells and notice that the <code>oldbalanceOrg</code> column does not appear because it was redacted.</li>
 </ol>
+<h2 id="cleanup">Cleanup</h2>
+<p>You can use the <a href="https://aws.amazon.com/cli/">AWS CLI</a> to remove the bucket and objects created in this sample.</p>
+<p>To list all the created objects, run:
+<div class="highlight"><pre><span></span><code><span class="nv">BUCKET</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$CATALOGED_ASSET</span> <span class="p">|</span> awk -F<span class="s2">&quot;.&quot;</span> <span class="s1">&#39;{print $3}&#39;</span><span class="k">)</span>
+aws --endpoint-url<span class="o">=</span>http://localhost:4566 s3api  --bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> list-objects
+</code></pre></div></p>
+<p>The output should look something like:
+<div class="highlight"><pre><span></span><code><span class="o">{</span>
+    <span class="s2">&quot;Contents&quot;</span>: <span class="o">[</span>
+        <span class="o">{</span>
+            <span class="s2">&quot;Key&quot;</span>: <span class="s2">&quot;my-notebook-write5b9b855b5b/&quot;</span>,
+            <span class="s2">&quot;LastModified&quot;</span>: <span class="s2">&quot;2022-10-27T12:40:01+00:00&quot;</span>,
+            <span class="s2">&quot;ETag&quot;</span>: <span class="s2">&quot;\&quot;d41d8cd98f00b204e9800998ecf8427e\&quot;&quot;</span>,
+            <span class="s2">&quot;Size&quot;</span>: <span class="m">0</span>,
+            <span class="s2">&quot;StorageClass&quot;</span>: <span class="s2">&quot;STANDARD&quot;</span>,
+            <span class="s2">&quot;Owner&quot;</span>: <span class="o">{</span>
+                <span class="s2">&quot;DisplayName&quot;</span>: <span class="s2">&quot;webfile&quot;</span>,
+                <span class="s2">&quot;ID&quot;</span>: <span class="s2">&quot;75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a&quot;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>,
+        <span class="o">{</span>
+            <span class="s2">&quot;Key&quot;</span>: <span class="s2">&quot;my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0&quot;</span>,
+            <span class="s2">&quot;LastModified&quot;</span>: <span class="s2">&quot;2022-10-27T12:40:01+00:00&quot;</span>,
+            <span class="s2">&quot;ETag&quot;</span>: <span class="s2">&quot;\&quot;a91aefdb4bf09a1a94254a9c8b6ba473-1\&quot;&quot;</span>,
+            <span class="s2">&quot;Size&quot;</span>: <span class="m">8396</span>,
+            <span class="s2">&quot;StorageClass&quot;</span>: <span class="s2">&quot;STANDARD&quot;</span>,
+            <span class="s2">&quot;Owner&quot;</span>: <span class="o">{</span>
+                <span class="s2">&quot;DisplayName&quot;</span>: <span class="s2">&quot;webfile&quot;</span>,
+                <span class="s2">&quot;ID&quot;</span>: <span class="s2">&quot;75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a&quot;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">]</span>
+<span class="o">}</span>
+</code></pre></div></p>
+<p>Given the object keys returned by the previous command, run:
+<div class="highlight"><pre><span></span><code>aws --endpoint-url<span class="o">=</span>http://localhost:4566 s3api --bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> delete-objects --delete<span class="o">=</span><span class="s1">&#39;{&quot;Objects&quot;: [{&quot;Key&quot;: &quot;my-notebook-write5b9b855b5b/&quot;}, {&quot;Key&quot;: &quot;my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0&quot;}]}&#39;</span>
+</code></pre></div></p>
+<p>Be sure to replace the keys in the previous command with those returned by the AWS <code>list-objects</code> command above.</p>
+<p>Finally, remove the bucket by running:
+<div class="highlight"><pre><span></span><code>aws --endpoint-url<span class="o">=</span>http://localhost:4566 s3api  --bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span> delete-bucket
+</code></pre></div></p>
+<p>Removing the dataset object does not remove the corresponding entry from OpenMetadata. To do so, go to the OpenMetadata UI through your browser. Choose your data asset table. At the top right, press the three vertical dots and choose <code>Delete</code>. Type <code>DELETE</code> into the form to confirm deletion.</p>
 <div class="footnote">
 <hr />
 <ol>
@@ -2063,7 +2136,7 @@ df_read: pd.DataFrame <span class="o">=</span> reader.read_pandas<span class="o"
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
       
     
   </body>

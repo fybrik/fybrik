@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.8">
     
     
       
@@ -22,7 +22,7 @@
       <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.815d1a91.min.css">
         
           
           
@@ -430,6 +430,13 @@
         <li class="md-nav__item">
   <a href="#install-hashicorp-vault-and-plugins" class="md-nav__link">
     Install Hashicorp Vault and plugins
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-data-catalog" class="md-nav__link">
+    Install data catalog
   </a>
   
 </li>
@@ -1399,6 +1406,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#install-data-catalog" class="md-nav__link">
+    Install data catalog
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install-control-plane" class="md-nav__link">
     Install control plane
   </a>
@@ -1516,22 +1530,35 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 </div>
 </div>
 </div>
+<h2 id="install-data-catalog">Install data catalog</h2>
+<p>Fybrik assumes the existence of a data catalog that contains the metadata and connection information for data assets. Fybrik currently supports:</p>
+<ol>
+<li><a href="https://open-metadata.org/">OpenMetadata</a>: An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.</li>
+<li><a href="https://fybrik.io/dev/reference/katalog/">katalog</a>: a data catalog stub used for testing and evaluation purposes.</li>
+</ol>
+<p>In this guide we use the OpenMetadata data catalog.</p>
+<p>To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
+<div class="highlight"><pre><span></span><code>curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -
+</code></pre></div></p>
+<p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
+<p>Running <code>make</code> installs OpenMetadata in the <code>open-metadata</code> namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the <code>Makefile.env</code> file.</p>
 <h2 id="install-control-plane">Install control plane</h2>
+<p>When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is <code>http://openmetadata.open-metadata:8585/api</code>. If you are using a different OpenMetadata deployment, replace the <code>openmetadataConnector.openmetadata_endpoint</code> value in the helm installation command.</p>
 <details class="tip">
 <summary>Install latest development version from GitHub</summary>
-<p>The published Helm charts are only available for released versions. 
+<p>The published Helm charts are only available for released versions.
 To install the <code>dev</code> version install the charts from the source code.
 For example:
 <div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
 <span class="nb">cd</span> fybrik
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
 </code></pre></div></p>
 </details>
-<p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager. 
+<p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager.
 Install the Fybrik release with a built-in data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
 <div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version master --wait
-helm install fybrik fybrik-charts/fybrik -n fybrik-system --version master  --wait
+helm install fybrik fybrik-charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --version master --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
@@ -1648,7 +1675,7 @@ helm install fybrik fybrik-charts/fybrik -n fybrik-system --version master  --wa
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
       
     
   </body>

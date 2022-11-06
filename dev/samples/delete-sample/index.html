@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.8">
     
     
       
@@ -22,7 +22,7 @@
       <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.815d1a91.min.css">
         
           
           
@@ -508,6 +508,19 @@
   <a href="#register-the-dataset-in-a-data-catalog" class="md-nav__link">
     Register the dataset in a data catalog
   </a>
+  
+    <nav class="md-nav" aria-label="Register the dataset in a data catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registering-dataset-via-connector" class="md-nav__link">
+    Registering Dataset via Connector
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1391,6 +1404,19 @@
     Register the dataset in a data catalog
   </a>
   
+    <nav class="md-nav" aria-label="Register the dataset in a data catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registering-dataset-via-connector" class="md-nav__link">
+    Registering Dataset via Connector
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1437,8 +1463,8 @@
 <h1 id="sample-for-the-delete-flow">Sample for the delete flow</h1>
 <p>This sample demonstrate how to delete an S3 object from a bucket.</p>
 <h2 id="install-module">Install module</h2>
-<p>To apply the latest development version of arrow-flight-module:
-<div class="highlight"><pre><span></span><code>kubectl apply -f -n fybrik-system https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml
+<p>To apply the latest development version of the delete-module:
+<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/delete-module/main/module.yaml -n fybrik-system
 </code></pre></div></p>
 <h2 id="prepare-dataset">Prepare dataset</h2>
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to read. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
@@ -1499,7 +1525,10 @@ You should see the new created object:
 </code></pre></div></p>
 <h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
 <p>In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.</p>
-<p>Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
+<p>In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.</p>
+<p>To register an asset directly through the OpenMetadata UI, follow the instructions <a href="../../tasks/omd-discover-s3-asset/">here</a>. These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.</p>
+<h3 id="registering-dataset-via-connector">Registering Dataset via Connector</h3>
+<p>We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span><span class="w"></span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span><span class="w"></span>
@@ -1511,36 +1540,67 @@ You should see the new created object:
 <span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
 </code></pre></div>
-<p>Then, register the data asset itself in the data catalog <code>katalog</code> used for samples. Replace the values for <code>endpoint</code>, <code>bucket</code> and <code>object_key</code> with values from the object storage service that you used and run:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span><span class="w"></span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">katalog.fybrik.io/v1alpha1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Asset</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span><span class="w"> </span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span><span class="w"></span>
-<span class="w">  </span><span class="nt">details</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">dataFormat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
-<span class="w">    </span><span class="nt">connection</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
-<span class="w">      </span><span class="nt">s3</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;demo&quot;</span><span class="w"></span>
-<span class="w">        </span><span class="nt">object_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;PS_20174392719_1491204439457_log.csv&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Synthetic Financial Datasets For Fraud Detection</span><span class="w"></span>
-<span class="w">    </span><span class="nt">geography</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire</span><span class="w"> </span>
-<span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
+<p>Next, register the data asset itself in the data catalog.
+We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+<div class="highlight"><pre><span></span><code>kubectl port-forward svc/openmetadata-connector -n fybrik-system <span class="m">8081</span>:8080 <span class="p">&amp;</span>
+cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
+<span class="s">{</span>
+<span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
+<span class="s">  &quot;destinationAssetID&quot;: &quot;paysim-csv&quot;,</span>
+<span class="s">  &quot;credentials&quot;: &quot;/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample&quot;,</span>
+<span class="s">  &quot;details&quot;: {</span>
+<span class="s">    &quot;dataFormat&quot;: &quot;csv&quot;,</span>
+<span class="s">    &quot;connection&quot;: {</span>
+<span class="s">      &quot;name&quot;: &quot;s3&quot;,</span>
+<span class="s">      &quot;s3&quot;: {</span>
+<span class="s">        &quot;endpoint&quot;: &quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;,</span>
+<span class="s">        &quot;bucket&quot;: &quot;demo&quot;,</span>
+<span class="s">        &quot;object_key&quot;: &quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="s">      }</span>
+<span class="s">    }</span>
+<span class="s">  },</span>
+<span class="s">  &quot;resourceMetadata&quot;: {</span>
+<span class="s">    &quot;name&quot;: &quot;Synthetic Financial Datasets For Fraud Detection&quot;,</span>
+<span class="s">    &quot;geography&quot;: &quot;theshire &quot;,</span>
+<span class="s">    &quot;tags&quot;: {</span>
+<span class="s">      &quot;finance&quot;: &quot;true&quot;</span>
+<span class="s">    },</span>
+<span class="s">    &quot;columns&quot;: [</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;nameOrig&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      },</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;oldbalanceOrg&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      },</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;newbalanceOrig&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      }</span>
+<span class="s">    ]</span>
+<span class="s">  }</span>
+<span class="s">}</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<p>The response from the OpenMetadata connector should look like this:
+<div class="highlight"><pre><span></span><code><span class="o">{</span><span class="s2">&quot;assetID&quot;</span>:<span class="s2">&quot;openmetadata-s3.default.demo.\&quot;PS_20174392719_1491204439457_log.csv\&quot;&quot;</span><span class="o">}</span>
 </code></pre></div>
-<p>The asset is now registered in the catalog. The identifier of the asset is <code>fybrik-notebook-sample/paysim-csv</code> (i.e. <code>&lt;namespace&gt;/&lt;name&gt;</code>). You will use that name in the <code>FybrikApplication</code> later.</p>
-<p>Notice the <code>metadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
-<p>For example, in the yaml above, the <code>geography</code> is set to <code>theshire</code>, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:</p>
+Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-s3.default.demo.\&quot;PS_20174392719_1491204439457_log.csv\&quot;&quot;</span>
+</code></pre></div></p>
+<p>The asset is now registered in the catalog.</p>
+<p>Notice the <code>resourceMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
+<p>For example, in the json above, the <code>geography</code> is set to <code>theshire</code>. You need make sure that it is same as the region of your fybrik control plane. You can get this information using the following command:</p>
 <div class="highlight"><pre><span></span><code>kubectl get configmap cluster-metadata -n fybrik-system -o <span class="s1">&#39;jsonpath={.data.Region}&#39;</span>
 </code></pre></div>
-<p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the yaml above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
+<p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the json above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
 <h2 id="define-data-access-policy">Define data access policy</h2>
 <p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy.
 In this sample we only specify the action taken.
@@ -1575,7 +1635,7 @@ kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/polic
 <span class="w">    </span><span class="nt">intent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fraud Detection</span><span class="w"></span>
 <span class="w">    </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Security</span><span class="w"></span>
 <span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;fybrik-notebook-sample/paysim-csv&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dataSetID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CATALOGED_ASSET}</span><span class="w"></span>
 <span class="w">      </span><span class="nt">flow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">delete</span><span class="w"></span>
 <span class="w">      </span><span class="nt">requirements</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
@@ -1583,13 +1643,14 @@ kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/polic
 <p>Notice that the <code>data</code> field includes a <code>dataSetID</code> that matches the asset identifier in the catalog.</p>
 <p>Run the following command to wait until the <code>FybrikApplication</code> is ready:</p>
 <div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication delete-app -o <span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for FybrikApplication&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
-<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication delete-app -o <span class="s1">&#39;jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for fybrik-notebook-sample/paysim-csv asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+<span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$CATALOGED_ASSET</span> <span class="p">|</span> sed <span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
+<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get fybrikapplication delete-app -o <span class="s2">&quot;jsonpath={.status.assetStates.</span><span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span><span class="s2">.conditions[?(@.type == &#39;Ready&#39;)].status}&quot;</span><span class="k">)</span> !<span class="o">=</span> <span class="s2">&quot;True&quot;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for </span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span><span class="s2"> asset&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
 </code></pre></div>
 <h2 id="ensure-the-object-is-deleted">Ensure the object is deleted</h2>
 <p>Now the object should be deleted. We can check again with <a href="https://aws.amazon.com/cli/">AWS CLI</a>:
 <div class="highlight"><pre><span></span><code>aws --endpoint-url=${ENDPOINT} s3api list-objects --bucket=${BUCKET}
 </code></pre></div>
-Now you should see that the object is no longer in the list (or no list at all if the bukcet is empty).</p>
+Now you should see that the object is no longer in the list (or that the bucket is empty).</p>
 <div class="footnote">
 <hr />
 <ol>
@@ -1691,7 +1752,7 @@ Now you should see that the object is no longer in the list (or no list at all i
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
       
     
   </body>

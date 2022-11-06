@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.8">
     
     
       
@@ -22,7 +22,7 @@
       <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.815d1a91.min.css">
         
           
           
@@ -1320,8 +1320,8 @@
 
 <h1 id="tools-used-by-the-actors">Tools used by the actors</h1>
 <ul>
-<li>The data owner would typically register the dataset in a proprietary or open source catalog.  We have provided <a href="../../reference/katalog/">katalog</a> - a thin layer acting as a replacement for the data catalog for evaluation purposes. This simplifies the sample deployment.</li>
-<li>The data owner stores credentials for accessing the dataset in kubernetes secrets.</li>
+<li>The data owner would typically register the dataset in a proprietary or open source catalog. We use <a href="https://open-metadata.org/">OpenMetadata</a>.</li>
+<li>The data owner needs to provide credentials for accessing a dataset. One way to do it is by storing credentials in kubernetes secrets.</li>
 <li>Proprietary and open source data governance systems are available either as part of a data catalog or as stand-alone systems.  This sample uses the open source <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a>.  The data governance officer writes the policies in OPA's <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">rego</a> language.</li>
 <li>Any editor can be used to write the FybrikApplication.yaml via which the data user expresses the data usage requirements.</li>
 <li>A jupyter notebook is the workload from which the data is consumed by the data user.</li>
@@ -1432,7 +1432,7 @@ kubectl config set-context --current --namespace<span class="o">=</span>fybrik-n
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d6c3db9e.min.js"></script>
       
     
   </body>
