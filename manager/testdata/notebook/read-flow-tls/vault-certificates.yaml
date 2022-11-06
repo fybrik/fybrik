@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-vault-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - vault
+  - vault.fybrik-system
+  - vault.fybrik-system.svc
+  - vault.fybrik-system.svc.cluster.local
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+   kind: Issuer
+   name: test-tls-ca-issuer
+  secretName: test-tls-vault-certs
