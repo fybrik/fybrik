@@ -2,7 +2,7 @@
 
 ## What are IT config policies?
 
-IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and selection of the most appropriate module that implements the capability.
+IT config policies are the mechanism via which the organization may influence the construction of the data plane, taking into account infrastructure capabilities and costs. Fybrik takes into account the workload context, the data metadata, the data governance policies and the configuration policies when defining the data plane. IT config policies influence what capabilities should be deployed (e.g. read, copy), in which clusters they should be deployed, and the selection of the most appropriate module that implements the capability.
 
 ## Input to policies
 
@@ -20,7 +20,7 @@ Available properties:
 
 Policies are written in rego files. Each file declares a package `adminconfig`.
 
-Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where
+Rules are written in the following syntax: `config[{"capability": capability, "decision": decision}]` where -
 
 `capability` represents a required module capability, such as "read", "write", "transform" and "copy".
 
@@ -57,8 +57,11 @@ config[{"capability": "read", "decision": decision}] {
 `restrictions` provides restrictions for `modules`, `clusters` and `storageaccounts`.
 Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
 Properties of a module can be found inside [`FybrikModule`](../reference/crds.md#fybrikmodule) Spec.
-Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#fybrikstorageaccount).
+
+Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#fybrikstorageaccount).  
+
 Cluster is not a custom resource. It has the following properties:
+
 - name: cluster name
 - metadata.region: cluster region
 - metadata.zone: cluster zone
@@ -174,10 +177,10 @@ config[{"capability": "copy", "decision": decision}] {
 
 ### How to provide custom policies
 
-In order to deploy Fybrik with customized policies, perform the following steps 
+In order to deploy Fybrik with customized policies, perform the following steps:
 
 1. Clone the github repository of Fybrik for the required release: `git clone -b releases/<version> https://github.com/fybrik/fybrik.git`
-2. Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder 
+2. Copy the rego files containing customized policies to fybrik/charts/fybrik/files/adminconfig/ folder. 
 3. Install Fybrik:
 ```
 cd fybrik
@@ -209,7 +212,7 @@ config[{"capability": "copy", "decision": decision}] {
     decision := {"policy": policy, "deploy": "False"}
 }
 ```
-Note that an empty ConfigDecisions map will be returned if the expiration date is exceeded by the time when the policy is applied. 
+Note that an empty `ConfigDecisions` map will be returned if the expiration date is exceeded by the time when the policy is applied. 
 
 ### How to update policies after Fybrik is already deployed
 
@@ -245,7 +248,7 @@ Optimization rules are written in rego files in a package `adminconfig`.
 Rules are written in the following syntax: `optimize[decision]` where
 
 - `decision` is a JSON structure with the following fields:
-- `policy` - policy metadata: unique ID, human-readable description and a version
+- `policy` - policy metadata: unique ID, human-readable description and a version.
 - list of `goals` including attribute name, optimization directive(`min` or `max`) and optionally a weight.
 
 For example, the following rule attempts to minimize storage cost in copy scenarios.

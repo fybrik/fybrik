@@ -179,7 +179,11 @@ func GetClientTLSConfig(clientLog *zerolog.Logger) (*tls.Config, error) {
 	}
 	if cert == nil && caCertPool == nil {
 		clientLog.Log().Msg("no TLS certificates were provided")
-		return nil, nil
+		//nolint:gosec // ignore G402: TLS MinVersion too low
+		tlsConfig := &tls.Config{
+			MinVersion: environment.GetMinTLSVersion(clientLog),
+		}
+		return tlsConfig, nil
 	}
 	var providedCert tls.Certificate
 	if cert != nil {

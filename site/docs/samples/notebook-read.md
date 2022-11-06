@@ -51,13 +51,22 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
       export BUCKET="demo"
       export OBJECT_KEY="PS_20174392719_1491204439457_log.csv"
       export FILEPATH="/path/to/PS_20174392719_1491204439457_log.csv"
-      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY} && aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} && aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
+      export REGION=theshire
+      aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+      aws configure set region ${REGION}
+      aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
+      aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body ${FILEPATH}
       ```
 ## Register the dataset in a data catalog
 
 In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
 
-Register the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
+
+To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.
+
+### Registering Dataset via Connector
+We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
@@ -72,54 +81,77 @@ stringData:
 EOF
 ```
 
-Then, register the data asset itself in the data catalog `katalog` used for samples. Replace the values for `endpoint`, `bucket` and `object_key` with values from the object storage service that you used and run:
-
-```yaml
-cat << EOF | kubectl apply -f -
-apiVersion: katalog.fybrik.io/v1alpha1
-kind: Asset
-metadata:
-  name: paysim-csv
-spec:
-  secretRef: 
-    name: paysim-csv
-  details:
-    dataFormat: csv
-    connection:
-      name: s3
-      s3:
-        endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
-        bucket: "demo"
-        object_key: "PS_20174392719_1491204439457_log.csv"
-  metadata:
-    name: Synthetic Financial Datasets For Fraud Detection
-    geography: theshire 
-    tags:
-      finance: true
-    columns:
-      - name: nameOrig
-        tags:
-          PII: true
-      - name: oldbalanceOrg
-        tags:
-          PII: true
-      - name: newbalanceOrig
-        tags:
-          PII: true
+Next, register the data asset itself in the data catalog.
+We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+```bash
+kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+{
+  "destinationCatalogID": "openmetadata",
+  "destinationAssetID": "paysim-csv",
+  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+  "details": {
+    "dataFormat": "csv",
+    "connection": {
+      "name": "s3",
+      "s3": {
+        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
+        "bucket": "demo",
+        "object_key": "PS_20174392719_1491204439457_log.csv"
+      }
+    }
+  },
+  "resourceMetadata": {
+    "name": "Synthetic Financial Datasets For Fraud Detection",
+    "geography": "theshire ",
+    "tags": {
+      "finance": "true"
+    },
+    "columns": [
+      {
+        "name": "nameOrig",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "oldbalanceOrg",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "newbalanceOrig",
+        "tags": {
+          "PII": "true"
+        }
+      }
+    ]
+  }
+}
 EOF
 ```
 
-The asset is now registered in the catalog. The identifier of the asset is `fybrik-notebook-sample/paysim-csv` (i.e. `<namespace>/<name>`). You will use that name in the `FybrikApplication` later.
+The response from the OpenMetadata connector should look like this:
+```bash
+{"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+```
+Store the asset ID in a `CATALOGED_ASSET` variable:
+```bash
+CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+```
 
-Notice the `metadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+The asset is now registered in the catalog.
 
-For example, in the yaml above, the `geography` is set to `theshire`, you need make sure it is same with the region of your fybrik control plane, you can get the information with the below command:
+Notice the `resourceMetadata` field above. It specifies the dataset geography and tags. These attributes can later be used in policies.
+
+For example, in the json above, the `geography` is set to `theshire`. You need make sure that it is same as the region of your fybrik control plane. You can get this information using the following command:
 
 ```shell
 kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Region}'
 ```
 
-[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the yaml above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
+[Quick Start](../get-started/quickstart.md) installs a fybrik control plane with the region `theshire` by default. If you change it or the `geography` in the json above, a [copy module](https://github.com/fybrik/mover) will be required by the policies, but we do not install any copy module in the [Quick Start](../get-started/quickstart.md).
 
 ## Define data access policies
 
@@ -170,7 +202,7 @@ kubectl port-forward svc/my-notebook 8080:80 &
 
 ## Create a `FybrikApplication` resource for the notebook
 
-Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik: 
+Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik. The value you place in the `dataSetID` field is your asset ID, as explained above. If you registered your dataset through the OpenMetadata connector, enter the `assetID` which was returned to you by the OpenMetadata connector, e.g. `"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""`.
 
 <!-- TODO: role field removed but code still requires it -->
 ```yaml
@@ -189,7 +221,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: "fybrik-notebook-sample/paysim-csv"
+    - dataSetID: ${CATALOGED_ASSET}
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
@@ -207,16 +239,17 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for fybrik-notebook-sample/paysim-csv asset" && sleep 5; done
+CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+while [[ $(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ## Read the dataset from the notebook
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.scheme}")
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname}")
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.port}")
 printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to read the data in a python notebook
@@ -236,7 +269,7 @@ The next steps use the endpoint to read the data in a python notebook
 
   # Prepare the request
   request = {
-      "asset": "fybrik-notebook-sample/paysim-csv",
+      "asset": "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\"",
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }

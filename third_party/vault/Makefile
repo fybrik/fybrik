@@ -16,7 +16,6 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	$(TOOLBIN)/helm install vault $(ROOT_DIR)/charts/vault \
 		--set "vault.global.openshift=$(WITH_OPENSHIFT)" \
                 --set "vault.injector.enabled=false" \
-                --set "vault.server.dev.enabled=true" \
 		--values $(ROOT_DIR)/$(VAULT_VALUES_FILE) \
 		--namespace $(KUBE_NAMESPACE) \
 		--wait --timeout 120s

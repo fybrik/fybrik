@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-arrow-flight-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - my-notebook-fybrik-notebook-sample-arrow-flight-aef23
+  - my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints
+  - my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints.svc
+  - my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints.svc.cluster.local
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+   kind: Issuer
+   name: test-tls-ca-issuer
+  secretName: test-tls-arrow-flight-certs
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "fybrik-system,fybrik-blueprints"  # Control destination namespaces
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true" # Auto create reflection for matching namespaces
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "fybrik-system,fybrik-blueprints" # Control auto-reflection namespaces
