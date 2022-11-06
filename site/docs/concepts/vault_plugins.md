@@ -7,4 +7,4 @@ This project uses secrets plugins to retrieve dataset credentials by the running
 
 Additional secret plugins can be developed to retrieve credentials additional location. This [tutorial](https://learn.hashicorp.com/tutorials/vault/plugin-backends?in=vault/app-integration) can serve as a good starting point to learn about Vault plugin development.
 
-Details on Vault plugin configuration for Fybrik can be found in this [task](../tasks/configure-vault-plugin.md).
+Details on adding a new Vault plugin for Fybrik can be found in this [task](../tasks/add-vault-plugin.md).

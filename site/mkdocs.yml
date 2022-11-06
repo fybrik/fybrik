@@ -37,7 +37,7 @@ nav:
   - tasks/high-availability.md
   - tasks/infrastructure.md
   - tasks/data-plane-optimization.md
-  - tasks/configure-vault-plugin.md
+  - tasks/add-vault-plugin.md
 - Reference:
   - reference/crds.md
   - Connectors API:

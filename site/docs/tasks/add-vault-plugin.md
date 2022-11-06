@@ -1,13 +1,14 @@
 
-# Configure a new HashiCorp Vault Plugin
+# Adding a new HashiCorp Vault Plugin
 
-The following steps show how to configure a new [Vault secret plugin](../concepts/vault_plugins.md) for Fybrik.
+The following steps show how to add a new [Vault secret plugin](../concepts/vault_plugins.md) for Fybrik.
+More information on the process can be found in this [blog](https://www.hashicorp.com/blog/building-a-vault-secure-plugin).
 
 ## Before you begin
 
 Ensure that you have the [Vault v1.9.x](https://www.vaultproject.io/downloads) to execute [Vault CLI](https://www.vaultproject.io/docs/commands) commands.
 
-## Steps to use the plugin
+## Steps to add the plugin
 
 1. [Login into Vault](https://www.vaultproject.io/docs/commands/login)
 
@@ -18,7 +19,7 @@ Ensure that you have the [Vault v1.9.x](https://www.vaultproject.io/downloads) t
     vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
     vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
 ```
-3. Add [Vault policy ](https://www.vaultproject.io/docs/concepts/policies) to allow the [modules](../concepts/modules.md) to access secrets using the plugin.
+3. Add [Vault policy](https://www.vaultproject.io/docs/concepts/policies) to allow the [modules](../concepts/modules.md) to access secrets using the plugin.
 <br/>Following is an example of a policy which gives permission to read secrets in Vault path `kubernetes-secrets`:
 ```bash
 vault policy write "allow-all-dataset-creds" - <<EOF
