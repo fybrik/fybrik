@@ -113,21 +113,26 @@ they are stored at and the version they are served at." If the conversion does n
 the default **None** conversion strategy may be used and only the apiVersion field will be modified when serving 
 different versions.
 If the conversion does change schema and requires custom logic, Kubernetes suggests using webhooks to implement this 
-custom conversation, and setting the conversation strategy as **Webhook**. However, due to some Fybrik customers' 
+custom conversion, and setting the conversion strategy as **Webhook**. However, due to some Fybrik customers' 
 limitations, we cannot use Webhooks in Fybrik deployments. Therefore, below we investigate
 possible CRD changes without changing its schema. And in the future will check possible in-house solutions. 
 
 
-#### CRD changes with None conversation strategy
-When we use the None conversation strategy, we are able to change a required field in version v1 to an optional field in 
+#### CRD changes with None conversion strategy
+When we use the None conversion strategy, we are able to change a required field in version v1 to an optional field in 
 v2. In addition, we are able to add a new  optional field in v2. These changes are inline with compatibility examples 
-from [\[5\]](#references)
+from [\[4\]](#references).
+
+When we do these None conversion strategy changes we don't have to bump a CRD version, see discussion in the Kubernetes
+Slack [\[5\]](#references). This option is very important because all Fybrik CRDs have the same version, 
+so bumping to a new one, requires a lot of changes. 
 
 *Note:* If we go from previous API version to a new one without supporting the previous version, let say `v1alpha1` and 
 a cluster API server has stored objects of the previous version, we will get an error similar to the following:  
 ```
 CustomResourceDefinition.apiextensions.k8s.io "plotters.app.fybrik.io" is invalid: status.storedVersions[0]: Invalid value: "v1alpha1": must appear in spec.versions
 ```
+
 ## Connectors
 The Fybrik website [describes](https://fybrik.io/v1.1/concepts/connectors/) what are connectors and their types.
 There are three different types of connectors:
@@ -234,8 +239,8 @@ can break log analytics tools.
 1. Kubernetes internal, "[Changing the API](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#changing-the-api)"
 requirements<a name="1"></a>
 2. Kubernetes "[Versions in CustomResourceDefinitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/)"<a name="2"></a>
-3. Kubernetes "[Serving multiple versions of a CRD](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#serving-multiple-versions-of-a-crd)"<a name="3"></a>
-4. Kubebuilder: "[Multi-Version API](https://book.kubebuilder.io/multiversion-tutorial/tutorial.html)"<a name="4"></a>
-5. "[Backward vs. Forward Compatibility](https://stevenheidel.medium.com/backward-vs-forward-compatibility-9c03c3db15c9)"<a name="5"></a>
-6. [REST API Versioning](https://restfulapi.net/versioning/)<a name="6></a>
+3. Kubebuilder: "[Multi-Version API](https://book.kubebuilder.io/multiversion-tutorial/tutorial.html)"<a name="3"></a>
+4. "[Backward vs. Forward Compatibility](https://stevenheidel.medium.com/backward-vs-forward-compatibility-9c03c3db15c9)"<a name="4"></a>
+5. Kubernetes Slack discussion: "[Bumping the CRD version](https://kubernetes.slack.com/archives/C0EG7JC6T/p1662466796032229?thread_ts=1662443350.841479&cid=C0EG7JC6T)"<a name="5"></a>
+6. "[REST API Versioning](https://restfulapi.net/versioning/)"<a name="6"></a>
 7. [OpenAPI Specification](https://spec.openapis.org/oas/v3.1.0)<a name="7"></a>
