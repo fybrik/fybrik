@@ -55,6 +55,7 @@ echo about to download installation files to $tmp_dir
 
 # download files to temp directory
 if [ $K8S_TYPE == "openshift" ]; then
+    export OPENSHIFT_INSTALLATION=true
     files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml openshift/pvc1.yaml openshift/pvc2.yaml openshift/pvc3.yaml openshift/pvc4.yaml values-deps.yaml)
 else
     files_to_download=(Makefile Makefile.env pv1.yaml pvc1.yaml pv2.yaml pvc2.yaml values-deps.yaml)
