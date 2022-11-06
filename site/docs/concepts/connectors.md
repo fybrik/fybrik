@@ -25,7 +25,7 @@ Fybrik assumes the use of an enterprise data catalog. For example, to reference 
 The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Fybrik uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making data governance policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.
 
 Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
-The default installation of Fybrik installs [Katalog](../reference/katalog.md), a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available.
+Fybrik supports [OpenMetadata](https://open-metadata.org/) through the [openmetadata-connector](https://github.com/fybrik/openmetadata-connector). A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available. There is also [Katalog](../reference/katalog.md), a data catalog stub for testing and evaluation purposes, which uses Kubernetes custom resources.
 
 ### Credential management
 
