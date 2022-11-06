@@ -260,6 +260,7 @@ Run the following command to extract the new cataloged asset id from fybrikappli
 
 ```bash
 CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
 ```
 
 ### Write the data from the notebook
@@ -330,6 +331,10 @@ writer, _ = client.do_put(fl.FlightDescriptor.for_command(json.dumps(request)),
 writer.write_table(my_table)
 writer.close()
 ```
+
+### View new asset through OpenMetadata UI
+The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
+
 ### Cleanup scenario two
 
 ```bash
@@ -384,7 +389,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: fybrik-notebook-sample/${CATALOGED_ASSET}
+    - dataSetID: ${CATALOGED_ASSET}
       flow: read
       requirements:
         interface:
@@ -396,16 +401,16 @@ Run the following command to wait until the `FybrikApplication` is ready:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook-read -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-while [[ $(kubectl get fybrikapplication my-notebook-read -o "jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for fybrik-notebook-sample/${CATALOGED_ASSET} asset" && sleep 5; done
+while [[ $(kubectl get fybrikapplication my-notebook-read -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
 ```
 
 ### Read the dataset from the notebook
 
 In your **terminal**, run the following command to print the [endpoint](../../reference/crds/#fybrikapplicationstatusreadendpointsmapkey) to use for reading the data. It fetches the code from the `FybrikApplication` resource:
 ```bash
-ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.scheme})
-ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.hostname})
-ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.fybrik-notebook-sample/${CATALOGED_ASSET}.endpoint.fybrik-arrow-flight.port})
+ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.scheme})
+ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname})
+ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook-read -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.port})
 printf "\n${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}\n\n"
 ```
 The next steps use the endpoint to read the data in a python notebook.
@@ -425,7 +430,7 @@ The next steps use the endpoint to read the data in a python notebook.
 
   # Prepare the request
   request = {
-      "asset": "fybrik-notebook-sample/<CATALOGED_ASSET>",
+      "asset": "<CATALOGED_ASSET>",
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }
@@ -440,5 +445,57 @@ The next steps use the endpoint to read the data in a python notebook.
   ```
   df_read
   ```
-5. Execute all notebook cells and notice that the `oldbalanceOrg`  column do not appear because it was redacted.
+5. Execute all notebook cells and notice that the `oldbalanceOrg` column does not appear because it was redacted.
 
+## Cleanup
+You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and objects created in this sample.
+
+To list all the created objects, run:
+```bash
+BUCKET=$(echo $CATALOGED_ASSET | awk -F"." '{print $3}')
+aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} list-objects
+```
+
+The output should look something like:
+```bash
+{
+    "Contents": [
+        {
+            "Key": "my-notebook-write5b9b855b5b/",
+            "LastModified": "2022-10-27T12:40:01+00:00",
+            "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
+            "Size": 0,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        },
+        {
+            "Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0",
+            "LastModified": "2022-10-27T12:40:01+00:00",
+            "ETag": "\"a91aefdb4bf09a1a94254a9c8b6ba473-1\"",
+            "Size": 8396,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        }
+    ]
+}
+```
+
+Given the object keys returned by the previous command, run:
+```bash
+aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "my-notebook-write5b9b855b5b/"}, {"Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0"}]}'
+```
+
+Be sure to replace the keys in the previous command with those returned by the AWS `list-objects` command above.
+
+Finally, remove the bucket by running:
+```bash
+aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} delete-bucket
+```
+
+Removing the dataset object does not remove the corresponding entry from OpenMetadata. To do so, go to the OpenMetadata UI through your browser. Choose your data asset table. At the top right, press the three vertical dots and choose `Delete`. Type `DELETE` into the form to confirm deletion.
