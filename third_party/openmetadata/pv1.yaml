@@ -13,6 +13,5 @@ spec:
     apiVersion: v1
     kind: PersistentVolumeClaim
     name: dag 
-    namespace: INSTALLATION_NAMESPACE
   hostPath:
     path: /tmp/

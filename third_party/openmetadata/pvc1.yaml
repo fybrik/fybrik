@@ -2,7 +2,6 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: dag
-  namespace: INSTALLATION_NAMESPACE
   labels:
     app: dag
 spec:
