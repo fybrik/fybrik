@@ -11,7 +11,7 @@ export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
 if [ $# -gt 3 ]; then
     echo "Usage: . ./install_OM.sh [install/getFiles/cleanup] [kind/ibm-openshift] [open-metadata-version]"
-    echo "       default parameters: install kind 0.12.1
+    echo "       default parameters: install kind 0.12.1"
     return
 fi
 
@@ -71,7 +71,7 @@ if [ $OPERATION == "getFiles" ]; then
     echo to compile, go to the $tmp_dir directory,
     echo edit Makefile.env , and then run 'make'
     echo when you are done, re-run this script with the 'cleanup' parameter:
-    echo "    ". ./install_OM.sh cleanup
+    echo "     . ./install_OM.sh cleanup"
     TMP_OM_INSTALLATION_DIR=$tmp_dir
     return
 fi
