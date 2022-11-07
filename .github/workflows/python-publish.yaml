@@ -8,6 +8,9 @@ on:
       vault-version:
         required: true
         default: 'do-not-publish'
+      tls-version:
+        required: true
+        default: 'do-not-publish'
       pypi-repository-url:
         required: true
         default: 'https://upload.pypi.org/legacy/'
@@ -42,6 +45,14 @@ jobs:
           echo "do not publish vault library"
         else
           VERSION=${{ github.event.inputs.vault-version }} python -m build ./python/vault --outdir ./dist
+        fi
+    - name: Build tls package
+      run: |
+        if [ ${{ github.event.inputs.tls-version }} == "do-not-publish" ]
+        then
+          echo "do not publish tls library"
+        else
+          VERSION=${{ github.event.inputs.tls-version }} python -m build ./python/tls --outdir ./dist
         fi
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
