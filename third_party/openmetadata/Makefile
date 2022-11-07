@@ -21,7 +21,7 @@ else
 	kubectl apply -f pvc2.yaml -n ${INSTALLATION_NAMESPACE} || true
 endif
 	kubectl create secret generic airflow-mysql-secrets --from-literal=airflow-mysql-password=${AIRFLOW_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
-	helm install openmetadata-dependencies open-metadata/openmetadata-dependencies --version ${OPENMETADATA_HELM_CHART_VERSION} --values values-deps.yaml --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
+	@helm install openmetadata-dependencies open-metadata/openmetadata-dependencies --version ${OPENMETADATA_HELM_CHART_VERSION} --values values-deps.yaml --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
 --set airflow.airflow.image.tag=${OPENMETADATA_AIRFLOW_VERSION} \
 --set mysql.initdbScripts."init_openmetadata_db_scripts\.sql"=${INIT_OPENMETADATA_DB_SCRIPT} \
 --set mysql.initdbScripts."init_airflow_db_scripts\.sql"=${INIT_AIRFLOW_DB_SCRIPT} \
@@ -37,7 +37,7 @@ endif
 
 	kubectl create secret generic mysql-secrets --from-literal=openmetadata-mysql-password=${OPENMETADATA_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
 	kubectl create secret generic airflow-secrets --from-literal=openmetadata-airflow-password=${OPENMETADATA_AIRFLOW_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
-	helm install openmetadata open-metadata/openmetadata --version ${OPENMETADATA_HELM_CHART_VERSION} --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
+	@helm install openmetadata open-metadata/openmetadata --version ${OPENMETADATA_HELM_CHART_VERSION} --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
 --set global.airflow.host=${AIRFLOW_ENDPOINT} \
 --set global.airflow.openmetadata.serverHostApiUrl=${OPENMETADATA_ENDPOINT} \
 --set global.database.auth.username=${OPENMETADATA_MYSQL_USER} \
