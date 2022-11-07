@@ -10,7 +10,8 @@ export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
 export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
 if [ $# -gt 3 ]; then
-    echo "Usage: . ./install_OM.sh [install/getFiles/cleanup] [ibm-openshift/kind] [open-metadata-version]"
+    echo "Usage: . ./install_OM.sh [install/getFiles/cleanup] [kind/ibm-openshift] [open-metadata-version]"
+    echo "       default parameters: install kind 0.12.1
     return
 fi
 
@@ -56,13 +57,13 @@ echo about to download installation files to $tmp_dir
 # download files to temp directory
 if [ $K8S_TYPE == "ibm-openshift" ]; then
     export OPENSHIFT_INSTALLATION=true
+    mkdir $tmp_dir/ibm-openshift
     files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml ibm-openshift/pvc1.yaml ibm-openshift/pvc2.yaml ibm-openshift/pvc3.yaml ibm-openshift/pvc4.yaml values-deps.yaml)
 else
     files_to_download=(Makefile Makefile.env pv1.yaml pvc1.yaml pv2.yaml pvc2.yaml values-deps.yaml)
 fi
 for file in "${files_to_download[@]}"
-    do base=$(basename $file)
-    curl https://raw.githubusercontent.com/${FYBRIK_GITHUB_ORGANIZATION}/fybrik/${FYBRIK_BRANCH}/third_party/openmetadata/$file -o $tmp_dir/$base
+    do curl https://raw.githubusercontent.com/${FYBRIK_GITHUB_ORGANIZATION}/fybrik/${FYBRIK_BRANCH}/third_party/openmetadata/$file -o $tmp_dir/$file
 done
 
 if [ $OPERATION == "getFiles" ]; then
