@@ -3,9 +3,6 @@ vault:
     enabled: true
     tlsDisable: false
 
-  standalone:
-      enabled: true
-
   server:
     ha:
       enabled: true
