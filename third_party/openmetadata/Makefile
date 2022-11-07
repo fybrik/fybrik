@@ -10,14 +10,16 @@ ifeq ($(OPENSHIFT_INSTALLATION), true)
 	oc adm policy add-scc-to-user anyuid -z airflow -n ${INSTALLATION_NAMESPACE}
 	oc adm policy add-scc-to-user anyuid -z mysql -n ${INSTALLATION_NAMESPACE}
 	oc adm policy add-scc-to-user ibm-privileged-scc -z default -n ${INSTALLATION_NAMESPACE}
-	kubectl apply -f pvc3.yaml -n ${INSTALLATION_NAMESPACE} || true
-	kubectl apply -f pvc4.yaml -n ${INSTALLATION_NAMESPACE} || true
+	kubectl apply -f ibm-openshift/pvc1.yaml -n ${INSTALLATION_NAMESPACE} || true
+	kubectl apply -f ibm-openshift/pvc2.yaml -n ${INSTALLATION_NAMESPACE} || true
+	kubectl apply -f ibm-openshift/pvc3.yaml -n ${INSTALLATION_NAMESPACE} || true
+	kubectl apply -f ibm-openshift/pvc4.yaml -n ${INSTALLATION_NAMESPACE} || true
 else
-	kubectl apply -f pv1.yaml -n ${INSTALLATION_NAMESPACE} || true
-	kubectl apply -f pv2.yaml -n ${INSTALLATION_NAMESPACE} || true
-endif
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv1.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	kubectl apply -f pvc1.yaml -n ${INSTALLATION_NAMESPACE} || true
+	sed s/INSTALLATION_NAMESPACE/${INSTALLATION_NAMESPACE}/g pv2.yaml | kubectl apply -n ${INSTALLATION_NAMESPACE} -f - || true
 	kubectl apply -f pvc2.yaml -n ${INSTALLATION_NAMESPACE} || true
+endif
 	kubectl create secret generic airflow-mysql-secrets --from-literal=airflow-mysql-password=${AIRFLOW_MYSQL_PASSWORD} -n ${INSTALLATION_NAMESPACE} || true
 	helm install openmetadata-dependencies open-metadata/openmetadata-dependencies --version ${OPENMETADATA_HELM_CHART_VERSION} --values values-deps.yaml --wait --timeout 20m -n ${INSTALLATION_NAMESPACE} \
 --set airflow.airflow.image.tag=${OPENMETADATA_AIRFLOW_VERSION} \

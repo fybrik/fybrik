@@ -12,6 +12,7 @@ spec:
   claimRef: # the claimRef is here to provide a "connection" between this pv and the pvc.
     apiVersion: v1
     kind: PersistentVolumeClaim
-    name: dag 
+    name: dag
+    namespace: INSTALLATION_NAMESPACE
   hostPath:
     path: /tmp/

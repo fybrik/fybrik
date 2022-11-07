@@ -13,5 +13,6 @@ spec:
     apiVersion: v1
     kind: PersistentVolumeClaim
     name: logs
+    namespace: INSTALLATION_NAMESPACE
   hostPath:
     path: /tmp/
