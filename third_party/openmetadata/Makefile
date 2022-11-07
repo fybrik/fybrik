@@ -6,7 +6,7 @@ deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true
 	helm repo update || true
 	kubectl create ns ${INSTALLATION_NAMESPACE} || true
-ifeq ($(OPENSHIFT_INSTALLATION), true)
+ifeq ($(IBM_OPENSHIFT_INSTALLATION), true)
 	oc adm policy add-scc-to-user anyuid -z airflow -n ${INSTALLATION_NAMESPACE}
 	oc adm policy add-scc-to-user anyuid -z mysql -n ${INSTALLATION_NAMESPACE}
 	oc adm policy add-scc-to-user ibm-privileged-scc -z default -n ${INSTALLATION_NAMESPACE}
