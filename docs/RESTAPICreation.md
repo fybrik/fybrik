@@ -3,31 +3,35 @@
 
 ## TL;DR
 
-* Suppose you want to add a REST method  <span style="color:#FF0000">createNewComponent</span>  in the  <span style="color:#FF0000">datacatalog</span>  list of apis\.
-* Edit <span style="color:red">connectors/api/datacatalog\.spec\.yaml</span>
-* Edit <span style="color:red">pkg/model/datacatalog/api\.go</span>
-* Run <span style="color:red">make generate</span> in fybrik root
-  * Generates json files\. Remove <span style="color:red">external\.json\.</span> Keep the others.
-* <span style="color:red">make generate\-client\-datacatalog</span>
-  * Generates openapiclient files in <span style="color:red">pkg/connectors/datacatalog/openapiclient</span>
-  * Add these two lines in <span style="color:red">pkg/connectors/datacatalog/openapiclient/model\.go</span>
-    * <span style="color:#0000FF">type</span>  <span style="color:#000000"> </span>  <span style="color:#267F99">CreateNewComponentRequest</span>  <span style="color:#000000"> = </span>  <span style="color:#000000">datacatalog\.CreateNewComponentRequest</span>
-    * <span style="color:#0000FF">type</span>  <span style="color:#000000"> </span>  <span style="color:#267F99">CreateNewComponentResponse</span>  <span style="color:#000000"> = </span>  <span style="color:#000000">datacatalog\.CreateNewComponentResponse</span>
-* Define the new method in <span style="color:red">pkg/connectors/datacatalog/clients/datacatalog\.go</span>
-  * <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#000000">\(in \*</span>  <span style="color:#000000">datacatalog\.CreateNewComponentRequest</span>  <span style="color:#000000">\, creds </span>  <span style="color:#267F99">string</span>  <span style="color:#000000">\) \(\*</span>  <span style="color:#000000">datacatalog\.CreateNewComponentResponse</span>  <span style="color:#000000">\, </span>  <span style="color:#267F99">error</span>  <span style="color:#000000">\)</span>
-* Add the implementation of <span style="color:#795E26"> </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26">\(\) method \(client side\) </span> in <span style="color:#795E26">datacatalog\_openapi\.go</span>
-* Add server side implementation of  <span style="color:#795E26">CreateNewComponent</span>  in any connector
-* <span style="color:#795E26">Add </span>  <span style="color:#795E26">CreateNewComponent</span>   implementation in <span style="color:#795E26">manager/controllers/</span>  <span style="color:#795E26">mockup</span>  <span style="color:#795E26"> </span>
-* <span style="color:red">make verify </span> to fix tab issues </span>
+* Suppose you want to add a REST method  createNewComponent in the datacatalog list of apis.
+* Edit connectors/api/datacatalog.spec.yaml.
+* Edit pkg/model/datacatalog/api\.go.
+* Run make generate in fybrik root
+  * Generates json files. Remove external.json. Keep the others.
+* make generate-client-datacatalog
+  * Generates openapiclient files in pkg/connectors/datacatalog/openapiclient
+  * Add these two lines in pkg/connectors/datacatalog/openapiclient/model.go.
+  ```golang
+    * type CreateNewComponentRequest = datacatalog.CreateNewComponentRequest
+    * type CreateNewComponentResponse = datacatalog.CreateNewComponentResponse
+  ```
+* Define the new method in pkg/connectors/datacatalog/clients/datacatalog.go
+```golang
+  * CreateNewComponent (in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error)
+  ```
+* Add the implementation of CreateNewComponent() method (client side) in datacatalog_openapi.go.
+* Add server side implementation of CreateNewComponent in any connector
+* Add CreateNewComponent implementation in manager/controllers/mockup.
+* make verify to fix tab issues.
 
 ## Longer Version
 
 
-### <span style="color:blue">Step 1</span>: Define OpenAPI specification for the REST API
+### Step 1: Define OpenAPI specification for the REST API
 
-Suppose we want to create a new REST API:  <span style="color:#FF0000">createNewComponent</span>  under the  <span style="color:#FF0000">datacatalog</span>  group of APIs\.
+Suppose we want to create a new REST API: createNewComponent under the datacatalog group of APIs.
 
-Then we can define the API in  <span style="color:#FF0000">datacatalog\.spec\.yaml</span>  under  <span style="color:#FF0000">fybrik</span>  <span style="color:#FF0000">/connectors/</span>  <span style="color:#FF0000">api</span>  <span style="color:#FF0000"> </span> folder as follows:
+Then we can define the API in datacatalog.spec.yaml under fybrik/connectors/api folder as follows:
 
 ---
     /createNewComponent:
@@ -63,11 +67,11 @@ Then we can define the API in  <span style="color:#FF0000">datacatalog\.spec\.ya
             description: Unauthorized
 ---
 
-### <span style="color:blue">Step 2</span>: Define request and response objects
+### Step 2: Define request and response objects
 
-Edit  <span style="color:#FF0000">pkg/model/</span>  <span style="color:#FF0000">datacatalog</span>  <span style="color:#FF0000">/</span>  <span style="color:#FF0000">api\.go</span>  <span style="color:#FF0000"> </span>
+Edit  pkg/model/datacatalog/api.go.
 
-```
+```golang
 type CreateNewComponentRequest struct {
 	// The destination catalog id in which the new asset will be created
 	DestinationCatalogID string `json:"destinationCatalogID"`
@@ -84,25 +88,25 @@ type CreateNewComponentResponse struct {
 }
 ```
 
-### <span style="color:blue">Step 3</span>: Generate the taxonomy files
+### Step 3: Generate the taxonomy files
 
-Run  <span style="color:#FF0000">make generate </span> in  <span style="color:#FF0000">fybrik</span>  <span style="color:#FF0000"> root </span> folder
+Run  make generate in fybrik root folder
 
-  * Generates json files\. Remove external\.json\. Keep the others
+  * Generates json files. Remove external.json. Keep the others.
 
-### <span style="color:blue">Step 4</span>: Generate OpenApiClient related client code
+### Step 4: Generate OpenApiClient related client code
 
-  * Run the following command in  <span style="color:#FF0000">connectors/api</span>  folder to generate openapiclient files in  <span style="color:#FF0000">pkg/connectors/datacatalog/openapiclient</span>
-    * <span style="color:red">	make generate\-client\-datacatalog</span>
-  * Add these two lines in  <span style="color:#FF0000">pkg/connectors/datacatalog/openapiclient/model\.go</span>
-    * <span style="color:#0000FF">	type</span>  <span style="color:#000000"> </span>  <span style="color:#267F99">CreateNewComponentRequest</span>  <span style="color:#000000"> = </span>  <span style="color:#000000">datacatalog\.CreateNewComponentRequest</span>
-    * <span style="color:#0000FF">	type</span>  <span style="color:#000000"> </span>  <span style="color:#267F99">CreateNewComponentResponse</span>  <span style="color:#000000"> = </span>  <span style="color:#000000">datacatalog\.CreateNewComponentResponse</span>
+  * Run the following command in  connectors/api folder to generate openapiclient files in pkg/connectors/datacatalog/openapiclient
+    * make generate-client-datacatalog
+  * Add these two lines in  pkg/connectors/datacatalog/openapiclient/model.go
+    * type CreateNewComponentRequest = datacatalog.CreateNewComponentRequest
+    * type CreateNewComponentResponse = datacatalog.CreateNewComponentResponse
 
-### <span style="color:blue">Step 5</span>: Define and Implement the new REST API in the datacatalog interface
+### Step 5: Define and Implement the new REST API in the datacatalog interface
 
-Define the new method  <span style="color:#FF0000">CreateComponent</span>  in  <span style="color:#FF0000">datacatalog\.go</span>  <span style="color:#FF0000"> </span> in  <span style="color:#FF0000">pkg/connectors/datacatalog/clients/</span>
+Define the new method  CreateComponent in datacatalog.go in pkg/connectors/datacatalog/clients/
 
-```
+```golang
 
 // DataCatalog is an interface of a facade to a data catalog.
 type DataCatalog interface {
@@ -116,9 +120,9 @@ type DataCatalog interface {
 
 ```
 
-Add the implementation of <span style="color:#795E26"> </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26">\(\) method \(client side\) in </span>  <span style="color:#795E26">datacatalog\_openapi\.go</span>  <span style="color:#795E26"> </span>
+Add the implementation of CreateNewComponent() method (client side) in  datacatalog_openapi.go.
 
-```
+```golang
 func (m *openAPIDataCatalog) CreateNewComponent(in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error) {
 	resp, httpResponse, err := m.client.DefaultApi.CreateNewComponent(
 		context.Background()).XRequestCreateNewComponentCred(creds).CreateNewComponentRequest(*in).Execute()
@@ -134,17 +138,17 @@ func (m *openAPIDataCatalog) CreateNewComponent(in *datacatalog.CreateNewCompone
 
 ```
 
-### <span style="color:blue">Step 6</span>: Add server side  logic for the REST API
+### Step 6: Add server side  logic for the REST API
 
-Add server side implementation of  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26">\(\) in any connector </span>
+Add server side implementation of CreateNewComponent() in any connector
 
-![](dirstructure-serversidecode.png)
+![](images/dirstructure-serversidecode.png)
 
-### <span style="color:blue">Step 7</span>: Add test/dummy implementation of REST API in manager/mockup
+### Step 7: Add test/dummy implementation of REST API in manager/mockup
 
-<span style="color:#795E26">Add </span>  <span style="color:#795E26">CreateNewComponent</span>  <span style="color:#795E26"> implementation in manager/controllers/mockup</span>  <span style="color:#795E26"> </span>
+Add CreateNewComponent implementation in manager/controllers/mockup
 
-```
+```golang
 func (m *DataCatalogDummy) CreateNewComponent(in *datacatalog.CreateNewComponentRequest, creds string) (*datacatalog.CreateNewComponentResponse, error) {
 	// TODO: will be provided a proper implementation once the implementation of UpdateAsset in katalog-connector
 	// is completed in a future PR. Till then a dummy implementation is provided.
@@ -152,9 +156,9 @@ func (m *DataCatalogDummy) CreateNewComponent(in *datacatalog.CreateNewComponent
 }
 ```
 
-### <span style="color:blue">Step 8</span>: Verify the changes
+### Step 8: Verify the changes
 
-<span style="color:#3B2322">Run </span>  <span style="color:#FF0000">make verify </span>  <span style="color:#3B2322">in </span>  <span style="color:#3B2322">fybrik</span>  <span style="color:#3B2322"> root folder to fix go\-linting / go\-compilation issues </span>
+Run make verify in fybrik root folder to fix go-linting/go-compilation issues.
 
 
 ### Discussions

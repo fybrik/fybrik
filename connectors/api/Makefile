@@ -8,7 +8,7 @@ ABS_ROOT_DIR := $(abspath ${ROOT_DIR})
 OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v${OPENAPI_GENERATOR_VERSION}
 
 .PHONY: generate-client-datacatalog
-generate-client-datacatalog: clean $(TOOLBIN)/openapi-generator-cli
+generate-client-datacatalog: clean
 	mkdir -p $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient
 
 	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
@@ -24,8 +24,10 @@ generate-client-datacatalog: clean $(TOOLBIN)/openapi-generator-cli
 	rm -f $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.gitignore $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/.openapi-generator-ignore
 	rm -r $(ROOT_DIR)/pkg/connectors/datacatalog/openapiclient/api
 
+	cd $(ROOT_DIR) && make verify
+
 .PHONY: generate-client-policymanager
-generate-client-policymanager: clean $(TOOLBIN)/openapi-generator-cli
+generate-client-policymanager: clean
 	mkdir -p $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient
 
 	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
@@ -40,6 +42,8 @@ generate-client-policymanager: clean $(TOOLBIN)/openapi-generator-cli
 	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/README.md $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/git_push.sh
 	rm -f $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/.gitignore $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/.openapi-generator-ignore
 	rm -r $(ROOT_DIR)/pkg/connectors/policymanager/openapiclient/api
+
+	cd $(ROOT_DIR) && make verify
 
 clean:
 	rm makeenv
