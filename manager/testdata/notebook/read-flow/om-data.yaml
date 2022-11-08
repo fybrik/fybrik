@@ -1,7 +1,7 @@
 {
   "destinationCatalogID": "openmetadata",
   "destinationAssetID": "paysim-csv",
-  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+  "credentials": "/v1/kubernetes-secrets/data-creds?namespace=fybrik-notebook-sample",
   "details": {
     "dataFormat": "csv",
     "connection": {
