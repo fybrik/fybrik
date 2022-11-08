@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-elasticsearch-0
+  labels:
+    app: elasticsearch
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # The amount of the volume's storage to request
+      storage: 30Gi
+  storageClassName: ibmc-file-gold-gid
