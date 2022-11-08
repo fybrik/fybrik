@@ -2,6 +2,7 @@
 # Copyright 2021 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
+set -x
 
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
@@ -13,6 +14,8 @@ if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
   kubectl -n fybrik-notebook-sample apply -f asset.yaml
 else
   kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+  # FIXME: use a proper way to wait until port-forwarding is ready
+  sleep 5
   curl -X POST localhost:8081/createAsset -d @om-data.yaml
 fi
 
