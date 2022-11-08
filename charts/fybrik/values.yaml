@@ -203,7 +203,8 @@ manager:
     # Possible values are TLS-1.0, TLS-1.1, TLS-1.2 and TLS-1.3.
     minVersion: TLS-1.3
     certs:
-      # Name of kubernetes secret that holds the manager certificate.
+      # Name of kubernetes secret that holds the manager certificate and
+      # private key.
       # The secret should be of `kubernetes.io/tls` type.
       # certSecretName: "test-tls-manager-certs"
       certSecretName: ""
@@ -319,7 +320,8 @@ opaServer:
     # For more information please refer to https://www.openpolicyagent.org/docs/latest/security/
     use_tls: false
     certs:
-      # Name of kubernetes tls secret that holds the opa server certificates.
+      # Name of kubernetes tls secret that holds the opa server certificate and
+      # private key.
       # The secret should be of `kubernetes.io/tls` type such that the certificates
       # in tls.crt and tls.key are passed as parameters to opa server at startup
       # via the command line flags `--tls-cert-file=`and `--tls-private-key-file` respectively.
@@ -461,7 +463,8 @@ katalogConnector:
     # Specifies whether the katalog connector communication should use mutual tls.
     use_mtls: false
     certs:
-      # Name of kubernetes tls secret that holds the katalog-connector certificates.
+      # Name of kubernetes tls secret that holds the katalog-connector certificate
+      # and private key.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
       # certSecretName: "test-tls-katalog-connector-certs"
@@ -558,7 +561,8 @@ openmetadataConnector:
     # Specifies whether the openmetadata connector communication should use mutual tls.
     use_mtls: false
     certs:
-      # Name of kubernetes tls secret that holds the openmetadata-connector certificates.
+      # Name of kubernetes tls secret that holds the openmetadata-connector certificate
+      # and private key.
       # The secret should be of `kubernetes.io/tls` type.
       # Relevant if tls is used.
       # certSecretName: "test-tls-openmetadata-connector-certs"
@@ -672,7 +676,8 @@ opaConnector:
     # Relevant if the connection between the manager and the connectors
     # uses tls.
     certs:
-      # Name of kubernetes tls secret that holds opa-connector certificates.
+      # Name of kubernetes tls secret that holds opa-connector certificate
+      # and private key.
       # The secret should be of `kubernetes.io/tls` type.
       # Relavent if tls is used.
       # certSecretName: "test-tls-opa-connector-certs"
