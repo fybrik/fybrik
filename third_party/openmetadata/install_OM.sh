@@ -10,9 +10,9 @@ export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
 export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
 if [ $# -gt 3 ]; then
-    echo "Usage: . ./install_OM.sh [install/getFiles/cleanup] [kind/ibm-openshift] [open-metadata-version]"
+    echo "Usage: $0 [install/getFiles] [kind/ibm-openshift] [open-metadata-version]"
     echo "       default parameters: install kind 0.12.1"
-    return
+    exit -1
 fi
 
 if [ $# -ge 1 ]; then
@@ -27,27 +27,17 @@ if [ $# -ge 3 ]; then
     OM_VERSION=$3
 fi
 
-supported_operations=(install getFiles cleanup)
+supported_operations=(install getFiles)
 if [[ ! ${supported_operations[*]} =~ ${OPERATION} ]]; then
     echo supported operations: ${supported_operations[*]}
     echo ${OPERATION} not supported
-    return
-fi
-
-if [ $OPERATION == "cleanup" ]; then
-    if [ -z ${TMP_OM_INSTALLATION_DIR+x} ]; then
-        echo could not find temporary installation dir. exiting
-        return
-    fi
-    rm -Rf ${TMP_OM_INSTALLATION_DIR}
-    echo removed directory ${TMP_OM_INSTALLATION_DIR}
-    return
+    exit -1
 fi
 
 supported_om_version=(0.12.1)
 if [[ ! ${supported_om_version[*]} =~ ${OM_VERSION} ]]; then
     echo supported OM versions are: ${supported_om_version[*]}
-    return
+    exit -1
 fi
 
 # create temp directory
@@ -70,10 +60,8 @@ if [ $OPERATION == "getFiles" ]; then
     echo downloaded installation files to $tmp_dir
     echo to compile, go to the $tmp_dir directory,
     echo edit Makefile.env , and then run 'make'
-    echo when you are done, re-run this script with the 'cleanup' parameter:
-    echo "     . ./install_OM.sh cleanup"
-    TMP_OM_INSTALLATION_DIR=$tmp_dir
-    return
+    echo when you are done, be sure to remove $tmp_dir
+    exit 0
 fi
 
 # install OM + prepare OM for Fybrik
