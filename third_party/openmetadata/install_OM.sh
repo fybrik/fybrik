@@ -48,7 +48,7 @@ echo about to download installation files to $tmp_dir
 if [ $K8S_TYPE == "ibm-openshift" ]; then
     export IBM_OPENSHIFT_INSTALLATION=true
     mkdir $tmp_dir/ibm-openshift
-    files_to_download=(Makefile Makefile.env pv1.yaml pv2.yaml ibm-openshift/pvc1.yaml ibm-openshift/pvc2.yaml ibm-openshift/pvc3.yaml ibm-openshift/pvc4.yaml values-deps.yaml)
+    files_to_download=(Makefile Makefile.env ibm-openshift/pvc1.yaml ibm-openshift/pvc2.yaml ibm-openshift/pvc3.yaml ibm-openshift/pvc4.yaml values-deps.yaml)
 else
     files_to_download=(Makefile Makefile.env pv1.yaml pvc1.yaml pv2.yaml pvc2.yaml values-deps.yaml)
 fi
