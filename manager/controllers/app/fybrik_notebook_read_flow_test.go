@@ -52,7 +52,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		t.Skip("Error getting CATALOGED_ASSET env var")
 	}
 	if catalogedAsset == "" {
-		// Use default value
+		// Use default value which assumes katalog catalog is deployed
 		catalogedAsset = "fybrik-notebook-sample/data-csv"
 	}
 	gomega.RegisterFailHandler(Fail)
