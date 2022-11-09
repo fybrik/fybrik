@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.8">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.9">
     
     
       
@@ -22,7 +22,7 @@
       <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.815d1a91.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.08040f6c.min.css">
         
           
           
@@ -58,7 +58,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="indigo">
   
     
     
@@ -1423,9 +1423,9 @@
 and securing the use of data across an organization. The figure below showcases the
 current architecture of the Fybrik platform, running on top of Kubernetes.</p>
 <p>The core parts of Fybrik are based on Kubernetes controllers and Custom Resource Definitions (CRDs) in order to define its work items and reconcile the state of them.</p>
-<p>The primary interaction object for a data user is the <code>FybrikApplication</code> custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.</p>
+<p>The primary interaction object for a data user (e.g. data scientist) is the <code>FybrikApplication</code> custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.</p>
 <p><img alt="Architecture" src="../../static/architecture.png" /> </p>
-<p>Before the data user can perform any actions a data operator has to <a href="../../get-started/quickstart/">install</a> Fybrik and modules. </p>
+<p>Before the data user (e.g. data scientist) can perform any actions a data operator (e.g. IT admin) has to <a href="../../get-started/quickstart/">install</a> Fybrik and modules. </p>
 <h2 id="modules"><a href="../modules/">Modules</a></h2>
 <p><a href="../modules/">Modules</a> (M) describe capabilities that can be included in a data plane.</p>
 <p>These modules may be existing open source or third party services, or custom ones. The module of a service indicates the capabilities it supports, the formats and interfaces, and how to deploy the service.  Modules may describe externally deployed services, or services deployed by fybrik.  Examples of modules are those that provide read/write access or produce implicit copies that serve as lower latency caches of remote assets.<br />
@@ -1433,7 +1433,7 @@ Modules may also perform actions to enforce data governance policy decisions, su
 <h2 id="connectors"><a href="../connectors/">Connectors</a></h2>
 <p>Fybrik connects to external services to receive data governance decisions, metadata about datasets and credentials. Policies, assets and access credentials to the assets have to be defined before the user can run an application.</p>
 <p>The current abstraction supports 2 different  <a href="../connectors/">connectors</a>: one for data catalog and one for policy manager. It is designed in an open way so that multiple different catalog and policy frameworks of all kinds of cloud and on-prem systems can be supported.</p>
-<p>The data steward configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using <a href="https://www.vaultproject.io/api">Vault API</a>. Vault uses a custom secret engine implemented with <a href="../vault_plugins/">HashiCorp Vault plugins system</a> to retrieve the credentials from where they are stored (data catalog for example).</p>
+<p>The data steward (e.g. data governance officer) configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using <a href="https://www.vaultproject.io/api">Vault API</a>. Vault uses a custom secret engine implemented with <a href="../vault_plugins/">HashiCorp Vault plugins system</a> to retrieve the credentials from where they are stored (data catalog for example).</p>
 <h2 id="fybrikapplication"><a href="../../reference/crds/#fybrikapplication">FybrikApplication</a></h2>
 <p>Once Fybrik is deployed and configured, including catalogs, modules and connectors, a developer can submit a <code>FybrikApplication</code> Custom Resource to Kubernetes.</p>
 <p>The <code>FybrikApplication</code> holds metadata about the application such as the data assets required by the application, the processing purpose and the method of access the user wishes (protocol e.g. S3 or Arrow flight). </p>
