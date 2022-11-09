@@ -1,7 +1,7 @@
 # Connectors
 
 The project currently has two extension mechanisms, namely connectors and modules.
-This page describes what connectors are and what connectors are installed using the default Fybrik installation.
+This page describes what connectors are and how connectors are installed using the default Fybrik installation.
 
 ## What are connectors?
 
@@ -25,9 +25,9 @@ Fybrik assumes the use of an enterprise data catalog. For example, to reference 
 The catalog provides metadata about the asset such as security tags. It also provides connection information to describe how to connect to the data source to consume the data. Fybrik uses the metadata provided by the catalog both to enable seamless connectivity to the data and as input to making data governance policy decisions. The data user is not concerned with any of it and just selects the data that it needs regardless of where the data resides.
 
 Fybrik is not a data catalog. Instead, it links to existing data catalogs using connectors.
-The default installation of Fybrik installs [Katalog](../reference/katalog.md), a built-in data catalog using Kubernetes custom resources used for evaluation. A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available.
+Fybrik supports [OpenMetadata](https://open-metadata.org/) through the [openmetadata-connector](https://github.com/fybrik/openmetadata-connector). A connector to [ODPi Egeria](https://www.odpi.org/projects/egeria) is also available. There is also [Katalog](../reference/katalog.md), a data catalog stub for testing and evaluation purposes, which uses Kubernetes custom resources.
 
-#### Credential management
+### Credential management
 
 The connector might need to read credentials stored in HashiCorp Vault. The parameters to [login](https://www.vaultproject.io/api-docs/auth/kubernetes#login) to vault and to [read secret](https://www.vaultproject.io/api/secret/kv/kv-v1#read-secret) are as follows:
 
@@ -36,7 +36,7 @@ The connector might need to read credentials stored in HashiCorp Vault. The para
 * role: connector role used to login to Vault - configured to be "fybrik"
 * secretPath: Path of the secret holding the credentials in Vault
 
-The parameters should be known to the connector upon startup time except from the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
+The parameters should be known to the connector upon startup time, except for the vault secret path (`SecretPath`) which is passed as a parameter in each call to the connector usually under `Credentials` name.
 
 An example for Vault Login API call which uses the Vault parameters is as follows:
 
@@ -61,5 +61,3 @@ Fybrik supports a wide and extendable set of enforcement actions to perform on d
 
 A PDP returns a list of enforcement actions given a set of policies and specific context about the application and the data it uses. 
 Fybrik includes a PDP that is powered by [Open Policy Agent](https://www.openpolicyagent.org/) (OPA). However, the PDP can also use external policy managers via connectors, to cover some or even all policy types. 
-
-
