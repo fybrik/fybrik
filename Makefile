@@ -200,6 +200,9 @@ endif
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
+ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
+	$(MAKE) -C third_party/kubernetes-reflector deploy-wait
+endif
 	$(MAKE) -C third_party/datashim deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
 
