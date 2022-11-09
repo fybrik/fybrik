@@ -123,7 +123,7 @@ run-notebook-readflow-tests:
 run-notebook-readflow-tests-om: export HELM_SETTINGS=--set "coordinator.catalog=openmetadata"
 run-notebook-readflow-tests-om: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests-om: export DEPLOY_OPENMETADATA=1
-run-notebook-readflow-tests-om: export CATALOGED_ASSET="openmetadata-s3.default.bucket1.\"data.csv\""
+run-notebook-readflow-tests-om: export CATALOGED_ASSET=openmetadata-s3.default.bucket1."data.csv"
 run-notebook-readflow-tests-om:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests

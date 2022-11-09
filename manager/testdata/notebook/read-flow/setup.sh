@@ -13,6 +13,7 @@ kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
   kubectl -n fybrik-notebook-sample apply -f asset.yaml
 else
+  echo $CATALOGED_ASSET
   kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
   # FIXME: use a proper way to wait until port-forwarding is ready
   sleep 5
