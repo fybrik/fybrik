@@ -7,7 +7,7 @@ kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 FYBRIK_NAMESPACE=fybrik-system
 
-# Create asset and secret
+# Create the storage-accounts
 kubectl -n ${FYBRIK_NAMESPACE} apply -f bucket-creds.yaml
 kubectl -n ${FYBRIK_NAMESPACE} apply -f theshire-storage-account.yaml
 kubectl -n ${FYBRIK_NAMESPACE} apply -f neverland-storage-account.yaml
