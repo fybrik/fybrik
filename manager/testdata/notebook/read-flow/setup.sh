@@ -11,13 +11,19 @@ kubectl config set-context --current --namespace=fybrik-notebook-sample
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
 if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
+  # Deploy katalog asset
   kubectl -n fybrik-notebook-sample apply -f asset.yaml
 else
-  echo $CATALOGED_ASSET
+  # Deploy openmetadata asset
   kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
-  # FIXME: use a proper way to wait until port-forwarding is ready
-  sleep 5
-  curl -X POST localhost:8081/createAsset -d @om-data.yaml
+  # Wait until curl command succeed
+  c=0
+  while [[ $(curl -X POST localhost:8081/createAsset -d @om-asset.yaml) != *'assetID'* ]]
+  do
+    echo "waiting for curl command to createAsset to succeed"
+    ((c++)) && ((c==25)) && break
+    sleep 1
+  done
 fi
 
 # Avoid using webhooks in tests
