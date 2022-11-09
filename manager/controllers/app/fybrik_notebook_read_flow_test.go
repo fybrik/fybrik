@@ -47,6 +47,14 @@ func TestS3NotebookReadFlow(t *testing.T) {
 			s != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
 		t.Skip("Only executed for notebook tests")
 	}
+	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
+	if !ok {
+		t.Skip("Error getting CATALOGED_ASSET env var")
+	}
+	if catalogedAsset == "" {
+		// Use default value which assumes katalog catalog is deployed
+		catalogedAsset = "fybrik-notebook-sample/data-csv"
+	}
 	gomega.RegisterFailHandler(Fail)
 
 	g := gomega.NewGomegaWithT(t)
@@ -113,6 +121,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	// Installing application
 	application := &fapp.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = catalogedAsset
 	applicationKey := client.ObjectKeyFromObject(application)
 
 	// Create FybrikApplication and FybrikModule
@@ -158,9 +167,9 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
-	g.Expect(application.Status.AssetStates["fybrik-notebook-sample/data-csv"].Endpoint.Name).ToNot(gomega.BeEmpty())
+	g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).ToNot(gomega.BeEmpty())
 	// Forward port of arrow flight service to local port
-	connection := application.Status.AssetStates["fybrik-notebook-sample/data-csv"].
+	connection := application.Status.AssetStates[catalogedAsset].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
 	hostname := fmt.Sprintf("%v", connection["hostname"])
 	port := fmt.Sprintf("%v", connection["port"])
@@ -180,7 +189,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	defer flightClient.Close()
 
 	request := ArrowRequest{
-		Asset: "fybrik-notebook-sample/data-csv",
+		Asset: catalogedAsset,
 	}
 
 	marshal, err := json.Marshal(request)
