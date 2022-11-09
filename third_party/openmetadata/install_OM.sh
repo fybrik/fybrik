@@ -76,7 +76,7 @@ done
 if [ $OPERATION == "getFiles" ]; then
     echo downloaded installation files to $tmp_dir
     echo to compile, go to the $tmp_dir directory,
-    echo edit Makefile.env , and then run 'make'
+    echo edit Makefile.env, and then run 'make'
     echo when you are done, be sure to remove $tmp_dir
     exit 0
 fi
