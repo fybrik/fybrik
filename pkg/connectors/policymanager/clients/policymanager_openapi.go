@@ -49,7 +49,7 @@ func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) 
 
 func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest,
 	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
-	resp, _, err := m.client.DefaultApi.GetPoliciesDecisionsPost(context.Background()).XRequestCred(creds).PolicyManagerRequest(*in).Execute()
+	resp, _, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).XRequestCred(creds).GetPolicyDecisionsRequest(*in).Execute()
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
 	}
