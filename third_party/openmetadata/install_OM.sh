@@ -9,6 +9,14 @@ export OPENMETADATA_HELM_CHART_VERSION=0.0.39
 export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
 export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
+usage () {
+  echo Usage: $0 --operation [install/getFiles] --k8s-type [kind/ibm-openshift] --om-version [OM_VERSION]
+  echo "     default parameters:"
+  echo "         operation:  install"
+  echo "         k8s-type:   kind"
+  echo "         om-version: 0.12.1"
+}
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --operation)
@@ -27,16 +35,13 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --help)
-      echo Usage: $0 --operation [install/getFiles] --k8s-type [kind/ibm-openshift] --om-version [OM_VERSION]
-      echo "     default parameters:"
-      echo "         operation:  install"
-      echo "         k8s-type:   kind"
-      echo "         om-version: 0.12.1"
+      usage
       exit 0
       ;;
     -*|--*)
       echo "Unknown option $1"
-      exit 1
+      usage
+      exit -1
       ;;
     *)
       shift # past argument
