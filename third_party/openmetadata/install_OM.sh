@@ -9,23 +9,45 @@ export OPENMETADATA_HELM_CHART_VERSION=0.0.39
 export FYBRIK_BRANCH="${FYBRIK_BRANCH:-master}"
 export FYBRIK_GITHUB_ORGANIZATION="${FYBRIK_GITHUB_ORGANIZATION:-fybrik}"
 
-if [ $# -gt 3 ]; then
-    echo "Usage: $0 [install/getFiles] [kind/ibm-openshift] [open-metadata-version]"
-    echo "       default parameters: install kind 0.12.1"
-    exit -1
-fi
+usage () {
+  echo Usage: $0 --operation [install/getFiles] --k8s-type [kind/ibm-openshift] --om-version [OM_VERSION]
+  echo "     default parameters:"
+  echo "         operation:  install"
+  echo "         k8s-type:   kind"
+  echo "         om-version: 0.12.1"
+}
 
-if [ $# -ge 1 ]; then
-    OPERATION=$1
-fi
-
-if [ $# -ge 2 ]; then
-    K8S_TYPE=$2
-fi
-
-if [ $# -ge 3 ]; then
-    OM_VERSION=$3
-fi
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --operation)
+      OPERATION="$2"
+      shift
+      shift
+      ;;
+    --om-version)
+      OM_VERSION="$2"
+      shift
+      shift
+      ;;
+    --k8s-type)
+      K8S_TYPE="$2"
+      shift
+      shift
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      usage
+      exit -1
+      ;;
+    *)
+      shift # past argument
+      ;;
+  esac
+done
 
 supported_operations=(install getFiles)
 if [[ ! ${supported_operations[*]} =~ ${OPERATION} ]]; then
@@ -59,7 +81,7 @@ done
 if [ $OPERATION == "getFiles" ]; then
     echo downloaded installation files to $tmp_dir
     echo to compile, go to the $tmp_dir directory,
-    echo edit Makefile.env , and then run 'make'
+    echo edit Makefile.env, and then run 'make'
     echo when you are done, be sure to remove $tmp_dir
     exit 0
 fi
