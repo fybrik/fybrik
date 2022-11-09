@@ -2,13 +2,29 @@
 # Copyright 2021 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
+set -x
 
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 # Create asset and secret
-kubectl -n fybrik-notebook-sample apply -f asset.yaml
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
+
+if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
+  # Deploy katalog asset
+  kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
+else
+  # Deploy openmetadata asset
+  kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+  # Wait until curl command succeed
+  c=0
+  while [[ $(curl -X POST localhost:8081/createAsset -d @om-asset.json) != *'assetID'* ]]
+  do
+    echo "waiting for curl command to createAsset to succeed"
+    ((c++)) && ((c==25)) && break
+    sleep 1
+  done
+fi
 
 # Avoid using webhooks in tests
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook

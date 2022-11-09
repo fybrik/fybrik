@@ -6,11 +6,11 @@ current architecture of the Fybrik platform, running on top of Kubernetes.
 
 The core parts of Fybrik are based on Kubernetes controllers and Custom Resource Definitions (CRDs) in order to define its work items and reconcile the state of them.
 
-The primary interaction object for a data user is the `FybrikApplication` custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
+The primary interaction object for a data user (e.g. data scientist) is the `FybrikApplication` custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
 
 ![Architecture](../static/architecture.png) 
 
-Before the data user can perform any actions a data operator has to [install](../get-started/quickstart.md) Fybrik and modules. 
+Before the data user (e.g. data scientist) can perform any actions a data operator (e.g. IT admin) has to [install](../get-started/quickstart.md) Fybrik and modules. 
  
 
 ## [Modules](./modules.md)
@@ -24,7 +24,7 @@ Fybrik connects to external services to receive data governance decisions, metad
 
  The current abstraction supports 2 different  [connectors](./connectors.md): one for data catalog and one for policy manager. It is designed in an open way so that multiple different catalog and policy frameworks of all kinds of cloud and on-prem systems can be supported.
 
-The data steward configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using [Vault API](https://www.vaultproject.io/api). Vault uses a custom secret engine implemented with [HashiCorp Vault plugins system](./vault_plugins.md) to retrieve the credentials from where they are stored (data catalog for example).
+The data steward (e.g. data governance officer) configures policies  in an external policy manager over assets defined in an external data catalog. Dataset credentials are retrieved from Vault by using [Vault API](https://www.vaultproject.io/api). Vault uses a custom secret engine implemented with [HashiCorp Vault plugins system](./vault_plugins.md) to retrieve the credentials from where they are stored (data catalog for example).
 
 ## [FybrikApplication](../../reference/crds/#fybrikapplication)
 Once Fybrik is deployed and configured, including catalogs, modules and connectors, a developer can submit a `FybrikApplication` Custom Resource to Kubernetes.

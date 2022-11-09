@@ -16,6 +16,8 @@ export COPY_TEST_CACERTS ?= 0
 # Vault is configured in commands executed during Vault helm chart
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
+# Deploy openmetadata catalog in tests
+export DEPLOY_OPENMETADATA ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -117,6 +119,15 @@ run-notebook-readflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
+.PHONY: run-notebook-readflow-tests-om
+run-notebook-readflow-tests-om: export HELM_SETTINGS=--set "coordinator.catalog=openmetadata"
+run-notebook-readflow-tests-om: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests-om: export DEPLOY_OPENMETADATA=1
+run-notebook-readflow-tests-om: export CATALOGED_ASSET=openmetadata-s3.default.bucket1."data.csv"
+run-notebook-readflow-tests-om:
+	$(MAKE) setup-cluster
+	$(MAKE) -C manager run-notebook-readflow-tests
+
 .PHONY: run-notebook-readflow-tls-tests
 run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
@@ -180,6 +191,9 @@ cluster-prepare:
 ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
+endif
+ifeq ($(DEPLOY_OPENMETADATA), 1)
+	$(MAKE) -C third_party/openmetadata prepare-openmetadata-for-fybrik
 endif
 	$(MAKE) -C third_party/vault deploy
 	$(MAKE) -C third_party/datashim deploy
