@@ -6,7 +6,7 @@ current architecture of the Fybrik platform, running on top of Kubernetes.
 
 The core parts of Fybrik are based on Kubernetes controllers and Custom Resource Definitions (CRDs) in order to define its work items and reconcile the state of them.
 
-The primary interaction object for a data user is the `FybrikApplication` custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
+The primary interaction object for a data user (e.g. data scientist) is the `FybrikApplication` custom resource where a user defines which data should be used for which purpose. The following chart and description describe the architecture and components of Fybrik relative to when they are used.
 
 ![Architecture](../static/architecture.png) 
 
