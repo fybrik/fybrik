@@ -22,7 +22,8 @@ source ./vault_utils.sh
 
 : ${KUBE_NAMESPACE:=fybrik-system}
 : ${MODULE_NAMESPACE:="fybrik-blueprints"}
-: ${ROLE:=module}
+: ${MODULES_ROLE:=module}
+: ${FYBRIK_ROLE:=fybrik}
 : ${WITHOUT_PORT_FORWARD:=false}
 # Add policy and role for modules running in fybrik-blueprints namespace to
 # use the vault-plugin-secrets-kubernetes-reader plugin enabled in Vault
@@ -50,7 +51,8 @@ configure_vault() {
 # add_role adds a role to bind policy to identity.
 # $1 - cluster name
 add_role() {
-	create_role "$ROLE" "allow-all-dataset-creds" "$1" "$MODULE_NAMESPACE"
+	create_role "$MODULES_ROLE" "allow-all-dataset-creds" "$1" "$MODULE_NAMESPACE"
+	create_role "$FYBRIK_ROLE" "allow-all-dataset-creds" "$1" "$KUBE_NAMESPACE"
 }
 
 add_userpass_auth_method() {

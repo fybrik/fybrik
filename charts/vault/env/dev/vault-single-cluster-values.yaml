@@ -1,5 +1,7 @@
 vault:
   server:
+    dev:
+      enabled: true
     extraArgs: '-dev-plugin-dir=/usr/local/libexec/vault'
     volumes:
       - name: plugins
@@ -43,7 +45,7 @@ vault:
           mountPath: /etc/config
           readOnly: false
       - name: omd-secrets-plugin
-        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.1.0
         command: [/bin/sh, -ec]
         args:
           - |

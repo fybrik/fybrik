@@ -5,14 +5,16 @@
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
-# Create asset and secret
-kubectl -n fybrik-system apply -f bucket-creds.yaml
-kubectl -n fybrik-system apply -f theshire-storage-account.yaml
-kubectl -n fybrik-system apply -f neverland-storage-account.yaml
+FYBRIK_NAMESPACE=fybrik-system
+
+# Create the storage-accounts
+kubectl -n ${FYBRIK_NAMESPACE} apply -f bucket-creds.yaml
+kubectl -n ${FYBRIK_NAMESPACE} apply -f theshire-storage-account.yaml
+kubectl -n ${FYBRIK_NAMESPACE} apply -f neverland-storage-account.yaml
 
 # Avoid using webhooks in tests
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
 # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
-kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n ${FYBRIK_NAMESPACE}
 # Forward port of test S3 instance
-kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
+kubectl port-forward -n ${FYBRIK_NAMESPACE} svc/s3 9090:9090 &

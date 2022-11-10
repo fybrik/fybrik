@@ -16,19 +16,3 @@ spec:
     namespace: INSTALLATION_NAMESPACE
   hostPath:
     path: /tmp/
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: logs
-  namespace: INSTALLATION_NAMESPACE
-  labels:
-    app: logs
-spec:
-        #storageClassName: manual
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      # The amount of the volume's storage to request
-      storage: 1Gi

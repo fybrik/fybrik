@@ -14,10 +14,18 @@ data:
 {{- end }}
       # register and enable secret engine
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader | cut -d ' ' -f1)
-      vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
+      if [[ -z "${CERTS_DIR}" ]]; then
+        vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-kubernetes-reader
+      else
+        vault plugin register -sha256=$SHA256 -args="-ca-cert=${CERTS_DIR}/ca.crt" -args="-client-cert=${CERTS_DIR}/tls.crt" -args="-client-key=${CERTS_DIR}/tls.key" secret vault-plugin-secrets-kubernetes-reader
+      fi
       vault secrets enable -path=kubernetes-secrets vault-plugin-secrets-kubernetes-reader
       SHA256=$(sha256sum /usr/local/libexec/vault/vault-plugin-secrets-omd-reader | cut -d ' ' -f1)
-      vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader
+      if [[ -z "${CERTS_DIR}" ]]; then
+        vault plugin register -sha256=$SHA256 secret vault-plugin-secrets-omd-reader
+      else
+        vault plugin register -sha256=$SHA256 -args="-ca-cert=${CERTS_DIR}/ca.crt" -args="-client-cert=${CERTS_DIR}/tls.crt" -args="-client-key=${CERTS_DIR}/tls.key" secret vault-plugin-secrets-omd-reader
+      fi
       vault secrets enable -path=omd-secrets vault-plugin-secrets-omd-reader
       # create policy to access secrets
       # NOTE: fybrik/dataset-creds/ secret engine is enabled by the manager and is used temporarily

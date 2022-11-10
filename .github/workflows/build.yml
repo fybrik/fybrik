@@ -39,7 +39,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Verify
@@ -67,7 +67,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Test
@@ -96,7 +96,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Namescope integration tests
@@ -149,7 +149,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests old
@@ -182,7 +182,7 @@ jobs:
 #          ~/go/pkg/mod
 #          ${{ github.workspace }}/hack/tools/bin
 #          ${{ github.workspace }}/hack/tools/lib
-#        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+#        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
 #    - name: Install tools
 #      run: make install-tools
 #    - name: Read flow notebook tests bc version
@@ -212,7 +212,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Write flow notebook tests
@@ -239,7 +239,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests with tls
@@ -266,11 +266,37 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests with tls using system CA certs
       run: make run-notebook-readflow-tls-system-cacerts-tests
+
+  notebook-sample-read-flow-openmetadata-catalog:
+    name: Read flow notebook sample with openmetadata catalog
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_HOSTNAME: "localhost:5000"
+      DOCKER_NAMESPACE: fybrik-system
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - uses: actions/checkout@v3
+    - name: Cache dependencies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ${{ github.workspace }}/hack/tools/bin
+          ${{ github.workspace }}/hack/tools/lib
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+    - name: Install tools
+      run: make install-tools
+    - name: Read flow notebook tests with openmetadata catalog
+      run: make run-notebook-readflow-tests-om
 
   tekton-pipelines:
     name: Tekton Tests
@@ -298,7 +324,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Integration tests
