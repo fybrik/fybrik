@@ -139,6 +139,11 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   1/1     Running   0          43s
    ```
 
+1. Wait for the FybrikModule pods to be ready by running:
+   ```bash
+   kubectl wait pod --all --for=condition=ready -n fybrik-blueprints --timeout 10m
+   ```
+
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
