@@ -76,7 +76,7 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 	if err != nil {
 		return nil, errors.Wrap(err, printErr)
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
@@ -94,7 +94,7 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 	if err != nil {
 		return nil, errors.Wrap(err, printErr)
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 //nolint:dupl
@@ -115,8 +115,7 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 	if err != nil {
 		return nil, errors.Wrap(err, printErr)
 	}
-
-	return resp, nil
+	return &resp, nil
 }
 
 //nolint:dupl
@@ -137,7 +136,7 @@ func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, cre
 	if err != nil {
 		return nil, errors.Wrap(err, printErr)
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 func (m *openAPIDataCatalog) Close() error {
