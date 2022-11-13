@@ -36,7 +36,11 @@ const (
 	endpointKey          = "%endpoint%"
 	bucketKey            = "%bucket%"
 	objectKey            = "%object_key%"
-	defaultTaxonomy      = "{\"s3\": {\"name\": \"s3\", \"s3\": {\"bucket\": \"%bucket%\",\"endpoint\": \"%endpoint%\", \"object_key\": \"%object_key%\"}}}"
+	defaultTaxonomy      = `
+	{"s3":
+		{"name": "s3",
+		"s3": {"bucket": "%bucket%","endpoint": "%endpoint%", "object_key": "%object_key%"}}}
+	`
 )
 
 func generateBucketName(owner *types.NamespacedName) string {
