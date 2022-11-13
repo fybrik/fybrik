@@ -13,6 +13,8 @@ package storage
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 	"strings"
 
 	"github.com/minio/minio-go/v7"
@@ -26,15 +28,15 @@ import (
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/random"
-	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/utils"
 )
 
 const (
 	bucketNameHashLength = 10
-	endpointKey          = "endpoint"
-	bucketKey            = "bucket"
-	objectKey            = "object_key"
+	endpointKey          = "%endpoint%"
+	bucketKey            = "%bucket%"
+	objectKey            = "%object_key%"
+	defaultTaxonomy      = "{\"s3\": {\"name\": \"s3\", \"s3\": {\"bucket\": \"%bucket%\",\"endpoint\": \"%endpoint%\", \"object_key\": \"%object_key%\"}}}"
 )
 
 func generateBucketName(owner *types.NamespacedName) string {
@@ -102,25 +104,18 @@ func (r *ProvisionImpl) CreateConnection(sa *fapp.FybrikStorageAccountSpec,
 	if err = minioClient.MakeBucket(context.Background(), genBucketName, minio.MakeBucketOptions{}); err != nil {
 		return taxonomy.Connection{}, errors.Wrapf(err, "could not create a bucket %s", genBucketName)
 	}
-	cType := utils.S3
-	connection := taxonomy.Connection{
-		Name: cType,
-		AdditionalProperties: serde.Properties{
-			Items: map[string]interface{}{
-				string(cType): map[string]interface{}{
-					"endpoint":   sa.Endpoint,
-					"bucket":     genBucketName,
-					"object_key": genName,
-				},
-			},
-		},
-	}
-	return connection, nil
+	return createS3Connection(sa.Endpoint, genBucketName, genName)
 }
 
 func (r *ProvisionImpl) DeleteConnection(conn taxonomy.Connection, secretRef *fapp.SecretRef) error {
-	endpoint := conn.AdditionalProperties.Items[string(utils.S3)].(map[string]interface{})[endpointKey].(string)
-	bucket := conn.AdditionalProperties.Items[string(utils.S3)].(map[string]interface{})[bucketKey].(string)
+	bucket, err := getProperty(conn, utils.S3, bucketKey)
+	if err != nil {
+		return err
+	}
+	endpoint, err := getProperty(conn, utils.S3, endpointKey)
+	if err != nil {
+		return err
+	}
 	key := types.NamespacedName{Name: secretRef.Name, Namespace: secretRef.Namespace}
 	// Initialize minio client object.
 	minioClient, err := r.NewClient(endpoint, key)
@@ -160,24 +155,15 @@ func (r *ProvisionTest) CreateConnection(sa *fapp.FybrikStorageAccountSpec, data
 		}
 	}
 	r.buckets = append(r.buckets, genBucketName)
-	connection := taxonomy.Connection{
-		Name: utils.S3,
-		AdditionalProperties: serde.Properties{
-			Items: map[string]interface{}{
-				string(utils.S3): map[string]interface{}{
-					endpointKey: sa.Endpoint,
-					bucketKey:   genBucketName,
-					objectKey:   datasetName,
-				},
-			},
-		},
-	}
-	return connection, nil
+	return createS3Connection(sa.Endpoint, genBucketName, datasetName)
 }
 
 func (r *ProvisionTest) DeleteConnection(conn taxonomy.Connection, secretRef *fapp.SecretRef) error {
 	buckets := []string{}
-	bucket := conn.AdditionalProperties.Items[string(utils.S3)].(map[string]interface{})[bucketKey].(string)
+	bucket, err := getProperty(conn, utils.S3, bucketKey)
+	if err != nil {
+		return err
+	}
 	found := false
 	for _, b := range r.buckets {
 		if b == bucket {
@@ -191,4 +177,47 @@ func (r *ProvisionTest) DeleteConnection(conn taxonomy.Connection, secretRef *fa
 		return nil
 	}
 	return errors.Errorf("could not find %s to delete", bucket)
+}
+
+func getProperty(conn taxonomy.Connection, connType taxonomy.ConnectionType, key string) (string, error) {
+	templated, err := getTemplatedConnection(connType)
+	if err != nil {
+		return "", err
+	}
+	value := conn.AdditionalProperties.MatchPattern(templated.AdditionalProperties, key)
+	if value == nil {
+		return "", errors.Errorf("unknown property %s", key)
+	}
+	strValue, ok := value.(string)
+	if !ok {
+		return "", errors.Errorf("%s is not a string property", key)
+	}
+	return strValue, nil
+}
+
+func getTemplatedConnection(connType taxonomy.ConnectionType) (taxonomy.Connection, error) {
+	taxonomyDef := os.Getenv("CONNECTION_TAXONOMY")
+	if taxonomyDef == "" {
+		taxonomyDef = defaultTaxonomy
+	}
+	connections := make(map[string]taxonomy.Connection, 0)
+	if err := json.Unmarshal([]byte(taxonomyDef), &connections); err != nil {
+		return taxonomy.Connection{}, errors.Wrapf(err, "could not parse taxonomy template definition %s", taxonomyDef)
+	}
+	connection, found := connections[string(connType)]
+	if !found {
+		return taxonomy.Connection{}, errors.New("Missing taxonomy definition for S3")
+	}
+	return connection, nil
+}
+
+func createS3Connection(endpoint, bucket, object string) (taxonomy.Connection, error) {
+	connection, err := getTemplatedConnection(utils.S3)
+	if err != nil {
+		return connection, err
+	}
+	connection.AdditionalProperties.ReplaceTemplateWithValue(endpointKey, endpoint)
+	connection.AdditionalProperties.ReplaceTemplateWithValue(bucketKey, bucket)
+	connection.AdditionalProperties.ReplaceTemplateWithValue(objectKey, object)
+	return connection, nil
 }

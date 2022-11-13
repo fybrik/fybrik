@@ -39,6 +39,9 @@ opaServer:
       }
 
 
+storage-allocator:
+  enabled: false
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: true

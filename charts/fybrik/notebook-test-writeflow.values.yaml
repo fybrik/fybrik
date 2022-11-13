@@ -19,6 +19,11 @@ manager:
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
 
+# storage allocation managed by Fybrik
+storage-allocator:
+  enabled: true
+  taxonomy: '{"s3": "{\"name\": \"s3\", \"s3\": {\"bucket\": \"%bucket%\",\"endpoint\": \"%endpoint%\", \"object_key\": \"%object_key%\"}}}'
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: true

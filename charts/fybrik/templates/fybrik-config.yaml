@@ -23,6 +23,10 @@ data:
   VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}
   VAULT_MODULES_ROLE: "module" # temporary
+  {{- if .Values.storage_allocator }}
+  ALLOCATE_STORAGE: {{ .Values.storage_allocator.enabled | default "true"}}
+  CONNECTION_TAXONOMY: {{ .Values.storage_allocator.taxonomy }}
+  {{- end }}
   {{- end }}
   {{- end }}
 {{- end }}
