@@ -143,7 +143,7 @@ When installing fybrik with OpenMetadata as its data catalog, you need to specif
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
-Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
     
 ```bash
 helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
