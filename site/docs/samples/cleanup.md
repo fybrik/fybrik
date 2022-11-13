@@ -13,6 +13,8 @@ When you're finished experimenting with a sample, you may clean up as follows:
     ```
 
 ## Cleaning up the OpenMetadata data catalog
+Assuming you installed OpenMetadata in the `open-metadata` namespace, run the following commands:
+
 === "Kubernetes"
     ```bash
     helm delete openmetadata openmetadata-dependencies -n open-metadata
@@ -25,3 +27,5 @@ When you're finished experimenting with a sample, you may clean up as follows:
     helm delete openmetadata openmetadata-dependencies -n open-metadata
     kubectl delete ns open-metadata
     ```
+
+If OpenMetadata was installed in a different namespace, replace `open-metadata` with the name of your chosen namespace.
