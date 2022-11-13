@@ -12,17 +12,22 @@ package openapiclient
 
 import (
 	"bytes"
-	"context"
-	"io/ioutil"
-	"net/http"
-	"net/url"
+	_context "context"
+	_ioutil "io/ioutil"
+	_nethttp "net/http"
+	_neturl "net/url"
+)
+
+// Linger please
+var (
+	_ _context.Context
 )
 
 // DefaultApiService DefaultApi service
 type DefaultApiService service
 
 type ApiCreateAssetRequest struct {
-	ctx                          context.Context
+	ctx                          _context.Context
 	ApiService                   *DefaultApiService
 	xRequestDatacatalogWriteCred *string
 	createAssetRequest           *CreateAssetRequest
@@ -40,17 +45,17 @@ func (r ApiCreateAssetRequest) CreateAssetRequest(createAssetRequest CreateAsset
 	return r
 }
 
-func (r ApiCreateAssetRequest) Execute() (*CreateAssetResponse, *http.Response, error) {
+func (r ApiCreateAssetRequest) Execute() (CreateAssetResponse, *_nethttp.Response, error) {
 	return r.ApiService.CreateAssetExecute(r)
 }
 
 /*
 CreateAsset This REST API writes data asset information to the data catalog configured in fybrik
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiCreateAssetRequest
 */
-func (a *DefaultApiService) CreateAsset(ctx context.Context) ApiCreateAssetRequest {
+func (a *DefaultApiService) CreateAsset(ctx _context.Context) ApiCreateAssetRequest {
 	return ApiCreateAssetRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -59,24 +64,24 @@ func (a *DefaultApiService) CreateAsset(ctx context.Context) ApiCreateAssetReque
 
 // Execute executes the request
 //  @return CreateAssetResponse
-func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*CreateAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (CreateAssetResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
+		localVarHTTPMethod  = _nethttp.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *CreateAssetResponse
+		localVarReturnValue CreateAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.CreateAsset")
 	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/createAsset"
 
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
 	if r.xRequestDatacatalogWriteCred == nil {
 		return localVarReturnValue, nil, reportError("xRequestDatacatalogWriteCred is required and must be specified")
 	}
@@ -114,15 +119,15 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
-	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
@@ -131,7 +136,7 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 
 	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 	if err != nil {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: err.Error(),
 		}
@@ -142,7 +147,7 @@ func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (*Create
 }
 
 type ApiDeleteAssetRequest struct {
-	ctx                     context.Context
+	ctx                     _context.Context
 	ApiService              *DefaultApiService
 	xRequestDatacatalogCred *string
 	deleteAssetRequest      *DeleteAssetRequest
@@ -160,17 +165,17 @@ func (r ApiDeleteAssetRequest) DeleteAssetRequest(deleteAssetRequest DeleteAsset
 	return r
 }
 
-func (r ApiDeleteAssetRequest) Execute() (*DeleteAssetResponse, *http.Response, error) {
+func (r ApiDeleteAssetRequest) Execute() (DeleteAssetResponse, *_nethttp.Response, error) {
 	return r.ApiService.DeleteAssetExecute(r)
 }
 
 /*
 DeleteAsset This REST API deletes data asset
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiDeleteAssetRequest
 */
-func (a *DefaultApiService) DeleteAsset(ctx context.Context) ApiDeleteAssetRequest {
+func (a *DefaultApiService) DeleteAsset(ctx _context.Context) ApiDeleteAssetRequest {
 	return ApiDeleteAssetRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -179,24 +184,24 @@ func (a *DefaultApiService) DeleteAsset(ctx context.Context) ApiDeleteAssetReque
 
 // Execute executes the request
 //  @return DeleteAssetResponse
-func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*DeleteAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (DeleteAssetResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodDelete
+		localVarHTTPMethod  = _nethttp.MethodDelete
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *DeleteAssetResponse
+		localVarReturnValue DeleteAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.DeleteAsset")
 	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/deleteAsset"
 
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
 	if r.xRequestDatacatalogCred == nil {
 		return localVarReturnValue, nil, reportError("xRequestDatacatalogCred is required and must be specified")
 	}
@@ -234,15 +239,15 @@ func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*Delete
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
-	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
@@ -251,7 +256,7 @@ func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*Delete
 
 	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 	if err != nil {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: err.Error(),
 		}
@@ -262,7 +267,7 @@ func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (*Delete
 }
 
 type ApiGetAssetInfoRequest struct {
-	ctx                     context.Context
+	ctx                     _context.Context
 	ApiService              *DefaultApiService
 	xRequestDatacatalogCred *string
 	getAssetRequest         *GetAssetRequest
@@ -280,17 +285,17 @@ func (r ApiGetAssetInfoRequest) GetAssetRequest(getAssetRequest GetAssetRequest)
 	return r
 }
 
-func (r ApiGetAssetInfoRequest) Execute() (*GetAssetResponse, *http.Response, error) {
+func (r ApiGetAssetInfoRequest) Execute() (GetAssetResponse, *_nethttp.Response, error) {
 	return r.ApiService.GetAssetInfoExecute(r)
 }
 
 /*
 GetAssetInfo This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiGetAssetInfoRequest
 */
-func (a *DefaultApiService) GetAssetInfo(ctx context.Context) ApiGetAssetInfoRequest {
+func (a *DefaultApiService) GetAssetInfo(ctx _context.Context) ApiGetAssetInfoRequest {
 	return ApiGetAssetInfoRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -299,24 +304,24 @@ func (a *DefaultApiService) GetAssetInfo(ctx context.Context) ApiGetAssetInfoReq
 
 // Execute executes the request
 //  @return GetAssetResponse
-func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (GetAssetResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPost
+		localVarHTTPMethod  = _nethttp.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *GetAssetResponse
+		localVarReturnValue GetAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetAssetInfo")
 	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/getAssetInfo"
 
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
 	if r.xRequestDatacatalogCred == nil {
 		return localVarReturnValue, nil, reportError("xRequestDatacatalogCred is required and must be specified")
 	}
@@ -354,15 +359,15 @@ func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetA
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
-	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
@@ -371,7 +376,7 @@ func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetA
 
 	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 	if err != nil {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: err.Error(),
 		}
@@ -382,7 +387,7 @@ func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (*GetA
 }
 
 type ApiUpdateAssetRequest struct {
-	ctx                           context.Context
+	ctx                           _context.Context
 	ApiService                    *DefaultApiService
 	xRequestDatacatalogUpdateCred *string
 	updateAssetRequest            *UpdateAssetRequest
@@ -400,17 +405,17 @@ func (r ApiUpdateAssetRequest) UpdateAssetRequest(updateAssetRequest UpdateAsset
 	return r
 }
 
-func (r ApiUpdateAssetRequest) Execute() (*UpdateAssetResponse, *http.Response, error) {
+func (r ApiUpdateAssetRequest) Execute() (UpdateAssetResponse, *_nethttp.Response, error) {
 	return r.ApiService.UpdateAssetExecute(r)
 }
 
 /*
 UpdateAsset This REST API updates data asset information in the data catalog configured in fybrik
 
- @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  @return ApiUpdateAssetRequest
 */
-func (a *DefaultApiService) UpdateAsset(ctx context.Context) ApiUpdateAssetRequest {
+func (a *DefaultApiService) UpdateAsset(ctx _context.Context) ApiUpdateAssetRequest {
 	return ApiUpdateAssetRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -419,24 +424,24 @@ func (a *DefaultApiService) UpdateAsset(ctx context.Context) ApiUpdateAssetReque
 
 // Execute executes the request
 //  @return UpdateAssetResponse
-func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (*UpdateAssetResponse, *http.Response, error) {
+func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (UpdateAssetResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = http.MethodPatch
+		localVarHTTPMethod  = _nethttp.MethodPatch
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateAssetResponse
+		localVarReturnValue UpdateAssetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.UpdateAsset")
 	if err != nil {
-		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/updateAsset"
 
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := url.Values{}
-	localVarFormParams := url.Values{}
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
 	if r.xRequestDatacatalogUpdateCred == nil {
 		return localVarReturnValue, nil, reportError("xRequestDatacatalogUpdateCred is required and must be specified")
 	}
@@ -474,15 +479,15 @@ func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (*Update
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
-	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
-	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
@@ -491,7 +496,7 @@ func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (*Update
 
 	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 	if err != nil {
-		newErr := &GenericOpenAPIError{
+		newErr := GenericOpenAPIError{
 			body:  localVarBody,
 			error: err.Error(),
 		}
