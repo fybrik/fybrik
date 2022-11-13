@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.9">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
     
     
       
@@ -19,7 +19,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.472b142f.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.08040f6c.min.css">
@@ -58,7 +58,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="">
   
     
     
@@ -494,9 +494,47 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Cleanup
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Cleanup
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fybrik-cleanup" class="md-nav__link">
+    Fybrik cleanup
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleaning-up-the-openmetadata-data-catalog" class="md-nav__link">
+    Cleaning up the OpenMetadata data catalog
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1300,6 +1338,28 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fybrik-cleanup" class="md-nav__link">
+    Fybrik cleanup
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleaning-up-the-openmetadata-data-catalog" class="md-nav__link">
+    Cleaning up the OpenMetadata data catalog
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1319,6 +1379,7 @@
 
 
 <h1 id="cleanup">Cleanup</h1>
+<h2 id="fybrik-cleanup">Fybrik cleanup</h2>
 <p>When you're finished experimenting with a sample, you may clean up as follows:</p>
 <ol>
 <li>Stop <code>kubectl port-forward</code> processes (e.g., using <code>pkill kubectl</code>)</li>
@@ -1329,6 +1390,24 @@
     <div class="highlight"><pre><span></span><code><span class="nv">NS</span><span class="o">=</span><span class="s2">&quot;fybrik-system&quot;</span><span class="p">;</span> kubectl -n <span class="nv">$NS</span> get configmap <span class="p">|</span> awk <span class="s1">&#39;/sample/{print $1}&#39;</span> <span class="p">|</span> xargs  kubectl delete -n <span class="nv">$NS</span> configmap
 </code></pre></div></li>
 </ol>
+<h2 id="cleaning-up-the-openmetadata-data-catalog">Cleaning up the OpenMetadata data catalog</h2>
+<p>Assuming you installed OpenMetadata in the <code>open-metadata</code> namespace, run the following commands:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">IBM OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm delete openmetadata openmetadata-dependencies -n open-metadata
+kubectl delete ns open-metadata
+kubectl delete pv dag logs
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm delete openmetadata openmetadata-dependencies -n open-metadata
+kubectl delete ns open-metadata
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>If OpenMetadata was installed in a different namespace, replace <code>open-metadata</code> with the name of your chosen namespace.</p>
 
 
 
