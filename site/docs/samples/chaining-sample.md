@@ -13,7 +13,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     cd $FYBRIK_DIR
     go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set global.tag=master --set global.imagePullPolicy=Always -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+    helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
     ```
 
 1. Install the Airbyte module:
@@ -27,19 +27,107 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     ```
 
 1. Create a new namespace for the application, and set it as default:
-   ```bash
-   kubectl create namespace fybrik-airbyte-sample
-   kubectl config set-context --current --namespace=fybrik-airbyte-sample
-   ```
+    ```bash
+    kubectl create namespace fybrik-airbyte-sample
+    kubectl config set-context --current --namespace=fybrik-airbyte-sample
+    ```
 
-1. Create an asset (the `userdata` asset) in fybrik's mini data catalog, the policy to access it (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
+1. Next, register the data asset itself in the data catalog. We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+    ```bash
+    kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+    {
+      "destinationCatalogID": "openmetadata",
+      "destinationAssetID": "userdata",
+      "details": {
+        "dataFormat": "csv",
+        "connection": {
+          "name": "file",
+          "file": {
+            "connector": "airbyte/source-file",
+            "dataset_name": "userdata",
+            "format": "parquet",
+            "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet",
+            "provider": {
+              "storage": "HTTPS"
+            }
+          }
+        }
+      },
+      "resourceMetadata": {
+        "name": "test data",
+        "geography": "theshire ",
+        "tags": {
+          "finance": "true"
+        },
+        "columns": [
+          {
+            "name": "first_name",
+            "tags": {
+              "PII": "true"
+            }
+          },
+          {
+            "name": "last_name",
+            "tags": {
+              "PII": "true"
+            }
+          },
+          {
+            "name": "birthdate",
+            "tags": {
+              "PII": "true"
+            }
+          }
+        ]
+      }
+    }
+    EOF
+    ```
+
+    The response from the OpenMetadata connector should look like this:
+    ```bash
+    {"assetID":"openmetadata-file.default.openmetadata.userdata"}
+    ```
+    Store the asset ID in a `CATALOGED_ASSET` variable:
+    ```bash
+    CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
+    ```
+
+    The asset is now registered in the catalog.
+
+1. Create the policy to access the asset (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
    ```bash
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/asset.yaml
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego
    kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
    while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-   kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/application.yaml
    ```
+
+1. Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the workload to the control plane of Fybrik. The value you place in the `dataSetID` field is your asset ID, as explained above.
+
+    ```bash
+    cat <<EOF | kubectl apply -f -
+    apiVersion: app.fybrik.io/v1beta1
+    kind: FybrikApplication
+    metadata:
+      name: my-app
+      labels:
+        app: my-app
+    spec:
+      selector:
+        workloadSelector:
+          matchLabels:
+            app: my-app
+      appInfo:
+        intent: Fraud Detection
+      data:
+        - dataSetID: ${CATALOGED_ASSET}
+          requirements:
+            interface:
+              protocol: fybrik-arrow-flight
+    EOF
+    ```
+
 
 1. After the FybrikApplication is applied, the Fybrik control plane attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the `userdata` dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the `fybrik-blueprints` namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
    ```bash
@@ -56,7 +144,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset fybrik-airbyte-sample/userdata
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset ${CATALOGED_ASSET}
    ```
    You should see the following output:
    ```bash
@@ -78,13 +166,14 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
 
 1. Alternatively, one can access the `userdata` dataset from a Jupyter notebook, as described in the [notebook sample](https://fybrik.io/v0.6/samples/notebook/#read-the-dataset-from-the-notebook). To determine the virtual endpoint from which to access the data set, run:
    ```bash
-   ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.scheme})
-   ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.hostname})
-   ENDPOINT_PORT=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.port})
+   CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+   ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.scheme})
+   ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname})
+   ENDPOINT_PORT=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.port})
    printf "${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}"
    ```
 
-   Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this transparent to the user.
+   Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this is transparent to the user.
 
    Insert a new notebook cell to install pandas and pyarrow packages:
    ```bash
@@ -101,7 +190,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
 
    # Prepare the request
    request = {
-       "asset": "fybrik-airbyte-sample/userdata",
+       "asset": "openmetadata-file.default.openmetadata.userdata"",
    }
 
    # Send request and fetch result as a pandas DataFrame
