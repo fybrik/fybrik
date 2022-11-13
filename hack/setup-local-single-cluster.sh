@@ -11,6 +11,6 @@ kubectl config use-context kind-control
 make cluster-prepare
 make docker-minimal-it
 make cluster-prepare-wait
-make deploy
+make deploy-fybrik
 make configure-vault
 make -C modules helm-chart-push
