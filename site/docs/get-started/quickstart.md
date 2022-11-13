@@ -117,9 +117,13 @@ Fybrik assumes the existence of a data catalog that contains the metadata and co
 
 In this guide we use the OpenMetadata data catalog.
 
-To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
+To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.
 
-=== "Kubernetes"
+*Note:* OpenMetadata deployment requires a cluster storage provisioner has persistent volumes capability of ReadWriteMany Access Mode.
+Below we provide examples of installation of OpenMetadata on a single node kind cluster (for development and testing) and an 
+OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deployments please check [OpenMetadata Kubernetes deployment](https://docs.open-metadata.org/deployment/kubernetes) 
+
+=== "A single node Kind cluster"
     ```bash
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -
