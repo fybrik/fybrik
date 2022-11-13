@@ -1,0 +1,117 @@
+vault:
+  global:
+    enabled: true
+    tlsDisable: false
+
+  server:
+    ha:
+      enabled: true
+      replicas: 1
+
+      # Set the api_addr configuration for Vault HA
+      # See https://www.vaultproject.io/docs/configuration#api_addr
+      # If set to null, this will be set to the Pod IP Address
+      apiAddr: "https://vault.fybrik-system.svc.cluster.local:8200"
+
+      config: |
+        plugin_directory = "/usr/local/libexec/vault"
+        ui = true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_disable = false
+          tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+          tls_key_file  = "/vault/userconfig/vault-server-tls/tls.key"
+          tls_client_ca_file = "/vault/userconfig/vault-server-tls/ca.crt"
+          tls_require_and_verify_client_cert = true
+        }
+        storage "file" {
+          path = "/vault/data"
+        }
+
+    volumes:
+      - name: userconfig-vault-server-tls
+        secret:
+          defaultMode: 420
+          secretName: test-tls-vault-certs
+      - name: plugins
+        emptyDir: {}
+      - name: poststartvolume
+        emptyDir: {}
+      - name: configvolume # this volume is read only
+        configMap:
+          name: vault-poststart-cm
+          defaultMode: 0744
+    volumeMounts:
+      - mountPath: /vault/userconfig/vault-server-tls
+        name: userconfig-vault-server-tls
+        readOnly: true
+      - mountPath: /usr/local/libexec/vault
+        name: plugins
+        readOnly: false
+      - mountPath: /opt/config
+        name: poststartvolume
+        readOnly: false
+      - mountPath: /etc/config/poststart.sh
+        subPath: poststart.sh
+        name: configvolume
+    extraInitContainers:
+      - name: kubesecrets-plugin
+        image: ghcr.io/fybrik/vault-plugin-secrets-kubernetes-reader:0.5.0
+        command: [/bin/sh, -ec]
+        args:
+          - |
+            cp /vault-plugin-secrets-kubernetes-reader /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader
+            cp /etc/config/poststart.sh /opt/config/poststart.sh
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
+        - name: poststartvolume
+          mountPath: /opt/config
+          readOnly: false
+        - name: configvolume
+          mountPath: /etc/config
+          readOnly: false
+      - name: omd-secrets-plugin
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.0.0
+        command: [/bin/sh, -ec]
+        args:
+          - |
+            cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader
+        volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
+          readOnly: false
+    extraEnvironmentVars:
+      OM_SERVER_URL: http://openmetadata.open-metadata:8585/api
+      CERTS_DIR: /vault/userconfig/vault-server-tls
+      VAULT_CACERT: /vault/userconfig/vault-server-tls/ca.crt
+      VAULT_CLIENT_CERT: /vault/userconfig/vault-server-tls/tls.crt
+      VAULT_CLIENT_KEY: /vault/userconfig/vault-server-tls/tls.key
+      # Used to define commands to run after the pod is ready.
+      # This can be used to automate processes such as initialization
+      # or boostrapping auth methods.
+    postStart:
+      - "sh"
+      - "-c"
+      - |
+        # Sleep command is needed to avoid synchronization issues with the container pod. Please see
+        # https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#discussion
+        sleep 5
+        # Unseal the server.
+        # A proper way to configure vault is to setup the system initially with the root token
+        # and then discard the token.
+        # ref: https://learn.hashicorp.com/tutorials/vault/production-hardening
+        #
+        # FIXME: Deleting the files in /vault/data/ deletes the unseal keys and root token if they
+        # already exist. Instead, the unseal keys and root token should be temporarily stored into Consul KV as shown in
+        # https://github.com/hashicorp/best-practices/blob/master/packer/config/vault/scripts/setup_vault.sh.
+        rm -rf /vault/data/*
+        vault operator init | tee /tmp/vault.init > /dev/null
+        cat /tmp/vault.init | grep '^Unseal' | awk '{print $4}' | for key in $(cat -); do
+          vault operator unseal $key
+        done
+        token=`cat /tmp/vault.init | grep 'Initial Root Token:' | awk '{print $4}'`; vault login $token
+        rm -rf /tmp/vault.init
+        /opt/config/poststart.sh
