@@ -119,8 +119,8 @@ In this guide we use the OpenMetadata data catalog.
 
 To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.
 
-*Note:* OpenMetadata deployment requires a cluster storage provisioner has persistent volumes capability of ReadWriteMany Access Mode.
-Below we provide examples of installation of OpenMetadata on a single node kind cluster (for development and testing) and an 
+*Note:* OpenMetadata deployment requires a cluster storage provisioner that has PersistentVolume capability of ReadWriteMany Access Mode.
+Below we provide examples of OpenMetadata installations on a single node kind cluster (for development and testing) and an 
 OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deployments please check [OpenMetadata Kubernetes deployment](https://docs.open-metadata.org/deployment/kubernetes) 
 
 === "A single node Kind cluster"
