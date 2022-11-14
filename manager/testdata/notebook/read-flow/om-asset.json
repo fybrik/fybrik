@@ -1,0 +1,43 @@
+{
+  "destinationCatalogID": "openmetadata",
+  "destinationAssetID": "paysim-csv",
+  "credentials": "/v1/kubernetes-secrets/data-creds?namespace=fybrik-notebook-sample",
+  "details": {
+    "dataFormat": "csv",
+    "connection": {
+      "name": "s3",
+      "s3": {
+        "endpoint": "http://s3.fybrik-system:9090",
+        "bucket": "bucket1",
+        "object_key": "data.csv"
+      }
+    }
+  },
+  "resourceMetadata": {
+    "name": "Synthetic Financial Datasets For Fraud Detection",
+    "geography": "theshire ",
+    "tags": {
+      "finance": "true"
+    },
+    "columns": [
+      {
+        "name": "nameOrig",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "oldbalanceOrg",
+        "tags": {
+          "PII": "true"
+        }
+      },
+      {
+        "name": "newbalanceOrig",
+        "tags": {
+          "PII": "true"
+        }
+      }
+    ]
+  }
+}

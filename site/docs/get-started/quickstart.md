@@ -118,9 +118,30 @@ Fybrik assumes the existence of a data catalog that contains the metadata and co
 In this guide we use the OpenMetadata data catalog.
 
 To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:
-```bash
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh | bash -
-```
+
+=== "Kubernetes"
+    ```bash
+    export FYBRIK_BRANCH={{ currentRelease|default('master') }}
+    curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -
+    ```
+    Alternatively, if you want to change the OpenMetadata configuration parameters, run:
+    ```bash
+    export FYBRIK_BRANCH={{ currentRelease|default('master') }}
+    curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --operation getFiles
+    ```
+    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. Once the installation is over, be sure to remove the temporary directory.
+
+=== "IBM OpenShift"
+    ```bash
+    export FYBRIK_BRANCH={{ currentRelease|default('master') }}
+    curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift
+    ```
+    Alternatively, if you want to change the OpenMetadata configuration parameters, run:
+    ```bash
+    export FYBRIK_BRANCH={{ currentRelease|default('master') }}
+    curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift --operation getFiles
+    ```
+    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. Once the installation is over, be sure to remove the temporary directory.
 
 The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
 
@@ -143,7 +164,7 @@ When installing fybrik with OpenMetadata as its data catalog, you need to specif
     ```
 
 The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
-Install the Fybrik release with a built-in data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
     
 ```bash
 helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
