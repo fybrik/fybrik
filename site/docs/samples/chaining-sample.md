@@ -11,6 +11,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
 1. Before installing the control plane, we need to customize the [Fybrik taxonomy](https://fybrik.io/dev/tasks/custom-taxonomy/) to define the new connection and interface types. Run:
     ```bash
     cd $FYBRIK_DIR
+    git checkout {{ currentRelease|default('master') }}
     go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
     helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
@@ -23,7 +24,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
 
 1. Install the arrow-flight module for transformations:
     ```bash
-    kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+    kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
     ```
 
 1. Create a new namespace for the application, and set it as default:
@@ -89,14 +90,13 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     ```bash
     {"assetID":"openmetadata-file.default.openmetadata.userdata"}
     ```
-    Store the asset ID in a `CATALOGED_ASSET` variable:
+
+    The asset is now registered in the catalog. Store the asset ID in a `CATALOGED_ASSET` variable:
     ```bash
     CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
     ```
 
-    The asset is now registered in the catalog.
-
-1. Create the policy to access the asset (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
+1. Create the policy to access the asset (we use a policy that requires redactions of PII columns):
    ```bash
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego
    kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
@@ -168,7 +168,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
    [1000 rows x 13 columns]
    ```
 
-1. Alternatively, one can access the `userdata` dataset from a Jupyter notebook, as described in the [notebook sample](https://fybrik.io/v0.6/samples/notebook/#read-the-dataset-from-the-notebook). To determine the virtual endpoint from which to access the data set, run:
+1. Alternatively, one can access the `userdata` dataset from a Jupyter notebook, as described in the [notebook sample](../notebook-read/#read-the-dataset-from-the-notebook). To determine the virtual endpoint from which to access the data set, run:
    ```bash
    CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
    ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-app -o jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.scheme})
