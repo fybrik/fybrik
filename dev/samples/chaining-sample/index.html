@@ -1329,9 +1329,10 @@
 <li>
 <p>Before installing the control plane, we need to customize the <a href="https://fybrik.io/dev/tasks/custom-taxonomy/">Fybrik taxonomy</a> to define the new connection and interface types. Run:
     <div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$FYBRIK_DIR</span>
+git checkout master
 go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
+helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div></p>
 </li>
 <li>
@@ -1341,23 +1342,104 @@ helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master
 </li>
 <li>
 <p>Install the arrow-flight module for transformations:
-    <div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+    <div class="highlight"><pre><span></span><code>kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 </code></pre></div></p>
 </li>
 <li>
 <p>Create a new namespace for the application, and set it as default:
-   <div class="highlight"><pre><span></span><code>kubectl create namespace fybrik-airbyte-sample
+    <div class="highlight"><pre><span></span><code>kubectl create namespace fybrik-airbyte-sample
 kubectl config set-context --current --namespace<span class="o">=</span>fybrik-airbyte-sample
 </code></pre></div></p>
 </li>
 <li>
-<p>Create an asset (the <code>userdata</code> asset) in fybrik's mini data catalog, the policy to access it (we use a policy that requires redactions to PII columns), and a FybrikApplication indicating the workload, context, and data requested:
-   <div class="highlight"><pre><span></span><code>kubectl apply -f <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/asset.yaml
-kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/sample-policy-restrictive.rego
+<p>Next, register the data asset itself in the data catalog. We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/openmetadata-connector -n fybrik-system <span class="m">8081</span>:8080 <span class="p">&amp;</span>
+cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
+<span class="s">{</span>
+<span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
+<span class="s">  &quot;destinationAssetID&quot;: &quot;userdata&quot;,</span>
+<span class="s">  &quot;details&quot;: {</span>
+<span class="s">    &quot;dataFormat&quot;: &quot;csv&quot;,</span>
+<span class="s">    &quot;connection&quot;: {</span>
+<span class="s">      &quot;name&quot;: &quot;file&quot;,</span>
+<span class="s">      &quot;file&quot;: {</span>
+<span class="s">        &quot;connector&quot;: &quot;airbyte/source-file&quot;,</span>
+<span class="s">        &quot;dataset_name&quot;: &quot;userdata&quot;,</span>
+<span class="s">        &quot;format&quot;: &quot;parquet&quot;,</span>
+<span class="s">        &quot;url&quot;: &quot;https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet&quot;,</span>
+<span class="s">        &quot;provider&quot;: {</span>
+<span class="s">          &quot;storage&quot;: &quot;HTTPS&quot;</span>
+<span class="s">        }</span>
+<span class="s">      }</span>
+<span class="s">    }</span>
+<span class="s">  },</span>
+<span class="s">  &quot;resourceMetadata&quot;: {</span>
+<span class="s">    &quot;name&quot;: &quot;test data&quot;,</span>
+<span class="s">    &quot;geography&quot;: &quot;theshire &quot;,</span>
+<span class="s">    &quot;tags&quot;: {</span>
+<span class="s">      &quot;finance&quot;: &quot;true&quot;</span>
+<span class="s">    },</span>
+<span class="s">    &quot;columns&quot;: [</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;first_name&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      },</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;last_name&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      },</span>
+<span class="s">      {</span>
+<span class="s">        &quot;name&quot;: &quot;birthdate&quot;,</span>
+<span class="s">        &quot;tags&quot;: {</span>
+<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">        }</span>
+<span class="s">      }</span>
+<span class="s">    ]</span>
+<span class="s">  }</span>
+<span class="s">}</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<p>The response from the OpenMetadata connector should look like this:
+<div class="highlight"><pre><span></span><code><span class="o">{</span><span class="s2">&quot;assetID&quot;</span>:<span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span><span class="o">}</span>
+</code></pre></div></p>
+<p>The asset is now registered in the catalog. Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Create the policy to access the asset (we use a policy that requires redactions of PII columns):
+   <div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/sample-policy-restrictive.rego
 kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
 <span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n fybrik-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
-kubectl apply -f <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/application.yaml
 </code></pre></div></p>
+</li>
+<li>
+<p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the workload to the control plane of Fybrik. The value you place in the <code>dataSetID</code> field is your asset ID, as explained above.</p>
+<div class="highlight"><pre><span></span><code>cat <span class="s">&lt;&lt;EOF | kubectl apply -f -</span>
+<span class="s">apiVersion: app.fybrik.io/v1beta1</span>
+<span class="s">kind: FybrikApplication</span>
+<span class="s">metadata:</span>
+<span class="s">  name: my-app</span>
+<span class="s">  labels:</span>
+<span class="s">    app: my-app</span>
+<span class="s">spec:</span>
+<span class="s">  selector:</span>
+<span class="s">    workloadSelector:</span>
+<span class="s">      matchLabels:</span>
+<span class="s">        app: my-app</span>
+<span class="s">  appInfo:</span>
+<span class="s">    intent: Fraud Detection</span>
+<span class="s">  data:</span>
+<span class="s">    - dataSetID: ${CATALOGED_ASSET}</span>
+<span class="s">      requirements:</span>
+<span class="s">        interface:</span>
+<span class="s">          protocol: fybrik-arrow-flight</span>
+<span class="s">EOF</span>
+</code></pre></div>
 </li>
 <li>
 <p>After the FybrikApplication is applied, the Fybrik control plane attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the <code>userdata</code> dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the <code>fybrik-blueprints</code> namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
@@ -1370,10 +1452,15 @@ my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   <span class="m
 </code></pre></div></p>
 </li>
 <li>
+<p>Wait for the FybrikModule pods to be ready by running:
+   <div class="highlight"><pre><span></span><code>kubectl <span class="nb">wait</span> pod --all --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready -n fybrik-blueprints --timeout 10m
+</code></pre></div></p>
+</li>
+<li>
 <p>To verify that the Airbyte module gives access to the <code>userdata</code> dataset, run:
    <div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$AIRBYTE_MODULE_DIR</span>/helm/client
 ./deploy_airbyte_module_client_pod.sh
-kubectl <span class="nb">exec</span> -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port <span class="m">80</span> --asset fybrik-airbyte-sample/userdata
+kubectl <span class="nb">exec</span> -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port <span class="m">80</span> --asset <span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
 </code></pre></div>
    You should see the following output:
    <div class="highlight"><pre><span></span><code>       registration_dttm      id first_name last_name  email  ...     country birthdate     salary                     title comments
@@ -1393,15 +1480,16 @@ kubectl <span class="nb">exec</span> -it my-shell -n default -- python3 /root/cl
 </code></pre></div></p>
 </li>
 <li>
-<p>Alternatively, one can access the <code>userdata</code> dataset from a Jupyter notebook, as described in the <a href="https://fybrik.io/v0.6/samples/notebook/#read-the-dataset-from-the-notebook">notebook sample</a>. To determine the virtual endpoint from which to access the data set, run:
-   <div class="highlight"><pre><span></span><code><span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.fybrik-notebook-sample/userdata.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
+<p>Alternatively, one can access the <code>userdata</code> dataset from a Jupyter notebook, as described in the <a href="../notebook-read/#read-the-dataset-from-the-notebook">notebook sample</a>. To determine the virtual endpoint from which to access the data set, run:
+   <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$CATALOGED_ASSET</span> <span class="p">|</span> sed <span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
+<span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
 <span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div></p>
 </li>
 </ol>
-<p>Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this transparent to the user.</p>
+<p>Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this is transparent to the user.</p>
 <p>Insert a new notebook cell to install pandas and pyarrow packages:
    <div class="highlight"><pre><span></span><code>%pip install pandas pyarrow
 </code></pre></div></p>
@@ -1414,7 +1502,7 @@ import pyarrow.flight as fl
 
 <span class="c1"># Prepare the request</span>
 <span class="nv">request</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;fybrik-airbyte-sample/userdata&quot;</span>,
+    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>,
 <span class="o">}</span>
 
 <span class="c1"># Send request and fetch result as a pandas DataFrame</span>

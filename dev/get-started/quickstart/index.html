@@ -1544,7 +1544,7 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <p><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -
 </code></pre></div>
-If you want to change the OpenMetadata configuration parameters, run:
+Alternatively, if you want to change the OpenMetadata configuration parameters, run:
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --operation getFiles
 </code></pre></div>
@@ -1554,7 +1554,7 @@ This command downloads the installation files to a temporary directory. Follow t
 <p><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift
 </code></pre></div>
-If you want to change the OpenMetadata configuration parameters, run:
+Alternatively, if you want to change the OpenMetadata configuration parameters, run:
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift --operation getFiles
 </code></pre></div>
