@@ -15,7 +15,7 @@
     
     
       
-        <title>Infrastructure attributes - Fybrik</title>
+        <title>Adding a new HashiCorp Vault Plugin - Fybrik</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#infrastructure-attributes" class="md-skip">
+        <a href="#adding-a-new-hashicorp-vault-plugin" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Infrastructure attributes
+              Adding a new HashiCorp Vault Plugin
             
           </span>
         </div>
@@ -799,80 +799,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Infrastructure attributes
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../infrastructure/" class="md-nav__link">
         Infrastructure attributes
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#metric-metadata" class="md-nav__link">
-    Metric metadata
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-define-infrastructure-attributes" class="md-nav__link">
-    How to define infrastructure attributes
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#add-a-new-attribute-definition-to-the-taxonomy" class="md-nav__link">
-    Add a new attribute definition to the taxonomy
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-of-infrastructure-attributes-in-configuration-policies" class="md-nav__link">
-    Usage of infrastructure attributes in configuration policies
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-of-infrastructure-attributes-for-optimization" class="md-nav__link">
-    Usage of infrastructure attributes for optimization
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -896,11 +827,59 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../add-vault-plugin/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Adding a new HashiCorp Vault Plugin
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Adding a new HashiCorp Vault Plugin
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#steps-to-add-the-plugin" class="md-nav__link">
+    Steps to add the plugin
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1378,36 +1357,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#metric-metadata" class="md-nav__link">
-    Metric metadata
+  <a href="#before-you-begin" class="md-nav__link">
+    Before you begin
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-to-define-infrastructure-attributes" class="md-nav__link">
-    How to define infrastructure attributes
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#add-a-new-attribute-definition-to-the-taxonomy" class="md-nav__link">
-    Add a new attribute definition to the taxonomy
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-of-infrastructure-attributes-in-configuration-policies" class="md-nav__link">
-    Usage of infrastructure attributes in configuration policies
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-of-infrastructure-attributes-for-optimization" class="md-nav__link">
-    Usage of infrastructure attributes for optimization
+  <a href="#steps-to-add-the-plugin" class="md-nav__link">
+    Steps to add the plugin
   </a>
   
 </li>
@@ -1426,68 +1384,52 @@
                 
                   
 
-  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/tasks/infrastructure.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/tasks/add-vault-plugin.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
-<h1 id="infrastructure-attributes">Infrastructure attributes</h1>
-<p>When writing configuration policies, infrastructure metrics and costs may also be taken into account in order to optimize the generated data plane. 
-For example, selection of a storage account may be based on a storage cost, selection of a cluster may provide a restriction on cluster capacity, and so on. 
-Collection of the metrics and their dynamic update is beyond the scope of Fybrik. One may develop or use 3rd party solutions for monitoring and updating these infrastructure metrics.
-Infrastructure attributes are stored in the <code>/tmp/adminconfig/infrastructure.json</code> directory of the manager pod. </p>
-<h3 id="metric-metadata">Metric metadata</h3>
-<p>Prior to defining an infrastructure attribute, the corresponding metric should be defined, providing information about the attribute value, e.g. the measurement units and the scale of possible values.
-Several attributes may share the same metric, e.g. <code>rate</code> can be defined for both the <code>error-rate</code> and the <code>load-rate</code>.
-Example of a metric:
-<div class="highlight"><pre><span></span><code>&quot;name&quot;: &quot;rate&quot;,
-&quot;type&quot;: &quot;numeric&quot;,
-&quot;units&quot;: &quot;%&quot;,
-&quot;scale&quot;: {&quot;min&quot;: 0, &quot;max&quot;: 100}
+<h1 id="adding-a-new-hashicorp-vault-plugin">Adding a new HashiCorp Vault Plugin</h1>
+<p>The following steps show how to add a new <a href="../../concepts/vault_plugins/">Vault secret plugin</a> for Fybrik.
+More information on the process can be found in this <a href="https://www.hashicorp.com/blog/building-a-vault-secure-plugin">blog</a>.</p>
+<h2 id="before-you-begin">Before you begin</h2>
+<p>Ensure that you have the <a href="https://www.vaultproject.io/downloads">Vault v1.9.x</a> to execute <a href="https://www.vaultproject.io/docs/commands">Vault CLI</a> commands.</p>
+<h2 id="steps-to-add-the-plugin">Steps to add the plugin</h2>
+<ol>
+<li>
+<p><a href="https://www.vaultproject.io/docs/commands/login">Login into Vault</a></p>
+</li>
+<li>
+<p>Register and enable the plugin during Vault server initialization in a specific path. 
+<br/>An example of that can be found in helm chart <a href="https://github.com/fybrik/fybrik/blob/master/charts/vault/env/dev/plugin-secrets-values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
+<div class="highlight"><pre><span></span><code>    <span class="nv">SHA256</span><span class="o">=</span><span class="k">$(</span>sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader <span class="p">|</span> cut -d <span class="s1">&#39; &#39;</span> -f1<span class="k">)</span> <span class="o">&amp;&amp;</span>
+    vault plugin register -sha256<span class="o">=</span><span class="nv">$SHA256</span> secret vault-plugin-secrets-kubernetes-reader
+    vault secrets <span class="nb">enable</span> -path<span class="o">=</span>kubernetes-secrets vault-plugin-secrets-kubernetes-reader
 </code></pre></div></p>
-<h3 id="how-to-define-infrastructure-attributes">How to define infrastructure attributes</h3>
-<p>An infrastructure attribute is defined by a JSON object that includes the following fields:</p>
-<ul>
-<li><code>attribute</code> - name of the infrastructure attribute, should be defined in the taxonomy</li>
-<li><code>description</code> </li>
-<li><code>metricName</code> - a reference to the <a href="#metric-metadata">metric</a></li>
-<li><code>value</code> - the actual value of the attribute</li>
-<li><code>object</code> - a resource the attribute relates to (storageaccount, module, cluster)</li>
-<li><code>instance</code> - a reference to the resource instance, e.g. storage account name</li>
-</ul>
-<p>The infrastructure attributes are associated with resources managed by Fybrik: FybrikStorageAccount, FybrikModule and cluster (defined in the <code>cluster-metadata</code> config map). The valid values for the attribute <code>object</code> field are <code>storageaccount</code>, <code>module</code> and <code>cluster</code>, respectively.</p>
-<p>For example, the following attribute defines the storage cost of the "account-theshire" storage account. </p>
-<div class="highlight"><pre><span></span><code>{
-    &quot;attribute&quot;: &quot;storage-cost&quot;,
-    &quot;description&quot;: &quot;theshire object store&quot;,
-    &quot;value&quot;: &quot;90&quot;,
-    &quot;metricName&quot;: &quot;cost&quot;,
-    &quot;object&quot;: &quot;storageaccount&quot;,
-    &quot;instance&quot;: &quot;account-theshire&quot;
-}
-</code></pre></div>
-<h3 id="add-a-new-attribute-definition-to-the-taxonomy">Add a new attribute definition to the taxonomy</h3>
-<p>See <a href="https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/infrastructure/attributepair.yaml">metric taxonomy</a> for an example how to define an attribute and the corresponding measurement units. </p>
-<h3 id="usage-of-infrastructure-attributes-in-configuration-policies">Usage of infrastructure attributes in configuration policies</h3>
-<p>An infrastructure attribute can be used as the <code>property</code> value in <a href="../../concepts/config-policies/#configuration-policies">configuration policies</a>. For example, the following policy restricts 
-the storage account selection using the <code>storage-cost</code> infrastructure attribute:
-<div class="highlight"><pre><span></span><code># restrict storage costs to a maximum of $95 when copying the data
-config[{&quot;capability&quot;: &quot;copy&quot;, &quot;decision&quot;: decision}] {
-    input.request.usage == &quot;copy&quot;
-    input.request.dataset.geography != input.workload.cluster.metadata.region
-    account_restrict := {&quot;property&quot;: &quot;storage-cost&quot;, &quot;range&quot;: {&quot;max&quot;: 95}}
-    policy := {&quot;ID&quot;: &quot;copy-restrict-storage&quot;, &quot;description&quot;:&quot;Use cheaper storage&quot;, &quot;version&quot;: &quot;0.1&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;restrictions&quot;: {&quot;storageaccounts&quot;: [account_restrict]}}
-}
-</code></pre></div></p>
-<h3 id="usage-of-infrastructure-attributes-for-optimization">Usage of infrastructure attributes for optimization</h3>
-<p>Attributes can also be used for <a href="../../concepts/config-policies/#optimization-goals">optimizing</a> a control plane. For example, the following rule reduces storage costs:</p>
-<div class="highlight"><pre><span></span><code># minimize storage cost
-optimize[decision] {
-    policy := {&quot;ID&quot;: &quot;save-cost&quot;, &quot;description&quot;:&quot;Save storage costs&quot;, &quot;version&quot;: &quot;0.1&quot;}
-    decision := {&quot;policy&quot;: policy, &quot;strategy&quot;: [{&quot;attribute&quot;: &quot;storage-cost&quot;, &quot;directive&quot;: &quot;min&quot;}]}
-}
+</li>
+<li>Add <a href="https://www.vaultproject.io/docs/concepts/policies">Vault policy</a> to allow the <a href="../../concepts/modules/">modules</a> to access secrets using the plugin.
+<br/>Following is an example of a policy which gives permission to read secrets in Vault path <code>kubernetes-secrets</code>:
+<div class="highlight"><pre><span></span><code>vault policy write <span class="s2">&quot;allow-all-dataset-creds&quot;</span> - <span class="s">&lt;&lt;EOF</span>
+<span class="s">      path &quot;kubernetes-secrets/*&quot; {</span>
+<span class="s">      capabilities = [&quot;read&quot;]</span>
+<span class="s">      }</span>
+<span class="s">      EOF</span>
+</code></pre></div></li>
+<li>Have the data catalog <a href="../../reference/connectors-datacatalog/Models/GetAssetResponse">getAsset response</a> contain the Vault secret path which should be used to retrieve the credentials for a given asset. When the Vault plugin is used to retrieve the credentials, the parameters to the plugin should follow the plugin usage instructions. This path will later be passed on to the <a href="./modules.md">modules</a>.
+For example, when the credentials are stored in kubernetes secret as is done in the <a href="../../reference/katalog/">Katalog</a> built-in data catalog, the <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin can be used to retrieve the credentials. In this case two parameters should be passed: <code>paysim-csv</code>  which is the kubernetes secret name that holds the credentials and <code>fybrik-notebook-sample</code> is the secret namespace, both are known to the katalog when constructing the path. The <code>credentails</code> field in getAsset response should contain <code>"/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample"</code> in this case.</li>
+<li>Update the <a href="../../concepts/modules/">modules</a> to use the <a href="../../reference/crds#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey">Vault related values</a> to retrieve dataset credentias during their runtime execution. The values contain <code>secretPath</code> field with the plugin path as described in the previous step.
+The following snippet contains an example of such values. </li>
+</ol>
+<div class="highlight"><pre><span></span><code>    vault:
+      <span class="c1"># Address is Vault address</span>
+      address: http://vault.fybrik-system:8200
+      <span class="c1"># AuthPath is the path to auth method used to login to Vault</span>
+      authPath: /v1/auth/kubernetes/login
+      <span class="c1"># Role is the Vault role used for retrieving the credentials</span>
+      role: module
+      <span class="c1"># SecretPath is the path of the secret holding the Credentials in Vault</span>
+      secretPath: /v1/kubernetes-secrets/paysim-csv?namespace<span class="o">=</span>fybrik-notebook-sample
 </code></pre></div>
 
 
@@ -1509,7 +1451,7 @@ optimize[decision] {
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../high-availability/" class="md-footer__link md-footer__link--prev" aria-label="Previous: High Availability" rel="prev">
+        <a href="../data-plane-optimization/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Enabling data-plane optimization" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1518,20 +1460,20 @@ optimize[decision] {
               <span class="md-footer__direction">
                 Previous
               </span>
-              High Availability
+              Enabling data-plane optimization
             </div>
           </div>
         </a>
       
       
         
-        <a href="../data-plane-optimization/" class="md-footer__link md-footer__link--next" aria-label="Next: Enabling data-plane optimization" rel="next">
+        <a href="../omd-discover-s3-asset/" class="md-footer__link md-footer__link--next" aria-label="Next: Discovering an S3 asset through the OpenMetadata UI" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Enabling data-plane optimization
+              Discovering an S3 asset through the OpenMetadata UI
             </div>
           </div>
           <div class="md-footer__button md-icon">
