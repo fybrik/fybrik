@@ -128,7 +128,7 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -
     ```
-    If you want to change the OpenMetadata configuration parameters, run:
+    Alternatively, if you want to change the OpenMetadata configuration parameters, run:
     ```bash
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --operation getFiles
@@ -140,7 +140,7 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift
     ```
-    If you want to change the OpenMetadata configuration parameters, run:
+    Alternatively, if you want to change the OpenMetadata configuration parameters, run:
     ```bash
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift --operation getFiles

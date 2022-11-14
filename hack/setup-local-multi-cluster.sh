@@ -15,7 +15,7 @@ kubectl config use-context kind-control
 make cluster-prepare
 make docker-minimal-it
 make cluster-prepare-wait
-make deploy
+make deploy-fybrik
 make vault-setup-kind-multi
 make -C modules helm-chart-push
 
@@ -24,7 +24,7 @@ kubectl config use-context kind-kind
 make -C third_party/cert-manager deploy
 make -C third_party/datashim deploy
 make -C third_party/datashim deploy-wait
-make deploy
+make deploy-fybrik
 
 # Switch to control cluster after setup
 kubectl config use-context kind-control
