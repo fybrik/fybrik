@@ -1551,8 +1551,11 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <li><a href="https://fybrik.io/dev/reference/katalog/">katalog</a>: a data catalog stub used for testing and evaluation purposes.</li>
 </ol>
 <p>In this guide we use the OpenMetadata data catalog.</p>
-<p>To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Kubernetes</label><label for="__tabbed_3_2">IBM OpenShift</label></div>
+<p>To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.</p>
+<p><em>Note:</em> OpenMetadata deployment requires a cluster storage provisioner that has PersistentVolume capability of ReadWriteMany Access Mode.
+Below we provide examples of OpenMetadata installations on a single node kind cluster (for development and testing) and an 
+OpenShift cluster on <a href="https://www.ibm.com/cloud">IBM Cloud</a>. For other deployments please check <a href="https://docs.open-metadata.org/deployment/kubernetes">OpenMetadata Kubernetes deployment</a> </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">A single node Kind cluster</label><label for="__tabbed_3_2">IBM OpenShift</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
