@@ -58,6 +58,6 @@ To create a connection to S3 and discovering your CSV asset:
    <br><center><img src="../../static/openmetadata/22_add_column_tag.jpg" width=600></center>
 1. Finally, press the `Custom Properties` tab
    <br><center><img src="../../static/openmetadata/23_select_custom_properties.jpg" width=600></center>
-1. Set the asset properties as needed. For instance, set `connectionType` to `s3`. If the discovered asset is a csv object, set `dataFormat` to `csv`
+1. Set the asset properties as needed. For instance, set `connectionType` to `s3`. If the discovered asset is a csv object, set `dataFormat` to `csv`. These values will be returned to the Fybrik Manager and will be instrumental in the construction of a data path
    <br><center><img src="../../static/openmetadata/24_table_properties.jpg" width=600></center>
 You are all set. OpenMetadata has discovered your asset, and you have added tags and metadata values. You can reference this asset using the `asset ID`
