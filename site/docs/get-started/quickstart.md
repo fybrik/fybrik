@@ -133,7 +133,8 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --operation getFiles
     ```
-    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. Once the installation is over, be sure to remove the temporary directory.
+    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. 
+    Once the installation is over, be sure to remove the temporary directory.
 
 === "IBM OpenShift"
     ```bash
@@ -145,7 +146,19 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift --operation getFiles
     ```
-    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. Once the installation is over, be sure to remove the temporary directory.
+    This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. 
+    Once the installation is over, be sure to remove the temporary directory.
+    Once the installation is over, be sure to remove the temporary directory.
+
+=== "Existing deployment"
+    If you want to use an existing OpenMetadata deployment, you have to configure it according to Fybrik requirements:
+    Run the following commands to download the configuration files:
+    ```bash
+    export FYBRIK_BRANCH={{ currentRelease|default('master') }}
+    curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --operation getFiles
+    ```
+    Follow the instructions that appear on screen to change the OpenMetadata location and credentials (`OPENMETADATA_ENDPOINT`, `OPENMETADATA_USER` and `OPENMETADATA_PASSWORD`) and then run `make prepare-openmetadata-for-fybrik`.
+
 
 The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
 
