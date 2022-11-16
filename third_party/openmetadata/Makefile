@@ -1,6 +1,6 @@
 include Makefile.env
 
-all: deploy-openmetadata, prepare-openmetadata-for-fybrik
+all: deploy-openmetadata prepare-openmetadata-for-fybrik
 
 deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true

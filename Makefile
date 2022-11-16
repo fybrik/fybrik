@@ -191,7 +191,7 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
 ifeq ($(DEPLOY_OPENMETADATA), 1)
-	$(MAKE) -C third_party/openmetadata prepare-openmetadata-for-fybrik
+	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
 	$(MAKE) -C third_party/datashim deploy
