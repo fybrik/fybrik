@@ -16,8 +16,6 @@ export COPY_TEST_CACERTS ?= 0
 # Vault is configured in commands executed during Vault helm chart
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
-# Deploy openmetadata catalog in tests
-export DEPLOY_OPENMETADATA ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
