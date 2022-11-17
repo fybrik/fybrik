@@ -398,9 +398,9 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 					APIVersion: "app.fybrik.io/v1beta1",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        plotter.Name,
-					Namespace:   plotter.Namespace,
-					ClusterName: cluster,
+					Name:      plotter.Name,
+					Namespace: plotter.Namespace,
+					//ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource": "debug",
 					},
