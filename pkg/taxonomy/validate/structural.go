@@ -1,8 +1,11 @@
 // Copyright 2021 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build exclude
+
 package validate
 
+/*
 import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/validation"
@@ -10,6 +13,7 @@ import (
 
 	taxonomyio "fybrik.io/fybrik/pkg/taxonomy/io"
 )
+*/
 
 // IsStructuralSchema returns an error if the input file is not a valid structural schema
 func IsStructuralSchema(path string) error {
