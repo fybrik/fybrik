@@ -148,7 +148,6 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     ```
     This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run `make`. 
     Once the installation is over, be sure to remove the temporary directory.
-    Once the installation is over, be sure to remove the temporary directory.
 
 === "Existing deployment"
     If you want to use an existing OpenMetadata deployment, you have to configure it according to Fybrik requirements:
