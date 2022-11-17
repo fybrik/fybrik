@@ -3,6 +3,7 @@
 
 package cmd
 
+/*
 import (
 	"fmt"
 
@@ -46,3 +47,4 @@ var validateCmd = &cobra.Command{
 func init() {
 	taxonomyCmd.AddCommand(validateCmd)
 }
+*/

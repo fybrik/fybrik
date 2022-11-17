@@ -3,6 +3,14 @@
 
 package validate
 
+/*
+import (
+	taxonomyio "fybrik.io/fybrik/pkg/taxonomy/io"
+	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+
 import (
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/validation"
@@ -55,3 +63,4 @@ func IsStructuralSchema(path string) error {
 
 	return nil
 }
+*/
