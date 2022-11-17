@@ -400,7 +400,6 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      plotter.Name,
 					Namespace: plotter.Namespace,
-					//ClusterName: cluster,
 					Labels: map[string]string{
 						"razee/watch-resource": "debug",
 					},
