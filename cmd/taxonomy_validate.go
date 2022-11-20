@@ -1,6 +1,8 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build exclude
+
 package cmd
 
 import (

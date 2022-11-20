@@ -16,8 +16,6 @@ export COPY_TEST_CACERTS ?= 0
 # Vault is configured in commands executed during Vault helm chart
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
-# Deploy openmetadata catalog in tests
-export DEPLOY_OPENMETADATA ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -193,7 +191,7 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
 ifeq ($(DEPLOY_OPENMETADATA), 1)
-	$(MAKE) -C third_party/openmetadata prepare-openmetadata-for-fybrik
+	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
 	$(MAKE) -C third_party/datashim deploy
