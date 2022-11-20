@@ -48,16 +48,16 @@ To create a connection to S3 and discovering your CSV asset:
 1. You can learn the name that OpenMetadata gave your table by looking at the URL. If, for instance, the URL is `localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`, then your `assetID` is `openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`.
    To add tags, press `Add tag`
    <br><center><img src="../../static/openmetadata/18_table_name.jpg" width=600></center>
-1. Choose a tag for the dataset, such as `Fybrik.finance`
+1. Choose a tag for the dataset, such as `GenericTags.finance`
    <br><center><img src="../../static/openmetadata/19_choose_tag.jpg" width=600></center>
 1. Press the check mark
    <br><center><img src="../../static/openmetadata/20_add_tag.jpg" width=600></center>
 1. Next, you can add tags to some of the columns
    <br><center><img src="../../static/openmetadata/21_choose_column_tag.jpg" width=600></center>
-1. For instance, you may choose `Fybrik.PII` for columns that need to be redacted
+1. For instance, you may choose `GenericTags.PII` for columns that need to be redacted
    <br><center><img src="../../static/openmetadata/22_add_column_tag.jpg" width=600></center>
 1. Finally, press the `Custom Properties` tab
    <br><center><img src="../../static/openmetadata/23_select_custom_properties.jpg" width=600></center>
-1. Set the asset properties as needed. For instance, set `connectionType` to `s3`. If the discovered asset is a csv object, set `dataFormat` to `csv`
+1. Set the asset properties as needed. If the `dataFormat` field is left blank, it is assumed to be `csv`. If the discovered asset is of a different format (e.g. `parquet`), set `dataFormat` accordingly
    <br><center><img src="../../static/openmetadata/24_table_properties.jpg" width=600></center>
 You are all set. OpenMetadata has discovered your asset, and you have added tags and metadata values. You can reference this asset using the `asset ID`
