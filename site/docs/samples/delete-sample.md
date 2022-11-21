@@ -81,85 +81,95 @@ You should see the new created object:
 
 In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
 
-In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
+In this tutorial, we assume that OpenMetadata is used as the data catalog.
 
-To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.
+Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:
 
-### Registering Dataset via Connector
-We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+=== "Register an asset through the OpenMetadata UI"
+    To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID.
 
-```yaml
-cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: paysim-csv
-type: Opaque
-stringData:
-  access_key: "${ACCESS_KEY}"
-  secret_key: "${SECRET_KEY}"
-EOF
-```
+    Store the asset ID in a `CATALOGED_ASSET` variable. For instance:
+    ```bash
+    CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+    ```
 
-Next, register the data asset itself in the data catalog.
-We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-```bash
-kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
-cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-{
-  "destinationCatalogID": "openmetadata",
-  "destinationAssetID": "paysim-csv",
-  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
-  "details": {
-    "dataFormat": "csv",
-    "connection": {
-      "name": "s3",
-      "s3": {
-        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
-        "bucket": "demo",
-        "object_key": "PS_20174392719_1491204439457_log.csv"
+=== "Registering Dataset via Connector"
+    We now explain how to register a dataset using the OpenMetadata connector.
+
+    Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+
+    ```yaml
+    cat << EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: paysim-csv
+    type: Opaque
+    stringData:
+      access_key: "${ACCESS_KEY}"
+      secret_key: "${SECRET_KEY}"
+    EOF
+    ```
+
+    Next, register the data asset itself in the data catalog.
+    We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+    ```bash
+    kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+    {
+      "destinationCatalogID": "openmetadata",
+      "destinationAssetID": "paysim-csv",
+      "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+      "details": {
+        "dataFormat": "csv",
+        "connection": {
+          "name": "s3",
+          "s3": {
+            "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
+            "bucket": "demo",
+            "object_key": "PS_20174392719_1491204439457_log.csv"
+          }
+        }
+      },
+      "resourceMetadata": {
+        "name": "Synthetic Financial Datasets For Fraud Detection",
+        "geography": "theshire ",
+        "tags": {
+          "finance": "true"
+        },
+        "columns": [
+          {
+            "name": "nameOrig",
+            "tags": {
+              "PII": "true"
+            }
+          },
+          {
+            "name": "oldbalanceOrg",
+            "tags": {
+              "PII": "true"
+            }
+          },
+          {
+            "name": "newbalanceOrig",
+            "tags": {
+              "PII": "true"
+            }
+          }
+        ]
       }
     }
-  },
-  "resourceMetadata": {
-    "name": "Synthetic Financial Datasets For Fraud Detection",
-    "geography": "theshire ",
-    "tags": {
-      "finance": "true"
-    },
-    "columns": [
-      {
-        "name": "nameOrig",
-        "tags": {
-          "PII": "true"
-        }
-      },
-      {
-        "name": "oldbalanceOrg",
-        "tags": {
-          "PII": "true"
-        }
-      },
-      {
-        "name": "newbalanceOrig",
-        "tags": {
-          "PII": "true"
-        }
-      }
-    ]
-  }
-}
-EOF
-```
+    EOF
+    ```
 
-The response from the OpenMetadata connector should look like this:
-```bash
-{"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
-```
-Store the asset ID in a `CATALOGED_ASSET` variable:
-```bash
-CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
-```
+    The response from the OpenMetadata connector should look like this:
+    ```bash
+    {"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+    ```
+    Store the asset ID in a `CATALOGED_ASSET` variable:
+    ```bash
+    CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+    ```
 
 The asset is now registered in the catalog.
 
