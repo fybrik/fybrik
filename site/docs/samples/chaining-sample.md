@@ -14,7 +14,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     git checkout {{ currentRelease|default('master') }}
     go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
     helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+    helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api --set global.tag=master -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
     ```
 
 1. Install the Airbyte module:
