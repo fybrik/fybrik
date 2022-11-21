@@ -46,7 +46,7 @@ To create a connection to S3 and discovering your CSV asset:
 1. Given a list of all OpenMetadata tables, press the table in which you are interested
    <br><center><img src="../../static/openmetadata/17_discovered_table.jpg" width=600></center>
 1. You can learn the name that OpenMetadata gave your table by looking at the URL. If, for instance, the URL is `localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`, then your `assetID` is `openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"`.
-   To add tags, press `Add tag`
+1. To add tags, press `Add tag`
    <br><center><img src="../../static/openmetadata/18_table_name.jpg" width=600></center>
 1. Choose a tag for the dataset, such as `GenericTags.finance`
    <br><center><img src="../../static/openmetadata/19_choose_tag.jpg" width=600></center>

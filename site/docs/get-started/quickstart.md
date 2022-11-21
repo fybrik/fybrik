@@ -128,6 +128,9 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -
     ```
+
+    The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
+
     Alternatively, if you want to change the OpenMetadata configuration parameters, run:
     ```bash
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
@@ -141,6 +144,9 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --k8s-type ibm-openshift
     ```
+
+    The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
+
     Alternatively, if you want to change the OpenMetadata configuration parameters, run:
     ```bash
     export FYBRIK_BRANCH={{ currentRelease|default('master') }}
@@ -157,9 +163,6 @@ OpenShift cluster on [IBM Cloud](https://www.ibm.com/cloud). For other deploymen
     curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/third_party/openmetadata/install_OM.sh | bash -s -- --operation getFiles
     ```
     Follow the instructions that appear on screen to change the OpenMetadata location and credentials (`OPENMETADATA_ENDPOINT`, `OPENMETADATA_USER` and `OPENMETADATA_PASSWORD`) and then run `make prepare-openmetadata-for-fybrik`.
-
-
-The installation of OpenMetadata could take a long time (around 20 minutes on a VM running [kind](https://kind.sigs.k8s.io/) Kubernetes).
 
 Running `make` installs OpenMetadata in the `open-metadata` namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the `Makefile.env` file.
 
