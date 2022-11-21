@@ -15,7 +15,7 @@
     
     
       
-        <title>FybrikModule chaining sample - Fybrik</title>
+        <title>Chaining sample - Fybrik</title>
       
     
     
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FybrikModule chaining sample
+              Chaining sample
             
           </span>
         </div>
@@ -481,7 +481,7 @@
       
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        FybrikModule chaining sample
+        Chaining sample
       </a>
       
     </li>
@@ -1346,7 +1346,7 @@
 git checkout master
 go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
+helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api --set global.tag<span class="o">=</span>master -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div></p>
 </li>
 <li>
@@ -1356,7 +1356,7 @@ helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</sp
 </li>
 <li>
 <p>Install the arrow-flight module for transformations:
-    <div class="highlight"><pre><span></span><code>kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code>  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
 </code></pre></div></p>
 </li>
 <li>
