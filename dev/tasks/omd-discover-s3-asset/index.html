@@ -1372,20 +1372,20 @@
    <br><center><img src="../../static/openmetadata/16_ingestion_completed.jpg" width=600></center></li>
 <li>Given a list of all OpenMetadata tables, press the table in which you are interested
    <br><center><img src="../../static/openmetadata/17_discovered_table.jpg" width=600></center></li>
-<li>You can learn the name that OpenMetadata gave your table by looking at the URL. If, for instance, the URL is <code>localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"</code>, then your <code>assetID</code> is <code>openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"</code>.
-   To add tags, press <code>Add tag</code>
+<li>You can learn the name that OpenMetadata gave your table by looking at the URL. If, for instance, the URL is <code>localhost:8585/table/openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"</code>, then your <code>assetID</code> is <code>openmetadata-s3.default.demo."PS_20174392719_1491204439457_log.csv"</code>.</li>
+<li>To add tags, press <code>Add tag</code>
    <br><center><img src="../../static/openmetadata/18_table_name.jpg" width=600></center></li>
-<li>Choose a tag for the dataset, such as <code>Fybrik.finance</code>
+<li>Choose a tag for the dataset, such as <code>GenericTags.finance</code>
    <br><center><img src="../../static/openmetadata/19_choose_tag.jpg" width=600></center></li>
 <li>Press the check mark
    <br><center><img src="../../static/openmetadata/20_add_tag.jpg" width=600></center></li>
 <li>Next, you can add tags to some of the columns
    <br><center><img src="../../static/openmetadata/21_choose_column_tag.jpg" width=600></center></li>
-<li>For instance, you may choose <code>Fybrik.PII</code> for columns that need to be redacted
+<li>For instance, you may choose <code>GenericTags.PII</code> for columns that need to be redacted
    <br><center><img src="../../static/openmetadata/22_add_column_tag.jpg" width=600></center></li>
 <li>Finally, press the <code>Custom Properties</code> tab
    <br><center><img src="../../static/openmetadata/23_select_custom_properties.jpg" width=600></center></li>
-<li>Set the asset properties as needed. For instance, set <code>connectionType</code> to <code>s3</code>. If the discovered asset is a csv object, set <code>dataFormat</code> to <code>csv</code>
+<li>Set the asset properties as needed. If the <code>dataFormat</code> field is left blank, it is assumed to be <code>csv</code>. If the discovered asset is of a different format (e.g. <code>parquet</code>), set <code>dataFormat</code> accordingly
    <br><center><img src="../../static/openmetadata/24_table_properties.jpg" width=600></center>
 You are all set. OpenMetadata has discovered your asset, and you have added tags and metadata values. You can reference this asset using the <code>asset ID</code></li>
 </ol>

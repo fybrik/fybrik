@@ -1558,10 +1558,11 @@ OpenShift cluster on <a href="https://www.ibm.com/cloud">IBM Cloud</a>. For othe
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">A single node Kind cluster</label><label for="__tabbed_3_2">IBM OpenShift</label><label for="__tabbed_3_3">Existing deployment</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -
 </code></pre></div>
-Alternatively, if you want to change the OpenMetadata configuration parameters, run:
+<p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
+<p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --operation getFiles
 </code></pre></div>
@@ -1569,10 +1570,11 @@ This command downloads the installation files to a temporary directory. Follow t
 Once the installation is over, be sure to remove the temporary directory.</p>
 </div>
 <div class="tabbed-block">
-<p><div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift
 </code></pre></div>
-Alternatively, if you want to change the OpenMetadata configuration parameters, run:
+<p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
+<p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
 <div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
 curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift --operation getFiles
 </code></pre></div>
@@ -1589,7 +1591,6 @@ Follow the instructions that appear on screen to change the OpenMetadata locatio
 </div>
 </div>
 </div>
-<p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
 <p>Running <code>make</code> installs OpenMetadata in the <code>open-metadata</code> namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the <code>Makefile.env</code> file.</p>
 <h2 id="install-control-plane">Install control plane</h2>
 <p>When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is <code>http://openmetadata.open-metadata:8585/api</code>. If you are using a different OpenMetadata deployment, replace the <code>openmetadataConnector.openmetadata_endpoint</code> value in the helm installation command.</p>
