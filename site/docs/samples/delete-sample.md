@@ -83,10 +83,10 @@ In this step you are performing the role of the data owner, registering his data
 
 In this tutorial, we assume that OpenMetadata is used as the data catalog.
 
-There are two ways to register datasets in the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:
+Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:
 
 === "Register an asset through the OpenMetadata UI"
-    To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.
+    To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID.
 
     Store the asset ID in a `CATALOGED_ASSET` variable. For instance:
     ```bash
@@ -94,7 +94,9 @@ There are two ways to register datasets in the data catalog. Datasets can be reg
     ```
 
 === "Registering Dataset via Connector"
-    We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+    We now explain how to register a dataset using the OpenMetadata connector.
+
+    Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
     ```yaml
     cat << EOF | kubectl apply -f -
