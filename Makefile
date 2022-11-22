@@ -136,11 +136,17 @@ run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
+run-notebook-readflow-tls-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
+run-notebook-readflow-tls-tests: export DEPLOY_OPENMETADATA=0
+run-notebook-readflow-tls-tests: export OPENMETADATA_CATALOGED_ASSET=
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
+run-notebook-readflow-tls-system-cacerts-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
+run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_OPENMETADATA=0
+run-notebook-readflow-tls-system-cacerts-tests: export OPENMETADATA_CATALOGED_ASSET=
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
 run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
