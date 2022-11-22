@@ -115,25 +115,25 @@ Datasets can be registered either directly, through the OpenMetadata UI, or indi
         "name": "Synthetic Financial Datasets For Fraud Detection",
         "geography": "theshire ",
         "tags": {
-          "finance": "true"
+          "Purpose.finance": "true"
         },
         "columns": [
           {
             "name": "nameOrig",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           },
           {
             "name": "oldbalanceOrg",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           },
           {
             "name": "newbalanceOrig",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           }
         ]
@@ -151,7 +151,7 @@ Datasets can be registered either directly, through the OpenMetadata UI, or indi
     CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
     ```
 
-    If you look at the asset creation request above, you will notice that in the `resourceMetadata` field, we request that the asset should be tagged with the `finance` tag, and that three of its columns should be tagged with the `PII` tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.
+    If you look at the asset creation request above, you will notice that in the `resourceMetadata` field, we request that the asset should be tagged with the `Purpose.finance` tag, and that three of its columns should be tagged with the `PII.Sensitive` tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.
 
 The asset is now registered in the catalog.
 
@@ -167,16 +167,16 @@ kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Regi
 
 ## Define data access policies
 
-Acting as the data steward, define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Acting as the data steward, define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII.Sensitive` for datasets tagged with `Purpose.finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
-  description := "Redact columns tagged as PII in datasets tagged with finance = true"
+  description := "Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true"
   input.action.actionType == "read"
-  input.resource.metadata.tags.finance
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+  input.resource.metadata.tags["Purpose.finance"]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PII.Sensitive"]]
   count(column_names) > 0
 }
 ```
