@@ -200,7 +200,7 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 while [[ $(kubectl get fybrikapplication my-notebook-write -n fybrik-notebook-sample -o 'jsonpath={.status.assetStates.new-data.conditions[?(@.type == "Deny")].status}') != "True" ]]; do echo "waiting for my-notebook-write asset" && sleep 5; done
 ```
 
-We expect the asset's status in FybrikApplication.status to be denied due to the policy defined above. Next, a new policy will be applied which will allow the writing to `theshire` object store.
+We expect the asset's status in `FybrikApplication.status` to be `denied` due to the policy defined above. Next, a new policy will be applied which will allow the writing to `theshire` object store.
 
 ### Cleanup scenario one
 
