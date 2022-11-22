@@ -11,6 +11,7 @@ spec:
   type: {{ .Values.openmetadataConnector.service.type }}
   ports:
     - port: {{ .Values.openmetadataConnector.service.port }}
+      targetPort: 8081
       protocol: TCP
       {{- if .Values.openmetadataConnector.tls.use_tls }}
       name: https
