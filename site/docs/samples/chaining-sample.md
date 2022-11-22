@@ -114,7 +114,7 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
     ```
 
-1. Create the policy to access the asset (we use a policy that requires redactions of PII.Sensitive columns):
+1. Create the policy to access the asset (we use a policy that requires redactions of `PII.Sensitive` columns):
    ```bash
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego
    kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego

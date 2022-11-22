@@ -295,4 +295,4 @@ The next steps use the endpoint to read the data in a python notebook
   ```
   df
   ```
-5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
+5. Execute all notebook cells and notice that some of the columns appear redacted.
