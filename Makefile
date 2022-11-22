@@ -16,6 +16,10 @@ export COPY_TEST_CACERTS ?= 0
 # Vault is configured in commands executed during Vault helm chart
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
+# if set, it contains the openmetadata asset name used for testing
+export OPENMETADATA_CATALOGED_ASSET ?= openmetadata-s3.default.bucket1."data.csv"
+# If true, deploy openmetadata
+export DEPLOY_OPENMETADATA ?= 1
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -117,12 +121,12 @@ run-notebook-readflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
-.PHONY: run-notebook-readflow-tests-om
-run-notebook-readflow-tests-om: export HELM_SETTINGS=--set "coordinator.catalog=openmetadata"
-run-notebook-readflow-tests-om: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-notebook-readflow-tests-om: export DEPLOY_OPENMETADATA=1
-run-notebook-readflow-tests-om: export CATALOGED_ASSET=openmetadata-s3.default.bucket1."data.csv"
-run-notebook-readflow-tests-om:
+.PHONY: run-notebook-readflow-tests-katalog
+run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
+run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests-katalog: export OPENMETADATA_CATALOGED_ASSET=""
+run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA=0
+run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
@@ -190,7 +194,7 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
-ifeq ($(DEPLOY_OPENMETADATA), 1)
+ifeq ($(DEPLOY_OPENMETADATA),1)
 	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy

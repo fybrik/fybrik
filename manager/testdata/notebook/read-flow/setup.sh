@@ -10,7 +10,7 @@ kubectl config set-context --current --namespace=fybrik-notebook-sample
 # Create asset and secret
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
-if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
+if [[ "${DEPLOY_OPENMETADATA}" -eq 0 ]]; then
   # Deploy katalog asset
   kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
 else
