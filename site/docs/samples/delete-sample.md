@@ -135,25 +135,25 @@ Datasets can be registered either directly, through the OpenMetadata UI, or indi
         "name": "Synthetic Financial Datasets For Fraud Detection",
         "geography": "theshire ",
         "tags": {
-          "finance": "true"
+          "Purpose.finance": "true"
         },
         "columns": [
           {
             "name": "nameOrig",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           },
           {
             "name": "oldbalanceOrg",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           },
           {
             "name": "newbalanceOrig",
             "tags": {
-              "PII": "true"
+              "PII.Sensitive": "true"
             }
           }
         ]

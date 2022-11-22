@@ -114,7 +114,7 @@ Note that for evaluation purposes the same object store is used for different re
 
 ### Define data governance policies for write
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to forbid the writing of sensitive data to regions `neverland` and `theshire` in datasets tagged with `finance`. This policy prevents the writing as the deployed fybrik storage account resources applied are in `neverland` and `theshire`.
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to forbid the writing of personal data to regions `neverland` and `theshire` in datasets tagged with `Purpose.finance`. This policy prevents the writing as the deployed fybrik storage account resources applied are in `neverland` and `theshire`.
 
 Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
@@ -122,12 +122,12 @@ Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/late
 package dataapi.authz
 
 rule[{"policy": description}] {
-  description := "Forbid writing sensitive data in `theshire` and `neverland` storage accounts in datasets tagged with `finance`"
+  description := "Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`"
   input.action.actionType == "write"
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags["Purpose.finance"]
   input.action.destination != "theshire"
   input.action.destination != "neverland"
-  input.resource.metadata.columns[i].tags.sensitive
+  input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 ```
 
@@ -171,14 +171,14 @@ spec:
           catalog: fybrik-notebook-sample
           metadata:
             tags:
-              finance: true
+              Purpose.finance: true
             columns:
               - name: nameOrig
                 tags:
-                  PII: true
+                  PII.Sensitive: true
               - name: oldbalanceOrg
                 tags:
-                  sensitive: true
+                  PersonalData.Personal: true
         interface:
           protocol: fybrik-arrow-flight
 EOF
@@ -218,18 +218,18 @@ To write the new data a new policy should be defined.
 
 ### Define data access policies for writing the data
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to return the list of column names tagged as sensitive, whose destination is not neverland, when the actionType is write. The columns are passed to the `FybrikModule` together with RedactAction upon deployment of the module by Fybrik.
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to return the list of column names tagged as `PersonalData.Personal`, whose destination is not neverland, when the actionType is write. The columns are passed to the `FybrikModule` together with RedactAction upon deployment of the module by Fybrik.
 Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
 rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
-  description := "Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account"
+  description := "Redact written columns tagged as PersonalData.Personal in datasets tagged with Purpose.finance = true. The data should not be stored in `neverland` storage account"
   input.action.actionType == "write"
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags["Purpose.finance"]
   input.action.destination != "neverland"
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PersonalData.Personal"]]
 }
 ```
 
