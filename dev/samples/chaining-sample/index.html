@@ -1425,7 +1425,7 @@ cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-
 </code></pre></div></p>
 </li>
 <li>
-<p>Create the policy to access the asset (we use a policy that requires redactions of PII.Sensitive columns):
+<p>Create the policy to access the asset (we use a policy that requires redactions of <code>PII.Sensitive</code> columns):
    <div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/sample-policy-restrictive.rego
 kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
 <span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n fybrik-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
