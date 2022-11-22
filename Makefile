@@ -124,7 +124,7 @@ run-notebook-readflow-tests:
 .PHONY: run-notebook-readflow-tests-katalog
 run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-notebook-readflow-tests-katalog: export OPENMETADATA_CATALOGED_ASSET=""
+run-notebook-readflow-tests-katalog: export OPENMETADATA_CATALOGED_ASSET=
 run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA=0
 run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
