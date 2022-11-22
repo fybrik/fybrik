@@ -224,7 +224,6 @@ jobs:
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
-    if: startsWith(github.ref, 'refs/tags/v')
     steps:
     - name: Install Go
       uses: actions/setup-go@v3
@@ -251,7 +250,6 @@ jobs:
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
-    if: startsWith(github.ref, 'refs/tags/v')
     steps:
     - name: Install Go
       uses: actions/setup-go@v3
