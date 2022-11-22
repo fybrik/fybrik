@@ -1,16 +1,6 @@
-{% if FybrikRelease is ne('__Release__') %}
-    {% set currentRelease = FybrikRelease %}
-    {% set currentImageTag = currentRelease|replace("v","") %}
-    {% if arrowFlight[currentRelease]  is defined %}
-         {% set arrowFlightRelease = arrowFlight[currentRelease] %}
-    {% elif arrowFlight[currentRelease|truncate(4, True, '', 0)] is defined %}
-        {% set arrowFlightRelease = arrowFlight[currentRelease|truncate(4, True, '', 0)] %}
-    {% endif %}
-{% endif %}
-{% if arrowFlightRelease is not defined %}
-    {% set arrowFlightRelease = 'latest' %}
-{% endif %}
-
+{% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
+{% set currentRelease = fybrik_version(FybrikRelease) %}
+{% set currentImageTag = fybrik_image_version(FybrikRelease) %}
 
 # FybrikModule chaining sample
 
