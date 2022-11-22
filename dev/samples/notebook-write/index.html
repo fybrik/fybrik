@@ -1754,17 +1754,17 @@ Then, register two storage accounts: one in <code>theshire</code> and one in <co
 <p>Note that for evaluation purposes the same object store is used for different regions in the storage accounts.</p>
 <h2 id="scenario-one-write-is-forbidden-due-to-governance-restrictions">Scenario one: write is forbidden due to governance restrictions</h2>
 <h3 id="define-data-governance-policies-for-write">Define data governance policies for write</h3>
-<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to forbid the writing of sensitive data to regions <code>neverland</code> and <code>theshire</code> in datasets tagged with <code>finance</code>. This policy prevents the writing as the deployed fybrik storage account resources applied are in <code>neverland</code> and <code>theshire</code>.</p>
+<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to forbid the writing of personal data to regions <code>neverland</code> and <code>theshire</code> in datasets tagged with <code>Purpose.finance</code>. This policy prevents the writing as the deployed fybrik storage account resources applied are in <code>neverland</code> and <code>theshire</code>.</p>
 <p>Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
 rule[{&quot;policy&quot;: description}] {
-  description := &quot;Forbid writing sensitive data in `theshire` and `neverland` storage accounts in datasets tagged with `finance`&quot;
+  description := &quot;Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`&quot;
   input.action.actionType == &quot;write&quot;
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags[&quot;Purpose.finance&quot;]
   input.action.destination != &quot;theshire&quot;
   input.action.destination != &quot;neverland&quot;
-  input.resource.metadata.columns[i].tags.sensitive
+  input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
 }
 </code></pre></div>
 <p>For more details on OPA policies please refer to <a href="https://fybrik.io/dev/tasks/using-opa/">Using OPA for Data Governance</a> task.</p>
@@ -1801,14 +1801,14 @@ kubectl -n fybrik-system label configmap sample-policy-write openpolicyagent.org
 <span class="w">          </span><span class="nt">catalog</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-notebook-sample</span><span class="w"></span>
 <span class="w">          </span><span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
 <span class="w">            </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">              </span><span class="nt">finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">              </span><span class="nt">Purpose.finance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">            </span><span class="nt">columns</span><span class="p">:</span><span class="w"></span>
 <span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nameOrig</span><span class="w"></span>
 <span class="w">                </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">PII</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">PII.Sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oldbalanceOrg</span><span class="w"></span>
 <span class="w">                </span><span class="nt">tags</span><span class="p">:</span><span class="w"></span>
-<span class="w">                  </span><span class="nt">sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">                  </span><span class="nt">PersonalData.Personal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">        </span><span class="nt">interface</span><span class="p">:</span><span class="w"></span>
 <span class="w">          </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span><span class="w"></span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span><span class="w"></span>
@@ -1836,16 +1836,16 @@ kubectl delete fybrikapplications.app.fybrik.io my-notebook-write -n fybrik-note
 <h2 id="scenario-two-write-new-data">Scenario two: write new data</h2>
 <p>To write the new data a new policy should be defined.</p>
 <h3 id="define-data-access-policies-for-writing-the-data">Define data access policies for writing the data</h3>
-<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to return the list of column names tagged as sensitive, whose destination is not neverland, when the actionType is write. The columns are passed to the <code>FybrikModule</code> together with RedactAction upon deployment of the module by Fybrik.
+<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to return the list of column names tagged as <code>PersonalData.Personal</code>, whose destination is not neverland, when the actionType is write. The columns are passed to the <code>FybrikModule</code> together with RedactAction upon deployment of the module by Fybrik.
 Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;,&quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
-  description := &quot;Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account&quot;
+  description := &quot;Redact written columns tagged as PersonalData.Personal in datasets tagged with Purpose.finance = true. The data should not be stored in `neverland` storage account&quot;
   input.action.actionType == &quot;write&quot;
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags[&quot;Purpose.finance&quot;]
   input.action.destination != &quot;neverland&quot;
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]]
 }
 </code></pre></div>
 <p>Copy the policy to a file named <code>sample-policy-write.rego</code> and then run:</p>

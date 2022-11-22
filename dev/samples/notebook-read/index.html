@@ -1552,25 +1552,25 @@ cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-
 <span class="s">    &quot;name&quot;: &quot;Synthetic Financial Datasets For Fraud Detection&quot;,</span>
 <span class="s">    &quot;geography&quot;: &quot;theshire &quot;,</span>
 <span class="s">    &quot;tags&quot;: {</span>
-<span class="s">      &quot;finance&quot;: &quot;true&quot;</span>
+<span class="s">      &quot;Purpose.finance&quot;: &quot;true&quot;</span>
 <span class="s">    },</span>
 <span class="s">    &quot;columns&quot;: [</span>
 <span class="s">      {</span>
 <span class="s">        &quot;name&quot;: &quot;nameOrig&quot;,</span>
 <span class="s">        &quot;tags&quot;: {</span>
-<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">          &quot;PII.Sensitive&quot;: &quot;true&quot;</span>
 <span class="s">        }</span>
 <span class="s">      },</span>
 <span class="s">      {</span>
 <span class="s">        &quot;name&quot;: &quot;oldbalanceOrg&quot;,</span>
 <span class="s">        &quot;tags&quot;: {</span>
-<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">          &quot;PII.Sensitive&quot;: &quot;true&quot;</span>
 <span class="s">        }</span>
 <span class="s">      },</span>
 <span class="s">      {</span>
 <span class="s">        &quot;name&quot;: &quot;newbalanceOrig&quot;,</span>
 <span class="s">        &quot;tags&quot;: {</span>
-<span class="s">          &quot;PII&quot;: &quot;true&quot;</span>
+<span class="s">          &quot;PII.Sensitive&quot;: &quot;true&quot;</span>
 <span class="s">        }</span>
 <span class="s">      }</span>
 <span class="s">    ]</span>
@@ -1584,7 +1584,7 @@ cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-
 Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-s3.default.demo.\&quot;PS_20174392719_1491204439457_log.csv\&quot;&quot;</span>
 </code></pre></div></p>
-<p>If you look at the asset creation request above, you will notice that in the <code>resourceMetadata</code> field, we request that the asset should be tagged with the <code>finance</code> tag, and that three of its columns should be tagged with the <code>PII</code> tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.</p>
+<p>If you look at the asset creation request above, you will notice that in the <code>resourceMetadata</code> field, we request that the asset should be tagged with the <code>Purpose.finance</code> tag, and that three of its columns should be tagged with the <code>PII.Sensitive</code> tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.</p>
 </div>
 </div>
 </div>
@@ -1595,14 +1595,14 @@ Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
 </code></pre></div>
 <p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the json above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
 <h2 id="define-data-access-policies">Define data access policies</h2>
-<p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII</code> for datasets tagged with <code>finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
+<p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII.Sensitive</code> for datasets tagged with <code>Purpose.finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
-  description := &quot;Redact columns tagged as PII in datasets tagged with finance = true&quot;
+  description := &quot;Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true&quot;
   input.action.actionType == &quot;read&quot;
-  input.resource.metadata.tags.finance
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+  input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags[&quot;PII.Sensitive&quot;]]
   count(column_names) &gt; 0
 }
 </code></pre></div>
