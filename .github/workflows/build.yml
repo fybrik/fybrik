@@ -272,8 +272,8 @@ jobs:
     - name: Read flow notebook tests with tls using system CA certs
       run: make run-notebook-readflow-tls-system-cacerts-tests
 
-  notebook-sample-read-flow-openmetadata-catalog:
-    name: Read flow notebook sample with openmetadata catalog
+  notebook-sample-read-flow-katalog:
+    name: Read flow notebook sample with katalog catalog
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
@@ -295,8 +295,8 @@ jobs:
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
-    - name: Read flow notebook tests with openmetadata catalog
-      run: make run-notebook-readflow-tests-om
+    - name: Read flow notebook tests with katalog
+      run: make run-notebook-readflow-tests-katalog
 
   tekton-pipelines:
     name: Tekton Tests
