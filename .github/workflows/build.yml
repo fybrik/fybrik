@@ -299,7 +299,7 @@ jobs:
       run: make run-notebook-readflow-tests-katalog
 
   tekton-pipelines:
-    if: ! github.event.pull_request.draft
+    if: ${{ ! github.event.pull_request.draft }}
     name: Tekton Tests
     runs-on: ubuntu-latest
     env:
