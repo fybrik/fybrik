@@ -10,15 +10,17 @@ kubectl config set-context --current --namespace=fybrik-notebook-sample
 # Create asset and secret
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
-if [[ -z "${DEPLOY_OPENMETADATA}" ]]; then
+if [[ "${DEPLOY_OPENMETADATA}" -eq 0 ]]; then
   # Deploy katalog asset
   kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
 else
+  port=8080
+  local_port=8081
   # Deploy openmetadata asset
-  kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+  kubectl port-forward svc/openmetadata-connector -n fybrik-system $local_port:$port &
   # Wait until curl command succeed
   c=0
-  while [[ $(curl -X POST localhost:8081/createAsset -d @om-asset.json) != *'assetID'* ]]
+  while [[ $(curl -X POST localhost:$local_port/createAsset -d @om-asset.json) != *'assetID'* ]]
   do
     echo "waiting for curl command to createAsset to succeed"
     ((c++)) && ((c==25)) && break

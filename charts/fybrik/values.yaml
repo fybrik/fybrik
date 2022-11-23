@@ -107,7 +107,7 @@ coordinator:
 
   # Configures the catalog system name to be used by the coordinator manager.
   # Accepted values are "katalog", "openmetadata", "egeria" or any meaningful name if a third party connector is used.
-  catalog: "katalog"
+  catalog: "openmetadata"
 
   # Overrides the catalog connector URL.
   # Defaults to `http://<catalog>-connector:8080`.
