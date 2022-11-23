@@ -30,7 +30,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
 )
@@ -179,9 +178,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Expect(len(writeApplication.Status.AssetStates)).To(gomega.Equal(1))
 	g.Expect(writeApplication.Status.AssetStates["new-data"].CatalogedAsset).
 		ToNot(gomega.BeEmpty())
-	newAssetID := writeApplication.Status.AssetStates["new-data"].
-		CatalogedAsset
-	newCatalogID := "fybrik-notebook-sample"
+	newCatalogedAsset := writeApplication.Status.AssetStates["new-data"].CatalogedAsset
 
 	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
 	// check provisioned storage
@@ -200,16 +197,6 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Expect(newBucket).NotTo(gomega.BeEmpty())
 	g.Expect(newObject).NotTo(gomega.BeEmpty())
 
-	err = v1alpha1.AddToScheme(scheme.Scheme)
-	g.Expect(err).NotTo(gomega.HaveOccurred())
-	asset := &v1alpha1.Asset{}
-	fmt.Println("Expecting asset to be fetchable")
-	assetObjectKey := client.ObjectKey{Namespace: newCatalogID, Name: newAssetID}
-	g.Eventually(func() error {
-		return k8sClient.Get(context.Background(), assetObjectKey, asset)
-	}, timeout, interval).Should(gomega.Succeed())
-
-	g.Expect(asset.Spec.Metadata.Geography).To(gomega.Equal("theshire"))
 	g.Expect(writeApplication.Status.AssetStates["new-data"].Endpoint.Name).ToNot(gomega.BeEmpty())
 	// Forward port of arrow flight service to local port
 	connection := writeApplication.Status.AssetStates["new-data"].
@@ -296,7 +283,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-read.yaml", readApplication)).
 		ToNot(gomega.HaveOccurred())
 	// Update the name of the dataset id
-	readApplication.Spec.Data[0].DataSetID = newCatalogID + "/" + newAssetID
+	readApplication.Spec.Data[0].DataSetID = newCatalogedAsset
 	readApplicationKey := client.ObjectKeyFromObject(readApplication)
 
 	// Create FybrikApplication
@@ -341,7 +328,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	// Forward port of arrow flight service to local port
-	connection = readApplication.Status.AssetStates["fybrik-notebook-sample/"+newAssetID].
+	connection = readApplication.Status.AssetStates[newCatalogedAsset].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
 	hostname = fmt.Sprintf("%v", connection["hostname"])
 	port = fmt.Sprintf("%v", connection["port"])
@@ -361,7 +348,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	defer flightClient.Close()
 
 	request = ArrowRequest{
-		Asset: newCatalogID + "/" + newAssetID,
+		Asset: newCatalogedAsset,
 	}
 
 	marshal, err = json.Marshal(request)

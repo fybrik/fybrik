@@ -49,8 +49,8 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	}
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
 	if !ok || catalogedAsset == "" {
-		// Use default value which assumes katalog catalog is deployed
-		catalogedAsset = "fybrik-notebook-sample/data-csv"
+		log.Printf("CATALOGED_ASSET should be defined.")
+		t.FailNow()
 	}
 	gomega.RegisterFailHandler(Fail)
 
