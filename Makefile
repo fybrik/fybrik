@@ -17,7 +17,7 @@ export COPY_TEST_CACERTS ?= 0
 # deployment.
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
 # if set, it contains the openmetadata asset name used for testing
-export OPENMETADATA_CATALOGED_ASSET ?= openmetadata-s3.default.bucket1."data.csv"
+export CATALOGED_ASSET ?= openmetadata-s3.default.bucket1."data.csv"
 # If true, deploy openmetadata
 export DEPLOY_OPENMETADATA ?= 1
 
@@ -124,7 +124,7 @@ run-notebook-readflow-tests:
 .PHONY: run-notebook-readflow-tests-katalog
 run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-notebook-readflow-tests-katalog: export OPENMETADATA_CATALOGED_ASSET=
+run-notebook-readflow-tests-katalog: export CATALOGED_ASSET="fybrik-notebook-sample/data-csv"
 run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA=0
 run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
@@ -138,7 +138,7 @@ run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
 run-notebook-readflow-tls-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tls-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-tests: export OPENMETADATA_CATALOGED_ASSET=
+run-notebook-readflow-tls-tests: export CATALOGED_ASSET="fybrik-notebook-sample/data-csv"
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
@@ -146,7 +146,7 @@ run-notebook-readflow-tls-tests:
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
 run-notebook-readflow-tls-system-cacerts-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-system-cacerts-tests: export OPENMETADATA_CATALOGED_ASSET=
+run-notebook-readflow-tls-system-cacerts-tests: export CATALOGED_ASSET="fybrik-notebook-sample/data-csv"
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
 run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1

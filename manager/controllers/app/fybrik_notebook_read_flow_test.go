@@ -47,10 +47,10 @@ func TestS3NotebookReadFlow(t *testing.T) {
 			s != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
 		t.Skip("Only executed for notebook tests")
 	}
-	catalogedAsset, ok := os.LookupEnv("OPENMETADATA_CATALOGED_ASSET")
+	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
 	if !ok || catalogedAsset == "" {
-		// Use default value which assumes katalog catalog is deployed
-		catalogedAsset = "fybrik-notebook-sample/data-csv"
+		log.Printf("CATALOGED_ASSET should be defined.")
+		t.FailNow()
 	}
 	gomega.RegisterFailHandler(Fail)
 
