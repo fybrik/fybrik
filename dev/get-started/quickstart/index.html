@@ -1607,8 +1607,8 @@ helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager.
 Install the Fybrik release with <a href="https://open-metadata.org/">OpenMetadata</a> as the data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
-<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version master --wait
-helm install fybrik fybrik-charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --version master --wait
+<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version aster --wait
+helm install fybrik fybrik-charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --version aster --wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">

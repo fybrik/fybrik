@@ -1346,7 +1346,7 @@
 git checkout master
 go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
 helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api --set global.tag<span class="o">=</span>master -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
+helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api --set global.tag<span class="o">=</span>aster -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div></p>
 </li>
 <li>
