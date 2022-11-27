@@ -2,7 +2,7 @@ name: license-check
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 jobs:
   addlicense-check:
