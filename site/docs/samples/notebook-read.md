@@ -61,85 +61,97 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
 
 In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.
 
-In this tutorial, we assume that OpenMetadata is used as the data catalog. Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector.
+In this tutorial, we assume that OpenMetadata is used as the data catalog.
 
-To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID. If you registered the dataset directly through the OpenMetadata UI, you can skip the next section.
+Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:
 
-### Registering Dataset via Connector
-We now explain how to register a dataset using the OpenMetadata connector. Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+=== "Register an asset through the OpenMetadata UI"
+    To register an asset directly through the OpenMetadata UI, follow the instructions [here](../../tasks/omd-discover-s3-asset/). These instructions also explain how to determine the asset ID.
 
-```yaml
-cat << EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: paysim-csv
-type: Opaque
-stringData:
-  access_key: "${ACCESS_KEY}"
-  secret_key: "${SECRET_KEY}"
-EOF
-```
+    Store the asset ID in a `CATALOGED_ASSET` variable. For instance:
+    ```bash
+    CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+    ```
 
-Next, register the data asset itself in the data catalog.
-We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-```bash
-kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
-cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-{
-  "destinationCatalogID": "openmetadata",
-  "destinationAssetID": "paysim-csv",
-  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
-  "details": {
-    "dataFormat": "csv",
-    "connection": {
-      "name": "s3",
-      "s3": {
-        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
-        "bucket": "demo",
-        "object_key": "PS_20174392719_1491204439457_log.csv"
+=== "Registering Dataset via Connector"
+    We now explain how to register a dataset using the OpenMetadata connector.
+
+    Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
+
+    ```yaml
+    cat << EOF | kubectl apply -f -
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: paysim-csv
+    type: Opaque
+    stringData:
+      access_key: "${ACCESS_KEY}"
+      secret_key: "${SECRET_KEY}"
+    EOF
+    ```
+
+    Next, register the data asset itself in the data catalog.
+    We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+    ```bash
+    kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+    {
+      "destinationCatalogID": "openmetadata",
+      "destinationAssetID": "paysim-csv",
+      "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
+      "details": {
+        "dataFormat": "csv",
+        "connection": {
+          "name": "s3",
+          "s3": {
+            "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
+            "bucket": "demo",
+            "object_key": "PS_20174392719_1491204439457_log.csv"
+          }
+        }
+      },
+      "resourceMetadata": {
+        "name": "Synthetic Financial Datasets For Fraud Detection",
+        "geography": "theshire ",
+        "tags": {
+          "Purpose.finance": "true"
+        },
+        "columns": [
+          {
+            "name": "nameOrig",
+            "tags": {
+              "PII.Sensitive": "true"
+            }
+          },
+          {
+            "name": "oldbalanceOrg",
+            "tags": {
+              "PII.Sensitive": "true"
+            }
+          },
+          {
+            "name": "newbalanceOrig",
+            "tags": {
+              "PII.Sensitive": "true"
+            }
+          }
+        ]
       }
     }
-  },
-  "resourceMetadata": {
-    "name": "Synthetic Financial Datasets For Fraud Detection",
-    "geography": "theshire ",
-    "tags": {
-      "finance": "true"
-    },
-    "columns": [
-      {
-        "name": "nameOrig",
-        "tags": {
-          "PII": "true"
-        }
-      },
-      {
-        "name": "oldbalanceOrg",
-        "tags": {
-          "PII": "true"
-        }
-      },
-      {
-        "name": "newbalanceOrig",
-        "tags": {
-          "PII": "true"
-        }
-      }
-    ]
-  }
-}
-EOF
-```
+    EOF
+    ```
 
-The response from the OpenMetadata connector should look like this:
-```bash
-{"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
-```
-Store the asset ID in a `CATALOGED_ASSET` variable:
-```bash
-CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
-```
+    The response from the OpenMetadata connector should look like this:
+    ```bash
+    {"assetID":"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""}
+    ```
+    Store the asset ID in a `CATALOGED_ASSET` variable:
+    ```bash
+    CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+    ```
+
+    If you look at the asset creation request above, you will notice that in the `resourceMetadata` field, we request that the asset should be tagged with the `Purpose.finance` tag, and that three of its columns should be tagged with the `PII.Sensitive` tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.
 
 The asset is now registered in the catalog.
 
@@ -155,16 +167,16 @@ kubectl get configmap cluster-metadata -n fybrik-system -o 'jsonpath={.data.Regi
 
 ## Define data access policies
 
-Acting as the data steward, define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII` for datasets tagged with `finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
+Acting as the data steward, define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to redact the columns tagged as `PII.Sensitive` for datasets tagged with `Purpose.finance`. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
-  description := "Redact columns tagged as PII in datasets tagged with finance = true"
+  description := "Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true"
   input.action.actionType == "read"
-  input.resource.metadata.tags.finance
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
+  input.resource.metadata.tags["Purpose.finance"]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PII.Sensitive"]]
   count(column_names) > 0
 }
 ```
@@ -283,4 +295,4 @@ The next steps use the endpoint to read the data in a python notebook
   ```
   df
   ```
-5. Execute all notebook cells and notice that the `nameOrig`, `oldbalanceOrg`and `newbalanceOrig` columns appear redacted.
+5. Execute all notebook cells and notice that some of the columns appear redacted.
