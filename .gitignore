@@ -30,6 +30,7 @@ bin
 
 .log
 .crt
+.jks
 
 .vscode/*
 !.vscode/settings.json
