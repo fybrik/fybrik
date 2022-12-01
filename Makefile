@@ -172,6 +172,7 @@ run-notebook-writeflow-tests:
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
 run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-namescope-integration-tests: export DEPLOY_OPENMETADATA=0
 run-namescope-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-integration-tests
