@@ -107,6 +107,7 @@ test: pre-test
 .PHONY: run-integration-tests
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
+run-integration-tests: export DEPLOY_OPENMETADATA=0
 run-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C modules helm
