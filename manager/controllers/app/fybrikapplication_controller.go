@@ -760,7 +760,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikMo
 
 // get all available storage accounts
 func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*sa.FybrikStorageAccount, error) {
-	if os.Getenv("MANAGE_STORAGE") != "true" {
+	if !environment.IsStorageManaged() {
 		r.Log.Info().Msg("Storage accounts are not configured")
 		return []*sa.FybrikStorageAccount{}, nil
 	}

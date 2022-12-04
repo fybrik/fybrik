@@ -1,10 +1,11 @@
-apiVersion: app.fybrik.io/v1beta1
+apiVersion: storage.fybrik.io/v1alpha1
 kind: FybrikStorageAccount
 metadata:
   name: account-theshire
   namespace: fybrik-system
 spec:
   id: theshire-object-store
+  type: s3
   secretRef: credentials-theshire
   geography: theshire
   properties:

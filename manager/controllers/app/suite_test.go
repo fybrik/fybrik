@@ -89,8 +89,8 @@ var _ = BeforeSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cfg).ToNot(BeNil())
 
-		err = fapp.AddToScheme(scheme.Scheme)
-		Expect(err).NotTo(HaveOccurred())
+		_ = fapp.AddToScheme(scheme.Scheme)
+		_ = sa.AddToScheme(scheme.Scheme)
 
 		// +kubebuilder:scaffold:scheme
 
@@ -196,4 +196,5 @@ func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.LocalClusterName, "thegreendragon", t)
 	SetIfNotSet(environment.LocalRegion, "theshire", t)
 	SetIfNotSet(environment.LocalVaultAuthPath, "kind", t)
+	SetIfNotSet(environment.ManageStorageKey, "true", t)
 }

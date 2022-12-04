@@ -43,6 +43,7 @@ const (
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
+	ManageStorageKey                  string = "MANAGE_STORAGE"
 )
 
 const printValueStr = "%s set to \"%s\""
@@ -200,6 +201,11 @@ func GetDiscoveryQPS() (float32, error) {
 // which is used for managing data set credentials
 func GetVaultAddress() string {
 	return os.Getenv(VaultAddressKey)
+}
+
+// IsStorageManaged returns whether storage management is enabled
+func IsStorageManaged() bool {
+	return os.Getenv(ManageStorageKey) == "true"
 }
 
 // GetDataPathMaxSize bounds the data path size (number of modules that access data for read/write/copy,
