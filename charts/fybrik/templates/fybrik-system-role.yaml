@@ -57,7 +57,6 @@ rules:
 - apiGroups:
   - app.fybrik.io
   resources:
-  - fybrikstorageaccounts
   - fybrikmodules
   verbs:
   - create
@@ -66,6 +65,14 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - storage.fybrik.io
+  resources:
+  - fybrikstorageaccounts
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups:
   # to allow access to datashim, see https://github.com/datashim-io/datashim

@@ -48,3 +48,6 @@ katalogConnector:
   # Using mock image until data assets for tests are implemented
   image: "data-catalog-mock"
 
+# Storage allocation and management
+storageManager:
+  enabled: false

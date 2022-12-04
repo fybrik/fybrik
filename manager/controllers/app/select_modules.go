@@ -110,16 +110,16 @@ func (p *PathBuilder) validateStorageRequirements(element *datapath.ResolvedEdge
 			continue
 		}
 		// query the policy manager whether WRITE operation is allowed
-		actions, found = p.Asset.StorageRequirements[account.Spec.Region]
+		actions, found = p.Asset.StorageRequirements[account.Spec.Geography]
 		if !found {
 			continue
 		}
 
-		// add the selected storage account region
+		// add the selected storage account location
 		element.StorageAccount = account.Spec
 		break
 	}
-	if element.StorageAccount.Region == "" {
+	if element.StorageAccount.Geography == "" {
 		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 		return false
 	}

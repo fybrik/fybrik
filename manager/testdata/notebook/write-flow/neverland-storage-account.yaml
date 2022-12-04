@@ -1,13 +1,15 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   storage.fybrik.io/v1alpha1
 kind:         FybrikStorageAccount
 metadata:
   name: neverland-storage-account
   namespace: fybrik-system
 spec:
   id: neverland-object-store
-  region: neverland
-  endpoint: "http://s3.fybrik-system.svc.cluster.local:9090"
+  type: s3
+  geography: neverland
   secretRef:  bucket-creds
+  properties:
+    endpoint: "http://s3.fybrik-system.svc.cluster.local:9090"

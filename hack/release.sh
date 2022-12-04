@@ -13,3 +13,7 @@ ${TOOLBIN}/yq eval --inplace ".dependencies[0].version = \"$RELEASE\"" ./charts/
 ${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/fybrik-crd/charts/asset-crd/Chart.yaml
 ${TOOLBIN}/yq eval --inplace ".appVersion = \"$RELEASE\"" ./charts/fybrik-crd/charts/asset-crd/Chart.yaml
 ${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/vault/Chart.yaml
+${TOOLBIN}/yq eval --inplace ".dependencies[0].version = \"$RELEASE\"" ./charts/fybrik/Chart.yaml
+${TOOLBIN}/yq eval --inplace ".version = \"$RELEASE\"" ./charts/fybrik/charts/storageaccount-crd/Chart.yaml
+${TOOLBIN}/yq eval --inplace ".appVersion = \"$RELEASE\"" ./charts/fybrik/charts/storageaccount-crd/Chart.yaml
+

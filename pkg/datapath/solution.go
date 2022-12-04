@@ -8,6 +8,7 @@ import (
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	sa "fybrik.io/fybrik/pkg/storage/apis/storageaccount/v1alpha1"
 )
 
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
@@ -31,7 +32,7 @@ type ResolvedEdge struct {
 	Edge
 	Actions        []taxonomy.Action
 	Cluster        string
-	StorageAccount appApi.FybrikStorageAccountSpec
+	StorageAccount sa.FybrikStorageAccountSpec
 }
 
 // Solution is a final solution enabling a plotter construction.

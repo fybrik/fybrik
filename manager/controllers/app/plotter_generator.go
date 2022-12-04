@@ -23,6 +23,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	sa "fybrik.io/fybrik/pkg/storage/apis/storageaccount/v1alpha1"
 	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -49,7 +50,7 @@ type PlotterGenerator struct {
 
 // AllocateStorage creates a Dataset for bucket allocation
 func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
-	account *fapp.FybrikStorageAccountSpec) (*fapp.DataStore, error) {
+	account *sa.FybrikStorageAccountSpec) (*fapp.DataStore, error) {
 	// provisioned storage
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -60,9 +61,9 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
 	bucket := &storage.ProvisionedBucket{
 		Name:      genBucketName,
-		Endpoint:  account.Endpoint,
+		Endpoint:  account.Properties[storage.EndpointKey],
 		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
-		Region:    string(account.Region),
+		Geography: string(account.Geography),
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
@@ -232,7 +233,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 
 	needToAllocateStorage := false
 	for _, element = range selection.DataPath {
-		if element.StorageAccount.Region != "" {
+		if element.StorageAccount.Geography != "" {
 			needToAllocateStorage = true
 			break
 		}
@@ -253,11 +254,11 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 
 	resourceMetadata := datacatalog.ResourceMetadata{
 		Name:      item.Context.DataSetID,
-		Geography: string(element.StorageAccount.Region),
+		Geography: string(element.StorageAccount.Geography),
 	}
 
 	// Reset StorageAccount to prevent re-allocation
-	element.StorageAccount.Region = ""
+	element.StorageAccount.Geography = ""
 
 	// Update item with details of the asset
 	// the asset will registered in the catalog later however
@@ -308,7 +309,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 				return err
 			}
 		}
-		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Region != "" {
+		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Geography != "" {
 			// allocate storage and create a temoprary asset
 			var sinkDataStore *fapp.DataStore
 			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {

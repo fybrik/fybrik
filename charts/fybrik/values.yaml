@@ -741,6 +741,10 @@ opaConnector:
 
   affinity: {}
   
+# Storage allocation and management
+storageManager:
+  enabled: true
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: false

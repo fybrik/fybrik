@@ -45,10 +45,11 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_blueprints.yaml
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikapplications.yaml
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikmodules.yaml
-	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikstorageaccounts.yaml
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_plotters.yaml
 	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/charts/asset-crd/templates/ paths=./connectors/katalog/pkg/apis/katalog/...
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/charts/asset-crd/templates/katalog.fybrik.io_assets.yaml
+	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik/charts/storageaccount-crd/templates/ paths=./pkg/storage/apis/storageaccount/...
+	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik/charts/storageaccount-crd/templates/storage.fybrik.io_fybrikstorageaccounts.yaml
 	$(TOOLBIN)/controller-gen webhook paths=./manager/apis/... output:stdout | \
 		$(TOOLBIN)/yq eval 'del(.metadata.creationTimestamp)' - | \
 		$(TOOLBIN)/yq eval '.metadata.annotations."cert-manager.io/inject-ca-from" |= "{{ .Release.Namespace }}/serving-cert"' - | \

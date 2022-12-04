@@ -17,6 +17,7 @@ generate-crd-docs: $(TOOLBIN)/crdoc
 	mkdir tmp_site
 	cp $(ROOT_DIR)/charts/fybrik-crd/templates/* tmp_site
 	cp $(ROOT_DIR)/charts/fybrik-crd/charts/asset-crd/templates/* tmp_site
+	cp $(ROOT_DIR)/charts/fybrik/charts/storageaccount-crd/templates/* tmp_site
 	-$(TOOLBIN)/crdoc -v
 	$(TOOLBIN)/crdoc --template ./templates/crd/main.tmpl --resources tmp_site --output ./docs/reference/crds.md
 	rm -r tmp_site

@@ -6,5 +6,6 @@ metadata:
 spec:
   id: theshire-object-store
   secretRef: credentials-theshire
-  region: theshire
-  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+  geography: theshire
+  properties:
+    endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud

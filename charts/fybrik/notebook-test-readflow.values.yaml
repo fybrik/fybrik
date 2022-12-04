@@ -38,6 +38,9 @@ opaServer:
         column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
       }
 
+# Storage allocation and management
+storageManager:
+  enabled: false
 
 # S3 mock service installed in fybrik namespace
 s3mock:

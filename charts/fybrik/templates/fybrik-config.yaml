@@ -23,6 +23,7 @@ data:
   VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}
   VAULT_MODULES_ROLE: "module" # temporary
+  MANAGE_STORAGE: {{ .Values.storageManager.enabled | quote }}
   {{- end }}
   {{- end }}
 {{- end }}

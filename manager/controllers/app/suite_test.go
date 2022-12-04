@@ -32,6 +32,7 @@ import (
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
+	sa "fybrik.io/fybrik/pkg/storage/apis/storageaccount/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -112,9 +113,9 @@ var _ = BeforeSuite(func() {
 				Scheme:             scheme.Scheme,
 				MetricsBindAddress: "localhost:8086",
 				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-					&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
-					&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-					&corev1.Secret{}:             {Field: workerNamespaceSelector},
+					&fapp.FybrikModule{}:       {Field: systemNamespaceSelector},
+					&sa.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+					&corev1.Secret{}:           {Field: workerNamespaceSelector},
 				}}),
 			})
 			Expect(err).ToNot(HaveOccurred())

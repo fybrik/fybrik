@@ -35,7 +35,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	} else {
 		resourceMetadata.Name = assetID
 	}
-	// Update the Geography with the allocated storage region
+	// Update the Geography with the allocated storage geography
 	if info.ResourceMetadata != nil {
 		resourceMetadata.Geography = info.ResourceMetadata.Geography
 	}
