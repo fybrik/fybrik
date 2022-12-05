@@ -17,7 +17,7 @@ Currently, only S3 storage is supported. Both allocation and deletion of the sto
 
 - A single connection taxonomy should be used by modules, catalog conector and storage manager.
 
-- Deployment of FybrikStorageAccount CRD should be configurable.
+- Deployment of FybrikStorageAccount CRD should be configurable - to be discussed: [issue 1717](https://github.com/fybrik/fybrik/issues/1717) 
 
 - Fybrik manages storage life cycle of temporary data copies.
 
@@ -51,50 +51,81 @@ Currently, only S3 storage is supported. Both allocation and deletion of the sto
 
 It is crucial that the modules and the storage allocation component have a base common connection structure.  Otherwise, the components will not work together correctly when deployed.  Thus, we propose the following:
 
-- **Connection** will be defined in **base** taxonomy within Fybrik repository.
+- **Connection** is defined in **base** taxonomy within Fybrik repository, as it is done today:
 
 ```
-struct Connection {
-
-    name string // connection name
-
-    category string // category, optional
-
-    properties map[string]string // connection properties shared by multiple assets as well as asset specifics
-
+// +kubebuilder:pruning:PreserveUnknownFields
+// Name of the connection to the data source
+type Connection struct {
+	// Name of the connection to the data source
+	Name                 ConnectionType   `json:"name"`
+	AdditionalProperties serde.Properties `json:"-"`
 }
 ```
 
-Additional properties will be preserved. (needs discussion)
+- Fybrik defines **taxonomy layers** with schema definition for supported connections (in pkg/taxonomy/layers). Quickstart deploys Fybrik using these layers. Users can add/replace layers when deploying Fybrik.
 
-- Fybrik defines **layers** with schema definition for supported connections (in pkg/storage/layers). Quickstart deploys Fybrik using these layers. Users can add/replace layers when deploying Fybrik.
+In **Phase1** we define layers for all connection types that are supported today by open-source modules, such as `s3`, `db2`, `kafka`, `arrow-flight`. (Revisit taxonomy layers used by Airbyte module.)
 
-- A module yaml can specify as a connection type either name or category. Optimizer will do the matching.
-
-### StorageAccount 
-
-StorageAccount specifies the following:
+Example of a taxonomy layer for `s3`:
 ```
-- type (connection name)
+  s3:
+    description: Connection information for S3 compatible object store
+    type: object
+    properties:
+      bucket:
+        type: string
+      endpoint:
+        type: string
+      object_key:
+        type: string
+      region:
+        type: string
+    required:
+    - bucket
+    - endpoint
+    - object_key
+```
+- Selection of modules is done based on connection `name`.
 
-- geography
+In **Phase2** we add an optional `Category` field to `Connection`. 
+A module yaml will specify as a connection type either name or category. Optimizer will do the matching.
 
-- reference to a secret
+### FybrikStorageAccount 
+Today, FybrikStorageAccount spec defines properties of s3 storage, e.g.:
+```
+spec:
+  id: theshire-object-store
+  secretRef: credentials-theshire
+  region: theshire
+  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+```
 
-- properties as key-value map
+We suggest to add `type` (connection name), `geography` and `properties` defining the appropriate connection properties.
+Example:
+```
+spec:
+  id: theshire-object-store
+  type: s3
+  secretRef: credentials-theshire
+  geography: theshire
+  properties:
+    s3:
+        region: eu
+        endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
 ```
 
 Dynamic information about performance, amount free, costs, etc., are detailed in the separate Infrastructure Attributes JSON file.
 
 ## StorageManager
 
-StorageManager is responsible for allocating storage in known storage accounts (as declared in StorageAccount CRDs) and for freeing the allocated storage.  
+StorageManager is responsible for allocating storage in known storage accounts (as declared in FybrikStorageAccount CRDs) and for freeing the allocated storage.  
 
 
 
 ### Architecture and interfaces
 
-StorageManager runs as a new container in the manager pod. Its docker image is specified in Fybrik `values.yaml` and can be replaced as long as the alternative implementation obeys the following APIs:
+StorageManager runs as a new container in the manager pod. A default Fybrik deployment uses its open-source implementation as a docker image specified in Fybrik `values.yaml`. This implementation can be replaced as long as the alternative obeys the following APIs:
 
 #### AllocateStorage
 
@@ -110,50 +141,43 @@ The allocated storage is freed after FybrikApplication is deleted or a dataset i
 
 #### GetSupportedConnectionTypes
 
-Returns a list of supported connection types, to validate the storage accounts. 
+Returns a list of supported connection types. Optimizer will use this list to constrain selection of storage accounts. 
 
 
-### Code base
+## Architecture
 
 As the first step, storage management functionality will be defined in Fybrik repo under `pkg/storage`. 
-To consider moving to another repository. 
+To consider moving to another repository in the future.
 
 The folder will include:
 
-- taxonomy layers (yaml files)
-
-- StorageAccount types to generate the CRD, a separate `storageaccount-crd` helm chart. The main `fybrik` chart will declare the dependency of `storageaccount-crd` chart on `storageManager.enabled` value (see `Deployment configuration`).
-
+- FybrikStorageAccount types to generate the CRD
 - Open-source implementation of StorageManager APIs
-
-### Architecture
 
 Architecture of StorageManager is based on [Design pattern](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package)
 
-It defines `main` that registers various connectors and `connector plugins` that implement the interface for `AllocateStorage`/`DeleteStorage`. Each connector plugin registers the connection type it supports in init().
-
-A docker file is included to build the image of StorageManager.
+It defines `main` that registers various connection types and `plugins` that implement the interface for `AllocateStorage`/`DeleteStorage`. Each plugin registers the connection type it supports in init(). StorageManager invokes the appropriate plugin method based on the registered connection type.
 
 
 ## How to support a new connection type
 
 ### StorageManager
 
-- Add a connector package with implementation of `AllocateStorage`/`DeleteStorage` and register it in the main process.
+- Add a new plugin with implementation of `AllocateStorage`/`DeleteStorage` and register it in the main process.
 
 - Create a new docker image of StorageManager
 
 ### Fybrik core
 
+- Add a new taxonomy layer describing the connection schema and compile `taxonomy.json`.
+
 - Ensure existence of modules that are able to write/copy to this connection. Update the capabilities in module yamls accordingly.
 
-- Prepare StorageAccount resources with the shared storage information.
+- Prepare FybrikStorageAccount resources with the shared storage information.
 
 - Update infrastructure attributes related to the storage accounts, e.g., cost.
 
 - Optionally update IT config policies to specify when the new storage can/should be selected
-
-- Add a new layer describing the connection schema.
 
 - Optionally extend catalog-connector to support the new connection.
 
@@ -162,48 +186,8 @@ A docker file is included to build the image of StorageManager.
 
 ## Deployment configuration
 
-In values.yaml add another section `storageManager` with the following configurable properties:
+In values.yaml add another section `storageManager` with `image` of StorageManager. Modify manager deployment.
 
-- `enabled`
-
-- `image`
-
-- `imagePullPolicy`
-
-StorageAccounts  are deployed only if `storageManager.enabled` is set to `true`.
-
-
-## Extending syntax of IT config policies
-
-IT config policies support filtering of StorageAccounts by one or more of the following:
-
-- type (e.g. allow S3 storage only)
-
-- geography (copy data to the workload geography)
-
-- infrastructure attributes (prefer cheaper cost)
-
-- connection properties. 
-
-
-Currently, the policies only filter out options instead of providing instructions. Instruction examples: a person with role Auditor needs to write data to a bucket named Audit, an empty bucket should be deleted if tags include “managed-by-fybrik”. This requires a change to the policy syntax - adding `attributes` to provide additional attributes for modules or storage accounts.
-```
-config[{"capability": "write", "decision": decision}] {
-
-			input.context.role == “Auditor”
-
-			decision: = {"attributes": {"storageaccounts": [{“bucket”: “Audit”}]}}
-
-		}
-
-config [{"capability": "delete", "decision": decision}] {
-
-			input.request.dataset.tags[“managed-by-fybrik”]
-
-			decision: = {"attributes": {"storageaccounts": [{“delete_empty_bucket”: “true”}]}}
-
-		}
-```
 
 ## Changes to Optimizer and storage type selection
 
@@ -220,26 +204,33 @@ Earlier, the only available storage type was S3. It was hard-coded inside manage
 
 - Use information about the amount of storage available and amount of data to be written/copied to influence storage selection.
 
-## Development plan
+- Extend IT config policies with options for storage management
 
-- Redefine `Connection` and provide layers for s3, db2, kafka, arrow-flight, what else?
+## Development plan 
 
-- Remove dependency on datashim
+### Phase1
+
+- Provide layers for s3, db2, kafka, arrow-flight, what else?
 
 - Changes to FybrikStorageAccount CR
 
-- Lift the requirement for the default S3 storage, add constraints to the optimizer. Change the non-CSP algorithm as well.
+- Implement StorageManager with the defined API for s3 using minio sdk.
 
-- Add chart values and deploy CRs accordingly. The manager code should work even when storage CRs are not deployed.
-
-- Implement a standalone storage-allocator that will implement the defined API for s3 using minio sdk.
-
-- Support additional connection types - to be decided what types and what priorities. 
-
-- IT config policies for configuration options
+- Remove dependency on datashim
 
 - Update documentation accordingly
 
-- Changes to Airbyte module, other modules
+- Changes to Airbyte module to adapt the suggested taxonomy
 
-- Changes to catalog connectors to align with taxonomy
+
+### Phase2
+
+- Lift the requirement for the default S3 storage, add constraints to the optimizer. Change the non-CSP algorithm as well.
+
+### Phase3
+
+- IT config policies for configuration options
+
+### Phase4
+
+- Support additional connection types - to be decided what types and what priorities. 
