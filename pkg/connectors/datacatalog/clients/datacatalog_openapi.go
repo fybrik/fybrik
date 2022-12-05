@@ -45,7 +45,7 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log).HTTPClient,
+		HTTPClient:       utils.GetHTTPClient(&log).StandardClient(),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 
