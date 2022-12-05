@@ -6,21 +6,22 @@ package utils
 import (
 	"net/http"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/rs/zerolog"
 
 	fybrikTLS "fybrik.io/fybrik/pkg/tls"
 )
 
-// GetHTTPClient returns an object of type *http.Client.
-func GetHTTPClient(log *zerolog.Logger) *http.Client {
+// GetHTTPClient returns an object of type *retryablehttp.Client.
+func GetHTTPClient(log *zerolog.Logger) *retryablehttp.Client {
+	retryClient := retryablehttp.NewClient()
 	config, err := fybrikTLS.GetClientTLSConfig(log)
 	if err != nil {
 		log.Error().Err(err)
 		return nil
 	}
 	if config != nil {
-		transport := &http.Transport{TLSClientConfig: config}
-		return &http.Client{Transport: transport}
+		retryClient.HTTPClient.Transport = &http.Transport{TLSClientConfig: config}
 	}
-	return http.DefaultClient
+	return retryClient
 }

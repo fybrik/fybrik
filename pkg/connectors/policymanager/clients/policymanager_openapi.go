@@ -37,7 +37,7 @@ func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) 
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log),
+		HTTPClient:       utils.GetHTTPClient(&log).HTTPClient,
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 
