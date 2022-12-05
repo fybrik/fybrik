@@ -101,7 +101,7 @@ spec:
   endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
 ```
 
-We suggest to add `type` (connection name), `geography` and `properties` defining the appropriate connection properties.
+We suggest to add `type` (connection name), `geography` and the appropriate connection properties.
 Example:
 ```
 spec:
@@ -109,10 +109,9 @@ spec:
   type: s3
   secretRef: credentials-theshire
   geography: theshire
-  properties:
-    s3:
-        region: eu
-        endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
+  s3:
+    region: eu
+    endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
 ```
 
 Dynamic information about performance, amount free, costs, etc., are detailed in the separate Infrastructure Attributes JSON file.
