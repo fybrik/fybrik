@@ -9,7 +9,7 @@ source ./common.sh
 
 case ${os} in
     linux)
-        target_os=ubuntu-20.04
+        target_os=ubuntu-18.04
         dyn_lib_ext=so
         ;;
     darwin)
