@@ -535,7 +535,7 @@ openmetadataConnector:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "ghcr.io/fybrik/openmetadata-connector:0.3.0"
+  image: "ghcr.io/fybrik/openmetadata-connector:0.4.0"
 
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"
