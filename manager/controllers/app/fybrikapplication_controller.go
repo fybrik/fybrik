@@ -74,7 +74,6 @@ var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json
 const (
 	FybrikApplicationKind = "FybrikApplication"
 	PlotterUpdatePrefix   = "plotter_"
-	Interval              = 10
 )
 
 // ErrorMessages that are reported to the user
@@ -91,6 +90,7 @@ const (
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
 // The outcome is a Plotter containing multiple Blueprints that run on different clusters
+//
 //nolint:gocyclo
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	sublog := r.Log.With().Str(FybrikApplicationKind, req.NamespacedName.String()).Logger()
@@ -133,7 +133,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := application.Status.DeepCopy()
 	appVersion := application.GetGeneration()
 
-	// validate fybrik application in case of the create/update resource event
+	// validate fybrik application in case of the creation/update resource event
 	if err := r.validateApp(ctx, applicationContext); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -215,7 +215,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 			continue
 		}
 
-		// register assets if necessary if the ready state has been received
+		// register assets if the ready state has been received
 		if dataCtx.Requirements.FlowParams.Catalog != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
@@ -522,7 +522,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
-			// credentialPath is constructed even if vault is not used for credential managment
+			// credentialPath is constructed even if vault is not used for credential management
 			// in order to enable the connector to get the credentials directly from the secret
 			// using the secret information extracted from the credentialPath string.
 			credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
@@ -609,7 +609,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			}
 		}
 	} else {
-		// Use the existsing resource metadata if the asset is not new
+		// Use the existing resource metadata if the asset is not new
 		resMetadata = &req.DataDetails.ResourceMetadata
 	}
 	for accountInd := range env.StorageAccounts {
@@ -874,7 +874,7 @@ func (r *FybrikApplicationReconciler) validateApp(ctx context.Context, applicati
 		// if validation fails
 		if err != nil {
 			// set error message
-			applicationContext.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
+			applicationContext.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication validation failed")
 			applicationContext.Application.Status.ErrorMessage = err.Error()
 			applicationContext.Application.Status.ValidApplication = v1.ConditionFalse
 			return utils.UpdateStatus(ctx, r.Client, applicationContext.Application, observedStatus)
