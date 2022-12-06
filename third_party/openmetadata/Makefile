@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
       - name: prepare-openmetadata
-        image: 'ghcr.io/fybrik/openmetadata-connector:0.3.0'
+        image: 'ghcr.io/fybrik/openmetadata-connector:0.4.0'
         command: ["/openmetadata-connector", "prepare", "--customization", "/customization.yaml"]
         env:
         - name: OPENMETADATA_ENDPOINT
