@@ -227,14 +227,14 @@ agent.AllocateStorage...
 - Deploy new/modified yamls and re-install Fybrik release using StorageManager image and the new taxonomy schema. No change to fybrik_crd is required.
 
 
-## Deployment configuration
+## Fybrik deployment configuration
 
-In values.yaml add another section `storageManager` with `image` of StorageManager. Modify manager deployment.
+In [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) add a section `storageManager` with `image` of StorageManager. Modify manager deployment to bring up a new container running in the manager pod.
 
 
 ## Changes to Optimizer and storage type selection
 
-Earlier, the only available storage type was S3. It was hard-coded inside manager as the default connection type used in the write flow of a new dataset. Now, the following changes are required (both to optimizer and the manager naive algorithm):
+Currently, the only available storage type is S3. It has been hard-coded inside manager as the default connection type used in the write flow of a new dataset. Now, the following changes are required (both to optimizer and the manager naive algorithm):
 
 - add the constraint of storage type/category matching the module protocol
 
@@ -243,7 +243,7 @@ Earlier, the only available storage type was S3. It was hard-coded inside manage
 
 ## To consider in the future:
 
-- Changes to FybrikApplication (add requirements to the dataset entry)
+- Changes to FybrikApplication (add user requirements for storage type, connection details such as bucket name, etc. to the dataset entry)
 
 - Use information about the amount of storage available and amount of data to be written/copied to influence storage selection.
 
@@ -269,6 +269,8 @@ Earlier, the only available storage type was S3. It was hard-coded inside manage
 ### Phase2
 
 - Lift the requirement for the default S3 storage, add constraints to the optimizer. Change the non-CSP algorithm as well.
+
+- Support more storage types: db2, kafka, google sheets, mySQL
 
 ### Phase3
 
