@@ -63,29 +63,12 @@ type Connection struct {
 }
 ```
 
-- Fybrik defines **taxonomy layers** with schema definition for supported connections (in pkg/taxonomy/layers). Quickstart deploys Fybrik using these layers. Users can add/replace layers when deploying Fybrik.
+- Fybrik defines **connection taxonomy layer** with schema definition for supported connections (in pkg/taxonomy/layers). Quickstart deploys Fybrik using this layer. Users can modify the connection layer when deploying Fybrik.
 
-In **Phase1** we define layers for all connection types that are supported today by open-source modules, such as `s3`, `db2`, `kafka`, `arrow-flight`. (Revisit taxonomy layers used by Airbyte module.)
+In **Phase1** we define a connection taxonomy layer for all connection types that are supported today by open-source modules, such as `s3`, `db2`, `kafka`, `arrow-flight`. (Revisit taxonomy definition used by Airbyte module.)
 
-Example of a taxonomy layer for `s3`:
-```
-  s3:
-    description: Connection information for S3 compatible object store
-    type: object
-    properties:
-      bucket:
-        type: string
-      endpoint:
-        type: string
-      object_key:
-        type: string
-      region:
-        type: string
-    required:
-    - bucket
-    - endpoint
-    - object_key
-```
+See [connection taxonomy](https://github.com/fybrik/fybrik/blob/master/samples/taxonomy/example/catalog/connection.yaml) for an example of a connection taxonomy layer.
+
 - Selection of modules is done based on connection `name`.
 
 In **Phase2** we add an optional `Category` field to `Connection`. 
@@ -101,7 +84,7 @@ spec:
   endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
 ```
 
-We suggest to add `type` (connection name), `geography` and the appropriate connection properties.
+We suggest to add `type` (connection name), `geography` and the appropriate connection properties taken from the taxonomy.
 Example:
 ```
 spec:
@@ -145,30 +128,91 @@ Returns a list of supported connection types. Optimizer will use this list to co
 
 ## Architecture
 
-As the first step, storage management functionality will be defined in Fybrik repo under `pkg/storage`. 
-To consider moving to another repository in the future.
+Storage management functionality will be defined in Fybrik repo under `pkg/storage`. 
 
 The folder will include:
 
 - FybrikStorageAccount types to generate the CRD
-- Open-source implementation of StorageManager APIs
+- Open-source implementation of StorageManager APIs based on a some / all of the connection types in the [taxonomy](#taxonomy-and-structures)
 
 Architecture of StorageManager is based on [Design pattern](https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package)
 
-It defines `main` that registers various connection types and `plugins` that implement the interface for `AllocateStorage`/`DeleteStorage`. Each plugin registers the connection type it supports in init(). StorageManager invokes the appropriate plugin method based on the registered connection type.
+`agent` defines the interface for `AllocateStorage`/`DeleteStorage`:
 
+```
+package agent
+
+type AgentInterface interface {
+    func AllocateStorage...
+    func DeleteStorage...
+}
+```
+
+`registrator` registers `agents` implementing the interface:
+```
+package registrator
+
+import "registrator/agent"
+
+var (
+	agentsMu sync.RWMutex
+	agents   = make(map[string]agent.Agent)
+)
+
+func Register(name string, worker agent.Agent) error {
+	agentsMu.Lock()
+	defer agentsMu.Unlock()
+	if worker == nil {
+		// return error
+	}
+	if _, dup := agents[name]; dup {
+		// return error
+	}
+	agents[name] = worker
+}
+```
+
+Each agent implements the interface and registers the connection type it supports in init(). 
+```
+package s3Agent
+
+import "registrator"
+import "registrator/agent"
+
+func init() {
+    registrator.Register("s3", &S3Agent{})
+}
+
+func AllocateStorage...
+func DeleteStorage...
+```
+
+StorageManager invokes the appropriate agent based on the registered connection type.
+```
+package storageManager
+// import registrator
+import "registrator"
+// import agents
+import "s3Agent"
+
+... within AllocateStorage
+// get agent by type
+agent = registrator.GetAgent(type)
+// invoke the agent
+agent.AllocateStorage...
+```
 
 ## How to support a new connection type
 
 ### StorageManager
 
-- Add a new plugin with implementation of `AllocateStorage`/`DeleteStorage` and register it in the main process.
+- Implement `AllocateStorage`/`DeleteStorage` for the new type and register it. (Depends on the definition of the appropriate schema by Fybrik.)
 
 - Create a new docker image of StorageManager
 
 ### Fybrik core
 
-- Add a new taxonomy layer describing the connection schema and compile `taxonomy.json`.
+- Add a new connection schema and compile `taxonomy.json`.
 
 - Ensure existence of modules that are able to write/copy to this connection. Update the capabilities in module yamls accordingly.
 
@@ -209,7 +253,7 @@ Earlier, the only available storage type was S3. It was hard-coded inside manage
 
 ### Phase1
 
-- Provide layers for s3, db2, kafka, arrow-flight, what else?
+- Provide connection taxonomy layer for s3, db2, kafka, arrow-flight, what else?
 
 - Changes to FybrikStorageAccount CR
 
