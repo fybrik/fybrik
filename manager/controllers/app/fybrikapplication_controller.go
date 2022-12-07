@@ -133,7 +133,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := application.Status.DeepCopy()
 	appVersion := application.GetGeneration()
 
-	// validate fybrik application in case of the creation/update resource event
+	// validate fybrik application if the resource has been created or modified
 	if err := r.validateApp(ctx, applicationContext); err != nil {
 		return ctrl.Result{}, err
 	}
