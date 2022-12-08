@@ -7,15 +7,16 @@ When we say that Fybrik allocates storage, we actually mean that Fybrik allocate
 
 Modules that write data to this storage, receive from Fybrik a connection that holds the relevant information about the storage (e.g. endpoint and write credentials).
 
-Currently, only S3 storage is supported. Both allocation and deletion of the storage (if temporary) is done using Datashim.
+Currently, only S3 storage is supported. Both allocation and deletion of the storage (if temporary) is done using [Datashim](https://datashim.io/).
+Business logic related to storage management is hard-coded in Fybrik.
 
 ## Gaps / Requirements
 
-- Support additional connection types (e.g. MySQL, googlesheets)
+- Support additional connection types (e.g. [MySQL](https://www.mysql.com/), [Google Sheets](https://learn.microsoft.com/en-us/connectors/googlesheet/))
 
 - Business logic should not be hard-coded in Fybrik. 
 
-- A single connection taxonomy should be used by modules, catalog conector and storage manager.
+- Storage manager should use the common connection taxonomy.
 
 - Deployment of FybrikStorageAccount CRD should be configurable - to be discussed: [issue 1717](https://github.com/fybrik/fybrik/issues/1717) 
 
@@ -23,15 +24,16 @@ Currently, only S3 storage is supported. Both allocation and deletion of the sto
 
 - A clear error indication should be provided if the requested storage type is not supported, or an operation has failed.
 
-- IT admin should be able to express config policies based on storage dynamic attributes (e.g., cost) as well as storage properties such as type, geography and others. 
+- IT admin should be able to express config policies related to storage allocation, based on storage dynamic attributes (e.g., cost) as well as storage properties such as type, geography and others. 
 
 - Optimizer needs to ensure that the allocated storage type matches the connection that the module uses.
 
 - The selected storage should not necessarily match the source dataset connection in case of copying an existing asset.
 
+- The data user should be able to leave a choice of a storage type to Fybrik and organization policies.  
+
 - [Future enhancement] The data user should be able to request a specific storage type, or to specify some of the connection properties (e.g., bucket name) inside FybrikApplication. 
 
-- The data user should be able to leave a choice of a storage type to Fybrik and organization policies.  
 
 ## Goals 
 
@@ -71,8 +73,9 @@ See [connection taxonomy](https://github.com/fybrik/fybrik/blob/master/samples/t
 
 - Selection of modules is done based on connection `name`.
 
-In **Phase2** we add an optional `Category` field to `Connection`. 
-A module yaml will specify as a connection type either name or category. Optimizer will do the matching.
+In **Phase2** we add an optional `Category` field to `Connection`. Category represents a wider set of connection types that can be supported by a module.
+For example, `Generic S3` can represent `AWS S3`, `IBM Cloud Object Storage`, and so on.
+A module yaml will be able to specify either name or category as a connection type.  Optimizer will do the matching.
 
 ### FybrikStorageAccount 
 Today, FybrikStorageAccount spec defines properties of s3 storage, e.g.:
@@ -105,7 +108,7 @@ StorageManager is responsible for allocating storage in known storage accounts (
 
 
 
-### Architecture and interfaces
+### Interfaces
 
 StorageManager runs as a new container in the manager pod. A default Fybrik deployment uses its open-source implementation as a docker image specified in Fybrik `values.yaml`. This implementation can be replaced as long as the alternative obeys the following APIs:
 
@@ -113,13 +116,17 @@ StorageManager runs as a new container in the manager pod. A default Fybrik depl
 
 Storage is allocated after the appropriate storage account has been selected by the optimizer. 
 
-`AllocateStorage` request includes properties of the selected storage account, asset name (and additional properties) defined in FybrikApplication, prefix for name generation based on application uuid, attributes defined by IT config policies, e.g., bucket_name. Upon a successful allocation, a connection object will be returned.
+`AllocateStorage` request includes properties of the selected storage account, asset name (and additional properties) defined in FybrikApplication, prefix for name generation based on application uuid, attributes defined by IT config policies, e.g., bucket_name. 
+Upon a successful allocation, a connection object is returned.
+In case of an error, a detailed error message is returned. Examples of errors: credentials are not provided, access to cloud object storage is forbidden.
 
 #### DeleteStorage
 
 The allocated storage is freed after FybrikApplication is deleted or a dataset is no longer required in the spec, and the storage is not persistent.
 
 `DeleteStorage` request receives the `Connection` object to be deleted, and configuration options defined by IT config policies, e.g., delete_empty_bucket.
+
+It returns the operation status (success/failure), and a detailed error message, e.g. access is denied, the specified bucket does not exist, etc.
 
 #### GetSupportedConnectionTypes
 
@@ -204,15 +211,19 @@ agent.AllocateStorage...
 
 ## How to support a new connection type
 
-### StorageManager
+### Development
 
-- Implement `AllocateStorage`/`DeleteStorage` for the new type and register it. (Depends on the definition of the appropriate schema by Fybrik.)
+- Add a new connection schema and compile `taxonomy.json`.
+
+- StorageManager: implement `AllocateStorage`/`DeleteStorage` for the new type and register it.
 
 - Create a new docker image of StorageManager
 
-### Fybrik core
+- Optionally extend catalog-connector to support the new connection.
 
-- Add a new connection schema and compile `taxonomy.json`.
+- Re-install Fybrik release using StorageManager image and the new taxonomy schema. No change to fybrik_crd is required.
+
+### Deployment
 
 - Ensure existence of modules that are able to write/copy to this connection. Update the capabilities in module yamls accordingly.
 
@@ -222,21 +233,16 @@ agent.AllocateStorage...
 
 - Optionally update IT config policies to specify when the new storage can/should be selected
 
-- Optionally extend catalog-connector to support the new connection.
-
-- Deploy new/modified yamls and re-install Fybrik release using StorageManager image and the new taxonomy schema. No change to fybrik_crd is required.
-
-
 ## Fybrik deployment configuration
 
 In [values.yaml](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml) add a section `storageManager` with `image` of StorageManager. Modify manager deployment to bring up a new container running in the manager pod.
 
 
-## Changes to Optimizer and storage type selection
+## Changes to Optimizer and storage selection
 
-Currently, the only available storage type is S3. It has been hard-coded inside manager as the default connection type used in the write flow of a new dataset. Now, the following changes are required (both to optimizer and the manager naive algorithm):
+Currently, the only available storage connection type is S3. It has been hard-coded inside manager as the default connection type used in the write flow of a new dataset. Now, the following changes are required (both to optimizer and the manager naive algorithm):
 
-- add the constraint of storage type/category matching the module protocol
+- add the constraint of connection type/category matching the module protocol
 
 - do not specify the desired connection type and determine it later from the selected storage type
 
@@ -268,9 +274,11 @@ Currently, the only available storage type is S3. It has been hard-coded inside 
 
 ### Phase2
 
+- Add Category field to `Connection`, modify matching criteria in the optimizer/ non-CSP algorithm. 
+
 - Lift the requirement for the default S3 storage, add constraints to the optimizer. Change the non-CSP algorithm as well.
 
-- Support more storage types: db2, kafka, google sheets, mySQL
+- Support MySQL
 
 ### Phase3
 
@@ -278,4 +286,4 @@ Currently, the only available storage type is S3. It has been hard-coded inside 
 
 ### Phase4
 
-- Support additional connection types - to be decided what types and what priorities. 
+- Support additional connection types - DB2, Kafka, Google Sheets, 
