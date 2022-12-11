@@ -138,7 +138,7 @@ run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/va
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
 run-notebook-readflow-tls-tests:
-#	$(MAKE) setup-cluster
+	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
