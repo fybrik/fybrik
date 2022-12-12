@@ -11,9 +11,9 @@ import (
 	"emperror.dev/errors"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/datacatalog/openapiclient"
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/tls"
 )
 
 // ErrorMessages that are reported to the user
@@ -45,7 +45,7 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log).StandardClient(),
+		HTTPClient:       tls.GetHTTPClient(&log).StandardClient(),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 
