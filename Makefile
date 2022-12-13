@@ -18,8 +18,12 @@ export COPY_TEST_CACERTS ?= 0
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
 # if set, it contains the openmetadata asset name used for testing
 export CATALOGED_ASSET ?= openmetadata-s3.default.bucket1."data.csv"
-# If true, deploy openmetadata
-export DEPLOY_OPENMETADATA ?= 1
+# If true, deploy openmetadata server
+export DEPLOY_OPENMETADATA_SERVER ?= 1
+# If true, use openmetadata as the catalog. Otherwise assume built-in catalog is used.
+export USE_OPENMETADATA_CATALOG ?= 1
+# If true, avoid creating a new cluster.
+export USE_EXISTING_CLUSTER ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -64,6 +68,11 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 .PHONY: docker-mirror-read
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
+
+.PHONY: undeploy-fybrik
+undeploy-fybrik:
+	$(TOOLBIN)/helm uninstall fybrik-crd --namespace $(KUBE_NAMESPACE)
+	$(TOOLBIN)/helm uninstall fybrik --namespace $(KUBE_NAMESPACE)
 
 .PHONY: deploy-fybrik
 deploy-fybrik: export VALUES_FILE?=charts/fybrik/values.yaml
@@ -111,7 +120,8 @@ test: pre-test
 .PHONY: run-integration-tests
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
-run-integration-tests: export DEPLOY_OPENMETADATA=0
+run-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
+run-integration-tests: export USE_OPENMETADATA_CATALOG=0
 run-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C modules helm
@@ -130,7 +140,8 @@ run-notebook-readflow-tests:
 run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
-run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA=0
+run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
+run-notebook-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
 run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
@@ -170,7 +181,8 @@ run-notebook-writeflow-tests:
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
 run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
-run-namescope-integration-tests: export DEPLOY_OPENMETADATA=0
+run-namescope-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
+run-namescope-integration-tests: export USE_OPENMETADATA_CATALOG=0
 run-namescope-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-integration-tests
@@ -179,7 +191,9 @@ run-namescope-integration-tests:
 setup-cluster: export DOCKER_HOSTNAME?=localhost:5000
 setup-cluster: export DOCKER_NAMESPACE?=fybrik-system
 setup-cluster:
+ifeq ($(USE_EXISTING_CLUSTER),0)
 	$(MAKE) kind
+endif
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
@@ -200,7 +214,7 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
-ifeq ($(DEPLOY_OPENMETADATA),1)
+ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
@@ -213,6 +227,18 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 endif
 	$(MAKE) -C third_party/datashim deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
+
+.PHONY: clean-cluster-prepare
+clean-cluster-prepare:
+	cd manager/testdata/notebook/read-flow-tls && ./clean-certs.sh || true
+	$(MAKE) -C third_party/cert-manager undeploy
+	$(MAKE) -C third_party/kubernetes-reflector undeploy || true
+ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
+	$(MAKE) -C third_party/openmetadata undeploy
+endif
+	$(MAKE) -C third_party/vault undeploy
+	$(MAKE) -C third_party/datashim undeploy
+	
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it

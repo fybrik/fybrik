@@ -24,6 +24,10 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     steps:
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - name: Install Go
       uses: actions/setup-go@v3
       with:
@@ -130,15 +134,13 @@ jobs:
         path: images.tar
         retention-days: 1
 
-  notebook-sample-read-flow:
-    name: Read flow notebook sample
+  notebook-sample-read-flow-old:
+    name: Read flow notebook sample (old)
+    if: ${{ ! github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
       DOCKER_NAMESPACE: fybrik-system
-    strategy:
-      matrix:
-        k8s_version: [ 'new', 'old' ]
     steps:
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
@@ -161,14 +163,8 @@ jobs:
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests old
-      if: ${{ matrix.k8s_version == 'old' && ! github.event.pull_request.draft }}
       env:
         K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
-      run: make run-notebook-readflow-tests
-    - name: Read flow notebook tests new
-      if: ${{ matrix.k8s_version == 'new' }}
-      env:
-        K8S_VERSION: ${{ env.NEW_K8S_VERSION }}
       run: make run-notebook-readflow-tests
 
 #  notebook-backward-sample-read-flow:
@@ -199,9 +195,9 @@ jobs:
 #        LATEST_BACKWARD_SUPPORTED_AFM_VERSION: v${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
 #        LATEST_BACKWARD_SUPPORTED_CRD_VERSION: ${{ env.LATEST_BACKWARD_SUPPORTED_VERSION }}
 #      run: make run-notebook-readflow-bc-tests
-
-  notebook-sample-write-flow:
-    name: Write flow notebook sample
+   
+  notebook-sample-flow:
+    name: Notebook sample flows (new)
     runs-on: ubuntu-latest
     env:
       DOCKER_HOSTNAME: "localhost:5000"
@@ -211,6 +207,7 @@ jobs:
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 10
+    - run: echo "K8S_VERSION=${{ env.NEW_K8S_VERSION }}" >> $GITHUB_ENV
     - name: Install Go
       uses: actions/setup-go@v3
       with:
@@ -229,98 +226,48 @@ jobs:
       run: make install-tools
     - name: Write flow notebook tests
       run: make run-notebook-writeflow-tests
-
-  notebook-sample-read-flow-tls:
-    name: Read flow notebook sample with tls
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 10
-    - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
-    - name: Cache dependencies
-      id: cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-          ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
-    - name: Install tools
-      run: make install-tools
+    - name: Update env vars to use existsing cluster
+      run: |
+        # The step that creates or updates the environment variable does
+        # not have access to the new value, but all subsequent steps 
+        # in a job will have access.
+        echo "DEPLOY_OPENMETADATA_SERVER=0" >> $GITHUB_ENV
+        echo "USE_EXISTING_CLUSTER=1" >> $GITHUB_ENV
+    - name: Clean cluster
+      run: |
+        make undeploy-fybrik
+        make clean-cluster-prepare
+        killall kubectl || true
+    - name: Read flow notebook tests
+      run: make run-notebook-readflow-tests
+    - name: Clean cluster
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        make undeploy-fybrik
+        make clean-cluster-prepare
+        killall kubectl || true
     - name: Read flow notebook tests with tls
+      if: startsWith(github.ref, 'refs/tags/v')
       run: make run-notebook-readflow-tls-tests
-
-  notebook-sample-read-flow-tls-system-ca:
-    name: Read flow notebook sample with tls using system CA certs
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 10
-    - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
-    - name: Cache dependencies
-      id: cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-          ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
-    - name: Install tools
-      run: make install-tools
+    - name: Clean cluster
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        make undeploy-fybrik
+        make clean-cluster-prepare
+        killall kubectl || true
     - name: Read flow notebook tests with tls using system CA certs
+      if: startsWith(github.ref, 'refs/tags/v')
       run: make run-notebook-readflow-tls-system-cacerts-tests
-
-  notebook-sample-read-flow-katalog:
-    name: Read flow notebook sample with katalog catalog
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_HOSTNAME: "localhost:5000"
-      DOCKER_NAMESPACE: fybrik-system
-    steps:
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 10
-    - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
-    - name: Cache dependencies
-      id: cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/go/pkg/mod
-          ${{ github.workspace }}/hack/tools/bin
-          ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
-    - name: Install tools
-      run: make install-tools
+    - name: Clean cluster
+      if: ${{ ! github.event.pull_request.draft }}
+      run: |
+        make undeploy-fybrik
+        make clean-cluster-prepare
+        killall kubectl || true
     - name: Read flow notebook tests with katalog
+      if: ${{ ! github.event.pull_request.draft }}
       run: make run-notebook-readflow-tests-katalog
+
 
   tekton-pipelines:
     if: ${{ ! github.event.pull_request.draft }}
@@ -375,6 +322,10 @@ jobs:
     needs: [verify, test, integration-tests]
     if: ${{ github.event_name != 'pull_request' && github.repository == 'fybrik/fybrik' }}
     steps:
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - uses: actions/checkout@v3
     - name: Download artifact
       uses: actions/download-artifact@v3
