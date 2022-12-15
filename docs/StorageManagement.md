@@ -246,6 +246,13 @@ Currently, the only available storage connection type is S3. It has been hard-co
 
 - do not specify the desired connection type and determine it later from the selected storage type
 
+## Backwards compatibility:
+
+- FybrikStorageAccount CRD will be changed without preserving backwards compatibility
+
+- No changes to connectors or connector APIs
+
+- Changes to AirByte module chart are required after the connection layer is defined, no changes to other modules
 
 ## To consider in the future:
 
