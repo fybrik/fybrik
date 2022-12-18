@@ -9,7 +9,8 @@ source ./common.sh
 
 case ${os} in
     linux)
-        target_os=ubuntu-18.04
+        version=$(lsb_release -r --short)
+        target_os=ubuntu-${version}
         dyn_lib_ext=so
         ;;
     darwin)
