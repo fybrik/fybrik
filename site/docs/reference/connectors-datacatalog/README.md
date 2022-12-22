@@ -28,6 +28,10 @@ Class | Method | HTTP request | Description
  - [ResourceMetadata](Models/ResourceMetadata.md)
  - [UpdateAssetRequest](Models/UpdateAssetRequest.md)
  - [UpdateAssetResponse](Models/UpdateAssetResponse.md)
+ - [db2](Models/db2.md)
+ - [fybrik-arrow-flight](Models/fybrik-arrow-flight.md)
+ - [kafka](Models/kafka.md)
+ - [s3](Models/s3.md)
 
 
 <a name="documentation-for-authorization"></a>

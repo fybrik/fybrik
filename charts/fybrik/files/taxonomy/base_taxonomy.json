@@ -1,0 +1,190 @@
+{
+  "title": "taxonomy.json",
+  "definitions": {
+    "Action": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/ActionName"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ActionName": {
+      "type": "string"
+    },
+    "AppInfo": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "AssetID": {
+      "description": "Asset ID of the asset to be queried in the catalog",
+      "type": "string"
+    },
+    "AttributeType": {
+      "type": "string",
+      "enum": [
+        "numeric",
+        "string",
+        "bool"
+      ]
+    },
+    "Capability": {
+      "type": "string"
+    },
+    "Connection": {
+      "description": "Name of the connection to the data source",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/ConnectionType",
+          "description": "Name of the connection to the data source"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ConnectionType": {
+      "description": "Name of the connection type to the data source",
+      "type": "string"
+    },
+    "DataFlow": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write",
+        "delete",
+        "copy"
+      ]
+    },
+    "DataFormat": {
+      "description": "Format of the data",
+      "type": "string"
+    },
+    "InfrastructureElement": {
+      "type": "object",
+      "required": [
+        "attribute",
+        "value",
+        "object"
+      ],
+      "properties": {
+        "arguments": {
+          "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attribute": {
+          "description": "Attribute name defined in the taxonomy",
+          "type": "string"
+        },
+        "description": {
+          "description": "Description",
+          "type": "string"
+        },
+        "instance": {
+          "description": "A reference to the resource instance, e.g. storage account name",
+          "type": "string"
+        },
+        "metricName": {
+          "description": "Name of the metric specified in the metrics section",
+          "type": "string"
+        },
+        "object": {
+          "$ref": "#/definitions/InstanceType",
+          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
+        },
+        "value": {
+          "description": "Attribute value",
+          "type": "string"
+        }
+      }
+    },
+    "InfrastructureMetrics": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "scale": {
+          "$ref": "#/definitions/RangeType",
+          "description": "A scale of values (minimum and maximum) when applicable"
+        },
+        "type": {
+          "$ref": "#/definitions/AttributeType",
+          "description": "Attribute type, e.g. numeric or string"
+        },
+        "units": {
+          "$ref": "#/definitions/Units",
+          "description": "Measurement units"
+        }
+      }
+    },
+    "InstanceType": {
+      "type": "string",
+      "enum": [
+        "fybrikmodule",
+        "fybrikstorageaccount",
+        "cluster",
+        "inter-region"
+      ]
+    },
+    "Interface": {
+      "type": "object",
+      "required": [
+        "protocol"
+      ],
+      "properties": {
+        "dataformat": {
+          "$ref": "#/definitions/DataFormat",
+          "description": "DataFormat defines the data format type"
+        },
+        "protocol": {
+          "$ref": "#/definitions/ConnectionType",
+          "description": "Protocol defines the interface protocol used for data transactions"
+        }
+      }
+    },
+    "PluginType": {
+      "type": "string"
+    },
+    "PolicyManagerRequestContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ProcessingLocation": {
+      "description": "location information",
+      "type": "string"
+    },
+    "RangeType": {
+      "type": "object",
+      "properties": {
+        "max": {
+          "type": "integer"
+        },
+        "min": {
+          "type": "integer"
+        }
+      }
+    },
+    "Tags": {
+      "description": "Additional metadata for the asset/field",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "Units": {
+      "type": "string"
+    }
+  }
+}
