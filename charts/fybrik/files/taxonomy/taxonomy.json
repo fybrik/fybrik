@@ -225,7 +225,7 @@
           "type": "string"
         },
         "port": {
-          "type": "string"
+          "type": "integer"
         },
         "scheme": {
           "type": "string"
