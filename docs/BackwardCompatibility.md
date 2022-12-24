@@ -70,6 +70,7 @@ validations, therefore we can see taxonomy as part of external connectivity and 
   - [IT Configuration Policies](#default-it-config-policies)
 - [Format of Fybrik log files](#format-of-fybrik-log-files). If Fybrik log files are used by external analytic tools, 
 format of the files will be part of external integration points too.
+- [Python modules](#python-modules)
 
 ## Kubernetes Custom Resource Versions and Upgrade Plan
 
@@ -234,6 +235,16 @@ can break log analytics tools.
 - Avoid changes in the log format
 - Use a graceful period (2 minor versions) for deprecated log entries
 - For renamed log entries, use both the old and the new definitions during the graceful period. 
+
+## Python modules
+The main Fybrik repository contains several [python modules](https://github.com/fybrik/fybrik/tree/master/python). The 
+modules are not used by the core fybrik, but contains a shared python code for connectors and modules. Currently, the 
+modules are:
+- `logging` - the code for logging operations,
+- `tls` - the TLS initialization code,
+- `vault` - the code for vault connectivity.
+Each module has a separate version, changes in a module version might not require to change the Fybrik version, but
+does require to change version of the modules that use the module.
 
 ## References
 1. Kubernetes internal, "[Changing the API](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api_changes.md#changing-the-api)"
