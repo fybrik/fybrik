@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Creates a scheme that can be used in unit tests
@@ -30,5 +31,10 @@ func NewScheme(g *gomega.WithT) *runtime.Scheme {
 	if g != nil {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
+	err = sa.AddToScheme(s)
+	if g != nil {
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+	}
+
 	return s
 }

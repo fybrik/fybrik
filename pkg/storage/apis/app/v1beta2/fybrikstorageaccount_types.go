@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package v1beta1
+package v1beta2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,14 +16,12 @@ type FybrikStorageAccountSpec struct {
 	ID string `json:"id"`
 	// +required
 	// A name of k8s secret deployed in the control plane.
-	// This secret includes secretKey and accessKey credentials for S3 bucket
 	SecretRef string `json:"secretRef"`
 	// +required
-	// Storage region
-	Region taxonomy.ProcessingLocation `json:"region"`
-	// +required
-	// Endpoint for accessing the data
-	Endpoint string `json:"endpoint"`
+	// Storage geography
+	Geography taxonomy.ProcessingLocation `json:"geography"`
+	// Connection properties
+	Properties StorageProperties `json:",inline"`
 }
 
 // FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
@@ -31,9 +29,7 @@ type FybrikStorageAccountStatus struct {
 }
 
 // FybrikStorageAccount defines a storage account used for copying data.
-// Only S3 based storage is supported.
-// It contains endpoint, region and a reference to the credentials a
-// Owner of the asset is responsible to store the credentials
+// It contains connection details of the shared storage and refers to the secret that stores storage credentials.
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 type FybrikStorageAccount struct {

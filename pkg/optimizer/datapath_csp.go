@@ -16,6 +16,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
+	saApi "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Names of the primary variables on which we need to make decisions
@@ -298,7 +299,7 @@ func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluste
 }
 
 // Decide if a given storage account satisfies all administrator's restrictions
-func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *appApi.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
+func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *saApi.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &sa.Spec, sa.Name) {
 			return false
@@ -433,7 +434,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 
 	if dpc.problemData.Context.Flow != taxonomy.WriteFlow || dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
 		for saIdx, sa := range dpc.env.StorageAccounts {
-			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Region]
+			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Geography]
 			if !found { //
 				dpc.preventAssignments([]string{saVarname}, []int{saIdx + 1}, pathLength)
 			} else {
@@ -850,7 +851,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Geography), cluster.Metadata.Region)
 			if err != nil {
 				return "", err
 			}
@@ -941,7 +942,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		modCap := dpc.modulesCapabilities[modCapIdx-1]
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
-		sa := appApi.FybrikStorageAccountSpec{}
+		sa := saApi.FybrikStorageAccountSpec{}
 		if saIdx != dpc.noStorageAccountVal {
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}

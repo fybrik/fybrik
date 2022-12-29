@@ -10,6 +10,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.
@@ -33,6 +34,6 @@ type DataInfo struct {
 type Environment struct {
 	Modules          map[string]*appApi.FybrikModule
 	Clusters         []multicluster.Cluster
-	StorageAccounts  []*appApi.FybrikStorageAccount
+	StorageAccounts  []*sa.FybrikStorageAccount
 	AttributeManager *infrastructure.AttributeManager
 }

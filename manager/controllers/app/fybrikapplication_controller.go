@@ -43,6 +43,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -613,16 +614,16 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 		resMetadata = &req.DataDetails.ResourceMetadata
 	}
 	for accountInd := range env.StorageAccounts {
-		region := env.StorageAccounts[accountInd].Spec.Region
+		geo := env.StorageAccounts[accountInd].Spec.Geography
 		reqAction := policymanager.RequestAction{
 			ActionType:         taxonomy.WriteFlow,
-			Destination:        string(region),
-			ProcessingLocation: region,
+			Destination:        string(geo),
+			ProcessingLocation: geo,
 		}
 
 		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
-			req.StorageRequirements[region] = actions
+			req.StorageRequirements[geo] = actions
 		} else if err.Error() != WriteNotAllowed {
 			return err
 		}
@@ -758,12 +759,12 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikMo
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fapp.FybrikStorageAccount, error) {
-	var accountList fapp.FybrikStorageAccountList
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*sa.FybrikStorageAccount, error) {
+	var accountList sa.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	accounts := []*fapp.FybrikStorageAccount{}
+	accounts := []*sa.FybrikStorageAccount{}
 	for i := range accountList.Items {
 		accounts = append(accounts, accountList.Items[i].DeepCopy())
 	}

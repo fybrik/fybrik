@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -44,6 +45,8 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	defer GinkgoRecover()
 
 	err := fapp.AddToScheme(scheme.Scheme)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	err = sa.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet

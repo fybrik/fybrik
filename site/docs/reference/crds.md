@@ -8,6 +8,7 @@ hide:
 Packages:
 
 - [app.fybrik.io/v1beta1](#appfybrikiov1beta1)
+- [app.fybrik.io/v1beta2](#appfybrikiov1beta2)
 - [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
 
 ## app.fybrik.io/v1beta1
@@ -19,8 +20,6 @@ Resource Types:
 - [FybrikApplication](#fybrikapplication)
 
 - [FybrikModule](#fybrikmodule)
-
-- [FybrikStorageAccount](#fybrikstorageaccount)
 
 - [Plotter](#plotter)
 
@@ -2275,107 +2274,6 @@ Condition describes the state of a FybrikApplication at a certain point.
       </tr></tbody>
 </table>
 
-### FybrikStorageAccount
-<sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
-
-
-
-
-
-
-FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-      <td><b>apiVersion</b></td>
-      <td>string</td>
-      <td>app.fybrik.io/v1beta1</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b>kind</b></td>
-      <td>string</td>
-      <td>FybrikStorageAccount</td>
-      <td>true</td>
-      </tr>
-      <tr>
-      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
-      <td>object</td>
-      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
-      <td>true</td>
-      </tr><tr>
-        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>status</b></td>
-        <td>object</td>
-        <td>
-          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
-        </td>
-        <td>false</td>
-      </tr></tbody>
-</table>
-
-
-#### FybrikStorageAccount.spec
-<sup><sup>[↩ Parent](#fybrikstorageaccount)</sup></sup>
-
-
-
-FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Required</th>
-        </tr>
-    </thead>
-    <tbody><tr>
-        <td><b>endpoint</b></td>
-        <td>string</td>
-        <td>
-          Endpoint for accessing the data<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>id</b></td>
-        <td>string</td>
-        <td>
-          Identification of a storage account<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>region</b></td>
-        <td>string</td>
-        <td>
-          Storage region<br/>
-        </td>
-        <td>true</td>
-      </tr><tr>
-        <td><b>secretRef</b></td>
-        <td>string</td>
-        <td>
-          A name of k8s secret deployed in the control plane. This secret includes secretKey and accessKey credentials for S3 bucket<br/>
-        </td>
-        <td>true</td>
-      </tr></tbody>
-</table>
-
 ### Plotter
 <sup><sup>[↩ Parent](#appfybrikiov1beta1 )</sup></sup>
 
@@ -3706,6 +3604,116 @@ ObservedState includes information to be reported back to the FybrikApplication 
           Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+## app.fybrik.io/v1beta2
+
+Resource Types:
+
+- [FybrikStorageAccount](#fybrikstorageaccount)
+
+
+
+
+### FybrikStorageAccount
+<sup><sup>[↩ Parent](#appfybrikiov1beta2 )</sup></sup>
+
+
+
+
+
+
+FybrikStorageAccount defines a storage account used for copying data. It contains connection details of the shared storage and refers to the secret that stores storage credentials.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1beta2</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikStorageAccount</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikStorageAccount.spec
+<sup><sup>[↩ Parent](#fybrikstorageaccount)</sup></sup>
+
+
+
+FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Storage geography<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>id</b></td>
+        <td>string</td>
+        <td>
+          Identification of a storage account<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          A name of k8s secret deployed in the control plane.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Storage type<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

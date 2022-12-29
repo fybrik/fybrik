@@ -37,6 +37,7 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/storage"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/utils"
 )
 
@@ -51,6 +52,7 @@ var (
 
 func init() {
 	_ = fapp.AddToScheme(scheme)
+	_ = sa.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
@@ -70,13 +72,13 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&fapp.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&fapp.Plotter{}:              {Field: systemNamespaceSelector},
-		&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
-		&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:          {Field: systemNamespaceSelector},
-		&fapp.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:             {Field: systemNamespaceSelector},
+		&fapp.FybrikApplication{}:  {Field: applicationNamespaceSelector},
+		&fapp.Plotter{}:            {Field: systemNamespaceSelector},
+		&fapp.FybrikModule{}:       {Field: systemNamespaceSelector},
+		&sa.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:        {Field: systemNamespaceSelector},
+		&fapp.Blueprint{}:          {Field: systemNamespaceSelector},
+		&corev1.Secret{}:           {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()

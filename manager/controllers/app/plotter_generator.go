@@ -23,6 +23,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -30,6 +31,7 @@ import (
 const (
 	objectKeyHashLength  = 10
 	bucketNameHashLength = 10
+	endpointKey          = "endpoint"
 )
 
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
@@ -49,7 +51,7 @@ type PlotterGenerator struct {
 
 // AllocateStorage creates a Dataset for bucket allocation
 func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
-	account *fapp.FybrikStorageAccountSpec) (*fapp.DataStore, error) {
+	account *sa.FybrikStorageAccountSpec) (*fapp.DataStore, error) {
 	// provisioned storage
 	var genBucketName, genObjectKeyName string
 	if item.DataDetails.ResourceMetadata.Name != "" {
@@ -58,11 +60,16 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
 	}
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
+	if account.Properties.AdditionalProperties.Items[string(account.Properties.Type)] == nil {
+		logging.LogStructure("Account", account, p.Log, zerolog.ErrorLevel, false, false)
+		return nil, errors.New("S3 properties have not been specified")
+	}
+	details := account.Properties.AdditionalProperties.Items[string(account.Properties.Type)].(map[string]interface{})
 	bucket := &storage.ProvisionedBucket{
 		Name:      genBucketName,
-		Endpoint:  account.Endpoint,
+		Endpoint:  details[endpointKey].(string),
 		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
-		Region:    string(account.Region),
+		Region:    string(account.Geography),
 	}
 	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
 	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
@@ -70,13 +77,12 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		return nil, err
 	}
 
-	cType := managerUtils.GetDefaultConnectionType()
 	connection := taxonomy.Connection{
-		Name: cType,
+		Name: account.Properties.Type,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(cType): map[string]interface{}{
-					"endpoint":   bucket.Endpoint,
+				string(account.Properties.Type): map[string]interface{}{
+					endpointKey:  bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,
 				},
@@ -232,7 +238,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 
 	needToAllocateStorage := false
 	for _, element = range selection.DataPath {
-		if element.StorageAccount.Region != "" {
+		if element.StorageAccount.Geography != "" {
 			needToAllocateStorage = true
 			break
 		}
@@ -253,11 +259,11 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 
 	resourceMetadata := datacatalog.ResourceMetadata{
 		Name:      item.Context.DataSetID,
-		Geography: string(element.StorageAccount.Region),
+		Geography: string(element.StorageAccount.Geography),
 	}
 
 	// Reset StorageAccount to prevent re-allocation
-	element.StorageAccount.Region = ""
+	element.StorageAccount.Geography = ""
 
 	// Update item with details of the asset
 	// the asset will registered in the catalog later however
@@ -308,7 +314,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 				return err
 			}
 		}
-		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Region != "" {
+		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Geography != "" {
 			// allocate storage and create a temoprary asset
 			var sinkDataStore *fapp.DataStore
 			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {

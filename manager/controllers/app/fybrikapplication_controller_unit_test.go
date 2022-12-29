@@ -32,6 +32,7 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/storage"
+	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Read utility
@@ -41,6 +42,15 @@ func readObjectFromFile(f string, obj interface{}) error {
 		return err
 	}
 	return yaml.Unmarshal(bytes, obj)
+}
+
+// FybrikStorageAccount has unstructured data thus its own decode method is applied
+func readStorageAccountData(f string, obj *sa.FybrikStorageAccount) error {
+	bytes, err := os.ReadFile(f)
+	if err != nil {
+		return err
+	}
+	return obj.DecodeYaml(bytes)
 }
 
 // create FybrikApplication controller with mockup interfaces
@@ -120,8 +130,8 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
@@ -526,8 +536,8 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
@@ -711,7 +721,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 }
 
-// This test checks the case where data comes from another region, and should be redacted.
+// This test checks the case where data comes from another geography, and should be redacted.
 // In this case a read module will be deployed close to the compute, while a copy module - close to the data.
 func TestMultipleRegions(t *testing.T) {
 	t.Parallel()
@@ -756,8 +766,8 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
@@ -834,16 +844,16 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
 	secret1.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
-	account1 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1 := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	account1.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
 	secret2 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
 	secret2.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
-	account2 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2 := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	account2.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
 
@@ -889,7 +899,7 @@ func TestCopyData(t *testing.T) {
 }
 
 // This test checks the ingest scenario
-// A storage account has been defined for the region where the dataset can not be written to according to governance policies.
+// A storage account has been defined for the geography where the dataset can not be written to according to governance policies.
 // An error is received.
 func TestCopyDataNotAllowed(t *testing.T) {
 	t.Parallel()
@@ -928,8 +938,8 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
@@ -994,8 +1004,8 @@ func TestStorageCost(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
@@ -1345,8 +1355,8 @@ func TestCopyModule(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
 	secret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
@@ -1487,8 +1497,8 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
 	secret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &sa.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
