@@ -1,5 +1,5 @@
 # kafka
-
+Connection information for accessing a kafka topic
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------

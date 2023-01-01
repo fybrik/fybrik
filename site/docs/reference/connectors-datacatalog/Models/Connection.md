@@ -1,5 +1,5 @@
 # Connection
-Connection information
+Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------

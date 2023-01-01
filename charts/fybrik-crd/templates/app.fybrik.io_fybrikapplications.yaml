@@ -107,7 +107,7 @@ spec:
                                 description: DataFormat defines the data format type
                                 type: string
                               protocol:
-                                description: Protocol defines the interface protocol used for data transactions
+                                description: Connection type, e.g., S3, Kafka, MySQL
                                 type: string
                             required:
                               - protocol

@@ -3,8 +3,10 @@
   "definitions": {
     "Action": {
       "type": "object",
+      "description": "Action to be performed on the data, e.g., masking",
       "properties": {
         "name": {
+          "description": "Action name",
           "$ref": "#/definitions/ActionName"
         }
       },
@@ -14,18 +16,21 @@
       ]
     },
     "ActionName": {
-      "type": "string"
+      "type": "string",
+      "description": "Name of the action to be performed, or Deny if access to the data is forbidden Action names should be defined in additional taxonomy layers"
     },
     "AppInfo": {
       "type": "object",
+      "description": "Application specific properties, e.g., intent for using the data, user role and workload characteristics",
       "additionalProperties": true
     },
     "AssetID": {
       "type": "string",
-      "description": "Asset ID of the asset to be queried in the catalog"
+      "description": "Asset ID of the registered asset to be queried in the catalog, or a name of the new asset to be created and registered by Fybrik"
     },
     "AttributeType": {
       "type": "string",
+      "description": "AttributeType enumeration: numeric, string, bool",
       "enum": [
         "bool",
         "numeric",
@@ -33,11 +38,12 @@
       ]
     },
     "Capability": {
-      "type": "string"
+      "type": "string",
+      "description": "Capability declared by the module, e.g., read, delete, copy, write, transform"
     },
     "Connection": {
       "type": "object",
-      "description": "Connection information",
+      "description": "Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.",
       "properties": {
         "db2": {
           "$ref": "#/definitions/db2"
@@ -67,6 +73,7 @@
     },
     "DataFlow": {
       "type": "string",
+      "description": "DataFlow indicates how the data is used by the workload, e.g., it is being read, copied, written or deleted",
       "enum": [
         "read",
         "write",
@@ -76,10 +83,11 @@
     },
     "DataFormat": {
       "type": "string",
-      "description": "Format of the data"
+      "description": "Format in which the data is being read/written by the workload"
     },
     "InfrastructureElement": {
       "type": "object",
+      "description": "InfrastructureElement defines an infrastructure attribute - its measurement metric, value and relation to Fybrik resources",
       "properties": {
         "arguments": {
           "type": "array",
@@ -90,11 +98,11 @@
         },
         "attribute": {
           "type": "string",
-          "description": "Attribute name defined in the taxonomy"
+          "description": "Attribute name, defined in additional taxonomy layers"
         },
         "description": {
           "type": "string",
-          "description": "Description"
+          "description": "Description of the infrastructure attribute"
         },
         "instance": {
           "type": "string",
@@ -121,6 +129,7 @@
     },
     "InfrastructureMetrics": {
       "type": "object",
+      "description": "Measurement metric defining units and the value scale used for value normalization",
       "properties": {
         "name": {
           "type": "string"
@@ -145,6 +154,7 @@
     },
     "InstanceType": {
       "type": "string",
+      "description": "InstanceType enumeration: fybrikmodule, cluster, fybrikstorageaccount, inter-region",
       "enum": [
         "cluster",
         "fybrikmodule",
@@ -154,13 +164,14 @@
     },
     "Interface": {
       "type": "object",
+      "description": "Connection type and data format used for data transactions",
       "properties": {
         "dataformat": {
           "description": "DataFormat defines the data format type",
           "$ref": "#/definitions/DataFormat"
         },
         "protocol": {
-          "description": "Protocol defines the interface protocol used for data transactions",
+          "description": "Connection type, e.g., S3, Kafka, MySQL",
           "$ref": "#/definitions/ConnectionType"
         }
       },
@@ -169,10 +180,12 @@
       ]
     },
     "PluginType": {
-      "type": "string"
+      "type": "string",
+      "description": "Type of the plugin, not supported yet"
     },
     "PolicyManagerRequestContext": {
       "type": "object",
+      "description": "Context in which a policy is evaluated, e.g., details of the data user such as role and intent",
       "additionalProperties": true
     },
     "ProcessingLocation": {
@@ -181,6 +194,7 @@
     },
     "RangeType": {
       "type": "object",
+      "description": "Range of numeric values",
       "properties": {
         "max": {
           "type": "integer"
@@ -196,10 +210,12 @@
       "additionalProperties": true
     },
     "Units": {
-      "type": "string"
+      "type": "string",
+      "description": "Measurement units"
     },
     "db2": {
       "type": "object",
+      "description": "Connection information for accessing a table in a database",
       "properties": {
         "database": {
           "type": "string"
@@ -220,6 +236,7 @@
     },
     "fybrik-arrow-flight": {
       "type": "object",
+      "description": "Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server",
       "properties": {
         "hostname": {
           "type": "string"
@@ -239,6 +256,7 @@
     },
     "kafka": {
       "type": "object",
+      "description": "Connection information for accessing a kafka topic",
       "properties": {
         "bootstrap_servers": {
           "type": "string"

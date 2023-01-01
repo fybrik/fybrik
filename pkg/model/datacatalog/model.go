@@ -8,7 +8,7 @@ import "fybrik.io/fybrik/pkg/model/taxonomy"
 // Type of operation requested for the asset
 type OperationType string
 
-// List of operationType
+// List of operationTypes
 const (
 	READ OperationType = "read"
 )

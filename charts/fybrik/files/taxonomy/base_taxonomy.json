@@ -2,29 +2,34 @@
   "title": "taxonomy.json",
   "definitions": {
     "Action": {
+      "description": "Action to be performed on the data, e.g., masking",
       "type": "object",
       "required": [
         "name"
       ],
       "properties": {
         "name": {
-          "$ref": "#/definitions/ActionName"
+          "$ref": "#/definitions/ActionName",
+          "description": "Action name"
         }
       },
       "additionalProperties": true
     },
     "ActionName": {
+      "description": "Name of the action to be performed, or Deny if access to the data is forbidden Action names should be defined in additional taxonomy layers",
       "type": "string"
     },
     "AppInfo": {
+      "description": "Application specific properties, e.g., intent for using the data, user role and workload characteristics",
       "type": "object",
       "additionalProperties": true
     },
     "AssetID": {
-      "description": "Asset ID of the asset to be queried in the catalog",
+      "description": "Asset ID of the registered asset to be queried in the catalog, or a name of the new asset to be created and registered by Fybrik",
       "type": "string"
     },
     "AttributeType": {
+      "description": "AttributeType enumeration: numeric, string, bool",
       "type": "string",
       "enum": [
         "numeric",
@@ -33,10 +38,11 @@
       ]
     },
     "Capability": {
+      "description": "Capability declared by the module, e.g., read, delete, copy, write, transform",
       "type": "string"
     },
     "Connection": {
-      "description": "Name of the connection to the data source",
+      "description": "Name of the connection to the data source Connection details should be defined in additional taxonomy layers",
       "type": "object",
       "required": [
         "name"
@@ -54,6 +60,7 @@
       "type": "string"
     },
     "DataFlow": {
+      "description": "DataFlow indicates how the data is used by the workload, e.g., it is being read, copied, written or deleted",
       "type": "string",
       "enum": [
         "read",
@@ -63,10 +70,11 @@
       ]
     },
     "DataFormat": {
-      "description": "Format of the data",
+      "description": "Format in which the data is being read/written by the workload",
       "type": "string"
     },
     "InfrastructureElement": {
+      "description": "InfrastructureElement defines an infrastructure attribute - its measurement metric, value and relation to Fybrik resources",
       "type": "object",
       "required": [
         "attribute",
@@ -82,11 +90,11 @@
           }
         },
         "attribute": {
-          "description": "Attribute name defined in the taxonomy",
+          "description": "Attribute name, defined in additional taxonomy layers",
           "type": "string"
         },
         "description": {
-          "description": "Description",
+          "description": "Description of the infrastructure attribute",
           "type": "string"
         },
         "instance": {
@@ -108,6 +116,7 @@
       }
     },
     "InfrastructureMetrics": {
+      "description": "Measurement metric defining units and the value scale used for value normalization",
       "type": "object",
       "required": [
         "name",
@@ -132,6 +141,7 @@
       }
     },
     "InstanceType": {
+      "description": "InstanceType enumeration: fybrikmodule, cluster, fybrikstorageaccount, inter-region",
       "type": "string",
       "enum": [
         "fybrikmodule",
@@ -141,6 +151,7 @@
       ]
     },
     "Interface": {
+      "description": "Connection type and data format used for data transactions",
       "type": "object",
       "required": [
         "protocol"
@@ -152,14 +163,16 @@
         },
         "protocol": {
           "$ref": "#/definitions/ConnectionType",
-          "description": "Protocol defines the interface protocol used for data transactions"
+          "description": "Connection type, e.g., S3, Kafka, MySQL"
         }
       }
     },
     "PluginType": {
+      "description": "Type of the plugin, not supported yet",
       "type": "string"
     },
     "PolicyManagerRequestContext": {
+      "description": "Context in which a policy is evaluated, e.g., details of the data user such as role and intent",
       "type": "object",
       "additionalProperties": true
     },
@@ -168,6 +181,7 @@
       "type": "string"
     },
     "RangeType": {
+      "description": "Range of numeric values",
       "type": "object",
       "properties": {
         "max": {
@@ -184,6 +198,7 @@
       "additionalProperties": true
     },
     "Units": {
+      "description": "Measurement units",
       "type": "string"
     }
   }

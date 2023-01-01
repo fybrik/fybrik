@@ -1,6 +1,6 @@
 definitions:
   Connection:
-    description: Connection information
+    description: Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.
     additionalProperties: true
     properties:
       db2: 
@@ -28,6 +28,7 @@ definitions:
     - endpoint
     - object_key
   db2:
+    description: Connection information for accessing a table in a database
     type: object
     properties:
       database:
@@ -42,6 +43,7 @@ definitions:
         type: string
   kafka:
     type: object
+    description: Connection information for accessing a kafka topic
     properties:
       bootstrap_servers:
         type: string
@@ -62,6 +64,7 @@ definitions:
       value_deserializer:
         type: string
   fybrik-arrow-flight:
+    description: Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server
     type: object
     properties:
       hostname:

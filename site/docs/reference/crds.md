@@ -414,7 +414,7 @@ Holds details for retrieving credentials from Vault store.
 
 
 
-
+Action to be performed on the data, e.g., masking
 
 <table>
     <thead>
@@ -429,7 +429,7 @@ Holds details for retrieving credentials from Vault store.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Action name<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1000,7 +1000,7 @@ Interface indicates the protocol and format expected by the data user
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2023,7 +2023,7 @@ Sink specifies the output data protocol and format
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2057,7 +2057,7 @@ Source specifies the input data protocol and format
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2836,7 +2836,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
 
 
 
-
+Action to be performed on the data, e.g., masking
 
 <table>
     <thead>
@@ -2851,7 +2851,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Action name<br/>
         </td>
         <td>true</td>
       </tr></tbody>
