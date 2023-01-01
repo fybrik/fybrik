@@ -60,11 +60,11 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
 	}
 	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
-	if account.Properties.AdditionalProperties.Items[string(account.Properties.Type)] == nil {
+	if account.AdditionalProperties.Items[string(account.Type)] == nil {
 		logging.LogStructure("Account", account, p.Log, zerolog.ErrorLevel, false, false)
 		return nil, errors.New("S3 properties have not been specified")
 	}
-	details := account.Properties.AdditionalProperties.Items[string(account.Properties.Type)].(map[string]interface{})
+	details := account.AdditionalProperties.Items[string(account.Type)].(map[string]interface{})
 	bucket := &storage.ProvisionedBucket{
 		Name:      genBucketName,
 		Endpoint:  details[endpointKey].(string),
@@ -78,10 +78,10 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 	}
 
 	connection := taxonomy.Connection{
-		Name: account.Properties.Type,
+		Name: account.Type,
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
-				string(account.Properties.Type): map[string]interface{}{
+				string(account.Type): map[string]interface{}{
 					endpointKey:  bucket.Endpoint,
 					"bucket":     bucket.Name,
 					"object_key": genObjectKeyName,

@@ -3711,7 +3711,7 @@ FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
         <td><b>type</b></td>
         <td>string</td>
         <td>
-          Storage type<br/>
+          Type of the storage, e.g., s3<br/>
         </td>
         <td>true</td>
       </tr></tbody>

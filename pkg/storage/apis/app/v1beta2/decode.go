@@ -24,5 +24,5 @@ func (o *FybrikStorageAccount) DecodeYaml(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	return o.Spec.Properties.UnmarshalJSON(specData)
+	return o.Spec.UnmarshalJSON(specData)
 }

@@ -39,7 +39,7 @@ spec:
                   description: A name of k8s secret deployed in the control plane.
                   type: string
                 type:
-                  description: Storage type
+                  description: Type of the storage, e.g., s3
                   type: string
               required:
                 - geography
