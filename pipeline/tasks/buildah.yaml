@@ -13,7 +13,7 @@ spec:
   - description: Reference of the image buildah will produce.
     name: IMAGE
     type: string
-  - default: quay.io/buildah/stable:v1.17.0
+  - default: quay.io/buildah/stable:v1.18.0
     description: The location of the buildah builder image.
     name: BUILDER_IMAGE
     type: string
