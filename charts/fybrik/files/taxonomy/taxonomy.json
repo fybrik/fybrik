@@ -218,34 +218,48 @@
       "description": "Connection information for accessing a table in a database",
       "properties": {
         "database": {
-          "type": "string"
+          "type": "string",
+          "description": "Database name"
         },
         "port": {
-          "type": "string"
+          "type": "integer",
+          "description": "Database port"
         },
         "ssl": {
-          "type": "string"
+          "type": "bool",
+          "description": "SSL indicates whether the website is secured by an SSL certificate"
         },
         "table": {
-          "type": "string"
+          "type": "string",
+          "description": "Table name"
         },
         "url": {
-          "type": "string"
+          "type": "string",
+          "description": "URL of the database server"
         }
-      }
+      },
+      "required": [
+        "database",
+        "table",
+        "url",
+        "port"
+      ]
     },
     "fybrik-arrow-flight": {
       "type": "object",
       "description": "Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server",
       "properties": {
         "hostname": {
-          "type": "string"
+          "type": "string",
+          "description": "Server host"
         },
         "port": {
-          "type": "integer"
+          "type": "integer",
+          "description": "Server port"
         },
         "scheme": {
-          "type": "string"
+          "type": "string",
+          "description": "Scheme (grpc, http, https)"
         }
       },
       "required": [
@@ -259,49 +273,64 @@
       "description": "Connection information for accessing a kafka topic",
       "properties": {
         "bootstrap_servers": {
-          "type": "string"
+          "type": "string",
+          "description": "A comma-separated list of host/port pairs to use for establishing the initial connection to the Kafka cluster"
         },
         "key_deserializer": {
-          "type": "string"
+          "type": "string",
+          "description": "Deserializer to be used for the keys of the topic"
         },
         "sasl_mechanism": {
-          "type": "string"
+          "type": "string",
+          "description": "SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512)",
+          "default": "SCRAM-SHA-512"
         },
         "schema_registry": {
-          "type": "string"
+          "type": "string",
+          "description": "Host/port to connect the schema registry server"
         },
         "security_protocol": {
-          "type": "string"
+          "type": "string",
+          "description": "Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL)",
+          "default": "SASL_SSL"
         },
         "ssl_truststore": {
-          "type": "string"
-        },
-        "ssl_truststore_password": {
-          "type": "string"
+          "type": "string",
+          "description": "A truststore or certificate encoded as base64. The format can be JKS or PKCS12."
         },
         "topic_name": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the Kafka topic"
         },
         "value_deserializer": {
-          "type": "string"
+          "type": "string",
+          "description": "Deserializer to be used for the values of the topic"
         }
-      }
+      },
+      "required": [
+        "bootstrap_servers",
+        "topic_name"
+      ]
     },
     "s3": {
       "type": "object",
       "description": "Connection information for S3 compatible object store",
       "properties": {
         "bucket": {
-          "type": "string"
+          "type": "string",
+          "description": "S3 bucket name"
         },
         "endpoint": {
-          "type": "string"
+          "type": "string",
+          "description": "S3 endpoint URL"
         },
         "object_key": {
-          "type": "string"
+          "type": "string",
+          "description": "File name or a prefix (for a partitioned asset)"
         },
         "region": {
-          "type": "string"
+          "type": "string",
+          "description": "S3 region, e.g., us-south"
         }
       },
       "required": [
