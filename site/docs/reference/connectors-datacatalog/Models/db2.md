@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **database** | String | Database name | [default: null]
 **port** | Integer | Database port | [default: null]
-**ssl** | [bool](../Models/bool.md) | SSL indicates whether the website is secured by an SSL certificate | [optional] [default: null]
+**ssl** | Boolean | SSL indicates whether the website is secured by an SSL certificate | [optional] [default: false]
 **table** | String | Table name | [default: null]
 **url** | String | URL of the database server | [default: null]
 

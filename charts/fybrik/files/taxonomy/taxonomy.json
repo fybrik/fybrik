@@ -226,8 +226,9 @@
           "description": "Database port"
         },
         "ssl": {
-          "type": "bool",
-          "description": "SSL indicates whether the website is secured by an SSL certificate"
+          "type": "boolean",
+          "description": "SSL indicates whether the website is secured by an SSL certificate",
+          "default": false
         },
         "table": {
           "type": "string",

@@ -43,7 +43,8 @@ definitions:
         type: integer
       ssl:
         description: SSL indicates whether the website is secured by an SSL certificate
-        type: bool
+        type: boolean
+        default: false
       table:
         description: Table name
         type: string
