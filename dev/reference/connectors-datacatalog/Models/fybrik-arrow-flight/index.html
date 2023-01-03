@@ -15,7 +15,7 @@
     
     
       
-        <title>ResultItem - Fybrik</title>
+        <title>fybrik-arrow-flight - Fybrik</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#resultitem" class="md-skip">
+        <a href="#fybrik-arrow-flight" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ResultItem
+              fybrik-arrow-flight
             
           </span>
         </div>
@@ -927,7 +927,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../connectors-datacatalog/" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         Data catalog
       </a>
     </li>
@@ -941,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../" class="md-nav__link">
+      <a href="../../../connectors-policymanager/" class="md-nav__link">
         Policy manager
       </a>
     </li>
@@ -1325,14 +1325,14 @@
                 
                   
 
-  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-policymanager/Models/ResultItem.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-datacatalog/Models/fybrik-arrow-flight.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
-<h1 id="resultitem">ResultItem</h1>
-<p>Result of policy evaluation</p>
+<h1 id="fybrik-arrow-flight">fybrik-arrow-flight</h1>
+<p>Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server</p>
 <h2 id="properties">Properties</h2>
 <table>
 <thead>
@@ -1345,15 +1345,21 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>action</strong></td>
-<td><a href="../Action/">Action</a></td>
-<td></td>
+<td><strong>hostname</strong></td>
+<td>String</td>
+<td>Server host</td>
 <td>[default: null]</td>
 </tr>
 <tr>
-<td><strong>policy</strong></td>
+<td><strong>port</strong></td>
+<td>Integer</td>
+<td>Server port</td>
+<td>[default: null]</td>
+</tr>
+<tr>
+<td><strong>scheme</strong></td>
 <td>String</td>
-<td>The policy on which the decision was based</td>
+<td>Scheme (grpc, http, https)</td>
 <td>[default: null]</td>
 </tr>
 </tbody>

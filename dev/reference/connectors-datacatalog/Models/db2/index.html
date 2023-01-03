@@ -15,7 +15,7 @@
     
     
       
-        <title>ResultItem - Fybrik</title>
+        <title>db2 - Fybrik</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#resultitem" class="md-skip">
+        <a href="#db2" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ResultItem
+              db2
             
           </span>
         </div>
@@ -927,7 +927,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../connectors-datacatalog/" class="md-nav__link">
+      <a href="../../" class="md-nav__link">
         Data catalog
       </a>
     </li>
@@ -941,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../" class="md-nav__link">
+      <a href="../../../connectors-policymanager/" class="md-nav__link">
         Policy manager
       </a>
     </li>
@@ -1325,14 +1325,14 @@
                 
                   
 
-  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-policymanager/Models/ResultItem.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-datacatalog/Models/db2.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
-<h1 id="resultitem">ResultItem</h1>
-<p>Result of policy evaluation</p>
+<h1 id="db2">db2</h1>
+<p>Connection information for accessing a table in a database</p>
 <h2 id="properties">Properties</h2>
 <table>
 <thead>
@@ -1345,15 +1345,33 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>action</strong></td>
-<td><a href="../Action/">Action</a></td>
-<td></td>
+<td><strong>database</strong></td>
+<td>String</td>
+<td>Database name</td>
 <td>[default: null]</td>
 </tr>
 <tr>
-<td><strong>policy</strong></td>
+<td><strong>port</strong></td>
+<td>Integer</td>
+<td>Database port</td>
+<td>[default: null]</td>
+</tr>
+<tr>
+<td><strong>ssl</strong></td>
+<td>Boolean</td>
+<td>SSL indicates whether the website is secured by an SSL certificate</td>
+<td>[optional] [default: false]</td>
+</tr>
+<tr>
+<td><strong>table</strong></td>
 <td>String</td>
-<td>The policy on which the decision was based</td>
+<td>Table name</td>
+<td>[default: null]</td>
+</tr>
+<tr>
+<td><strong>url</strong></td>
+<td>String</td>
+<td>URL of the database server</td>
 <td>[default: null]</td>
 </tr>
 </tbody>

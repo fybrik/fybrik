@@ -1332,7 +1332,7 @@
 
 
 <h1 id="connection">Connection</h1>
-<p>Name of the connection to the data source</p>
+<p>Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.</p>
 <h2 id="properties">Properties</h2>
 <table>
 <thead>
@@ -1345,10 +1345,34 @@
 </thead>
 <tbody>
 <tr>
+<td><strong>db2</strong></td>
+<td><a href="../db2/">db2</a></td>
+<td></td>
+<td>[optional] [default: null]</td>
+</tr>
+<tr>
+<td><strong>fybrik-arrow-flight</strong></td>
+<td><a href="../fybrik-arrow-flight/">fybrik-arrow-flight</a></td>
+<td></td>
+<td>[optional] [default: null]</td>
+</tr>
+<tr>
+<td><strong>kafka</strong></td>
+<td><a href="../kafka/">kafka</a></td>
+<td></td>
+<td>[optional] [default: null]</td>
+</tr>
+<tr>
 <td><strong>name</strong></td>
 <td>String</td>
 <td>Name of the connection type to the data source</td>
 <td>[default: null]</td>
+</tr>
+<tr>
+<td><strong>s3</strong></td>
+<td><a href="../s3/">s3</a></td>
+<td></td>
+<td>[optional] [default: null]</td>
 </tr>
 </tbody>
 </table>
