@@ -36,6 +36,7 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
 	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
 		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
+	go fix ./...
 
 .PHONY: generate-docs
 generate-docs:
