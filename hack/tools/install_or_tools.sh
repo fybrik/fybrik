@@ -9,13 +9,16 @@ source ./common.sh
 
 case ${os} in
     linux)
-        target_os=ubuntu-18.04
         dyn_lib_ext=so
+        target_os=ubuntu-20.04
+        if [ -f /etc/redhat-release ]; then
+            target_os=centos-8
+        fi
         ;;
     darwin)
         arch=`uname -m`
-        target_os=macOS-13.0.1
         dyn_lib_ext=dylib
+        target_os=macOS-13.0.1
         ;;
 esac
 
@@ -32,5 +35,5 @@ trap "rm ${download_file}" err exit
 tmp=$(mktemp -d /tmp/or-tools.XXXXXX)
 tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
-mv $tmp/*/lib/lib*.${dyn_lib_ext}* ./lib
+mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
 chmod +x ./bin/fzn-or-tools
