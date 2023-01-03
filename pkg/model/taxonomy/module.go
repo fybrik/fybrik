@@ -9,12 +9,17 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 )
 
+// Capability declared by the module, e.g., read, delete, copy, write, transform
 type Capability string
 
+// Type of the plugin, not supported yet
 type PluginType string
 
+// Name of the action to be performed, or Deny if access to the data is forbidden
+// Action names should be defined in additional taxonomy layers
 type ActionName string
 
+// DataFlow indicates how the data is used by the workload, e.g., it is being read, copied, written or deleted
 // +kubebuilder:validation:Enum=read;write;delete;copy
 type DataFlow string
 
@@ -32,9 +37,12 @@ const (
 	CopyFlow DataFlow = "copy"
 )
 
+// Action to be performed on the data, e.g., masking
 // +kubebuilder:pruning:PreserveUnknownFields
 type Action struct {
-	Name                 ActionName       `json:"name"`
+	// Action name
+	Name ActionName `json:"name"`
+	// Action properties, e.g., names of columns that should be masked
 	AdditionalProperties serde.Properties `json:"-"`
 }
 

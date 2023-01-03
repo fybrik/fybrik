@@ -33,6 +33,9 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
+	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
+		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
 
 .PHONY: generate-docs
@@ -93,7 +96,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-  	-b charts/fybrik/files/taxonomy/taxonomy.json \
+	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
