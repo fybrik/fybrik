@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**assetID** | String | Asset ID of the asset to be queried in the catalog | [default: null]
+**assetID** | String | Asset ID of the registered asset to be queried in the catalog, or a name of the new asset to be created and registered by Fybrik | [default: null]
 **columns** | [List](../Models/ResourceColumn.md) | New columns associated with the asset | [optional] [default: null]
 **name** | String | New name of the resource | [optional] [default: null]
 **owner** | String | New owner of the resource | [optional] [default: null]
