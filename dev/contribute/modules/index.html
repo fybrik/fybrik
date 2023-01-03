@@ -1685,23 +1685,23 @@ assets:
 <h3 id="publishing-the-helm-chart">Publishing the Helm Chart</h3>
 <p>Once your Helm chart is ready, you need to push it to a <a href="https://helm.sh/docs/topics/registries/">OCI-based registry</a> such as <a href="https://ghcr.io">ghcr.io</a>. This allows the control plane of Fybrik to later pull the chart whenever it needs to be installed.</p>
 <p>You can use the <a href="https://github.com/fybrik/fybrik/blob/master/hack/make-rules/helm.mk">hack/make-rules/helm.mk</a> Makefile, or manually push the chart as described in the <a href="https://github.com/helm/community/blob/main/hips/hip-0006.md">link</a>:</p>
-<div class="highlight"><pre><span></span><code>helm registry login -u &lt;username&gt; &lt;registry&gt;
-helm package &lt;chart folder&gt; -d &lt;local-chart-path&gt;
-helm push &lt;local-chart-path&gt; oci://&lt;registry&gt;/&lt;path&gt;
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>registry<span class="w"> </span>login<span class="w"> </span>-u<span class="w"> </span>&lt;username&gt;<span class="w"> </span>&lt;registry&gt;
+helm<span class="w"> </span>package<span class="w"> </span>&lt;chart<span class="w"> </span>folder&gt;<span class="w"> </span>-d<span class="w"> </span>&lt;local-chart-path&gt;
+helm<span class="w"> </span>push<span class="w"> </span>&lt;local-chart-path&gt;<span class="w"> </span>oci://&lt;registry&gt;/&lt;path&gt;
 </code></pre></div>
 <h2 id="fybrikmodule-yaml">FybrikModule YAML</h2>
 <p><code>FybrikModule</code> is a kubernetes Custom Resource Definition (custom resource) which describes to the control plane the functionality provided by the module.  The FybrikModule custom resource has no controller. The specification of the <code>FybrikModule</code> Kubernetes custom resource is available in the <a href="../../reference/crds/#fybrikmodule">API documentation</a>. </p>
 <p>The YAML file begins with standard Kubernetes metadata followed by the <code>FybrikModule</code> specification:
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"> </span><span class="c1"># always this value</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span><span class="w"></span>
-<span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span><span class="w"></span>
-<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;semantic</span><span class="nv"> </span><span class="s">version&gt;&quot;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w">  </span><span class="c1"># control plane namespace. Always fybrik-system</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FybrikModule</span><span class="w"> </span><span class="c1"># always this value</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span>
+<span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;semantic</span><span class="nv"> </span><span class="s">version&gt;&quot;</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w">  </span><span class="c1"># control plane namespace. Always fybrik-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </code></pre></div></p>
 <p>The child fields of <code>spec</code> are described next. </p>
 <h3 id="specchart"><code>spec.chart</code></h3>
@@ -1715,17 +1715,17 @@ helm push &lt;local-chart-path&gt; oci://&lt;registry&gt;/&lt;path&gt;
 <h3 id="specstatusindicators"><code>spec.statusIndicators</code></h3>
 <p>Used for tracking the status of the module in terms of success or failure. In many cases this can be omitted and the status will be detected automatically.</p>
 <p>if the Helm chart includes standard Kubernetes resources such as Deployment and Service, then the status is automatically detected. If however Custom Resource Definitions are used, then the status may not be automatically detected and statusIndicators should be specified.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">statusIndicators</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="nt">successCondition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;condition&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.status == SUCCEEDED</span><span class="w"></span>
-<span class="w">      </span><span class="nt">failureCondition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;condition&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.status == FAILED</span><span class="w"></span>
-<span class="w">      </span><span class="nt">errorMessage</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;field</span><span class="nv"> </span><span class="s">path&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.error</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">statusIndicators</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span>
+<span class="w">      </span><span class="nt">successCondition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;condition&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.status == SUCCEEDED</span>
+<span class="w">      </span><span class="nt">failureCondition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;condition&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.status == FAILED</span>
+<span class="w">      </span><span class="nt">errorMessage</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;field</span><span class="nv"> </span><span class="s">path&gt;&quot;</span><span class="w"> </span><span class="c1"># ex: status.error</span>
 </code></pre></div>
 <h3 id="specdependencies"><code>spec.dependencies</code></h3>
 <p>A dependency has a <code>type</code> and a <code>name</code>. Currently <code>dependencies</code> of type <code>module</code> are supported, indicating that another module must also be installed for this module to work.
-<div class="highlight"><pre><span></span><code><span class="nt">dependencies</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">module</span><span class="w"> </span><span class="c1">#currently the only option is a dependency on another module deployed by the control plane</span><span class="w"></span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;dependent module name&gt;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">dependencies</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">module</span><span class="w"> </span><span class="c1">#currently the only option is a dependency on another module deployed by the control plane</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;dependent module name&gt;</span>
 </code></pre></div></p>
 <h3 id="spectype"><code>spec.type</code></h3>
 <p>The <code>type</code> field may be one of the following vaues:</p>
@@ -1739,11 +1739,11 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <p>Each module may support one or more capabilities.  Currently there are four capabilities: <code>read</code> for enabling an application to read data or prepare data for being read, <code>write</code> for enabling an application to write data, and <code>copy</code> for performing an implicit data copy on behalf of the application, and <code>transform</code> for altering data based on governance policies. A module provides one or more of these capabilities.  </p>
 <p><code>capabilities.capability</code></p>
 <p>Indicates which of the types of capabilities this instance describes.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="c1"># Indicate the capabilities for which the control plane should consider using this module </span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w">  </span><span class="c1"># optional</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span><span class="w"> </span><span class="c1"># optional</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span><span class="w">  </span><span class="c1"># optional</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">transform</span><span class="w"> </span><span class="c1"># optional</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="c1"># Indicate the capabilities for which the control plane should consider using this module </span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w">  </span><span class="c1"># optional</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span><span class="w"> </span><span class="c1"># optional</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span><span class="w">  </span><span class="c1"># optional</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">transform</span><span class="w"> </span><span class="c1"># optional</span>
 </code></pre></div>
 <p><code>capability.scope</code></p>
 <p>The capability provided by the module may work on one of several different scopes:</p>
@@ -1752,7 +1752,7 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <li>asset - deployed by fybrik for each dataset</li>
 <li>cluster - deployed outside of fybrik and can be used by multiple fybbrik workloads in a given cluster</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;scope of the capability&gt;</span><span class="w"> </span><span class="c1"># cluster, workload, asset</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;scope of the capability&gt;</span><span class="w"> </span><span class="c1"># cluster, workload, asset</span>
 </code></pre></div>
 <p><code>capabilites.supportedInterfaces</code> </p>
 <p>Lists the supported data services from which the module can read data (sources) and to which it can write (sinks).  There can be multiple sources and sinks.  For each, a protocol and format are provided.</p>
@@ -1774,41 +1774,41 @@ The types of plugins supported by this module.  Example: vault, fybrik-wasm ...<
 <li><code>scheme</code> field can take a value such as <code>http</code>, <code>https</code>, <code>grpc</code>, <code>grpc+tls</code>, <code>jdbc:oracle:thin:@</code>, etc</li>
 </ul>
 <p>An example for a module that copies data from a db2 database table to an s3 bucket in parquet format.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span><span class="w"></span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">supportedInterfaces</span><span class="p p-Indicator">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db2</span><span class="w"></span>
-<span class="w">      </span><span class="nt">sink</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
-<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">copy</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">supportedInterfaces</span><span class="p p-Indicator">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db2</span>
+<span class="w">      </span><span class="nt">sink</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span>
 </code></pre></div>
 <p>An example for a module that has an API for reading data, and supports reading both parquet and csv formats from s3.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w"></span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">api</span><span class="p p-Indicator">:</span><span class="w"></span>
-<span class="w">      </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span><span class="w"></span>
-<span class="w">      </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span><span class="w"></span>
-<span class="w">        </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">grpc</span><span class="w"></span>
-<span class="w">  </span><span class="w w-Error">  </span><span class="nt">supportedInterfaces</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
-<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">flow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span><span class="w"></span>
-<span class="w">      </span><span class="nt">source</span><span class="p">:</span><span class="w"></span>
-<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"></span>
-<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">capability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">api</span><span class="p p-Indicator">:</span>
+<span class="w">      </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-arrow-flight</span>
+<span class="w">      </span><span class="nt">endpoint</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">        </span><span class="nt">scheme</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">grpc</span>
+<span class="w">  </span><span class="w w-Error">  </span><span class="nt">supportedInterfaces</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parquet</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">flow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+<span class="w">      </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
+<span class="w">        </span><span class="nt">dataformat</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">csv</span>
 </code></pre></div>
 <p><code>capabilites.actions</code>  are taken from a defined <a href="about:blank">Enforcement Actions Taxonomy</a> 
 a module that does not perform any transformation on the data may omit the <code>capabilities.actions</code> field.</p>
 <p>The following is an example of how a module would declare that it knows how to redact, remove or encrypt data.  Additional properties may be associated with each action.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">read</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">actions</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RedactAction&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RemoveAction&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EncryptAction&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">capabilities</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">read</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">actions</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RedactAction&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RemoveAction&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EncryptAction&quot;</span>
 </code></pre></div>
 <h3 id="full-examples">Full Examples</h3>
 <p>The following are examples of YAMLs from fully implemented modules:</p>

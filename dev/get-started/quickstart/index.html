@@ -1472,20 +1472,20 @@
 <li>Access to a Kubernetes cluster such as <a href="http://kind.sigs.k8s.io/">Kind</a> as a cluster administrator. Kubernetes version support range is 1.24-1.22 although older versions may work well.</li>
 </ul>
 <h2 id="add-required-helm-repositories">Add required Helm repositories</h2>
-<div class="highlight"><pre><span></span><code>helm repo add jetstack https://charts.jetstack.io
-helm repo add hashicorp https://helm.releases.hashicorp.com
-helm repo add fybrik-charts https://fybrik.github.io/charts
-helm repo update
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>jetstack<span class="w"> </span>https://charts.jetstack.io
+helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>hashicorp<span class="w"> </span>https://helm.releases.hashicorp.com
+helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>fybrik-charts<span class="w"> </span>https://fybrik.github.io/charts
+helm<span class="w"> </span>repo<span class="w"> </span>update
 </code></pre></div>
 <h2 id="install-cert-manager">Install cert-manager</h2>
 <p>Fybrik requires <a href="https://cert-manager.io">cert-manager</a> to be installed to your cluster<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup>. 
 Many clusters already include cert-manager. Check if <code>cert-manager</code> namespace exists in your cluster and only run the following if it doesn't exist:</p>
-<div class="highlight"><pre><span></span><code>helm install cert-manager jetstack/cert-manager <span class="se">\</span>
-    --namespace cert-manager <span class="se">\</span>
-    --version v1.6.2 <span class="se">\</span>
-    --create-namespace <span class="se">\</span>
-    --set <span class="nv">installCRDs</span><span class="o">=</span><span class="nb">true</span> <span class="se">\</span>
-    --wait --timeout 120s
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>cert-manager<span class="w"> </span>jetstack/cert-manager<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--namespace<span class="w"> </span>cert-manager<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--version<span class="w"> </span>v1.6.2<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="nv">installCRDs</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>120s
 </code></pre></div>
 <h2 id="install-hashicorp-vault-and-plugins">Install Hashicorp Vault and plugins</h2>
 <p><a href="https://www.vaultproject.io/">Hashicorp Vault</a> and a <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">secrets-kubernetes-reader</a> plugin are used by Fybrik for credential management.</p>
@@ -1497,26 +1497,26 @@ For example:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">OpenShift</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
-<span class="nb">cd</span> fybrik
-helm dependency update charts/vault
-helm install vault charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
-    --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values charts/vault/env/dev/vault-single-cluster-values.yaml
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>dependency<span class="w"> </span>update<span class="w"> </span>charts/vault
+helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>charts/vault/env/dev/vault-single-cluster-values.yaml
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
-<span class="nb">cd</span> fybrik
-helm dependency update charts/vault
-helm install vault charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
-    --set <span class="s2">&quot;vault.global.openshift=true&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values charts/vault/env/dev/vault-single-cluster-values.yaml
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>dependency<span class="w"> </span>update<span class="w"> </span>charts/vault
+helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.global.openshift=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>charts/vault/env/dev/vault-single-cluster-values.yaml
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
 </div>
@@ -1526,20 +1526,20 @@ kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="n
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Kubernetes</label><label for="__tabbed_2_2">OpenShift</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
-    --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>fybrik-charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>helm install vault fybrik-charts/vault --create-namespace -n fybrik-system <span class="se">\</span>
-    --set <span class="s2">&quot;vault.global.openshift=true&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.injector.enabled=false&quot;</span> <span class="se">\</span>
-    --set <span class="s2">&quot;vault.server.dev.enabled=true&quot;</span> <span class="se">\</span>
-    --values https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod -n fybrik-system --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>fybrik-charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.global.openshift=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
 </div>
@@ -1558,25 +1558,25 @@ OpenShift cluster on <a href="https://www.ibm.com/cloud">IBM Cloud</a>. For othe
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">A single node Kind cluster</label><label for="__tabbed_3_2">IBM OpenShift</label><label for="__tabbed_3_3">Existing deployment</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-
 </code></pre></div>
 <p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
 <p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --operation getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run <code>make</code>. 
 Once the installation is over, be sure to remove the temporary directory.</p>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift
 </code></pre></div>
 <p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
 <p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --k8s-type ibm-openshift --operation getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run <code>make</code>. 
 Once the installation is over, be sure to remove the temporary directory.</p>
@@ -1584,8 +1584,8 @@ Once the installation is over, be sure to remove the temporary directory.</p>
 <div class="tabbed-block">
 <p>If you want to use an existing OpenMetadata deployment, you have to configure it according to Fybrik requirements:
 Run the following commands to download the configuration files:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
-curl https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh <span class="p">|</span> bash -s -- --operation getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>master
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 Follow the instructions that appear on screen to change the OpenMetadata location and credentials (<code>OPENMETADATA_ENDPOINT</code>, <code>OPENMETADATA_USER</code> and <code>OPENMETADATA_PASSWORD</code>) and then run <code>make prepare-openmetadata-for-fybrik</code>.</p>
 </div>
@@ -1599,27 +1599,27 @@ Follow the instructions that appear on screen to change the OpenMetadata locatio
 <p>The published Helm charts are only available for released versions.
 To install the <code>dev</code> version install the charts from the source code.
 For example:
-<div class="highlight"><pre><span></span><code>git clone https://github.com/fybrik/fybrik.git
-<span class="nb">cd</span> fybrik
-helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
 </code></pre></div></p>
 </details>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager.
 Install the Fybrik release with <a href="https://open-metadata.org/">OpenMetadata</a> as the data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
-<div class="highlight"><pre><span></span><code>helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version aster --wait
-helm install fybrik fybrik-charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api -n fybrik-system --version aster --wait
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>aster<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>aster<span class="w"> </span>--wait
 </code></pre></div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
 <summary>Install latest development version from GitHub</summary>
 <p>To apply the latest development version of arrow-flight-module:
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 </details>
 <p><a href="../../concepts/modules/">Modules</a> are plugins that the control plane deploys whenever required. The <a href="https://github.com/fybrik/arrow-flight-module">arrow flight module</a> enables reading data through Apache Arrow Flight API. </p>
 <p>Install the latest<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> release of arrow-flight-module:</p>
-<div class="highlight"><pre><span></span><code>  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code><span class="w">  </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div>
 <div class="footnote">
 <hr />

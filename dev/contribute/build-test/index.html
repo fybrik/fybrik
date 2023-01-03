@@ -1446,21 +1446,21 @@
 
 <h1 id="build-and-test">Build and Test</h1>
 <h2 id="build-the-project-images">Build the project images</h2>
-<div class="highlight"><pre><span></span><code>make docker-build
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>docker-build
 </code></pre></div>
 <h2 id="run-unit-tests">Run unit tests</h2>
-<div class="highlight"><pre><span></span><code>make <span class="nb">test</span>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
 <p>Some tests for controllers are written in a fashion that they can be run on a simulated environment using 
 <a href="https://pkg.go.dev/github.com/kubernetes-sigs/controller-runtime/pkg/envtest">envtest</a> or on an already existing
 Kubernetes cluster (or local kind cluster). The default is to use envtest. In order to run the tests in a local cluster
 the following environment variables can be set:
-<div class="highlight"><pre><span></span><code><span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span> <span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span> make -C manager <span class="nb">test</span>
+<div class="highlight"><pre><span></span><code><span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>make<span class="w"> </span>-C<span class="w"> </span>manager<span class="w"> </span><span class="nb">test</span>
 </code></pre></div></p>
 <p>Please be aware that the controller is running locally in this case! If a controller is already deployed onto the
 cluster then the tests can be run with the command below. This will ensure that the tests are only creating custom resources on 
 the cluster and checking their status:
-<div class="highlight"><pre><span></span><code><span class="nv">USE_EXISTING_CONTROLLER</span><span class="o">=</span><span class="nb">true</span> <span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span> <span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span> make -C manager <span class="nb">test</span>
+<div class="highlight"><pre><span></span><code><span class="nv">USE_EXISTING_CONTROLLER</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="nv">NO_SIMULATED_PROGRESS</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="nv">USE_EXISTING_CLUSTER</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>make<span class="w"> </span>-C<span class="w"> </span>manager<span class="w"> </span><span class="nb">test</span>
 </code></pre></div></p>
 <h3 id="environment-variables-description">Environment variables description</h3>
 <table>
@@ -1493,7 +1493,7 @@ the cluster and checking their status:
 <p>With the following you will then setup a kind cluster with the local registry,
 build and push current docker images and finally run the integration
 tests on it:</p>
-<div class="highlight"><pre><span></span><code>make run-integration-tests
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>run-integration-tests
 </code></pre></div>
 <p>It is sometimes useful to call the integration test commands step by step, e.g., if you want to only repeat a specific step which failed without having to rerun the entire sequence. You can find the commands of the <code>run-integration-tests</code> target in the <a href="https://github.com/fybrik/fybrik/blob/master/Makefile">Makefile</a>.</p>
 <p>You can run <code>make kind-cleanup</code> to delete the created clusters when you're done.</p>
@@ -1502,7 +1502,7 @@ tests on it:</p>
 that can be used that simulates this scenario. Using kind one can spin up two separate kubernetes
 clusters with different contexts and develop and test in these. </p>
 <p>Two kind clusters that share the same kind-registry can be set up using:
-<div class="highlight"><pre><span></span><code>make kind-setup-multi
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>kind-setup-multi
 </code></pre></div></p>
 <p>You can run <code>make kind-cleanup</code> to delete the created clusters when you're done.</p>
 

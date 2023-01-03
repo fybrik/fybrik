@@ -1512,95 +1512,95 @@
 <h4 id="generating-tls-certificates-and-keys">Generating TLS certificates and keys</h4>
 <p>For development and testing the TLS certificates and certificate keys can be generated using <a href="https://en.wikipedia.org/wiki/OpenSSL">openSSL</a> library. For more information on the process please refer to online documentation such as this useful <a href="https://www.youtube.com/watch?v=7YgaZIFn7mY">tutorial</a>.</p>
 <p><a href="https://cert-manager.io/">Cert-manager</a> can also be used to automatically generate and renew the TLS certificate using its <a href="https://cert-manager.io/docs/concepts/certificate/"><code>Certificate</code></a> resource. The following is an example of a <code>Certificate</code> resource for the opa-connector where a tls type secret named <code>tls-opa-connector-certs</code> containing the certificate and certificate key is automatically created by the cert-manager. The <code>issuerRef</code> field points to a cert-manager resource name <a href="https://cert-manager.io/docs/configuration/ca/"><code>Issuer</code></a> that holds the information about the CA that signs the certificate.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Certificate</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opa-connector-cert</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">dnsNames</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opa-connector</span><span class="w"></span>
-<span class="w">  </span><span class="nt">issuerRef</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Issuer</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer</span><span class="w"></span>
-<span class="w">  </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-opa-connector-certs</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Certificate</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opa-connector-cert</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dnsNames</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">opa-connector</span>
+<span class="w">  </span><span class="nt">issuerRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Issuer</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer</span>
+<span class="w">  </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-opa-connector-certs</span>
 </code></pre></div>
 <h4 id="adding-tls-secrets">Adding TLS Secrets</h4>
 <p>The manager/connectors certificates are kept in Kubernetes secret of type tls which are mounted to the manager/connectors pods in fybrik deployment.</p>
 <p>For each component copy its certificate into a file named tls.crt. Copy the certificate key into a file named tls.key. (the files names used in this example can be changed)</p>
 <p>Use kubectl with the tls secret type to create the secrets.</p>
-<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create secret tls tls-opa-connector-certs <span class="se">\</span>
-  --cert<span class="o">=</span>tls.crt <span class="se">\</span>
-  --key<span class="o">=</span>tls.key
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>tls-opa-connector-certs<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>tls.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--key<span class="o">=</span>tls.key
 </code></pre></div>
 <p>If cert-manager is used to manage the certificates then the secret is automatically created as shown above.</p>
 <h4 id="using-a-private-ca-signed-certificate">Using a Private CA Signed Certificate</h4>
 <p>If you are using a private CA, Fybrik requires a copy of the CA certificate which is used by connector/manager to validate the connection to the manager/connectors.
 If no private CA certificates are provided then the system CA certificates are used, otherwise the private CA certificates replace the system CA certificates.</p>
 <p>For each component copy the CA certificate into a file and use kubectl to create or patch the tls-ca secret in the fybrik-system namespace. In the following example ca.crt file is used to create the secret:</p>
-<div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create secret generic tls-ca <span class="se">\</span>
-  --from-file<span class="o">=</span>ca.crt<span class="o">=</span>./ca.crt
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>tls-ca<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--from-file<span class="o">=</span>ca.crt<span class="o">=</span>./ca.crt
 </code></pre></div>
 <p>Note that Fybrik expects that the keys of the CA certificates in the secret will end with <code>.crt</code> suffix.</p>
 <p>Here is an example of a self-signed issuer managed by cert-manager. The secret tls-ca that holds the CA certificate
 is created and automatically renewed by cert-manager.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer-self-signed</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">selfSigned</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
-<span class="nn">---</span><span class="w"></span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Issuer</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">ca</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-ca</span><span class="w"></span>
-<span class="nn">---</span><span class="w"></span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Certificate</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-certificate</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w"></span>
-<span class="nt">spec</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">isCA</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">  </span><span class="nt">commonName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik</span><span class="w"></span>
-<span class="w">  </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-ca</span><span class="w"></span>
-<span class="w">  </span><span class="nt">issuerRef</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer-self-signed</span><span class="w"></span>
-<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span><span class="w"></span>
-<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer-self-signed</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selfSigned</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Issuer</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">ca</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-ca</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Certificate</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-certificate</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">isCA</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">commonName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik</span>
+<span class="w">  </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tls-ca</span>
+<span class="w">  </span><span class="nt">issuerRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-issuer-self-signed</span>
+<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span>
+<span class="w">    </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io</span>
 </code></pre></div>
 <h4 id="update-valuesyaml-file">Update Values.yaml file</h4>
 <p>To use TLS the infomation about the secrets above should be inserted to the fields in <a href="https://github.com/fybrik/fybrik/blob/master/charts/fybrik/values.yaml">values.yaml</a> file upon Fybrik deployment using helm.</p>
 <p>Here is an example of the tls related fields in the opa-connector section that are filled based on the secrets created above:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">opaConnector</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">tls</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># MinVersion contains the minimum TLS version that is acceptable.</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># If not provided, minimal supported TLS protocol is taken as the minimum.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">minVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v13</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Specifies whether the opa connector communication should use tls.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">use_tls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Specifies whether the opa connector communication should use mutual tls.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">use_mtls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># Relavent if the connection between the manager and the connectors</span><span class="w"></span>
-<span class="w">    </span><span class="c1"># uses tls.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">certs</span><span class="p">:</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># Name of kubernetes tls secret that holds opa-connector certificates.</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># The secret should be of `kubernetes.io/tls` type.</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># Relavent if tls is used.</span><span class="w"></span>
-<span class="w">      </span><span class="nt">certSecretName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tls-opa-connector-certs&quot;</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># Name of kubernetes secret that holds the certificate authority (CA) certificates</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># which are used by opa-connector to validate the connection to the manager if</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># mtls is enabled.</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># The CA certificates key in the secret should have `.crt` suffix.</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># The provided certificates replaces the certificates in the system CA certificate store.</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># If the secret is not provided then the CA certificates are taken from the system</span><span class="w"></span>
-<span class="w">      </span><span class="c1"># CA certificate store, for example `/etc/ssl/certs/`.</span><span class="w"></span>
-<span class="w">      </span><span class="nt">cacertSecretName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tls-ca&quot;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="nt">opaConnector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tls</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># MinVersion contains the minimum TLS version that is acceptable.</span>
+<span class="w">    </span><span class="c1"># If not provided, minimal supported TLS protocol is taken as the minimum.</span>
+<span class="w">    </span><span class="nt">minVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v13</span>
+<span class="w">    </span><span class="c1"># Specifies whether the opa connector communication should use tls.</span>
+<span class="w">    </span><span class="nt">use_tls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="c1"># Specifies whether the opa connector communication should use mutual tls.</span>
+<span class="w">    </span><span class="nt">use_mtls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="c1"># Relavent if the connection between the manager and the connectors</span>
+<span class="w">    </span><span class="c1"># uses tls.</span>
+<span class="w">    </span><span class="nt">certs</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># Name of kubernetes tls secret that holds opa-connector certificates.</span>
+<span class="w">      </span><span class="c1"># The secret should be of `kubernetes.io/tls` type.</span>
+<span class="w">      </span><span class="c1"># Relavent if tls is used.</span>
+<span class="w">      </span><span class="nt">certSecretName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tls-opa-connector-certs&quot;</span>
+<span class="w">      </span><span class="c1"># Name of kubernetes secret that holds the certificate authority (CA) certificates</span>
+<span class="w">      </span><span class="c1"># which are used by opa-connector to validate the connection to the manager if</span>
+<span class="w">      </span><span class="c1"># mtls is enabled.</span>
+<span class="w">      </span><span class="c1"># The CA certificates key in the secret should have `.crt` suffix.</span>
+<span class="w">      </span><span class="c1"># The provided certificates replaces the certificates in the system CA certificate store.</span>
+<span class="w">      </span><span class="c1"># If the secret is not provided then the CA certificates are taken from the system</span>
+<span class="w">      </span><span class="c1"># CA certificate store, for example `/etc/ssl/certs/`.</span>
+<span class="w">      </span><span class="nt">cacertSecretName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tls-ca&quot;</span>
 </code></pre></div>
 <h3 id="using-istio">Using Istio</h3>
 <p>Alternatively, if Istio is installed in the cluster then you can use <a href="https://istio.io/latest/docs/tasks/security/authentication/authn-policy/#auto-mutual-tls">automatic mutual TLS</a> to encrypt the traffic to the connectors.</p>
@@ -1611,10 +1611,10 @@ is created and automatically renewed by cert-manager.</p>
 </li>
 <li>
 <p>Enable Istio sidecar injection in the <code>fybrik-system</code> namespace:</p>
-<p><div class="highlight"><pre><span></span><code>kubectl label namespace fybrik-system istio-injection<span class="o">=</span>enabled
+<p><div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>fybrik-system<span class="w"> </span>istio-injection<span class="o">=</span>enabled
 </code></pre></div>
 - Create Istio <code>PeerAuthentication</code> resource to enable mutual TLS between containers with Istio sidecars:
-<div class="highlight"><pre><span></span><code>cat <span class="s">&lt;&lt; EOF | kubectl apply -f -</span>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | kubectl apply -f -</span>
 <span class="s">apiVersion: &quot;security.istio.io/v1beta1&quot;</span>
 <span class="s">kind: &quot;PeerAuthentication&quot;</span>
 <span class="s">metadata:</span>
@@ -1626,7 +1626,7 @@ is created and automatically renewed by cert-manager.</p>
 <span class="s">EOF</span>
 </code></pre></div>
 - Create Istio <code>Sidecar</code> resource to allow any egress traffic from the control plane containers:
-<div class="highlight"><pre><span></span><code>cat <span class="s">&lt;&lt; EOF | kubectl apply -f -</span>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | kubectl apply -f -</span>
 <span class="s">apiVersion: networking.istio.io/v1alpha3</span>
 <span class="s">kind: Sidecar</span>
 <span class="s">metadata:</span>
@@ -1641,7 +1641,7 @@ is created and automatically renewed by cert-manager.</p>
 <span class="s">EOF</span>
 </code></pre></div>
 - Restart the control plane pods:
-<div class="highlight"><pre><span></span><code>kubectl delete pod --all -n fybrik-system
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 </li>
 </ul>

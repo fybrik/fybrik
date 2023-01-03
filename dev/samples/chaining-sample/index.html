@@ -1342,33 +1342,33 @@
 </li>
 <li>
 <p>Before installing the control plane, we need to customize the <a href="https://fybrik.io/dev/tasks/custom-taxonomy/">Fybrik taxonomy</a> to define the new connection and interface types. Run:
-    <div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$FYBRIK_DIR</span>
-git checkout master
-go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json <span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
-helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set coordinator.catalog<span class="o">=</span>openmetadata --set openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api --set global.tag<span class="o">=</span>aster -n fybrik-system --wait --set-file <span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
+    <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span><span class="nv">$FYBRIK_DIR</span>
+git<span class="w"> </span>checkout<span class="w"> </span>master
+go<span class="w"> </span>run<span class="w"> </span>main.go<span class="w"> </span>taxonomy<span class="w"> </span>compile<span class="w"> </span>--out<span class="w"> </span>custom-taxonomy.json<span class="w"> </span>--base<span class="w"> </span>charts/fybrik/files/taxonomy/taxonomy.json<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>aster<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait<span class="w"> </span>--set-file<span class="w"> </span><span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
 </code></pre></div></p>
 </li>
 <li>
 <p>Install the Airbyte module:
-    <div class="highlight"><pre><span></span><code>kubectl apply -f <span class="nv">$AIRBYTE_MODULE_DIR</span>/module.yaml -n fybrik-system
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 </li>
 <li>
 <p>Install the arrow-flight module for transformations:
-<div class="highlight"><pre><span></span><code>  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code><span class="w">  </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/fybrik/arrow-flight-module/releases/latest/download/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 </li>
 <li>
 <p>Create a new namespace for the application, and set it as default:
-    <div class="highlight"><pre><span></span><code>kubectl create namespace fybrik-airbyte-sample
-kubectl config set-context --current --namespace<span class="o">=</span>fybrik-airbyte-sample
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>fybrik-airbyte-sample
+kubectl<span class="w"> </span>config<span class="w"> </span>set-context<span class="w"> </span>--current<span class="w"> </span>--namespace<span class="o">=</span>fybrik-airbyte-sample
 </code></pre></div></p>
 </li>
 <li>
 <p>Next, register the data asset itself in the data catalog. We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-    <div class="highlight"><pre><span></span><code>kubectl port-forward svc/openmetadata-connector -n fybrik-system <span class="m">8081</span>:8080 <span class="p">&amp;</span>
-cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/openmetadata-connector<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="m">8081</span>:8080<span class="w"> </span><span class="p">&amp;</span>
+cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
 <span class="s">{</span>
 <span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
 <span class="s">  &quot;destinationAssetID&quot;: &quot;userdata&quot;,</span>
@@ -1426,14 +1426,14 @@ cat <span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-
 </li>
 <li>
 <p>Create the policy to access the asset (we use a policy that requires redactions of <code>PII.Sensitive</code> columns):
-   <div class="highlight"><pre><span></span><code>kubectl -n fybrik-system create configmap sample-policy --from-file<span class="o">=</span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/sample-policy-restrictive.rego
-kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy<span class="o">=</span>rego
-<span class="k">while</span> <span class="o">[[</span> <span class="k">$(</span>kubectl get cm sample-policy -n fybrik-system -o <span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span> !<span class="o">=</span> <span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span> <span class="nb">echo</span> <span class="s2">&quot;waiting for policy to be applied&quot;</span> <span class="o">&amp;&amp;</span> sleep <span class="m">5</span><span class="p">;</span> <span class="k">done</span>
+   <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>sample-policy<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/sample-policy-restrictive.rego
+kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>label<span class="w"> </span>configmap<span class="w"> </span>sample-policy<span class="w"> </span>openpolicyagent.org/policy<span class="o">=</span>rego
+<span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>cm<span class="w"> </span>sample-policy<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;waiting for policy to be applied&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
 </code></pre></div></p>
 </li>
 <li>
 <p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the workload to the control plane of Fybrik. The value you place in the <code>dataSetID</code> field is your asset ID, as explained above.</p>
-<div class="highlight"><pre><span></span><code>cat <span class="s">&lt;&lt;EOF | kubectl apply -f -</span>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF | kubectl apply -f -</span>
 <span class="s">apiVersion: app.fybrik.io/v1beta1</span>
 <span class="s">kind: FybrikApplication</span>
 <span class="s">metadata:</span>
@@ -1457,34 +1457,34 @@ kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/polic
 </li>
 <li>
 <p>After the FybrikApplication is applied, the Fybrik control plane attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the <code>userdata</code> dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the <code>fybrik-blueprints</code> namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
-   <div class="highlight"><pre><span></span><code>kubectl get pods -n fybrik-blueprints
+   <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints
 </code></pre></div>
    You should see pods with names similar to:
-   <div class="highlight"><pre><span></span><code>NAME                                                              READY   STATUS    RESTARTS   AGE
-my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq   <span class="m">2</span>/2     Running   <span class="m">0</span>          43s
-my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   <span class="m">1</span>/1     Running   <span class="m">0</span>          43s
+   <div class="highlight"><pre><span></span><code>NAME<span class="w">                                                              </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq<span class="w">   </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>43s
+my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>43s
 </code></pre></div></p>
 </li>
 <li>
 <p>Wait for the FybrikModule pods to be ready by running:
-   <div class="highlight"><pre><span></span><code>kubectl <span class="nb">wait</span> pod --all --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready -n fybrik-blueprints --timeout 10m
+   <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>pod<span class="w"> </span>--all<span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints<span class="w"> </span>--timeout<span class="w"> </span>10m
 </code></pre></div></p>
 </li>
 <li>
 <p>To verify that the Airbyte module gives access to the <code>userdata</code> dataset, run:
-   <div class="highlight"><pre><span></span><code><span class="nb">cd</span> <span class="nv">$AIRBYTE_MODULE_DIR</span>/helm/client
+   <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/helm/client
 ./deploy_airbyte_module_client_pod.sh
-kubectl <span class="nb">exec</span> -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port <span class="m">80</span> --asset <span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
+kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>my-shell<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--<span class="w"> </span>python3<span class="w"> </span>/root/client.py<span class="w"> </span>--host<span class="w"> </span>my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints<span class="w"> </span>--port<span class="w"> </span><span class="m">80</span><span class="w"> </span>--asset<span class="w"> </span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
 </code></pre></div>
    You should see the following output:
-   <div class="highlight"><pre><span></span><code>       registration_dttm      id first_name last_name  email  ...     country birthdate     salary                     title comments
-<span class="m">0</span>    <span class="m">2016</span>-02-03T13:36:39     <span class="m">1</span>.0      XXXXX     XXXXX  XXXXX  ...   Indonesia     XXXXX  <span class="m">140249</span>.37  Senior Financial Analyst         
-<span class="m">1</span>    <span class="m">2016</span>-02-03T00:22:28     <span class="m">2</span>.0      XXXXX     XXXXX  XXXXX  ...       China     XXXXX        NaN                                   
-<span class="m">2</span>    <span class="m">2016</span>-02-03T18:29:04     <span class="m">3</span>.0      XXXXX     XXXXX  XXXXX  ...      France     XXXXX  <span class="m">236219</span>.26                   Teacher         
-<span class="m">3</span>    <span class="m">2016</span>-02-03T13:42:19     <span class="m">4</span>.0      XXXXX     XXXXX  XXXXX  ...      Russia     XXXXX        NaN    Nuclear Power Engineer         
-<span class="m">4</span>    <span class="m">2016</span>-02-03T00:15:29     <span class="m">5</span>.0      XXXXX     XXXXX  XXXXX  ...      France     XXXXX   <span class="m">50210</span>.02             Senior Editor         
-..                   ...     ...        ...       ...    ...  ...         ...       ...        ...                       ...      ...
-<span class="m">995</span>  <span class="m">2016</span>-02-03T13:36:49   <span class="m">996</span>.0      XXXXX     XXXXX  XXXXX  ...       China     XXXXX  <span class="m">185421</span>.82                                  <span class="s2">&quot;</span>
+   <div class="highlight"><pre><span></span><code><span class="w">       </span>registration_dttm<span class="w">      </span>id<span class="w"> </span>first_name<span class="w"> </span>last_name<span class="w">  </span>email<span class="w">  </span>...<span class="w">     </span>country<span class="w"> </span>birthdate<span class="w">     </span>salary<span class="w">                     </span>title<span class="w"> </span>comments
+<span class="m">0</span><span class="w">    </span><span class="m">2016</span>-02-03T13:36:39<span class="w">     </span><span class="m">1</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">   </span>Indonesia<span class="w">     </span>XXXXX<span class="w">  </span><span class="m">140249</span>.37<span class="w">  </span>Senior<span class="w"> </span>Financial<span class="w"> </span>Analyst<span class="w">         </span>
+<span class="m">1</span><span class="w">    </span><span class="m">2016</span>-02-03T00:22:28<span class="w">     </span><span class="m">2</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">       </span>China<span class="w">     </span>XXXXX<span class="w">        </span>NaN<span class="w">                                   </span>
+<span class="m">2</span><span class="w">    </span><span class="m">2016</span>-02-03T18:29:04<span class="w">     </span><span class="m">3</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">      </span>France<span class="w">     </span>XXXXX<span class="w">  </span><span class="m">236219</span>.26<span class="w">                   </span>Teacher<span class="w">         </span>
+<span class="m">3</span><span class="w">    </span><span class="m">2016</span>-02-03T13:42:19<span class="w">     </span><span class="m">4</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">      </span>Russia<span class="w">     </span>XXXXX<span class="w">        </span>NaN<span class="w">    </span>Nuclear<span class="w"> </span>Power<span class="w"> </span>Engineer<span class="w">         </span>
+<span class="m">4</span><span class="w">    </span><span class="m">2016</span>-02-03T00:15:29<span class="w">     </span><span class="m">5</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">      </span>France<span class="w">     </span>XXXXX<span class="w">   </span><span class="m">50210</span>.02<span class="w">             </span>Senior<span class="w"> </span>Editor<span class="w">         </span>
+..<span class="w">                   </span>...<span class="w">     </span>...<span class="w">        </span>...<span class="w">       </span>...<span class="w">    </span>...<span class="w">  </span>...<span class="w">         </span>...<span class="w">       </span>...<span class="w">        </span>...<span class="w">                       </span>...<span class="w">      </span>...
+<span class="m">995</span><span class="w">  </span><span class="m">2016</span>-02-03T13:36:49<span class="w">   </span><span class="m">996</span>.0<span class="w">      </span>XXXXX<span class="w">     </span>XXXXX<span class="w">  </span>XXXXX<span class="w">  </span>...<span class="w">       </span>China<span class="w">     </span>XXXXX<span class="w">  </span><span class="m">185421</span>.82<span class="w">                                  </span><span class="s2">&quot;</span>
 <span class="s2">996  2016-02-03T04:39:01   997.0      XXXXX     XXXXX  XXXXX  ...    Malaysia     XXXXX  279671.68                                   </span>
 <span class="s2">997  2016-02-03T00:33:54   998.0      XXXXX     XXXXX  XXXXX  ...      Poland     XXXXX  112275.78                                   </span>
 <span class="s2">998  2016-02-03T00:15:08   999.0      XXXXX     XXXXX  XXXXX  ...  Kazakhstan     XXXXX   53564.76        Speech Pathologist         </span>
@@ -1495,33 +1495,33 @@ kubectl <span class="nb">exec</span> -it my-shell -n default -- python3 /root/cl
 </li>
 <li>
 <p>Alternatively, one can access the <code>userdata</code> dataset from a Jupyter notebook, as described in the <a href="../notebook-read/#read-the-dataset-from-the-notebook">notebook sample</a>. To determine the virtual endpoint from which to access the data set, run:
-   <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$CATALOGED_ASSET</span> <span class="p">|</span> sed <span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
-<span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
-<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl get fybrikapplication my-app -o <span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
-<span class="nb">printf</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
+   <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
+<span class="nv">ENDPOINT_SCHEME</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.scheme<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.hostname<span class="o">}</span><span class="k">)</span>
+<span class="nv">ENDPOINT_PORT</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">={</span>.status.assetStates.<span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span>.endpoint.fybrik-arrow-flight.port<span class="o">}</span><span class="k">)</span>
+<span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">ENDPOINT_SCHEME</span><span class="si">}</span><span class="s2">://</span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="s2">:</span><span class="si">${</span><span class="nv">ENDPOINT_PORT</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div></p>
 </li>
 </ol>
 <p>Note that the virtual endpoint determined from the FybrikApplication status points to the arrow-flight transform module, although this is transparent to the user.</p>
 <p>Insert a new notebook cell to install pandas and pyarrow packages:
-   <div class="highlight"><pre><span></span><code>%pip install pandas pyarrow
+   <div class="highlight"><pre><span></span><code>%pip<span class="w"> </span>install<span class="w"> </span>pandas<span class="w"> </span>pyarrow
 </code></pre></div></p>
 <p>Finally, given the endpoint value determined above, insert the following to a new notebook cell:
-   <div class="highlight"><pre><span></span><code>import json
-import pyarrow.flight as fl
+   <div class="highlight"><pre><span></span><code>import<span class="w"> </span>json
+import<span class="w"> </span>pyarrow.flight<span class="w"> </span>as<span class="w"> </span>fl
 
 <span class="c1"># Create a Flight client</span>
-<span class="nv">client</span> <span class="o">=</span> fl.connect<span class="o">(</span><span class="s1">&#39;&lt;ENDPOINT&gt;&#39;</span><span class="o">)</span>
+<span class="nv">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>fl.connect<span class="o">(</span><span class="s1">&#39;&lt;ENDPOINT&gt;&#39;</span><span class="o">)</span>
 
 <span class="c1"># Prepare the request</span>
-<span class="nv">request</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="s2">&quot;asset&quot;</span>: <span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>,
+<span class="nv">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;asset&quot;</span>:<span class="w"> </span><span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>,
 <span class="o">}</span>
 
 <span class="c1"># Send request and fetch result as a pandas DataFrame</span>
-<span class="nv">info</span> <span class="o">=</span> client.get_flight_info<span class="o">(</span>fl.FlightDescriptor.for_command<span class="o">(</span>json.dumps<span class="o">(</span>request<span class="o">)))</span>
-reader: fl.FlightStreamReader <span class="o">=</span> client.do_get<span class="o">(</span>info.endpoints<span class="o">[</span><span class="m">0</span><span class="o">]</span>.ticket<span class="o">)</span>
+<span class="nv">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>client.get_flight_info<span class="o">(</span>fl.FlightDescriptor.for_command<span class="o">(</span>json.dumps<span class="o">(</span>request<span class="o">)))</span>
+reader:<span class="w"> </span>fl.FlightStreamReader<span class="w"> </span><span class="o">=</span><span class="w"> </span>client.do_get<span class="o">(</span>info.endpoints<span class="o">[</span><span class="m">0</span><span class="o">]</span>.ticket<span class="o">)</span>
 print<span class="o">(</span>reader.read_pandas<span class="o">())</span>
 </code></pre></div></p>
 

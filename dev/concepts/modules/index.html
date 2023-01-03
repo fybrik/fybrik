@@ -1485,7 +1485,7 @@ Can be a client to the external component(s) or be independent.</li>
 <h2 id="registering-a-module">Registering a module</h2>
 <p>To make the control plane aware of the module so that it can be included in appropriate workload data flows, the administrator must apply the FybrikModule YAML in the <code>fybrik-system</code> namespace.  This makes the control plane aware of the existence of the module.  Note that it <strong>does not</strong> check that the module's helm chart exists.</p>
 <p>For example, the following registers the <code>arrow-flight-module</code>:
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 <h2 id="when-is-a-module-used">When is a module used?</h2>
 <p>There are four main data flows in which modules may be used:</p>

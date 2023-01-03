@@ -1402,7 +1402,7 @@ helm upgrade fybrik charts/fybrik --set global.tag=master --set global.imagePull
 1. Prepare a Docker image file containing the solver executable and the solver's dependencies (e.g., dynamically-linked libraries). The executable should be called <code>solver</code> and should be placed in the directory <code>/data/tools/bin</code> of the Docker image.
 2. Upload the Docker image file to any public registry.
 3. Run the following command to configure the solver (this assumes that Fybrik is already deployed):
-    <div class="highlight"><pre><span></span><code>helm upgrade fybrik charts/fybrik --set global.tag<span class="o">=</span>master --set global.imagePullPolicy<span class="o">=</span>Always -n fybrik-system --wait --set solver.image<span class="o">=</span>&lt;image-of-your-solver&gt;
+    <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>global.imagePullPolicy<span class="o">=</span>Always<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait<span class="w"> </span>--set<span class="w"> </span>solver.image<span class="o">=</span>&lt;image-of-your-solver&gt;
 </code></pre></div></p>
 
 

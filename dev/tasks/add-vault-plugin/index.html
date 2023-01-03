@@ -1403,14 +1403,14 @@ More information on the process can be found in this <a href="https://www.hashic
 <li>
 <p>Register and enable the plugin during Vault server initialization in a specific path. 
 <br/>An example of that can be found in helm chart <a href="https://github.com/fybrik/fybrik/blob/master/charts/vault/env/dev/plugin-secrets-values.yaml">values.yaml</a> file in the project where <a href="https://github.com/fybrik/vault-plugin-secrets-kubernetes-reader">Vault-plugin-secrets-kubernetes-reader</a> plugin is enabled in <code>kubernetes-secrets</code> path:
-<div class="highlight"><pre><span></span><code>    <span class="nv">SHA256</span><span class="o">=</span><span class="k">$(</span>sha256sum /usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader <span class="p">|</span> cut -d <span class="s1">&#39; &#39;</span> -f1<span class="k">)</span> <span class="o">&amp;&amp;</span>
-    vault plugin register -sha256<span class="o">=</span><span class="nv">$SHA256</span> secret vault-plugin-secrets-kubernetes-reader
-    vault secrets <span class="nb">enable</span> -path<span class="o">=</span>kubernetes-secrets vault-plugin-secrets-kubernetes-reader
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nv">SHA256</span><span class="o">=</span><span class="k">$(</span>sha256sum<span class="w"> </span>/usr/local/libexec/vault/vault-plugin-secrets-kubernetes-reader<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span>-f1<span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">    </span>vault<span class="w"> </span>plugin<span class="w"> </span>register<span class="w"> </span>-sha256<span class="o">=</span><span class="nv">$SHA256</span><span class="w"> </span>secret<span class="w"> </span>vault-plugin-secrets-kubernetes-reader
+<span class="w">    </span>vault<span class="w"> </span>secrets<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>-path<span class="o">=</span>kubernetes-secrets<span class="w"> </span>vault-plugin-secrets-kubernetes-reader
 </code></pre></div></p>
 </li>
 <li>Add <a href="https://www.vaultproject.io/docs/concepts/policies">Vault policy</a> to allow the <a href="../../concepts/modules/">modules</a> to access secrets using the plugin.
 <br/>Following is an example of a policy which gives permission to read secrets in Vault path <code>kubernetes-secrets</code>:
-<div class="highlight"><pre><span></span><code>vault policy write <span class="s2">&quot;allow-all-dataset-creds&quot;</span> - <span class="s">&lt;&lt;EOF</span>
+<div class="highlight"><pre><span></span><code>vault<span class="w"> </span>policy<span class="w"> </span>write<span class="w"> </span><span class="s2">&quot;allow-all-dataset-creds&quot;</span><span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
 <span class="s">      path &quot;kubernetes-secrets/*&quot; {</span>
 <span class="s">      capabilities = [&quot;read&quot;]</span>
 <span class="s">      }</span>
@@ -1421,15 +1421,15 @@ For example, when the credentials are stored in kubernetes secret as is done in 
 <li>Update the <a href="../../concepts/modules/">modules</a> to use the <a href="../../reference/crds#blueprintspecmoduleskeyargumentsassetsindexargsindexvaultkey">Vault related values</a> to retrieve dataset credentias during their runtime execution. The values contain <code>secretPath</code> field with the plugin path as described in the previous step.
 The following snippet contains an example of such values. </li>
 </ol>
-<div class="highlight"><pre><span></span><code>    vault:
-      <span class="c1"># Address is Vault address</span>
-      address: http://vault.fybrik-system:8200
-      <span class="c1"># AuthPath is the path to auth method used to login to Vault</span>
-      authPath: /v1/auth/kubernetes/login
-      <span class="c1"># Role is the Vault role used for retrieving the credentials</span>
-      role: module
-      <span class="c1"># SecretPath is the path of the secret holding the Credentials in Vault</span>
-      secretPath: /v1/kubernetes-secrets/paysim-csv?namespace<span class="o">=</span>fybrik-notebook-sample
+<div class="highlight"><pre><span></span><code><span class="w">    </span>vault:
+<span class="w">      </span><span class="c1"># Address is Vault address</span>
+<span class="w">      </span>address:<span class="w"> </span>http://vault.fybrik-system:8200
+<span class="w">      </span><span class="c1"># AuthPath is the path to auth method used to login to Vault</span>
+<span class="w">      </span>authPath:<span class="w"> </span>/v1/auth/kubernetes/login
+<span class="w">      </span><span class="c1"># Role is the Vault role used for retrieving the credentials</span>
+<span class="w">      </span>role:<span class="w"> </span>module
+<span class="w">      </span><span class="c1"># SecretPath is the path of the secret holding the Credentials in Vault</span>
+<span class="w">      </span>secretPath:<span class="w"> </span>/v1/kubernetes-secrets/paysim-csv?namespace<span class="o">=</span>fybrik-notebook-sample
 </code></pre></div>
 
 

@@ -1447,26 +1447,26 @@ responsible for intercepting HTTP requests sent from a user trying to read or wr
 </ul>
 <h2 id="create-a-namespace-for-the-sample">Create a namespace for the sample</h2>
 <p>Create a new Kubernetes namespace and set it as the active namespace:</p>
-<div class="highlight"><pre><span></span><code>kubectl create namespace fogprotect
-kubectl config set-context --current --namespace<span class="o">=</span>fogprotect
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>fogprotect
+kubectl<span class="w"> </span>config<span class="w"> </span>set-context<span class="w"> </span>--current<span class="w"> </span>--namespace<span class="o">=</span>fogprotect
 </code></pre></div>
 <p>This enables easy <a href="#cleanup">cleanup</a> once you're done experimenting with the sample.</p>
 <h2 id="backend-data-server">Backend data server</h2>
 <p>The backend data server is responsible for reading or writing data to a database or any other resource. In this 
 example the backend data server is a simple server that returns the mock data for the dashboard.  <br />
 Run the backend data server:<br />
-<div class="highlight"><pre><span></span><code>helm chart pull ghcr.io/fybrik/backend-server-chart:v0.0.1
-helm chart <span class="nb">export</span> --destination<span class="o">=</span>./tmp ghcr.io/fybrik/backend-server-chart:v0.0.1
-helm install rel1-backend-server ./tmp/backend_server
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>chart<span class="w"> </span>pull<span class="w"> </span>ghcr.io/fybrik/backend-server-chart:v0.0.1
+helm<span class="w"> </span>chart<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--destination<span class="o">=</span>./tmp<span class="w"> </span>ghcr.io/fybrik/backend-server-chart:v0.0.1
+helm<span class="w"> </span>install<span class="w"> </span>rel1-backend-server<span class="w"> </span>./tmp/backend_server
 </code></pre></div></p>
 <h2 id="register-the-assets">Register the assets</h2>
 <p>In this example we use 3 of the endpoints that the backend data server exposes. For each endpoint, we define 
 an asset describing the data that will be returned as response from the backend data server. The description is used 
 later to apply policies on the data.<br />
 Register the assets:
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_get_safety_data.yaml
-kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_start_robot.yaml
-kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_stop_robot.yaml
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_get_safety_data.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_start_robot.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/assets/asset_stop_robot.yaml
 </code></pre></div>
 The identifier of the assets is <code>&lt;namespace&gt;/&lt;name&gt;</code>, and it should be used in the <code>FybrikApplication</code> that we will 
 describe later on. For example the identifier of the asset defined in the file <code>asset_start_robot.yaml</code> is 
@@ -1476,13 +1476,13 @@ describe later on. For example the identifier of the asset defined in the file <
 the JWT of the relevant role in the header. The JWT is authenticated using a secret key that we store as a secret 
 in the cluster, in both <code>fogprotect</code> and <code>fybrik-blueprints</code> namespaces.<br />
 Create the JWT secret:<br />
-<div class="highlight"><pre><span></span><code>kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
-kubectl apply -n fybrik-blueprints -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
 </code></pre></div></p>
 <h2 id="fybrik-manager-rbac">Fybrik manager RBAC</h2>
 <p>In order for the fybrik manager to be able to access the assets and to deploy the fybrik module that we created, give 
 the manager the relevant <a href="https://github.com/fybrik/fogProtect-dashboard-sample/blob/main/fybrik-system-manager-rbac.yaml">RBAC authorization</a>:<br />
-<div class="highlight"><pre><span></span><code>kubectl apply -n fybrik-system -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/fybrik-system-manager-rbac.yaml
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/fybrik-system-manager-rbac.yaml
 </code></pre></div></p>
 <h2 id="deploy-the-module">Deploy the module</h2>
 <p>In our case, the module as we described earlier is responsible for intercepting the HTTP requests received 
@@ -1492,47 +1492,47 @@ columns redacted or blocked depending on the role of the user. The decision is m
 <a href="#About the dashboard application">About the dashboard application</a> and specified 
 <a href="https://github.com/fybrik/fogProtect-dashboard-sample/blob/main/python/fogprotect-policy.yaml">here</a>.<br />
 Deploy the fybrik module and application:
-<div class="highlight"><pre><span></span><code>kubectl apply -n fybrik-system -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-module.yaml
-kubectl apply -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-application.yaml
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-module.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/rest-read-application.yaml
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div></p>
 <h2 id="deploy-the-dashboard">Deploy the dashboard</h2>
 <p>We now deploy the dashboard that will display a table that contains the safety data of the factory, along with two 
 buttons to start and stop the manufacturing robot. One can change the role of the user using a pull down menu.<br />
 First create a port-forwarding to the service that will be intercepting the HTTP requests:<br />
-<div class="highlight"><pre><span></span><code>kubectl -n fybrik-blueprints port-forward svc/rest-read <span class="m">5559</span>:5559 <span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints<span class="w"> </span>port-forward<span class="w"> </span>svc/rest-read<span class="w"> </span><span class="m">5559</span>:5559<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div></p>
 <p>Afterwards, deploy the dashboard application:<br />
-<div class="highlight"><pre><span></span><code>helm chart pull ghcr.io/fybrik/factory-gui-chart:v0.0.1
-helm chart <span class="nb">export</span> --destination<span class="o">=</span>./tmp ghcr.io/fybrik/factory-gui-chart:v0.0.1
-helm install rel1-factory-gui ./tmp/factory_gui
-kubectl <span class="nb">wait</span> --for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready --all pod --timeout<span class="o">=</span>120s
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>chart<span class="w"> </span>pull<span class="w"> </span>ghcr.io/fybrik/factory-gui-chart:v0.0.1
+helm<span class="w"> </span>chart<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--destination<span class="o">=</span>./tmp<span class="w"> </span>ghcr.io/fybrik/factory-gui-chart:v0.0.1
+helm<span class="w"> </span>install<span class="w"> </span>rel1-factory-gui<span class="w"> </span>./tmp/factory_gui
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div></p>
 <p>Lastly, create a port-forwarding to the dashboard service in order to be able to open the dashboard in your browser:<br />
-<div class="highlight"><pre><span></span><code>kubectl port-forward svc/factory-gui <span class="m">3001</span>:3000 <span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/factory-gui<span class="w"> </span><span class="m">3001</span>:3000<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div></p>
 <p>Open your browser and go to http://127.0.0.1:3001.</p>
 <h2 id="cleanup">Cleanup</h2>
 <ol>
 <li>Stop the port-forwarding:
-    <div class="highlight"><pre><span></span><code>pgrep -f <span class="s2">&quot;kubectl port-forward svc/factory-gui 3001:3000&quot;</span> <span class="p">|</span> xargs <span class="nb">kill</span>
-pgrep -f <span class="s2">&quot;kubectl -n fybrik-blueprints port-forward svc/rest-read 5559:5559&quot;</span> <span class="p">|</span> xargs <span class="nb">kill</span>
+    <div class="highlight"><pre><span></span><code>pgrep<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;kubectl port-forward svc/factory-gui 3001:3000&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span><span class="nb">kill</span>
+pgrep<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;kubectl -n fybrik-blueprints port-forward svc/rest-read 5559:5559&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span><span class="nb">kill</span>
 </code></pre></div></li>
 <li>Remove the <code>tmp</code> directory that was created temporarily:
-    <div class="highlight"><pre><span></span><code>rm -r tmp
+    <div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-r<span class="w"> </span>tmp
 </code></pre></div></li>
 <li>Delete the fybrik application and module:
-    <div class="highlight"><pre><span></span><code>kubectl delete fybrikapplication rest-read
-kubectl -n fybrik-system delete fybrikmodule rest-read-module
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>fybrikapplication<span class="w"> </span>rest-read
+kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>delete<span class="w"> </span>fybrikmodule<span class="w"> </span>rest-read-module
 </code></pre></div></li>
 <li>Delete the <code>fogprotect</code> namespace:<br />
-    <div class="highlight"><pre><span></span><code>kubectl delete namespace fogprotect
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>fogprotect
 </code></pre></div></li>
 <li>Delete the RBAC authorization of the manager:<br />
-    <div class="highlight"><pre><span></span><code>kubectl -n fybrik-system delete -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/fybrik-system-manager-rbac.yaml
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/fybrik-system-manager-rbac.yaml
 </code></pre></div></li>
 <li>Delete the JWT secret:<br />
-    <div class="highlight"><pre><span></span><code>kubectl delete -n fybrik-blueprints -f https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fogProtect-dashboard-sample/main/secrets/jwt_key_secret.yaml
 </code></pre></div></li>
 </ol>
 

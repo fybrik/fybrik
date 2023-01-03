@@ -1506,9 +1506,9 @@
 </code></pre></div>
 <h2 id="fybrik-default-policies">Fybrik Default Policies</h2>
 <p>Fybrik <strong><em>denys by default</em></strong> any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span>
 
-<span class="l l-Scalar l-Scalar-Plain">rule [{}] { true }</span><span class="w"></span>
+<span class="l l-Scalar l-Scalar-Plain">rule [{}] { true }</span>
 </code></pre></div>
 <p>The verdict <code>allow</code> will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.</p>
 <h2 id="input-to-policies">Input to policies</h2>
@@ -1529,40 +1529,40 @@
 <h3 id="using-a-configmap-yaml">Using a configmap YAML</h3>
 <ol>
 <li>Create a configmap with a Rego policy and a <code>openpolicyagent.org/policy=rego</code> label in the <code>fybrik-system</code> namespace:
-    <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span><span class="w"></span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConfigMap</span><span class="w"></span>
-<span class="nt">metadata</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;policy-name&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w"></span>
-<span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">openpolicyagent.org/policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rego</span><span class="w"></span>
-<span class="nt">data</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="w"></span>
-<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">&lt;you rego policy here&gt;</span><span class="w"></span>
+    <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConfigMap</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;policy-name&gt;</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">openpolicyagent.org/policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rego</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">main</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">&lt;you rego policy here&gt;</span>
 </code></pre></div></li>
 <li>Apply the configmap:
-    <div class="highlight"><pre><span></span><code>kubectl apply -f &lt;policy-name&gt;.yaml
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>&lt;policy-name&gt;.yaml
 </code></pre></div></li>
 <li>To remove the policy just remove the configmap:
-   <div class="highlight"><pre><span></span><code> kubectl delete -f &lt;policy-name&gt;.yaml
+   <div class="highlight"><pre><span></span><code><span class="w"> </span>kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>&lt;policy-name&gt;.yaml
 </code></pre></div></li>
 </ol>
 <h3 id="using-a-rego-file">Using a Rego file</h3>
 <p>You can use <code>kubectl</code> to create a configmap from a Rego file. To create a configmap named <code>&lt;policy-name&gt;</code> from a Rego file in path <code>&lt;policy-name.rego&gt;</code>:</p>
-<div class="highlight"><pre><span></span><code>kubectl create configmap &lt;policy-name&gt; --from-file<span class="o">=</span><span class="nv">main</span><span class="o">=</span>&lt;policy-name.rego&gt; -n fybrik-system
-kubectl label configmap &lt;policy-name&gt; openpolicyagent.org/policy<span class="o">=</span>rego -n fybrik-system
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>&lt;policy-name&gt;<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">main</span><span class="o">=</span>&lt;policy-name.rego&gt;<span class="w"> </span>-n<span class="w"> </span>fybrik-system
+kubectl<span class="w"> </span>label<span class="w"> </span>configmap<span class="w"> </span>&lt;policy-name&gt;<span class="w"> </span>openpolicyagent.org/policy<span class="o">=</span>rego<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div>
 <p>Delete the policy with <code>kubectl delete configmap &lt;policy-name&gt; -n fybrik-system</code>.</p>
 <h3 id="using-opaserverbootstrappolicies-field">Using <code>opaServer.bootstrapPolicies</code> field</h3>
 <p>Another method to upload policies to OPA is to write them as <code>opaServer.bootstrapPolicies</code> field in <a href="https://raw.githubusercontent.com/fybrik/charts/master/charts/fybrik/values.yaml">values.yaml</a> file used for the Fybrik deployment.
 In this approach the policies are uploaded upon OPA startup.</p>
 <div class="highlight"><pre><span></span><code>opaServer:
-  <span class="c1"># Bootstrap policies to load upon startup</span>
-  bootstrapPolicies:
-    allowSamplePolicy: <span class="p">|</span>-
-      package dataapi.authz
+<span class="w">  </span><span class="c1"># Bootstrap policies to load upon startup</span>
+<span class="w">  </span>bootstrapPolicies:
+<span class="w">    </span>allowSamplePolicy:<span class="w"> </span><span class="p">|</span>-
+<span class="w">      </span>package<span class="w"> </span>dataapi.authz
 
-      rule <span class="o">[{}]</span> <span class="o">{</span> <span class="nb">true</span> <span class="o">}</span>
+<span class="w">      </span>rule<span class="w"> </span><span class="o">[{}]</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="o">}</span>
 </code></pre></div>
 
 

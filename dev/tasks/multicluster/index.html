@@ -1631,62 +1631,62 @@ A configuration using IBM Satellite Config would look like the following for the
 <ol>
 <li>Create a token reviewer service account called <code>vault-auth</code> in the <code>fybrik-system</code> namespace and give it permissions to create <code>tokenreviews.authentication.k8s.io</code> at the cluster scope:</li>
 </ol>
-<div class="highlight"><pre><span></span><code>apiVersion: v1
-kind: ServiceAccount
+<div class="highlight"><pre><span></span><code>apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>ServiceAccount
 metadata:
-  name: vault-auth
-  namespace: fybrik-system
+<span class="w">  </span>name:<span class="w"> </span>vault-auth
+<span class="w">  </span>namespace:<span class="w"> </span>fybrik-system
 ---
-apiVersion: v1
-kind: Secret
+apiVersion:<span class="w"> </span>v1
+kind:<span class="w"> </span>Secret
 metadata:
-  name: vault-auth
-  namespace: fybrik-system
-  annotations:
-    kubernetes.io/service-account.name: vault-auth
-type: kubernetes.io/service-account-token
+<span class="w">  </span>name:<span class="w"> </span>vault-auth
+<span class="w">  </span>namespace:<span class="w"> </span>fybrik-system
+<span class="w">  </span>annotations:
+<span class="w">    </span>kubernetes.io/service-account.name:<span class="w"> </span>vault-auth
+type:<span class="w"> </span>kubernetes.io/service-account-token
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion:<span class="w"> </span>rbac.authorization.k8s.io/v1
+kind:<span class="w"> </span>ClusterRoleBinding
 metadata:
-  name: role-tokenreview-binding
+<span class="w">  </span>name:<span class="w"> </span>role-tokenreview-binding
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
+<span class="w">  </span>apiGroup:<span class="w"> </span>rbac.authorization.k8s.io
+<span class="w">  </span>kind:<span class="w"> </span>ClusterRole
+<span class="w">  </span>name:<span class="w"> </span>system:auth-delegator
 subjects:
-  - kind: ServiceAccount
-    name: vault-auth
-    namespace: fybrik-system
+<span class="w">  </span>-<span class="w"> </span>kind:<span class="w"> </span>ServiceAccount
+<span class="w">    </span>name:<span class="w"> </span>vault-auth
+<span class="w">    </span>namespace:<span class="w"> </span>fybrik-system
 </code></pre></div>
 <ol>
 <li>
 <p>Login to Vault:
-<div class="highlight"><pre><span></span><code>vault login
+<div class="highlight"><pre><span></span><code>vault<span class="w"> </span>login
 </code></pre></div></p>
 </li>
 <li>
 <p>Enable the Kubernetes auth method in a new path:
-<div class="highlight"><pre><span></span><code>vault auth <span class="nb">enable</span> -path<span class="o">=</span>&lt;auth path&gt; kubernetes
+<div class="highlight"><pre><span></span><code>vault<span class="w"> </span>auth<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>-path<span class="o">=</span>&lt;auth<span class="w"> </span>path&gt;<span class="w"> </span>kubernetes
 </code></pre></div></p>
 </li>
 <li>
 <p>Use the /config endpoint to configure Vault to talk to Kubernetes:
-<div class="highlight"><pre><span></span><code><span class="nv">TOKEN_REVIEW_JWT</span><span class="o">=</span><span class="k">$(</span>kubectl get secret vault-auth -n fybrik-system -o <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.data.token}&quot;</span> <span class="p">|</span> base64 --decode<span class="k">)</span>
-vault write auth/&lt;auth path&gt;/config <span class="se">\</span>
-    <span class="nv">token_reviewer_jwt</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$TOKEN_REVIEW_JWT</span><span class="s2">&quot;</span> <span class="se">\</span>
-    <span class="nv">kubernetes_host</span><span class="o">=</span>&lt;Kubernetes api server address&gt; <span class="se">\</span>
-    <span class="nv">kubernetes_ca_cert</span><span class="o">=</span>@ca.crt
+<div class="highlight"><pre><span></span><code><span class="nv">TOKEN_REVIEW_JWT</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>vault-auth<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.data.token}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>--decode<span class="k">)</span>
+vault<span class="w"> </span>write<span class="w"> </span>auth/&lt;auth<span class="w"> </span>path&gt;/config<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">token_reviewer_jwt</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$TOKEN_REVIEW_JWT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">kubernetes_host</span><span class="o">=</span>&lt;Kubernetes<span class="w"> </span>api<span class="w"> </span>server<span class="w"> </span>address&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">kubernetes_ca_cert</span><span class="o">=</span>@ca.crt
 </code></pre></div>
 More details on the parameters in the command above can be found in <a href="https://www.vaultproject.io/api/auth/kubernetes">Vault's documentation</a>.</p>
 </li>
 <li>
 <p>Add the Vault policy and role to allow the modules to get the dataset credentials. More details on defining Vault policy for Fybrik can be found in <a href="../../concepts/vault_plugins/">HashiCorp Vault plugins page</a>. The Vault role which binds the policy to the modules can be defined in the following example:
-<div class="highlight"><pre><span></span><code>vault write auth/&lt;auth path&gt;/role/module <span class="se">\</span>
-    <span class="nv">bound_service_account_names</span><span class="o">=</span><span class="s2">&quot;*&quot;</span> <span class="se">\</span>
-    <span class="nv">bound_service_account_namespaces</span><span class="o">=</span>&lt;modules namespace&gt; <span class="se">\</span>
-    <span class="nv">policies</span><span class="o">=</span><span class="s2">&quot;allow-all-dataset-creds&quot;</span> <span class="se">\</span>
-    <span class="nv">ttl</span><span class="o">=</span>24h
+<div class="highlight"><pre><span></span><code>vault<span class="w"> </span>write<span class="w"> </span>auth/&lt;auth<span class="w"> </span>path&gt;/role/module<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">bound_service_account_names</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">bound_service_account_namespaces</span><span class="o">=</span>&lt;modules<span class="w"> </span>namespace&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">policies</span><span class="o">=</span><span class="s2">&quot;allow-all-dataset-creds&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">ttl</span><span class="o">=</span>24h
 </code></pre></div></p>
 </li>
 <li>Deploy the Fybrik helm chart with <code>--set cluster.vaultAuthPath=&lt;auth path&gt;</code> parameter</li>
