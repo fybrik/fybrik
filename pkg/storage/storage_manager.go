@@ -26,11 +26,11 @@ func AllocateStorage(account *sa.FybrikStorageAccountSpec, secret *fapp.SecretRe
 	if account == nil {
 		return taxonomy.Connection{}, errors.New("invalid storage account")
 	}
-	agent := registrator.GetAgent(account.Type)
-	if agent == nil {
-		return taxonomy.Connection{}, errors.New("unsupported connection type")
+	impl, err := registrator.GetAgent(account.Type)
+	if err != nil {
+		return taxonomy.Connection{}, err
 	}
-	return agent.AllocateStorage(account, secret, opts)
+	return impl.AllocateStorage(account, secret, opts)
 }
 
 // DeleteStorage deletes the existing storage by invoking the specific implementation agent based on the connection type
@@ -38,11 +38,11 @@ func DeleteStorage(connection *taxonomy.Connection, secret *fapp.SecretRef, opts
 	if connection == nil {
 		return errors.New("invalid connection object")
 	}
-	agent := registrator.GetAgent(connection.Name)
-	if agent == nil {
-		return errors.New("unsupported connection type")
+	impl, err := registrator.GetAgent(connection.Name)
+	if err != nil {
+		return err
 	}
-	return agent.DeleteStorage(connection, secret, opts)
+	return impl.DeleteStorage(connection, secret, opts)
 }
 
 // retun a list of supported connection types

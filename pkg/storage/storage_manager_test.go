@@ -6,9 +6,10 @@ package storage
 import (
 	"testing"
 
+	"github.com/onsi/gomega"
+
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
-	"github.com/onsi/gomega"
 )
 
 // test that the implementation agents have been registered successfully

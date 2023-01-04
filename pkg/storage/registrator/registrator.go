@@ -34,12 +34,12 @@ func Register(worker agent.AgentInterface) error {
 }
 
 // return the appropriate agent
-func GetAgent(key taxonomy.ConnectionType) agent.AgentInterface {
-	agent, exists := agents[key]
+func GetAgent(key taxonomy.ConnectionType) (agent.AgentInterface, error) {
+	worker, exists := agents[key]
 	if !exists {
-		return nil
+		return nil, errors.New("unsupported connection type " + string(key))
 	}
-	return agent
+	return worker, nil
 }
 
 // return the registered connection types

@@ -4,7 +4,10 @@
 package mysql
 
 import (
+	"github.com/rs/zerolog"
+
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/storage/registrator"
@@ -14,16 +17,20 @@ import (
 // Storage manager implementation for MySQL
 type MySQLImpl struct {
 	Name taxonomy.ConnectionType
+	Log  zerolog.Logger
 }
 
 // implementation of AgentInterface for MySQL
 func NewMySQLImpl() *MySQLImpl {
-	return &MySQLImpl{Name: "mysql"}
+	return &MySQLImpl{Name: "mysql", Log: logging.LogInit(logging.CONNECTOR, "StorageManager")}
 }
 
 // register the implementation for MySQL
 func init() {
-	registrator.Register(NewMySQLImpl())
+	mysqlImpl := NewMySQLImpl()
+	if err := registrator.Register(mysqlImpl); err != nil {
+		mysqlImpl.Log.Error().Err(err)
+	}
 }
 
 // return the supported connection type
