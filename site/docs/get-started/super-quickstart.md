@@ -2,7 +2,7 @@
 
 this guide contains a script that you can run with a single command to see a demo of Fybrik in action.  
 
-this demo demonstartes the following sequence -  
+this demo demonstrates the following sequence -  
 
 1. A **data operator** boots up Fybrik and registers a data asset of financial data to Fybrik
 
@@ -10,7 +10,7 @@ this demo demonstartes the following sequence -
 
 3. A **data user** submits a request to read the data asset using Fybrik
 
-4. **Fybrik** fetchs the data in an optimal way for cost and performance, and automatically redacts columns according to the data plicies
+4. **Fybrik** fetches the data asset, and automatically redacts columns according to the data plicies
 
 5. The **data user** can consume the governed data instantly
 
@@ -23,15 +23,15 @@ Note: booting up Fybrik with openmetadata takes ~25 minutes on most machines, so
 Alternatively you can run the [next](#demo-with-katalog-a-data-catalog-stub-5-mintues) script which boots up Fybrik with a data catalog stub.  
 
 ```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/blob/SuperQucikStart/samples/super-quickstart/SuperQuickStart-OMD.sh | bash -
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/super-quickstart/SuperQuickStart-OMD.sh | bash -
 ```
 
 ## Demo with Katalog, a data catalog stub (~5 mintues)
-For a demo using an older version of Fybrik, without its main Data Catlog you can use this script, which runs using Katalog, a data catalog stub.  
-this is stirclty for demos, testing and evaluation purposes.
+For a demo using an older version of Fybrik, without its main Data Catlog, you can run the following command.  
+this demo runs using Katalog, a data catalog stub, strictly used for demos, testing and evaluation purposes.
 
 ```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/blob/SuperQucikStart/samples/super-quickstart/SuperQuickStart-Katalog.sh | bash -
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/super-quickstart/SuperQuickStart-Katalog.sh | bash -
 ```
 
 ## Cleanup
