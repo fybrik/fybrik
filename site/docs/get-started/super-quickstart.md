@@ -10,7 +10,7 @@ this demo demonstrates the following sequence -
 
 3. A **data user** submits a request to read the data asset using Fybrik
 
-4. **Fybrik** fetches the data asset, and automatically redacts columns according to the data plicies
+4. **Fybrik** fetches the data asset, and automatically redacts columns according to the data policies
 
 5. The **data user** can consume the governed data instantly
 
