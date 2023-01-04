@@ -23,7 +23,7 @@ Note: booting up Fybrik with openmetadata takes ~25 minutes on most machines, so
 Alternatively you can run the [next](#demo-with-katalog-a-data-catalog-stub-5-mintues) script which boots up Fybrik with a data catalog stub.  
 
 ```bash
-// use doron's method for running the script
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/blob/SuperQucikStart/samples/super-quickstart/SuperQuickStart-OMD.sh | bash -
 ```
 
 ## Demo with Katalog, a data catalog stub (~5 mintues)
@@ -31,7 +31,7 @@ For a demo using an older version of Fybrik, without its main Data Catlog you ca
 this is stirclty for demos, testing and evaluation purposes.
 
 ```bash
-// use doron's method for running the script
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/blob/SuperQucikStart/samples/super-quickstart/SuperQuickStart-Katalog.sh | bash -
 ```
 
 ## Cleanup
