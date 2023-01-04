@@ -16,7 +16,7 @@ type ApplicationDetails struct {
 	// Name and namespace
 	Owner *types.NamespacedName
 	// uuid
-	Uuid string
+	UUID string
 }
 
 // Details of the new asset

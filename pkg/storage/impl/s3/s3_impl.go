@@ -38,7 +38,8 @@ func (impl *S3Impl) GetConnectionType() taxonomy.ConnectionType {
 }
 
 // allocate storage for s3 - placeholder
-func (impl *S3Impl) AllocateStorage(account *sa.FybrikStorageAccountSpec, secret *fapp.SecretRef, opts *agent.Options) (taxonomy.Connection, error) {
+func (impl *S3Impl) AllocateStorage(account *sa.FybrikStorageAccountSpec, secret *fapp.SecretRef,
+	opts *agent.Options) (taxonomy.Connection, error) {
 	return taxonomy.Connection{Name: impl.Name}, nil
 }
 

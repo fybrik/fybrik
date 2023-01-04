@@ -39,7 +39,8 @@ func (impl *MySQLImpl) GetConnectionType() taxonomy.ConnectionType {
 }
 
 // storage allocation - placeholder
-func (impl *MySQLImpl) AllocateStorage(account *sa.FybrikStorageAccountSpec, secret *fapp.SecretRef, opts *agent.Options) (taxonomy.Connection, error) {
+func (impl *MySQLImpl) AllocateStorage(account *sa.FybrikStorageAccountSpec,
+	secret *fapp.SecretRef, opts *agent.Options) (taxonomy.Connection, error) {
 	return taxonomy.Connection{Name: impl.Name}, nil
 }
 
