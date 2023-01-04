@@ -15,6 +15,7 @@ import (
 const typeKey = "type"
 const idKey = "id"
 const geographyKey = "geography"
+const regionKey = "region"
 const secretRefKey = "secretRef"
 
 // FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
@@ -83,18 +84,37 @@ func (o FybrikStorageAccountSpec) MarshalJSON() ([]byte, error) {
 func (o *FybrikStorageAccountSpec) UnmarshalJSON(bytes []byte) (err error) {
 	items := make(map[string]interface{})
 	if err = json.Unmarshal(bytes, &items); err == nil {
-		o.Type = taxonomy.ConnectionType(items[typeKey].(string))
 		o.ID = items[idKey].(string)
 		o.SecretRef = items[secretRefKey].(string)
-		o.Geography = taxonomy.ProcessingLocation(items[geographyKey].(string))
-		delete(items, typeKey)
 		delete(items, idKey)
-		delete(items, geographyKey)
 		delete(items, secretRefKey)
-		if len(items) == 0 {
-			items = nil
+		typeVal, exists := items[typeKey]
+		if !exists {
+			// conversion from v1beta1 is required:
+			// default type is s3
+			// geography <- region
+			// s3 hierarchy is added to additional properties
+			typeStr := "s3"
+			o.Type = taxonomy.ConnectionType(typeStr)
+			if val, ok := items[regionKey]; ok {
+				o.Geography = taxonomy.ProcessingLocation(val.(string))
+			}
+			if len(items) == 0 {
+				items = nil
+			}
+			o.AdditionalProperties = serde.Properties{Items: map[string]interface{}{typeStr: items}}
+		} else {
+			o.Type = taxonomy.ConnectionType(typeVal.(string))
+			delete(items, typeKey)
+			if val, ok := items[geographyKey]; ok {
+				o.Geography = taxonomy.ProcessingLocation(val.(string))
+				delete(items, geographyKey)
+			}
+			if len(items) == 0 {
+				items = nil
+			}
+			o.AdditionalProperties = serde.Properties{Items: items}
 		}
-		o.AdditionalProperties = serde.Properties{Items: items}
 	}
 	return err
 }
