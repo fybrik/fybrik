@@ -13,8 +13,8 @@ import (
 	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 
 	// Registration of the implementation agents is done by adding blank imports which invoke init() method of each package
-	_ "fybrik.io/fybrik/pkg/storage/mysql_agent"
-	_ "fybrik.io/fybrik/pkg/storage/s3_agent"
+	_ "fybrik.io/fybrik/pkg/storage/impl/mysql"
+	_ "fybrik.io/fybrik/pkg/storage/impl/s3"
 )
 
 // internal implementation of StorageManager APIs

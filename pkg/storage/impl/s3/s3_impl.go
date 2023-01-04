@@ -1,14 +1,14 @@
 // Copyright 2023 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package s3_agent
+package s3
 
 import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
-	"fybrik.io/fybrik/pkg/storage/registrator"
-	"fybrik.io/fybrik/pkg/storage/registrator/agent"
+	registrator "fybrik.io/fybrik/pkg/storage/registrator"
+	agent "fybrik.io/fybrik/pkg/storage/registrator/agent"
 )
 
 // s3 storage manager implementaton
