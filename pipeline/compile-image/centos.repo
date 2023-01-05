@@ -1,0 +1,13 @@
+[centos-appstream]
+name=CentOS-8-AppStream
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
+
+[centos-baseos]
+name=CentOS-8-BaseOS
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
