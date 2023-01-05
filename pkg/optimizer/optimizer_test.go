@@ -17,7 +17,7 @@ func TestOptimizer(t *testing.T) {
 	opt := NewOptimizer(env, getDataInfo(env), os.Getenv("CSP_PATH"), &testLog)
 	solution, err := opt.Solve()
 	if err != nil {
-		t.Fatalf("Failed solving constraint problem: %s", err)
+		t.Fatalf("Failed solving constraint problem: %v", err)
 	}
 
 	solutionLen := len(solution.DataPath)
