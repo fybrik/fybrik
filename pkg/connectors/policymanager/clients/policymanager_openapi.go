@@ -10,9 +10,9 @@ import (
 	"emperror.dev/errors"
 
 	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
-	"fybrik.io/fybrik/pkg/connectors/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/tls"
 )
 
 var _ PolicyManager = (*openAPIPolicyManager)(nil)
@@ -37,7 +37,7 @@ func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) 
 			},
 		},
 		OperationServers: map[string]openapiclient.ServerConfigurations{},
-		HTTPClient:       utils.GetHTTPClient(&log),
+		HTTPClient:       tls.GetHTTPClient(&log).StandardClient(),
 	}
 	apiClient := openapiclient.NewAPIClient(configuration)
 

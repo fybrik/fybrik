@@ -8,9 +8,11 @@ import (
 	"crypto/x509"
 	"errors"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
 
@@ -31,6 +33,21 @@ var cacertsDir = environment.GetDataDir() + "/tls-cacert"
 var certFile = certsDir + "/" + corev1.TLSCertKey
 var certPrivateKeyFile = certsDir + "/" + corev1.TLSPrivateKeyKey
 var CACertFileSuffix = ".crt"
+
+// GetHTTPClient returns an object of type *retryablehttp.Client.
+func GetHTTPClient(log *zerolog.Logger) *retryablehttp.Client {
+	retryClient := retryablehttp.NewClient()
+	retryClient.Logger = log
+	config, err := GetClientTLSConfig(log)
+	if err != nil {
+		log.Error().Err(err)
+		return nil
+	}
+	if config != nil {
+		retryClient.HTTPClient.Transport = &http.Transport{TLSClientConfig: config}
+	}
+	return retryClient
+}
 
 // isCertificateProvided returns true if the certificate file and private key were provided as expected.
 // Otherwise it returns false.

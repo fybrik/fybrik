@@ -3,58 +3,77 @@
   "definitions": {
     "Action": {
       "type": "object",
-      "required": [
-        "name"
-      ],
+      "description": "Action to be performed on the data, e.g., masking",
       "properties": {
         "name": {
+          "description": "Action name",
           "$ref": "#/definitions/ActionName"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
     },
     "ActionName": {
-      "type": "string"
+      "type": "string",
+      "description": "Name of the action to be performed, or Deny if access to the data is forbidden Action names should be defined in additional taxonomy layers"
     },
     "AppInfo": {
       "type": "object",
+      "description": "Application specific properties, e.g., intent for using the data, user role and workload characteristics",
       "additionalProperties": true
     },
     "AssetID": {
-      "description": "Asset ID of the asset to be queried in the catalog",
-      "type": "string"
+      "type": "string",
+      "description": "Asset ID of the registered asset to be queried in the catalog, or a name of the new asset to be created and registered by Fybrik"
     },
     "AttributeType": {
       "type": "string",
+      "description": "AttributeType enumeration: numeric, string, bool",
       "enum": [
+        "bool",
         "numeric",
-        "string",
-        "bool"
+        "string"
       ]
     },
     "Capability": {
-      "type": "string"
+      "type": "string",
+      "description": "Capability declared by the module, e.g., read, delete, copy, write, transform"
     },
     "Connection": {
-      "description": "Name of the connection to the data source",
       "type": "object",
-      "required": [
-        "name"
-      ],
+      "description": "Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.",
       "properties": {
+        "db2": {
+          "$ref": "#/definitions/db2"
+        },
+        "fybrik-arrow-flight": {
+          "$ref": "#/definitions/fybrik-arrow-flight"
+        },
+        "kafka": {
+          "$ref": "#/definitions/kafka"
+        },
         "name": {
-          "$ref": "#/definitions/ConnectionType",
-          "description": "Name of the connection to the data source"
+          "description": "Name of the connection to the data source",
+          "$ref": "#/definitions/ConnectionType"
+        },
+        "s3": {
+          "$ref": "#/definitions/s3"
         }
       },
-      "additionalProperties": true
+      "additionalProperties": true,
+      "required": [
+        "name"
+      ]
     },
     "ConnectionType": {
-      "description": "Name of the connection type to the data source",
-      "type": "string"
+      "type": "string",
+      "description": "Name of the connection type to the data source"
     },
     "DataFlow": {
       "type": "string",
+      "description": "DataFlow indicates how the data is used by the workload, e.g., it is being read, copied, written or deleted",
       "enum": [
         "read",
         "write",
@@ -63,112 +82,119 @@
       ]
     },
     "DataFormat": {
-      "description": "Format of the data",
-      "type": "string"
+      "type": "string",
+      "description": "Format in which the data is being read/written by the workload"
     },
     "InfrastructureElement": {
       "type": "object",
-      "required": [
-        "attribute",
-        "value",
-        "object"
-      ],
+      "description": "InfrastructureElement defines an infrastructure attribute - its measurement metric, value and relation to Fybrik resources",
       "properties": {
         "arguments": {
-          "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
           "type": "array",
+          "description": "A list of arguments defining a specific metric, e.g. regions for a bandwidth",
           "items": {
             "type": "string"
           }
         },
         "attribute": {
-          "description": "Attribute name defined in the taxonomy",
-          "type": "string"
+          "type": "string",
+          "description": "Attribute name, defined in additional taxonomy layers"
         },
         "description": {
-          "description": "Description",
-          "type": "string"
+          "type": "string",
+          "description": "Description of the infrastructure attribute"
         },
         "instance": {
-          "description": "A reference to the resource instance, e.g. storage account name",
-          "type": "string"
+          "type": "string",
+          "description": "A reference to the resource instance, e.g. storage account name"
         },
         "metricName": {
-          "description": "Name of the metric specified in the metrics section",
-          "type": "string"
+          "type": "string",
+          "description": "Name of the metric specified in the metrics section"
         },
         "object": {
-          "$ref": "#/definitions/InstanceType",
-          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")"
+          "description": "A resource defined by the attribute (\"fybrikstorageaccount\",\"fybrikmodule\",\"cluster\")",
+          "$ref": "#/definitions/InstanceType"
         },
         "value": {
-          "description": "Attribute value",
-          "type": "string"
+          "type": "string",
+          "description": "Attribute value"
         }
-      }
+      },
+      "required": [
+        "attribute",
+        "value",
+        "object"
+      ]
     },
     "InfrastructureMetrics": {
       "type": "object",
-      "required": [
-        "name",
-        "type"
-      ],
+      "description": "Measurement metric defining units and the value scale used for value normalization",
       "properties": {
         "name": {
           "type": "string"
         },
         "scale": {
-          "$ref": "#/definitions/RangeType",
-          "description": "A scale of values (minimum and maximum) when applicable"
+          "description": "A scale of values (minimum and maximum) when applicable",
+          "$ref": "#/definitions/RangeType"
         },
         "type": {
-          "$ref": "#/definitions/AttributeType",
-          "description": "Attribute type, e.g. numeric or string"
+          "description": "Attribute type, e.g. numeric or string",
+          "$ref": "#/definitions/AttributeType"
         },
         "units": {
-          "$ref": "#/definitions/Units",
-          "description": "Measurement units"
+          "description": "Measurement units",
+          "$ref": "#/definitions/Units"
         }
-      }
+      },
+      "required": [
+        "name",
+        "type"
+      ]
     },
     "InstanceType": {
       "type": "string",
+      "description": "InstanceType enumeration: fybrikmodule, cluster, fybrikstorageaccount, inter-region",
       "enum": [
+        "cluster",
         "fybrikmodule",
         "fybrikstorageaccount",
-        "cluster",
         "inter-region"
       ]
     },
     "Interface": {
       "type": "object",
-      "required": [
-        "protocol"
-      ],
+      "description": "Connection type and data format used for data transactions",
       "properties": {
         "dataformat": {
-          "$ref": "#/definitions/DataFormat",
-          "description": "DataFormat defines the data format type"
+          "description": "DataFormat defines the data format type",
+          "$ref": "#/definitions/DataFormat"
         },
         "protocol": {
-          "$ref": "#/definitions/ConnectionType",
-          "description": "Protocol defines the interface protocol used for data transactions"
+          "description": "Connection type, e.g., S3, Kafka, MySQL",
+          "$ref": "#/definitions/ConnectionType"
         }
-      }
+      },
+      "required": [
+        "protocol"
+      ]
     },
     "PluginType": {
-      "type": "string"
+      "type": "string",
+      "description": "Type of the plugin, not supported yet"
     },
     "PolicyManagerRequestContext": {
       "type": "object",
+      "description": "Context in which a policy is evaluated, e.g., details of the data user such as role and intent",
       "additionalProperties": true
     },
     "ProcessingLocation": {
-      "description": "location information",
-      "type": "string"
+      "type": "string",
+      "description": "location information"
     },
     "RangeType": {
       "type": "object",
+      "description": "Range of numeric values",
       "properties": {
         "max": {
           "type": "integer"
@@ -179,12 +205,140 @@
       }
     },
     "Tags": {
-      "description": "Additional metadata for the asset/field",
       "type": "object",
+      "description": "Additional metadata for the asset/field",
       "additionalProperties": true
     },
     "Units": {
-      "type": "string"
+      "type": "string",
+      "description": "Measurement units"
+    },
+    "db2": {
+      "type": "object",
+      "description": "Connection information for accessing a table in a database",
+      "properties": {
+        "database": {
+          "type": "string",
+          "description": "Database name"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Database port"
+        },
+        "ssl": {
+          "type": "boolean",
+          "description": "SSL indicates whether the website is secured by an SSL certificate",
+          "default": false
+        },
+        "table": {
+          "type": "string",
+          "description": "Table name"
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the database server"
+        }
+      },
+      "required": [
+        "database",
+        "table",
+        "url",
+        "port"
+      ]
+    },
+    "fybrik-arrow-flight": {
+      "type": "object",
+      "description": "Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server",
+      "properties": {
+        "hostname": {
+          "type": "string",
+          "description": "Server host"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Server port"
+        },
+        "scheme": {
+          "type": "string",
+          "description": "Scheme (grpc, http, https)"
+        }
+      },
+      "required": [
+        "hostname",
+        "port",
+        "scheme"
+      ]
+    },
+    "kafka": {
+      "type": "object",
+      "description": "Connection information for accessing a kafka topic",
+      "properties": {
+        "bootstrap_servers": {
+          "type": "string",
+          "description": "A comma-separated list of host/port pairs to use for establishing the initial connection to the Kafka cluster"
+        },
+        "key_deserializer": {
+          "type": "string",
+          "description": "Deserializer to be used for the keys of the topic"
+        },
+        "sasl_mechanism": {
+          "type": "string",
+          "description": "SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512)",
+          "default": "SCRAM-SHA-512"
+        },
+        "schema_registry": {
+          "type": "string",
+          "description": "Host/port to connect the schema registry server"
+        },
+        "security_protocol": {
+          "type": "string",
+          "description": "Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL)",
+          "default": "SASL_SSL"
+        },
+        "ssl_truststore": {
+          "type": "string",
+          "description": "A truststore or certificate encoded as base64. The format can be JKS or PKCS12."
+        },
+        "topic_name": {
+          "type": "string",
+          "description": "Name of the Kafka topic"
+        },
+        "value_deserializer": {
+          "type": "string",
+          "description": "Deserializer to be used for the values of the topic"
+        }
+      },
+      "required": [
+        "bootstrap_servers",
+        "topic_name"
+      ]
+    },
+    "s3": {
+      "type": "object",
+      "description": "Connection information for S3 compatible object store",
+      "properties": {
+        "bucket": {
+          "type": "string",
+          "description": "S3 bucket name"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "S3 endpoint URL"
+        },
+        "object_key": {
+          "type": "string",
+          "description": "File name or a prefix (for a partitioned asset)"
+        },
+        "region": {
+          "type": "string",
+          "description": "S3 region, e.g., us-south"
+        }
+      },
+      "required": [
+        "bucket",
+        "endpoint",
+        "object_key"
+      ]
     }
   }
 }

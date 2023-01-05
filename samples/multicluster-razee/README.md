@@ -16,7 +16,7 @@ Ensure that you have the following installed on your machine:
 - make
 - jq
 - unzip
-- [Go](https://go.dev/) 1.16 or greater 
+- [Go](https://go.dev/) 1.18
 - [Helm](https://helm.sh/) 3.7 or greater
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or greater
 - [Kind](http://kind.sigs.k8s.io/)
