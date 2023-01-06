@@ -3,7 +3,7 @@
 *.exe
 *.exe~
 *.dll
-*.so
+*.so*
 *.dylib
 bin
 

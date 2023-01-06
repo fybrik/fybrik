@@ -12,4 +12,8 @@ Models/ResourceDetails.md
 Models/ResourceMetadata.md
 Models/UpdateAssetRequest.md
 Models/UpdateAssetResponse.md
+Models/db2.md
+Models/fybrik-arrow-flight.md
+Models/kafka.md
+Models/s3.md
 README.md

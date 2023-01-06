@@ -1,0 +1,108 @@
+definitions:
+  Connection:
+    description: Details of connection types supported for accessing data stores. Not all are necessarily supported by fybrik storage allocation mechanism used to store temporary/persistent datasets.
+    additionalProperties: true
+    properties:
+      db2: 
+        $ref: "#/definitions/db2"
+      s3:
+        $ref: "#/definitions/s3"
+      kafka:
+        $ref: "#/definitions/kafka"
+      fybrik-arrow-flight:
+        $ref: "#/definitions/fybrik-arrow-flight"
+  s3:
+    description: Connection information for S3 compatible object store
+    type: object
+    properties:
+      bucket:
+        type: string
+        description: S3 bucket name
+      endpoint:
+        type: string
+        description: S3 endpoint URL
+      object_key:
+        type: string
+        description: File name or a prefix (for a partitioned asset)
+      region:
+        type: string
+        description: S3 region, e.g., us-south
+    required:
+    - bucket
+    - endpoint
+    - object_key
+  db2:
+    description: Connection information for accessing a table in a database
+    type: object
+    properties:
+      database:
+        description: Database name
+        type: string
+      port:
+        description: Database port
+        type: integer
+      ssl:
+        description: SSL indicates whether the website is secured by an SSL certificate
+        type: boolean
+        default: false
+      table:
+        description: Table name
+        type: string
+      url:
+        description: URL of the database server
+        type: string
+    required:
+    - database
+    - table
+    - url
+    - port
+  kafka:
+    type: object
+    description: Connection information for accessing a kafka topic
+    properties:
+      bootstrap_servers:
+        type: string
+        description: A comma-separated list of host/port pairs to use for establishing the initial connection to the Kafka cluster
+      key_deserializer:
+        type: string
+        description: Deserializer to be used for the keys of the topic
+      sasl_mechanism:
+        type: string
+        description: SASL Mechanism to be used (e.g. PLAIN or SCRAM-SHA-512) 
+        default: SCRAM-SHA-512
+      schema_registry:
+        type: string
+        description: Host/port to connect the schema registry server
+      security_protocol:
+        type: string
+        description: Kafka security protocol one of (PLAINTEXT, SASL_PLAINTEXT, SASL_SSL, SSL)
+        default: SASL_SSL
+      ssl_truststore:
+        type: string
+        description: A truststore or certificate encoded as base64. The format can be JKS or PKCS12.
+      topic_name:
+        description: Name of the Kafka topic
+        type: string
+      value_deserializer:
+        type: string
+        description: Deserializer to be used for the values of the topic
+    required:
+    - bootstrap_servers
+    - topic_name
+  fybrik-arrow-flight:
+    description: Connection information for accessing data in-memory using API of the Fybrik Arrow Flight server
+    type: object
+    properties:
+      hostname:
+        type: string
+        description: Server host
+      port:
+        type: integer
+        description: Server port
+      scheme:
+        description: Scheme (grpc, http, https)
+        type: string
+    required:
+    - hostname  
+    - port
+    - scheme
