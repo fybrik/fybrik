@@ -3727,7 +3727,7 @@ Resource Types:
 
 
 
-FybrikStorageAccount defines a storage account used for copying data. It contains connection details of the shared storage and refers to the secret that stores storage credentials.
+FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space for datasets whose creation or copy it orchestrates.
 
 <table>
     <thead>
