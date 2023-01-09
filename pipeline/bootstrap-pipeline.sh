@@ -64,13 +64,13 @@ helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
     is_public_repo="true"
-    build_image="docker.io/yakinikku/suede_compile:latest"
+    build_image="ghcr.io/fybrik/suede_compile:0.1.0"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
 else
     is_custom_repo="true"
-    build_image="${dockerhub_hostname}/suede_compile:latest"
+    build_image="ghcr.io/fybrik/suede_compile:0.1.0"
     helm_image="${dockerhub_hostname}/k8s-helm"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
