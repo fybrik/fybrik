@@ -1,0 +1,12 @@
+This directory contains files to create an image used in the tekton pipeline testing.
+
+In order to create the image run
+```bash
+docker build -t ghcr.io/fybrik/suede_compile:0.1.0 . "$@"
+```
+
+In order to push it into the image repo:
+
+```bash
+docker push ghcr.io/fybrik/suede_compile:0.1.0
+```
