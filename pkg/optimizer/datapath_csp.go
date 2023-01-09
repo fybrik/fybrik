@@ -10,13 +10,13 @@ import (
 	"strings"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	saApi "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Names of the primary variables on which we need to make decisions

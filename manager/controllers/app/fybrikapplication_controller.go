@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -43,7 +44,6 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )

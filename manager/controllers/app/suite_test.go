@@ -29,10 +29,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	// +kubebuilder:scaffold:imports
 )
 

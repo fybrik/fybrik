@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/test"
 )
 

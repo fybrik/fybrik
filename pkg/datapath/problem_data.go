@@ -5,12 +5,12 @@ package datapath
 
 import (
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // DataInfo defines all the information about the given data set that comes from the fybrikapplication spec and from the connectors.

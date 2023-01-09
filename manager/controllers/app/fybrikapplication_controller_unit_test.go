@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -32,7 +33,6 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/storage"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Read utility

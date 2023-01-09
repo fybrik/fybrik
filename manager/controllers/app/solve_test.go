@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -20,7 +21,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	saApi "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 var testLog = logging.LogInit("Solver", "Test")

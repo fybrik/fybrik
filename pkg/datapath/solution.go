@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)

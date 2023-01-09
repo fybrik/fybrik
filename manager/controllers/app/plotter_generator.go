@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -23,7 +24,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )

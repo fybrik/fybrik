@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
+	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
 )
 
 // Creates a scheme that can be used in unit tests
