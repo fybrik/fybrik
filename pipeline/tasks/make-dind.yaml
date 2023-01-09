@@ -49,7 +49,7 @@ spec:
     description: Go mod caching directory path
     name: GOMODCACHE
     type: string
-  - default: "docker.io/yakinikku/suede_compile:latest"
+  - default: "ghcr.io/fybrik/suede_compile:0.1.0"
     description: default image to use for compiling
     name: image
     type: string
