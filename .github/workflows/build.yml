@@ -241,22 +241,18 @@ jobs:
     - name: Read flow notebook tests
       run: make run-notebook-readflow-tests
     - name: Clean cluster
-      if: startsWith(github.ref, 'refs/tags/v')
       run: |
         make undeploy-fybrik
         make clean-cluster-prepare
         killall kubectl || true
     - name: Read flow notebook tests with tls
-      if: startsWith(github.ref, 'refs/tags/v')
       run: make run-notebook-readflow-tls-tests
     - name: Clean cluster
-      if: startsWith(github.ref, 'refs/tags/v')
       run: |
         make undeploy-fybrik
         make clean-cluster-prepare
         killall kubectl || true
     - name: Read flow notebook tests with tls using system CA certs
-      if: startsWith(github.ref, 'refs/tags/v')
       run: make run-notebook-readflow-tls-system-cacerts-tests
     - name: Clean cluster
       if: ${{ ! github.event.pull_request.draft }}
