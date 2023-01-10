@@ -41,7 +41,6 @@ USE_KIND=1
 while getopts ":l:m:f:c" arg; do
     case "${arg}" in
         l)
-            # Check if better to create a directory if ones doesn't exists.
             TOOLS=${OPTARG}
             if ! [[ -d ${TOOLS} ]]; then
                 echo "Couldn't find directory ${TOOLS}. creating a new directory"
