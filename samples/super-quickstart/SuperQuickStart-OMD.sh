@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO: Add version check for arm64 / arch64 in aws and 7z install.
-
 set -e
 
 # Tools versions:
@@ -17,10 +15,10 @@ AWSCLI_VERSION=2.7.18
 usage() {
     echo "Usage: $0 This is how to use the installer:"
     echo "Flags:
-          l - (optional) tools location - default: current dir
-          m - (optional) module name - default: afm
-          f - (optional) module.yaml path
-          c - use kind or current cluster - default - use kind"
+          l - (optional) tools location - default: current dir.
+          m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
+          f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
+          c - use kind or current cluster - default - use kind."
 }
 
 exit_abnormal() {
@@ -36,9 +34,9 @@ USE_KIND=1
 
 # Flags:
 # l - (optional) tools location - default: current dir
-# m - (optional) module name - default: afm
-# f - (optional) module.yaml path
-# c - use kind or current cluster - default - use kind
+# m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
+# f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
+# c - use kind or current cluster - default: use kind
 
 while getopts ":l:m:f:c" arg; do
     case "${arg}" in
@@ -46,8 +44,11 @@ while getopts ":l:m:f:c" arg; do
             # Check if better to create a directory if ones doesn't exists.
             TOOLS=${OPTARG}
             if ! [[ -d ${TOOLS} ]]; then
-                echo "Error: Couldn't find directory ${TOOLS}"
+                echo "Couldn't find directory ${TOOLS}. creating a new directory"
+                if ! mkdir ${TOOLS}; then
+                echo "Error: Couldn't create a new directory ${TOOLS}"
                 exit_abnormal
+                fi
             elif ! [[ -r ${TOOLS} && -w ${TOOLS} ]]; then
                 echo "Error: Don't have read/write premissions to ${TOOLS}"
                 exit_abnormal
@@ -67,8 +68,10 @@ while getopts ":l:m:f:c" arg; do
         f)
             MODULE_PATH=${OPTARG}
             if ! [[ -f ${MODULE_PATH} ]]; then
+                if ! curl --output /dev/null --silent --head --fail ${MODULE_PATH}; then
                 echo "Error: Couldn't find module path: ${MODULE_PATH}"
                 exit_abnormal
+                fi
             elif ! [[ -r ${MODULE_PATH}  ]]; then
                 echo "Error: Don't have read premissions to module path: ${MODULE_PATH}"
                 exit_abnormal
@@ -199,34 +202,17 @@ fi
 
 if [ ${USE_KIND} -eq 1 ]; then
     header "\nCreate kind cluster"
-
     cluster_name=kind-fybrik-installation-sample
     kubernetesVersion=$(bin/kubectl version -o=yaml | bin/yq e '.clientVersion.minor' -)
-
-    if [ $kubernetesVersion == "19" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729
-    elif [ $kubernetesVersion == "20" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.20.7@sha256:cbeaf907fc78ac97ce7b625e4bf0de16e3ea725daf6b04f930bd14c67c671ff9
-    elif [ $kubernetesVersion == "21" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
-    elif [ $kubernetesVersion == "22" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        # kind create cluster --name=${cluster_name} --image=kindest/node:v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.23.0
-    else
-        echo "Unsupported kind version"
-        exit 1
+    if ((${kubernetesVersion} <= 21)); then
+      echo "Error: kubernetes version ${kubernetesVersion} may not be supported. please choose a version greater than 21"
+      exit_abnormal
     fi
+    bin/kind delete clusters ${cluster_name}
+    bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.${kubernetesVersion}.0
 fi
 
-header "\nUpdate helm charts"
+header "\nUpdating helm repositories"
 bin/helm repo add jetstack https://charts.jetstack.io
 bin/helm repo add hashicorp https://helm.releases.hashicorp.com
 bin/helm repo add fybrik-charts https://fybrik.github.io/charts
@@ -291,18 +277,18 @@ bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --tim
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
-curl -L https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv -o PS_20174392719_1491204439457_log.csv
+curl -L https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv -o sample.csv
 
 export ACCESS_KEY="myaccesskey"
 export SECRET_KEY="mysecretkey"
 export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
-export OBJECT_KEY="PS_20174392719_1491204439457_log.csv"
+export OBJECT_KEY="sample.csv"
 bin/aws configure set aws_access_key_id ${ACCESS_KEY} 
 bin/aws configure set aws_secret_access_key ${SECRET_KEY}
 bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET}
-bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body PS_20174392719_1491204439457_log.csv
-rm PS_20174392719_1491204439457_log.csv
+bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body sample.csv
+rm sample.csv
 
 header "\nRegister the dataset in a data catalog"
 cat << EOF | bin/kubectl apply -f -
@@ -332,7 +318,7 @@ cat << EOF | curl -X POST localhost:8081/createAsset -d @-
       "s3": {
         "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
         "bucket": "demo",
-        "object_key": "PS_20174392719_1491204439457_log.csv"
+        "object_key": "sample.csv"
       }
     }
   },
@@ -366,7 +352,7 @@ cat << EOF | curl -X POST localhost:8081/createAsset -d @-
 }
 EOF
 
-export CATALOGED_ASSET="openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""
+export CATALOGED_ASSET="openmetadata-s3.default.demo.\"sample.csv\""
 
 
 header "\nDefine data access policies"
@@ -427,7 +413,7 @@ client = fl.connect('grpc://my-notebook-fybrik-notebook-sample-arrow-flight-aef2
 
 # Prepare the request
 request = {
-    "asset": "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\"",
+    "asset": "openmetadata-s3.default.demo.\"sample.csv\"",
     # To request specific columns add to the request a "columns" key with a list of column names
     "columns": ["type", "amount", "oldbalanceOrg", "isFraud"]
 }
@@ -445,4 +431,4 @@ bin/kubectl cp ./test.py ${POD_NAME}:/tmp -n fybrik-blueprints
 bin/kubectl exec -i ${POD_NAME} -n fybrik-blueprints -- python /tmp/test.py > res.out
 rm test.py
 cat res.out
-header "\nFinised successfully"
+header "\nFinished successfully"

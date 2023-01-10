@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO: Add version check for arm64 / arch64 in aws and 7z install.
-
 set -e
 
 # Tools versions:
@@ -17,10 +15,10 @@ AWSCLI_VERSION=2.7.18
 usage() {
     echo "Usage: $0 This is how to use the installer:"
     echo "Flags:
-          l - (optional) tools location - default: current dir
-          m - (optional) module name - default: afm
-          f - (optional) module.yaml path
-          c - use kind or current cluster - default - use kind"
+          l - (optional) tools location - default: current dir.
+          m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
+          f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
+          c - use kind or current cluster - default - use kind."
 }
 
 exit_abnormal() {
@@ -36,9 +34,9 @@ USE_KIND=1
 
 # Flags:
 # l - (optional) tools location - default: current dir
-# m - (optional) module name - default: afm
-# f - (optional) module.yaml path
-# c - use kind or current cluster - default - use kind
+# m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
+# f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
+# c - use kind or current cluster - default: use kind
 
 while getopts ":l:m:f:c" arg; do
     case "${arg}" in
@@ -46,8 +44,11 @@ while getopts ":l:m:f:c" arg; do
             # Check if better to create a directory if ones doesn't exists.
             TOOLS=${OPTARG}
             if ! [[ -d ${TOOLS} ]]; then
-                echo "Error: Couldn't find directory ${TOOLS}"
+                echo "Couldn't find directory ${TOOLS}. creating a new directory"
+                if ! mkdir ${TOOLS}; then
+                echo "Error: Couldn't create a new directory ${TOOLS}"
                 exit_abnormal
+                fi
             elif ! [[ -r ${TOOLS} && -w ${TOOLS} ]]; then
                 echo "Error: Don't have read/write premissions to ${TOOLS}"
                 exit_abnormal
@@ -67,8 +68,10 @@ while getopts ":l:m:f:c" arg; do
         f)
             MODULE_PATH=${OPTARG}
             if ! [[ -f ${MODULE_PATH} ]]; then
+                if ! curl --output /dev/null --silent --head --fail ${MODULE_PATH}; then
                 echo "Error: Couldn't find module path: ${MODULE_PATH}"
                 exit_abnormal
+                fi
             elif ! [[ -r ${MODULE_PATH}  ]]; then
                 echo "Error: Don't have read premissions to module path: ${MODULE_PATH}"
                 exit_abnormal
@@ -199,34 +202,17 @@ fi
 
 if [ ${USE_KIND} -eq 1 ]; then
     header "\nCreate kind cluster"
-
     cluster_name=kind-fybrik-installation-sample
     kubernetesVersion=$(bin/kubectl version -o=yaml | bin/yq e '.clientVersion.minor' -)
-
-    if [ $kubernetesVersion == "19" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729
-    elif [ $kubernetesVersion == "20" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.20.7@sha256:cbeaf907fc78ac97ce7b625e4bf0de16e3ea725daf6b04f930bd14c67c671ff9
-    elif [ $kubernetesVersion == "21" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
-    elif [ $kubernetesVersion == "22" ]
-    then
-        bin/kind delete clusters ${cluster_name}
-        # kind create cluster --name=${cluster_name} --image=kindest/node:v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047
-        bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.23.0
-    else
-        echo "Unsupported kind version"
-        exit 1
+    if ((${kubernetesVersion} <= 21)); then
+      echo "Error: kubernetes version ${kubernetesVersion} may not be supported. please choose a version greater than 21"
+      exit_abnormal
     fi
+    bin/kind delete clusters ${cluster_name}
+    bin/kind create cluster --name=${cluster_name} --image=kindest/node:v1.${kubernetesVersion}.0
 fi
 
-header "\nUpdate helm charts"
+header "\nUpdating helm repositories"
 bin/helm repo add jetstack https://charts.jetstack.io
 bin/helm repo add hashicorp https://helm.releases.hashicorp.com
 bin/helm repo add fybrik-charts https://fybrik.github.io/charts
@@ -416,4 +402,4 @@ bin/kubectl cp ./test.py ${POD_NAME}:/tmp -n fybrik-blueprints
 bin/kubectl exec -i ${POD_NAME} -n fybrik-blueprints -- python /tmp/test.py > res.out
 rm test.py
 cat res.out
-header "\nFinised successfully"
+header "\nFinished successfully"
