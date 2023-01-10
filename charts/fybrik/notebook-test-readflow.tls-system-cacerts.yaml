@@ -20,7 +20,7 @@ global:
   loggingVerbosity: -1
 
 coordinator:
-  catalogConnectorURL: https://katalog-connector:8443
+  catalogConnectorURL: https://openmetadata-connector:8443
   policyManagerConnectorURL: https://opa-connector:8443
 
 # Manager component
@@ -41,7 +41,7 @@ manager:
     certs:
       certSecretName: "test-tls-manager-certs"
 
-katalogConnector:
+openmetadataConnector:
   podSecurityContext:
     runAsNonRoot: false
     runAsUser: 0
@@ -58,7 +58,7 @@ katalogConnector:
     use_tls: true
     use_mtls: true
     certs:
-      certSecretName: "test-tls-katalog-connector-certs"
+      certSecretName: "test-tls-openmetadata-connector-certs"
 
 opaConnector:
   podSecurityContext:
