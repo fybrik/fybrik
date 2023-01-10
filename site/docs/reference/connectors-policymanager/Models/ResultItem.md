@@ -1,5 +1,5 @@
 # ResultItem
-
+Result of policy evaluation
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------

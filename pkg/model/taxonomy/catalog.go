@@ -11,7 +11,7 @@ import (
 
 const nameKey = "name"
 
-// Asset ID of the asset to be queried in the catalog
+// Asset ID of the registered asset to be queried in the catalog, or a name of the new asset to be created and registered by Fybrik
 type AssetID string
 
 // location information
@@ -22,17 +22,19 @@ type ConnectionType string
 
 // +kubebuilder:pruning:PreserveUnknownFields
 // Name of the connection to the data source
+// Connection details should be defined in additional taxonomy layers
 type Connection struct {
 	// Name of the connection to the data source
 	Name                 ConnectionType   `json:"name"`
 	AdditionalProperties serde.Properties `json:"-"`
 }
 
-// Format of the data
+// Format in which the data is being read/written by the workload
 type DataFormat string
 
+// Connection type and data format used for data transactions
 type Interface struct {
-	// Protocol defines the interface protocol used for data transactions
+	// Connection type, e.g., S3, Kafka, MySQL
 	Protocol ConnectionType `json:"protocol"` // TODO(roee88): should this be named ConnectionType instead of Protocol
 	// DataFormat defines the data format type
 	DataFormat DataFormat `json:"dataformat,omitempty"`

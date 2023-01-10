@@ -188,8 +188,10 @@ spec:
                                         action:
                                           description: Actions are the data transformations that the module supports
                                           items:
+                                            description: Action to be performed on the data, e.g., masking
                                             properties:
                                               name:
+                                                description: Action name
                                                 type: string
                                             required:
                                               - name

@@ -1,5 +1,5 @@
 # RequestAction
-
+RequestAction describes the reason for accessing the data, e.g., read/write/delete, where the data is processed or written to
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------

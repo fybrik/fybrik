@@ -33,6 +33,9 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
+	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
+		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
 
 .PHONY: generate-docs
@@ -93,7 +96,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-  	-b charts/fybrik/files/taxonomy/taxonomy.json \
+	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
@@ -138,17 +141,11 @@ run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
-run-notebook-readflow-tls-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
-run-notebook-readflow-tls-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-tests: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
-run-notebook-readflow-tls-system-cacerts-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
-run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-system-cacerts-tests: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
 run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
