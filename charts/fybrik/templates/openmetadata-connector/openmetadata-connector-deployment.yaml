@@ -45,7 +45,7 @@ spec:
             {{- else }}
             - name: http
             {{- end }}
-              containerPort: {{ .Values.openmetadataConnector.service.port }}
+              containerPort: 8081
               protocol: TCP
           readinessProbe:
             {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.openmetadataConnector.readinessProbe | toYaml | nindent 12 }}

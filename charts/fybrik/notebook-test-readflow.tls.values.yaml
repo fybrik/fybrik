@@ -3,7 +3,7 @@
 # It overrides values that are different from the default values.yaml
 # The values used for testing read flow where the manager and connectors
 # uses mutual tls connection. In addition, OPA and Vault servers are configured to use
-# mutual tls.
+# mutual tls. Openmetadata server is not configured with TLS.
 
 # Global configuration applies to multiple components installed by this chart
 global:
@@ -17,7 +17,7 @@ global:
   loggingVerbosity: -1
 
 coordinator:
-  catalogConnectorURL: https://katalog-connector:8443
+  catalogConnectorURL: https://openmetadata-connector:8443
   policyManagerConnectorURL: https://opa-connector:8443
   vault:
     # Vault is configured to use TLS.
@@ -33,7 +33,7 @@ manager:
       certSecretName: "test-tls-manager-certs"
       cacertSecretName: "test-tls-ca-certs"
 
-katalogConnector:
+openmetadataConnector:
   service:
     port: 8443
        
@@ -41,7 +41,7 @@ katalogConnector:
     use_tls: true
     use_mtls: true
     certs:
-      certSecretName: "test-tls-katalog-connector-certs"
+      certSecretName: "test-tls-openmetadata-connector-certs"
       cacertSecretName: "test-tls-ca-certs"
 
 opaConnector:
