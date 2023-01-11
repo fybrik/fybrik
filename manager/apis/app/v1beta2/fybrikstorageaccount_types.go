@@ -88,33 +88,18 @@ func (o *FybrikStorageAccountSpec) UnmarshalJSON(bytes []byte) (err error) {
 		o.SecretRef = items[secretRefKey].(string)
 		delete(items, idKey)
 		delete(items, secretRefKey)
-		typeVal, exists := items[typeKey]
-		if !exists {
-			// conversion from v1beta1 is required:
-			// default type is s3
-			// geography <- region
-			// s3 hierarchy is added to additional properties
-			typeStr := "s3"
-			o.Type = taxonomy.ConnectionType(typeStr)
-			if val, ok := items[regionKey]; ok {
-				o.Geography = taxonomy.ProcessingLocation(val.(string))
-			}
-			if len(items) == 0 {
-				items = nil
-			}
-			o.AdditionalProperties = serde.Properties{Items: map[string]interface{}{typeStr: items}}
-		} else {
-			o.Type = taxonomy.ConnectionType(typeVal.(string))
+		if val, ok := items[typeKey]; ok {
+			o.Type = taxonomy.ConnectionType(val.(string))
 			delete(items, typeKey)
-			if val, ok := items[geographyKey]; ok {
-				o.Geography = taxonomy.ProcessingLocation(val.(string))
-				delete(items, geographyKey)
-			}
-			if len(items) == 0 {
-				items = nil
-			}
-			o.AdditionalProperties = serde.Properties{Items: items}
 		}
+		if val, ok := items[geographyKey]; ok {
+			o.Geography = taxonomy.ProcessingLocation(val.(string))
+			delete(items, geographyKey)
+		}
+		if len(items) == 0 {
+			items = nil
+		}
+		o.AdditionalProperties = serde.Properties{Items: items}
 	}
 	return err
 }

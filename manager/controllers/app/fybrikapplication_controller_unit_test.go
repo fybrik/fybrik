@@ -23,8 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/yaml"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -45,7 +45,7 @@ func readObjectFromFile(f string, obj interface{}) error {
 }
 
 // FybrikStorageAccount has unstructured data thus its own decode method is applied
-func readStorageAccountData(f string, obj *sa.FybrikStorageAccount) error {
+func readStorageAccountData(f string, obj *fappv2.FybrikStorageAccount) error {
 	bytes, err := os.ReadFile(f)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		name      = "notebook"
 		namespace = "default"
 	)
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(),
 		"Cannot read fybrikapplication file for test")
 	application.SetGeneration(1)
@@ -114,8 +114,8 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	readModule := &fapp.FybrikModule{}
-	copyModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
@@ -130,7 +130,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
@@ -164,7 +164,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		Namespace: controllerNamespace,
 		Name:      "notebook-default",
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	// Check that plotter assets have the expected properties
@@ -188,10 +188,10 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(flow.SubFlows).To(gomega.HaveLen(2)) // Should have two subflows
 	copyFlow := flow.SubFlows[0]                  // Assume flow 0 is copy
 	g.Expect(copyFlow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
-	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(fapp.InitTrigger))
+	g.Expect(copyFlow.Triggers).To(gomega.ContainElements(fappv1.InitTrigger))
 	readFlow := flow.SubFlows[1]
 	g.Expect(readFlow.FlowType).To(gomega.Equal(taxonomy.ReadFlow))
-	g.Expect(readFlow.Triggers).To(gomega.ContainElements(fapp.WorkloadTrigger))
+	g.Expect(readFlow.Triggers).To(gomega.ContainElements(fappv1.WorkloadTrigger))
 	g.Expect(readFlow.Steps[0][0].Cluster).To(gomega.Equal("thegreendragon"))
 	// Check statuses
 	g.Expect(application.Status.Ready).To(gomega.Equal(false))
@@ -209,7 +209,7 @@ func TestFybrikApplicationFinalizers(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 
 	// Objects to track in the fake client.
@@ -249,11 +249,11 @@ func TestDenyOnRead(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3/deny-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.S3, DataFormat: mockup.Parquet}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.S3, DataFormat: mockup.Parquet}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("2")
@@ -302,11 +302,11 @@ func TestNoReadPath(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "db2/allow-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.JdbcDB2}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.JdbcDB2}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("3")
@@ -322,7 +322,7 @@ func TestNoReadPath(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
@@ -361,16 +361,16 @@ func TestWrongCopyModule(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data = []fapp.DataContext{
+	application.Spec.Data = []fappv1.DataContext{
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "kafka/allow-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -387,11 +387,11 @@ func TestWrongCopyModule(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -428,11 +428,11 @@ func TestActionSupport(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "db2/redact-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("5")
@@ -448,11 +448,11 @@ func TestActionSupport(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -493,20 +493,20 @@ func TestMultipleDatasets(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data = []fapp.DataContext{
+	application.Spec.Data = []fappv1.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "db2/redact-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -523,11 +523,11 @@ func TestMultipleDatasets(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -536,7 +536,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
@@ -565,7 +565,7 @@ func TestMultipleDatasets(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(3))    // 3 assets. 2 original and one implicit copy asset
@@ -589,12 +589,12 @@ func TestFilterAsset(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data = []fapp.DataContext{
+	application.Spec.Data = []fappv1.DataContext{
 		{
 			DataSetID:    "s3/filter-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -611,7 +611,7 @@ func TestFilterAsset(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet-filter.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
@@ -635,7 +635,7 @@ func TestFilterAsset(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))    // single asset
@@ -664,20 +664,20 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data = []fapp.DataContext{
+	application.Spec.Data = []fappv1.DataContext{
 		{
 			DataSetID:    "s3/deny-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "local/redact-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 		{
 			DataSetID:    "s3/allow-dataset",
-			Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 		},
 	}
 	application.SetGeneration(1)
@@ -694,7 +694,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
@@ -733,11 +733,11 @@ func TestMultipleRegions(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3-external/redact-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("8")
@@ -753,11 +753,11 @@ func TestMultipleRegions(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -766,7 +766,7 @@ func TestMultipleRegions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
@@ -792,7 +792,7 @@ func TestMultipleRegions(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
@@ -819,7 +819,7 @@ func TestCopyData(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.Spec.Data[0].Flow = taxonomy.CopyFlow
@@ -835,7 +835,7 @@ func TestCopyData(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -844,7 +844,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
 	secret1.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
-	account1 := &sa.FybrikStorageAccount{}
+	account1 := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	account1.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
@@ -852,7 +852,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
 	secret2.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
-	account2 := &sa.FybrikStorageAccount{}
+	account2 := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	account2.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
@@ -881,7 +881,7 @@ func TestCopyData(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
@@ -890,7 +890,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(1))
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	subflow := plotter.Spec.Flows[0].SubFlows[0]
-	g.Expect(subflow.Triggers).To(gomega.ContainElements(fapp.InitTrigger))
+	g.Expect(subflow.Triggers).To(gomega.ContainElements(fappv1.InitTrigger))
 	g.Expect(subflow.FlowType).To(gomega.Equal(taxonomy.CopyFlow))
 	g.Expect(subflow.Steps).To(gomega.HaveLen(1))
 	g.Expect(subflow.Steps[0]).To(gomega.HaveLen(1))
@@ -912,7 +912,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.Spec.Data[0].Flow = taxonomy.CopyFlow
@@ -928,7 +928,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -938,7 +938,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
@@ -979,7 +979,7 @@ func TestStorageCost(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
@@ -994,7 +994,7 @@ func TestStorageCost(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -1004,7 +1004,7 @@ func TestStorageCost(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
 	dummySecret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
@@ -1039,11 +1039,11 @@ func TestPlotterUpdate(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3/allow-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("11")
@@ -1059,7 +1059,7 @@ func TestPlotterUpdate(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
@@ -1084,7 +1084,7 @@ func TestPlotterUpdate(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	// mark the plotter as in error state
@@ -1124,7 +1124,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		Name:      "notebook",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
 	application.SetGeneration(2)
@@ -1132,7 +1132,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	application.Finalizers = []string{"TestReconciler.finalizer"}
 	controllerNamespace := environment.GetControllerNamespace()
 	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
-	application.Status.Generated = &fapp.ResourceReference{Name: "plotter", Namespace: controllerNamespace, Kind: "Plotter", AppVersion: 1}
+	application.Status.Generated = &fappv1.ResourceReference{Name: "plotter", Namespace: controllerNamespace, Kind: "Plotter", AppVersion: 1}
 	application.Status.Ready = true
 	application.Status.ObservedGeneration = 1
 
@@ -1147,7 +1147,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	g.Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).NotTo(gomega.HaveOccurred())
 	plotter.Status.ObservedState.Ready = true
 	plotter.Namespace = controllerNamespace
@@ -1164,7 +1164,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newApp := &fapp.FybrikApplication{}
+	newApp := &fappv1.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
@@ -1182,9 +1182,9 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 		Name:      "notebook",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data = []fapp.DataContext{}
+	application.Spec.Data = []fappv1.DataContext{}
 	application.SetGeneration(1)
 	application.SetUID("13")
 	// Objects to track in the fake client.
@@ -1210,7 +1210,7 @@ func TestFybrikApplicationWithNoDatasets(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(res).To(gomega.BeEquivalentTo(ctrl.Result{}))
 	// The application should be in Ready state
-	newApp := &fapp.FybrikApplication{}
+	newApp := &fappv1.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).To(gomega.BeEmpty())
@@ -1230,7 +1230,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	}
 
 	filename := "../../testdata/unittests/fybrikapplication-appInfoErrors.yaml"
-	fybrikApp := &fapp.FybrikApplication{}
+	fybrikApp := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
 	fybrikApp.SetUID("14")
@@ -1256,7 +1256,7 @@ func TestFybrikApplicationWithInvalidAppInfo(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newApp := &fapp.FybrikApplication{}
+	newApp := &fappv1.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
@@ -1275,7 +1275,7 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 		Namespace: "default",
 	}
 	filename := "../../testdata/unittests/fybrikapplication-interfaceErrors.yaml"
-	fybrikApp := &fapp.FybrikApplication{}
+	fybrikApp := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile(filename, fybrikApp)).NotTo(gomega.HaveOccurred())
 	fybrikApp.SetGeneration(1)
 	fybrikApp.SetUID("15")
@@ -1299,7 +1299,7 @@ func TestFybrikApplicationWithInvalidInterface(t *testing.T) {
 	_, err := r.Reconcile(context.Background(), req)
 	g.Expect(err).To(gomega.BeNil())
 
-	newApp := &fapp.FybrikApplication{}
+	newApp := &fappv1.FybrikApplication{}
 	err = cl.Get(context.Background(), req.NamespacedName, newApp)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	g.Expect(getErrorMessages(newApp)).NotTo(gomega.BeEmpty())
@@ -1319,7 +1319,7 @@ func TestCopyModule(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
 	application.SetGeneration(1)
@@ -1334,18 +1334,18 @@ func TestCopyModule(t *testing.T) {
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewFakeClientWithScheme(s, objs...)
-	invalidModule := &fapp.FybrikModule{}
+	invalidModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", invalidModule)).NotTo(gomega.HaveOccurred())
 	invalidModule.Namespace = environment.GetControllerNamespace()
 	invalidModule.Name = "copy-module-with-invalid-structure"
 	capability := invalidModule.Spec.Capabilities[0]
 	sink := capability.SupportedInterfaces[0].Sink
 	source := capability.SupportedInterfaces[0].Source
-	capability.SupportedInterfaces = []fapp.ModuleInOut{{Source: source}, {Sink: sink}}
+	capability.SupportedInterfaces = []fappv1.ModuleInOut{{Source: source}, {Sink: sink}}
 	invalidModule.Spec.Capabilities[0] = capability
 	g.Expect(cl.Create(context.TODO(), invalidModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
-	copyModule := &fapp.FybrikModule{}
+	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	copyModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
@@ -1355,7 +1355,7 @@ func TestCopyModule(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
 	secret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
@@ -1380,7 +1380,7 @@ func TestCopyModule(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 }
@@ -1395,11 +1395,11 @@ func TestReadAndTransform(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("17")
@@ -1415,11 +1415,11 @@ func TestReadAndTransform(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	transformModule := &fapp.FybrikModule{}
+	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	transformModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
@@ -1450,7 +1450,7 @@ func TestReadAndTransform(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
@@ -1470,7 +1470,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 		Name:      "read-write-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetNotExist.yaml",
 		application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
@@ -1487,7 +1487,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readWriteModule := &fapp.FybrikModule{}
+	readWriteModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
@@ -1497,7 +1497,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
 	secret.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
-	account := &sa.FybrikStorageAccount{}
+	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	account.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
@@ -1531,7 +1531,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
@@ -1550,7 +1550,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 		Name:      "read-write-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("18")
@@ -1566,7 +1566,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readWriteModule := &fapp.FybrikModule{}
+	readWriteModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
 	readWriteModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
@@ -1607,7 +1607,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
@@ -1624,7 +1624,7 @@ func TestWriteAndTransform(t *testing.T) {
 		Name:      "write-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("19")
@@ -1640,11 +1640,11 @@ func TestWriteAndTransform(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Write module
-	writeModule := &fapp.FybrikModule{}
+	writeModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	writeModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
-	transformModule := &fapp.FybrikModule{}
+	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	transformModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
@@ -1675,7 +1675,7 @@ func TestWriteAndTransform(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	bytes, _ := yaml.Marshal(&plotter)
@@ -1697,14 +1697,14 @@ func TestWriteWithoutPermissions(t *testing.T) {
 		Name:      "write-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("20")
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3/deny-dataset",
 		Flow:         taxonomy.WriteFlow,
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 
 	// Objects to track in the fake client.
@@ -1719,7 +1719,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Write module
-	writeModule := &fapp.FybrikModule{}
+	writeModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	writeModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
@@ -1754,11 +1754,11 @@ func TestReadChain(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
-	application.Spec.Data[0] = fapp.DataContext{
+	application.Spec.Data[0] = fappv1.DataContext{
 		DataSetID:    "s3/redact-dataset",
-		Requirements: fapp.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
 	}
 	application.SetGeneration(1)
 	application.SetUID("21")
@@ -1774,11 +1774,11 @@ func TestReadChain(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// Read module
-	readModule := &fapp.FybrikModule{}
+	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	readModule.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
-	transformModule := &fapp.FybrikModule{}
+	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
 	transformModule.Namespace = environment.GetControllerNamespace()
 	transformModule.Spec.Capabilities[0].Capability = "read"
@@ -1811,7 +1811,7 @@ func TestReadChain(t *testing.T) {
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
 	}
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(2)) // expect two templates
@@ -1825,7 +1825,7 @@ func TestEmptyInterface(t *testing.T) {
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/delete-flow.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
 	application.SetUID("22")
@@ -1841,7 +1841,7 @@ func TestEmptyInterface(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 
 	// module
-	module := &fapp.FybrikModule{}
+	module := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-delete.yaml", module)).NotTo(gomega.HaveOccurred())
 	module.Namespace = environment.GetControllerNamespace()
 	g.Expect(cl.Create(context.TODO(), module)).NotTo(gomega.HaveOccurred(), "the read module could not be created")

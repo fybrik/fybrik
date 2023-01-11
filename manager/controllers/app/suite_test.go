@@ -28,8 +28,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	local "fybrik.io/fybrik/pkg/multicluster/local"
@@ -89,9 +89,9 @@ var _ = BeforeSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cfg).ToNot(BeNil())
 
-		err = fapp.AddToScheme(scheme.Scheme)
+		err = fappv1.AddToScheme(scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
-		err = sa.AddToScheme(scheme.Scheme)
+		err = fappv2.AddToScheme(scheme.Scheme)
 		Expect(err).NotTo(HaveOccurred())
 
 		// +kubebuilder:scaffold:scheme
@@ -115,9 +115,9 @@ var _ = BeforeSuite(func() {
 				Scheme:             scheme.Scheme,
 				MetricsBindAddress: "localhost:8086",
 				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-					&fapp.FybrikModule{}:       {Field: systemNamespaceSelector},
-					&sa.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-					&corev1.Secret{}:           {Field: workerNamespaceSelector},
+					&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+					&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+					&corev1.Secret{}:               {Field: workerNamespaceSelector},
 				}}),
 			})
 			Expect(err).ToNot(HaveOccurred())

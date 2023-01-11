@@ -22,8 +22,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -51,8 +51,8 @@ var (
 )
 
 func init() {
-	_ = fapp.AddToScheme(scheme)
-	_ = sa.AddToScheme(scheme)
+	_ = fappv1.AddToScheme(scheme)
+	_ = fappv2.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
@@ -72,13 +72,13 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&fapp.FybrikApplication{}:  {Field: applicationNamespaceSelector},
-		&fapp.Plotter{}:            {Field: systemNamespaceSelector},
-		&fapp.FybrikModule{}:       {Field: systemNamespaceSelector},
-		&sa.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:        {Field: systemNamespaceSelector},
-		&fapp.Blueprint{}:          {Field: systemNamespaceSelector},
-		&corev1.Secret{}:           {Field: systemNamespaceSelector},
+		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&fappv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&corev1.ConfigMap{}:            {Field: systemNamespaceSelector},
+		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:               {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -184,11 +184,11 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err = (&fapp.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fappv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err = (&fapp.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fappv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -47,8 +47,8 @@ const (
 
 // Couples together a module and one of its capabilities
 type moduleAndCapability struct {
-	module        *appApi.FybrikModule
-	capability    *appApi.ModuleCapability
+	module        *fappv1.FybrikModule
+	capability    *fappv1.ModuleCapability
 	capabilityIdx int  // The index of capability in module's spec
 	virtualSource bool // whether data is consumed via API
 	virtualSink   bool // whether data is transferred in memory via API
@@ -299,7 +299,7 @@ func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluste
 }
 
 // Decide if a given storage account satisfies all administrator's restrictions
-func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *saApi.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
+func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *fappv2.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &sa.Spec, sa.Name) {
 			return false
@@ -942,7 +942,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		modCap := dpc.modulesCapabilities[modCapIdx-1]
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
-		sa := saApi.FybrikStorageAccountSpec{}
+		sa := fappv2.FybrikStorageAccountSpec{}
 		if saIdx != dpc.noStorageAccountVal {
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}

@@ -4,8 +4,8 @@
 package datapath
 
 import (
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	sa "fybrik.io/fybrik/manager/apis/app/v1beta2"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -18,7 +18,7 @@ type DataInfo struct {
 	// Source connection details
 	DataDetails *datacatalog.GetAssetResponse
 	// Pointer to the relevant data context in the Fybrik application spec
-	Context *appApi.DataContext
+	Context *fappv1.DataContext
 	// Evaluated config policies
 	Configuration adminconfig.EvaluatorOutput
 	// Workload cluster
@@ -32,8 +32,8 @@ type DataInfo struct {
 // Environment defines the available resources (clusters, modules, storageAccounts)
 // It also contains the results of queries to policy manager regarding writing data to storage accounts
 type Environment struct {
-	Modules          map[string]*appApi.FybrikModule
+	Modules          map[string]*fappv1.FybrikModule
 	Clusters         []multicluster.Cluster
-	StorageAccounts  []*sa.FybrikStorageAccount
+	StorageAccounts  []*fappv2.FybrikStorageAccount
 	AttributeManager *infrastructure.AttributeManager
 }

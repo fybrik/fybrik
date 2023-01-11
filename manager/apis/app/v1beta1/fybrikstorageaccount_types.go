@@ -35,6 +35,7 @@ type FybrikStorageAccountStatus struct {
 // It contains endpoint, region and a reference to the credentials a
 // Owner of the asset is responsible to store the credentials
 // +kubebuilder:object:root=true
+// +kubebuilder:deprecatedversion:warning="v1beta1 version of fybrikstorageaccount is deprecated and will be removed soon, please use v1beta2 version instead"
 type FybrikStorageAccount struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
