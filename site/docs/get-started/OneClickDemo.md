@@ -22,12 +22,9 @@ You can also try to do this, and the next parts of the demo, step by step in the
 All your require for the demo is a working bash terminal and docker installed.  
 The demo will make a bin folder at your current directory with all the required dependencies for Fybrik.
 
-Fybrik uses a data catlog called [OpenMetaData](https://open-metadata.org/), that mainly provides metadata about assets. 
-Fybrik can also use Katalog, a data catalog stub, strictly used for demos, testing and evaluation purposes.
-
 ## The Demo
-We recommend trying Fybrik with its main data catlog [OpenMetaData](https://open-metadata.org/), but it takes ~25 minutes on most machines, so grab a coffee while you wait!  
-Alternatively you can try Fybrik with Katalog, to see a demo that takes ~5 minutes.
+We recommend trying Fybrik with its main data catalog [OpenMetaData](https://open-metadata.org/), but it takes ~25 minutes on most machines, so grab a coffee while you wait!  
+Alternatively you can try Fybrik with Katalog,  a data catalog stub, strictly used for demos, to see a demo that takes ~5 minutes.
 
 === "Demo with OpenMetaData" 
     ```bash
