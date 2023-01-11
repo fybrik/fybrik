@@ -11,7 +11,6 @@ nav:
 - About: index.md
 - Get Started:
   - get-started/quickstart.md
-  - get-started/OneClickDemo.md
   - Notebook samples:
     - Before we begin: samples/pre-steps.md
     - samples/notebook-read.md
@@ -19,6 +18,7 @@ nav:
     - samples/delete-sample.md
     - samples/chaining-sample.md
     - samples/cleanup.md
+  - get-started/OneClickDemo.md
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md
