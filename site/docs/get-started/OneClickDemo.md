@@ -1,45 +1,53 @@
-# One Click Demo Guide
+# One Click Demo
 
-this guide contains a script that you can run with a single command to see a demo of Fybrik in action.  
+This guide contains a script that you can run with a single command, to see a demo of Fybrik in action.  
 
-this demo demonstrates the following sequence -  
+The demo demonstrates the following sequence:
 
-1. A **data operator** boots up Fybrik and registers a data asset of financial data to Fybrik
+1.  A kind Kubernetes cluster is installed and Fybrik and all its dependencies are deployed to the cluster.  
+You can also try to do this step by step in the [QuickStart](./quickstart.md) segment.
 
-2. A **data governance officer** defines data policies, such as which columns contain PII (personally identifiable information), and submits them to Fybrik
+2.  A **data operator** registers a data asset in a data catalog used by Fybrik, and tags it as financial data.  
+You can also try to do this, and the next parts of the demo, step by step in the [notebook-read-sample](../samples/notebook-read.md) segment.
 
-3. A **data user** submits a request to read the data asset using Fybrik
 
-4. **Fybrik** fetches the data asset, and automatically redacts columns according to the data policies
+3.  A **data governance officer** defines data policies, such as which columns contain PII (personally identifiable information), and submits them to Fybrik.
 
-5. The **data user** can consume the governed data instantly
+4.  A **data user** submits a request to read the data asset using Fybrik.
 
-All your require for this demo is a working bash terminal and docker installed.  
+5.  **Fybrik** fetches the data asset, and automatically redacts columns according to the data policies.
+
+6.  The **data user** can consume the governed data instantly.
+
+All your require for the demo is a working bash terminal and docker installed.  
 The demo will make a bin folder at your current directory with all the required dependencies for Fybrik.
 
-## Demo with OpenMetaData data catlog (~25 mintues)
-For a demo with the current version of Fybrik using its main data catlog OpenMetaData, you can run the following command.  
-Note: booting up Fybrik with openmetadata takes ~25 minutes on most machines, so grab a coffee while you wait!  
-Alternatively you can run the [next](#demo-with-katalog-a-data-catalog-stub-5-mintues) script which boots up Fybrik with a data catalog stub.  
+Fybrik uses a data catlog called [OpenMetaData](https://open-metadata.org/), that mainly provides metadata about assets. 
+Fybrik can also use Katalog, a data catalog stub, strictly used for demos, testing and evaluation purposes.
 
-```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
-```
+## The Demo
+We recommend trying Fybrik with its main data catlog [OpenMetaData](https://open-metadata.org/), but it takes ~25 minutes on most machines, so grab a coffee while you wait!  
+Alternatively you can try Fybrik with Katalog, to see a demo that takes ~5 minutes.
 
-## Demo with Katalog, a data catalog stub (~5 mintues)
-For a demo using an older version of Fybrik, without its main Data Catlog, you can run the following command.  
-this demo runs using Katalog, a data catalog stub, strictly used for demos, testing and evaluation purposes.
+=== "Demo with OpenMetaData" 
+    ```bash
+    curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
+    ```
 
-```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
-```
+=== "Demo with Katalog" 
+    ```bash
+    curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
+    ```
+
+> **NOTE**: At the end of the demo, you will see in your terminal a sample from a table that the data user consumed. one of the columns will display XXXXX instead of values, indicating that it has been automatically redacted due to data policies.
 
 ## Cleanup
 
 To stop the local kind kubernetes cluster booted up on your machine in this demo, and to remove the folder created with the dependencies for Fybrik, run this.  
-warning - if you already had a bin folder at your current directory these commands will delete it and its contents.
 
 ```bash
 bin/kind delete cluster --name=kind-fybrik-installation-sample
 rm -rf bin 
 ```
+
+> **WARNING**: If you already had a bin folder at your current directory these commands will delete it and its contents.
