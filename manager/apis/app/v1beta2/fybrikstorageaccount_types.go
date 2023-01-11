@@ -15,7 +15,6 @@ import (
 const typeKey = "type"
 const idKey = "id"
 const geographyKey = "geography"
-const regionKey = "region"
 const secretRefKey = "secretRef"
 
 // FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
