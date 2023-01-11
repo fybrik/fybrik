@@ -11,7 +11,7 @@ nav:
 - About: index.md
 - Get Started:
   - get-started/quickstart.md
-  - get-started/super-quickstart.md
+  - get-started/OneClickDemo.md
   - Notebook samples:
     - Before we begin: samples/pre-steps.md
     - samples/notebook-read.md

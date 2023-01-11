@@ -8,7 +8,7 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 
 <!-- For a full installation refer to the [full installation guide](./setup/install) instead. -->
 
-For a super-quickstart for demo purposes refer to [super-quickstart](./super-quickstart.md)
+For a One Click Demo of Fybrik and a read data scenario, refer to [OneClickDemo](./OneClickDemo.md)
 
 ## Before you begin
 
