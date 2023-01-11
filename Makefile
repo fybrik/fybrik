@@ -45,7 +45,7 @@ generate-docs:
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
-	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./manager/apis/... 
+	$(TOOLBIN)/controller-gen crd output:crd:artifacts:config=charts/fybrik-crd/templates/ paths=./manager/apis/...
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_blueprints.yaml
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikapplications.yaml
 	$(TOOLBIN)/yq -i eval 'del(.metadata.creationTimestamp)' charts/fybrik-crd/templates/app.fybrik.io_fybrikmodules.yaml
