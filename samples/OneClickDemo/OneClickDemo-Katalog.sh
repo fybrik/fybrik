@@ -8,7 +8,7 @@ YQ_VERSION=4.6.0
 KUBE_VERSION=1.22.0
 KIND_VERSION=0.14.0
 CERT_MANAGER_VERSION=1.6.2
-FYBRIK_VERSION=1.2.0
+FYBRIK_VERSION=1.1.0
 AWSCLI_VERSION=2.7.18
 
 # Arguments handeling:
@@ -17,7 +17,6 @@ usage() {
     echo "Flags:
           l - (optional) tools location - default: current dir.
           m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
-          f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
           c - use kind or current cluster - default - use kind."
 }
 
@@ -29,16 +28,14 @@ exit_abnormal() {
 # Default arguments:
 TOOLS=.
 MODULE=arrow-flight-module
-MODULE_PATH=""
 USE_KIND=1
 
 # Flags:
 # l - (optional) tools location - default: current dir
 # m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
-# f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
 # c - use kind or current cluster - default: use kind
 
-while getopts ":l:m:f:c" arg; do
+while getopts ":l:m:c" arg; do
     case "${arg}" in
         l)
             TOOLS=${OPTARG}
@@ -61,18 +58,6 @@ while getopts ":l:m:f:c" arg; do
                 MODULE=airbyte-module
             else
                 echo "Error: Module \"${MODULE}\" is not recognizable"
-                exit_abnormal
-            fi
-            ;;
-        f)
-            MODULE_PATH=${OPTARG}
-            if ! [[ -f ${MODULE_PATH} ]]; then
-                if ! curl --output /dev/null --silent --head --fail ${MODULE_PATH}; then
-                echo "Error: Couldn't find module path: ${MODULE_PATH}"
-                exit_abnormal
-                fi
-            elif ! [[ -r ${MODULE_PATH}  ]]; then
-                echo "Error: Don't have read premissions to module path: ${MODULE_PATH}"
                 exit_abnormal
             fi
             ;;
@@ -240,25 +225,15 @@ bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 #     --values https://raw.githubusercontent.com/fybrik/fybrik/v${FYBRIK_VERSION}/charts/vault/env/dev/vault-single-cluster-values.yaml
 # bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
-header "\nInstall OpenMetaData"
-export FYBRIK_BRANCH=v1.2.0
-curl https://raw.githubusercontent.com/fybrik/fybrik/v1.2.0/third_party/openmetadata/install_OM.sh | bash -
-
-
 
 header "\nInstall control plane"
-
 bin/helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version ${FYBRIK_VERSION} --wait
 
-bin/helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --version ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
+bin/helm install fybrik fybrik-charts/fybrik -n fybrik-system --version ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
 sleep 5
 
 header "\nInstall module"
-if [[ ! -z ${MODULE_PATH} ]]; then
-    bin/kubectl apply -f ${MODULE_PATH} -n fybrik-system
-else
-    bin/kubectl apply -f https://github.com/fybrik/${MODULE}/releases/latest/download/module.yaml -n fybrik-system
-fi
+bin/kubectl apply -f https://github.com/fybrik/${MODULE}/releases/latest/download/module.yaml -n fybrik-system
 
 sleep 5
 
@@ -272,14 +247,14 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
 bin/helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
-bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
 curl -L https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv -o sample.csv
 
-export ACCESS_KEY="myaccesskey"
-export SECRET_KEY="mysecretkey"
+export ACCESS_KEY=1234
+export SECRET_KEY=1234
 export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
 export OBJECT_KEY="sample.csv"
@@ -301,70 +276,50 @@ stringData:
   secret_key: "${SECRET_KEY}"
 EOF
 
-bin/kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
-
-sleep 5
-
-cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-{
-  "destinationCatalogID": "openmetadata",
-  "destinationAssetID": "paysim-csv",
-  "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
-  "details": {
-    "dataFormat": "csv",
-    "connection": {
-      "name": "s3",
-      "s3": {
-        "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
-        "bucket": "demo",
-        "object_key": "sample.csv"
-      }
-    }
-  },
-  "resourceMetadata": {
-    "name": "Synthetic Financial Datasets For Fraud Detection",
-    "geography": "theshire ",
-    "tags": {
-      "Purpose.finance": "true"
-    },
-    "columns": [
-      {
-        "name": "nameOrig",
-        "tags": {
-          "PII.Sensitive": "true"
-        }
-      },
-      {
-        "name": "oldbalanceOrg",
-        "tags": {
-          "PII.Sensitive": "true"
-        }
-      },
-      {
-        "name": "newbalanceOrig",
-        "tags": {
-          "PII.Sensitive": "true"
-        }
-      }
-    ]
-  }
-}
+cat << EOF | bin/kubectl apply -f -
+apiVersion: katalog.fybrik.io/v1alpha1
+kind: Asset
+metadata:
+  name: paysim-csv
+spec:
+  secretRef: 
+    name: paysim-csv
+  details:
+    dataFormat: csv
+    connection:
+      name: s3
+      s3:
+        endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+        bucket: "demo"
+        object_key: "sample.csv"
+  metadata:
+    name: Synthetic Financial Datasets For Fraud Detection
+    geography: theshire 
+    tags:
+      finance: true
+    columns:
+      - name: nameOrig
+        tags:
+          PII: true
+      - name: oldbalanceOrg
+        tags:
+          PII: true
+      - name: newbalanceOrig
+        tags:
+          PII: true
 EOF
-
-export CATALOGED_ASSET="openmetadata-s3.default.demo.\"sample.csv\""
 
 
 header "\nDefine data access policies"
 cat << EOF > sample-policy.rego
 package dataapi.authz
 rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": description}] {
-  description := "Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true"
+  description := "Redact columns tagged as PII in datasets tagged with finance = true"
   input.action.actionType == "read"
-  input.resource.metadata.tags["Purpose.finance"]
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PII.Sensitive"]]
+  input.resource.metadata.tags.finance
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.PII]
   count(column_names) > 0
 }
-
 EOF
 
 bin/kubectl -n fybrik-system create configmap sample-policy --from-file=sample-policy.rego
@@ -373,7 +328,7 @@ while [[ $(bin/kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.meta
 rm sample-policy.rego
 
 header "\nCreate a FybrikApplication resource for the notebook"
-cat <<EOF | kubectl apply -f -
+cat <<EOF | bin/kubectl apply -f -
 apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
@@ -388,35 +343,32 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: ${CATALOGED_ASSET}
+    - dataSetID: "fybrik-notebook-sample/paysim-csv"
       requirements:
         interface: 
           protocol: fybrik-arrow-flight
 EOF
 
-
-while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
-export CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
-while [[ $(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.conditions[?(@.type == 'Ready')].status}") != "True" ]]; do echo "waiting for ${CATALOGED_ASSET} asset" && sleep 5; done
-
-
+while [[ $(bin/kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]
+do
+    echo "waiting for fybrikapplication to be ready"
+    ((c++)) && ((c==30)) && break
+    sleep 3
+done
 
 header "\nRead the dataset from the notebook"
 cat << EOF > test.py
 import json
 import pyarrow.flight as fl
 import pandas as pd
-
 # Create a Flight client
 client = fl.connect('grpc://my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints:80')
-
 # Prepare the request
 request = {
-    "asset": "openmetadata-s3.default.demo.\"sample.csv\"",
+    "asset": "fybrik-notebook-sample/paysim-csv",
     # To request specific columns add to the request a "columns" key with a list of column names
-    "columns": ["type", "amount", "oldbalanceOrg", "isFraud"]
+    "columns": ["type","amount", "oldbalanceOrg", "isFraud"]
 }
-
 # Send request and fetch result as a pandas DataFrame
 info = client.get_flight_info(fl.FlightDescriptor.for_command(json.dumps(request)))
 reader: fl.FlightStreamReader = client.do_get(info.endpoints[0].ticket)

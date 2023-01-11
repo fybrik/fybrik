@@ -1,4 +1,4 @@
-# Super Quick Start Guide
+# One Click Demo Guide
 
 this guide contains a script that you can run with a single command to see a demo of Fybrik in action.  
 
@@ -14,7 +14,7 @@ this demo demonstrates the following sequence -
 
 5. The **data user** can consume the governed data instantly
 
-All your require for this demo is a working bash terminal.  
+All your require for this demo is a working bash terminal and docker installed.  
 The demo will make a bin folder at your current directory with all the required dependencies for Fybrik.
 
 ## Demo with OpenMetaData data catlog (~25 mintues)
@@ -23,7 +23,7 @@ Note: booting up Fybrik with openmetadata takes ~25 minutes on most machines, so
 Alternatively you can run the [next](#demo-with-katalog-a-data-catalog-stub-5-mintues) script which boots up Fybrik with a data catalog stub.  
 
 ```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/super-quickstart/SuperQuickStart-OMD.sh | bash -
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
 ```
 
 ## Demo with Katalog, a data catalog stub (~5 mintues)
@@ -31,15 +31,15 @@ For a demo using an older version of Fybrik, without its main Data Catlog, you c
 this demo runs using Katalog, a data catalog stub, strictly used for demos, testing and evaluation purposes.
 
 ```bash
-curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/super-quickstart/SuperQuickStart-Katalog.sh | bash -
+curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
 ```
 
 ## Cleanup
 
-To stop local kubernetes cluster booted up on your machine for this demo, and to remove the folder created with the dependencies for Fybrik, run this.  
-warning - if you already had a bin folder at your current directory these commands will delete it and its contents
+To stop the local kind kubernetes cluster booted up on your machine in this demo, and to remove the folder created with the dependencies for Fybrik, run this.  
+warning - if you already had a bin folder at your current directory these commands will delete it and its contents.
 
 ```bash
-bin/kind delete clusters kind-fybrik-installation-sample
+bin/kind delete cluster --name=kind-fybrik-installation-sample
 rm -rf bin 
 ```
