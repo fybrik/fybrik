@@ -1,4 +1,4 @@
-ARG image=registry.access.redhat.com/ubi8/ubi-minimal:8.6
+ARG image=registry.access.redhat.com/ubi8/ubi-minimal:8.7
 FROM $image
 
 ENV HOME=/tmp
