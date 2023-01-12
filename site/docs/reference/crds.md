@@ -8,6 +8,7 @@ hide:
 Packages:
 
 - [app.fybrik.io/v1beta1](#appfybrikiov1beta1)
+- [app.fybrik.io/v1beta2](#appfybrikiov1beta2)
 - [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
 
 ## app.fybrik.io/v1beta1
@@ -3706,6 +3707,116 @@ ObservedState includes information to be reported back to the FybrikApplication 
           Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+## app.fybrik.io/v1beta2
+
+Resource Types:
+
+- [FybrikStorageAccount](#fybrikstorageaccount)
+
+
+
+
+### FybrikStorageAccount
+<sup><sup>[↩ Parent](#appfybrikiov1beta2 )</sup></sup>
+
+
+
+
+
+
+FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space for datasets whose creation or copy it orchestrates.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1beta2</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikStorageAccount</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec-1">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikStorageAccount.spec
+<sup><sup>[↩ Parent](#fybrikstorageaccount-1)</sup></sup>
+
+
+
+FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Storage geography<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>id</b></td>
+        <td>string</td>
+        <td>
+          Identification of a storage account<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          A name of k8s secret deployed in the control plane.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the storage, e.g., s3<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
