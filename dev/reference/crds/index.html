@@ -1607,6 +1607,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#appfybrikiov1beta2" class="md-nav__link">
+    app.fybrik.io/v1beta2
+  </a>
+  
+    <nav class="md-nav" aria-label="app.fybrik.io/v1beta2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccount_1" class="md-nav__link">
+    FybrikStorageAccount
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikStorageAccount">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccountspec_1" class="md-nav__link">
+    FybrikStorageAccount.spec
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#katalogfybrikiov1alpha1" class="md-nav__link">
     katalog.fybrik.io/v1alpha1
   </a>
@@ -2761,6 +2794,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#appfybrikiov1beta2" class="md-nav__link">
+    app.fybrik.io/v1beta2
+  </a>
+  
+    <nav class="md-nav" aria-label="app.fybrik.io/v1beta2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccount_1" class="md-nav__link">
+    FybrikStorageAccount
+  </a>
+  
+    <nav class="md-nav" aria-label="FybrikStorageAccount">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fybrikstorageaccountspec_1" class="md-nav__link">
+    FybrikStorageAccount.spec
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#katalogfybrikiov1alpha1" class="md-nav__link">
     katalog.fybrik.io/v1alpha1
   </a>
@@ -2852,6 +2918,7 @@
 <p>Packages:</p>
 <ul>
 <li><a href="#appfybrikiov1beta1">app.fybrik.io/v1beta1</a></li>
+<li><a href="#appfybrikiov1beta2">app.fybrik.io/v1beta2</a></li>
 <li><a href="#katalogfybrikiov1alpha1">katalog.fybrik.io/v1alpha1</a></li>
 </ul>
 <h2 id="appfybrikiov1beta1">app.fybrik.io/v1beta1</h2>
@@ -6095,6 +6162,100 @@
           Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+<h2 id="appfybrikiov1beta2">app.fybrik.io/v1beta2</h2>
+<p>Resource Types:</p>
+<ul>
+<li><a href="#fybrikstorageaccount">FybrikStorageAccount</a></li>
+</ul>
+<h3 id="fybrikstorageaccount_1">FybrikStorageAccount</h3>
+<p><sup><sup><a href="#appfybrikiov1beta2">↩ Parent</a></sup></sup></p>
+<p>FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space for datasets whose creation or copy it orchestrates.</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1beta2</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikStorageAccount</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec-1">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+<h4 id="fybrikstorageaccountspec_1">FybrikStorageAccount.spec</h4>
+<p><sup><sup><a href="#fybrikstorageaccount-1">↩ Parent</a></sup></sup></p>
+<p>FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount</p>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Storage geography<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>id</b></td>
+        <td>string</td>
+        <td>
+          Identification of a storage account<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          A name of k8s secret deployed in the control plane.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the storage, e.g., s3<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 
