@@ -28,12 +28,12 @@ Alternatively you can try Fybrik with Katalog,  a data catalog stub, strictly us
 
 === "Demo with OpenMetaData" 
     ```bash
-    curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
+    curl https://raw.githubusercontent.com/fybrik/fybrik/master/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
     ```
 
 === "Demo with Katalog" 
     ```bash
-    curl https://raw.githubusercontent.com/aradhalevy/fybrik/SuperQucikStart/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
+    curl https://raw.githubusercontent.com/fybrik/fybrik/master/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
     ```
 
 > **NOTE**: At the end of the demo, you will see in your terminal a sample from a table that the data user consumed. one of the columns will display XXXXX instead of values, indicating that it has been automatically redacted due to data policies.
