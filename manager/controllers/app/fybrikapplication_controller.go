@@ -27,7 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
@@ -43,7 +44,6 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -65,7 +65,7 @@ type FybrikApplicationReconciler struct {
 
 type ApplicationContext struct {
 	Log         *zerolog.Logger
-	Application *fapp.FybrikApplication
+	Application *fappv1.FybrikApplication
 	UUID        string
 }
 
@@ -106,7 +106,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		plotterUpdate = true
 		nsName.Name = nsName.Name[len(PlotterUpdatePrefix):]
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	if err := r.Get(ctx, nsName, application); err != nil {
 		sublog.Warn().Msg("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -195,7 +195,7 @@ func getBucketResourceRef(name string) *types.NamespacedName {
 	return &types.NamespacedName{Name: name, Namespace: environment.GetSystemNamespace()}
 }
 
-func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fapp.ObservedState) {
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fappv1.ObservedState) {
 	if applicationContext.Application.Status.AssetStates == nil {
 		initStatus(applicationContext.Application)
 	}
@@ -337,7 +337,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 }
 
 // setVirtualEndpoints populates the endpoints in the status of the fybrikapplication
-func setVirtualEndpoints(application *fapp.FybrikApplication, flows []fapp.Flow) {
+func setVirtualEndpoints(application *fappv1.FybrikApplication, flows []fappv1.Flow) {
 	endpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		// sanity check
@@ -372,7 +372,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	// clear status
 	initStatus(applicationContext.Application)
 	if applicationContext.Application.Status.ProvisionedStorage == nil {
-		applicationContext.Application.Status.ProvisionedStorage = make(map[string]fapp.DatasetDetails)
+		applicationContext.Application.Status.ProvisionedStorage = make(map[string]fappv1.DatasetDetails)
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
@@ -422,7 +422,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 
 	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
-	ownerRef := &fapp.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
+	ownerRef := &fappv1.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
@@ -470,7 +470,7 @@ func (r *FybrikApplicationReconciler) Environment() (*datapath.Environment, erro
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *fapp.FybrikApplication, dataCtx *fapp.DataContext,
+func CreateDataRequest(application *fappv1.FybrikApplication, dataCtx *fappv1.DataContext,
 	assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flow taxonomy.DataFlow
 
@@ -715,9 +715,9 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
-		For(&fapp.FybrikApplication{}).
+		For(&fappv1.FybrikApplication{}).
 		Watches(&source.Kind{
-			Type: &fapp.Plotter{},
+			Type: &fappv1.Plotter{},
 		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
 }
 
@@ -745,10 +745,10 @@ func ownerLabels(id types.NamespacedName) map[string]string {
 }
 
 // GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
-func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikModule, error) {
+func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.FybrikModule, error) {
 	ctx := context.Background()
-	moduleMap := make(map[string]*fapp.FybrikModule)
-	var moduleList fapp.FybrikModuleList
+	moduleMap := make(map[string]*fappv1.FybrikModule)
+	var moduleList fappv1.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return moduleMap, err
 	}
@@ -759,13 +759,18 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikMo
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*sa.FybrikStorageAccount, error) {
-	var accountList sa.FybrikStorageAccountList
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStorageAccount, error) {
+	var accountList fappv2.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	accounts := []*sa.FybrikStorageAccount{}
+	accounts := []*fappv2.FybrikStorageAccount{}
 	for i := range accountList.Items {
+		// sanity - storage type should not be empty
+		if accountList.Items[i].Spec.Type == "" {
+			r.Log.Warn().Msgf("storage account %s is defined with an empty type and will be ignored", accountList.Items[i].Name)
+			continue
+		}
 		accounts = append(accounts, accountList.Items[i].DeepCopy())
 	}
 	return accounts, nil
@@ -783,14 +788,14 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
-		details := &fapp.DataStore{}
+		details := &fappv1.DataStore{}
 		if info.Details != nil {
 			details = info.Details.DeepCopy()
 		}
 
-		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fapp.DatasetDetails{
+		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
 			DatasetRef:       info.Storage.Name,
-			SecretRef:        fapp.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+			SecretRef:        fappv1.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
 		}
@@ -814,7 +819,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 }
 
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *datapath.Environment,
-	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *fapp.PlotterSpec, error) {
+	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *fappv1.PlotterSpec, error) {
 	plotterGen := &PlotterGenerator{
 		Client:             r.Client,
 		Log:                applicationContext.Log,
@@ -823,13 +828,13 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 
-	plotterSpec := &fapp.PlotterSpec{
+	plotterSpec := &fappv1.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,
 		AppInfo:          applicationContext.Application.Spec.AppInfo,
-		Assets:           map[string]fapp.AssetDetails{},
-		Flows:            []fapp.Flow{},
+		Assets:           map[string]fappv1.AssetDetails{},
+		Flows:            []fappv1.Flow{},
 		ModulesNamespace: environment.GetDefaultModulesNamespace(),
-		Templates:        map[string]fapp.Template{},
+		Templates:        map[string]fappv1.Template{},
 	}
 
 	paths, err := solve(env, requirements, applicationContext.Log)

@@ -6,9 +6,9 @@ package datapath
 import (
 	"fmt"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	sa "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 // Node represents an access point to data (as a physical source/sink, or a virtual endpoint)
@@ -22,7 +22,7 @@ type Node struct {
 type Edge struct {
 	Source          *Node
 	Sink            *Node
-	Module          *appApi.FybrikModule
+	Module          *fappv1.FybrikModule
 	CapabilityIndex int
 }
 
@@ -32,7 +32,7 @@ type ResolvedEdge struct {
 	Edge
 	Actions        []taxonomy.Action
 	Cluster        string
-	StorageAccount sa.FybrikStorageAccountSpec
+	StorageAccount fappv2.FybrikStorageAccountSpec
 }
 
 // Solution is a final solution enabling a plotter construction.

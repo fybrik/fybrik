@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-localhost-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - localhost
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+    kind: Issuer
+    name: test-tls-ca-issuer
+  secretName: test-tls-localhost-certs

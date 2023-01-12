@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
@@ -17,7 +18,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	saApi "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 func getTestEnv() *datapath.Environment {

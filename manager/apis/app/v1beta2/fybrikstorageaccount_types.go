@@ -40,8 +40,8 @@ type FybrikStorageAccountSpec struct {
 type FybrikStorageAccountStatus struct {
 }
 
-// FybrikStorageAccount defines a storage account used for copying data.
-// It contains connection details of the shared storage and refers to the secret that stores storage credentials.
+// FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space
+// for datasets whose creation or copy it orchestrates.
 // +kubebuilder:object:root=true
 // +kubebuilder:storageversion
 type FybrikStorageAccount struct {
@@ -83,14 +83,18 @@ func (o FybrikStorageAccountSpec) MarshalJSON() ([]byte, error) {
 func (o *FybrikStorageAccountSpec) UnmarshalJSON(bytes []byte) (err error) {
 	items := make(map[string]interface{})
 	if err = json.Unmarshal(bytes, &items); err == nil {
-		o.Type = taxonomy.ConnectionType(items[typeKey].(string))
 		o.ID = items[idKey].(string)
 		o.SecretRef = items[secretRefKey].(string)
-		o.Geography = taxonomy.ProcessingLocation(items[geographyKey].(string))
-		delete(items, typeKey)
 		delete(items, idKey)
-		delete(items, geographyKey)
 		delete(items, secretRefKey)
+		if val, ok := items[typeKey]; ok {
+			o.Type = taxonomy.ConnectionType(val.(string))
+			delete(items, typeKey)
+		}
+		if val, ok := items[geographyKey]; ok {
+			o.Geography = taxonomy.ProcessingLocation(val.(string))
+			delete(items, geographyKey)
+		}
 		if len(items) == 0 {
 			items = nil
 		}

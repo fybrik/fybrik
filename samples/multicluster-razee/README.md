@@ -240,8 +240,11 @@ metadata:
   namespace: fybrik-system
 spec:
   id: homeoffice
-  endpoints:
-    homeoffice: "http://control-control-plane:30566"
+  type: s3
+  geography: homeoffice
+  s3:
+    endpoint: "http://control-control-plane:30566"
+    region: homeoffice
   secretRef:  bucket-creds
 EOF
 ```

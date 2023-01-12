@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -20,7 +21,6 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
-	saApi "fybrik.io/fybrik/pkg/storage/apis/app/v1beta2"
 )
 
 var testLog = logging.LogInit("Solver", "Test")
@@ -214,7 +214,7 @@ func TestReadWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	account := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
 	asset := createReadRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
@@ -265,7 +265,7 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	account := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
 	asset := createReadRequest()
 	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
@@ -345,7 +345,7 @@ func TestTransformInDataLocation(t *testing.T) {
 	addModule(env, readModule)
 	addModule(env, copyModule)
 	account := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account)
 	remoteGeo := "remote"
 	cluster1 := multicluster.Cluster{Name: "c1", Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}}
@@ -396,10 +396,10 @@ func TestCopyFlow(t *testing.T) {
 	addModule(env, readModule)
 	addModule(env, copyModule)
 	account1 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
 	account2 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
@@ -425,10 +425,10 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, copyModule)
 	account1 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
 	account2 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
@@ -487,10 +487,10 @@ func TestWriteNewAsset(t *testing.T) {
 	addModule(env, writeModule)
 	addModule(env, copyModule)
 	account1 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
 	account2 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
@@ -523,10 +523,10 @@ func TestWriteExistingAsset(t *testing.T) {
 	addModule(env, writeModule)
 	addModule(env, copyModule)
 	account1 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
 	account2 := &saApi.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})

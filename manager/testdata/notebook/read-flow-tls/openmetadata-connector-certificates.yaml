@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-tls-openmetadata-connector-cert
+  namespace: fybrik-system
+spec:
+  dnsNames:
+  - openmetadata-connector
+  issuerRef:
+    kind: Issuer
+    name: test-tls-ca-issuer
+  secretName: test-tls-openmetadata-connector-certs
