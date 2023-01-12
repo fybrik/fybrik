@@ -4,13 +4,14 @@
 
 set -x
 
+kubectl delete namespace fybrik-notebook-sample || true
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 # Create asset and secret
 kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
-if [[ "${DEPLOY_OPENMETADATA}" -eq 0 ]]; then
+if [[ "${USE_OPENMETADATA_CATALOG}" -eq 0 ]]; then
   # Deploy katalog asset
   kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
 else
