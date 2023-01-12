@@ -20,6 +20,11 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 		--namespace $(KUBE_NAMESPACE) \
 		--wait --timeout 120s
 
+.PHONY: undeploy
+undeploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+	@echo "Unistalling vault ..."
+	$(TOOLBIN)/helm uninstall vault --namespace $(KUBE_NAMESPACE)
+
 .PHONY: deploy-wait
 deploy-wait: $(TOOLBIN)/kubectl
 	$(TOOLBIN)/kubectl wait --for=condition=ready --all pod -n $(KUBE_NAMESPACE) --timeout=120s
