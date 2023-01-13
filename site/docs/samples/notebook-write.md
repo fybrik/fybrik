@@ -88,8 +88,10 @@ metadata:
   namespace: fybrik-system
 spec:
   id: theshire-object-store
-  region: theshire
-  endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+  type: s3
+  geography: theshire
+  s3:
+    endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
 EOF
 ```
@@ -102,8 +104,10 @@ metadata:
   namespace: fybrik-system
 spec:
   id: neverland-object-store
-  region: neverland
-  endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+  geography: neverland
+  type: s3
+  s3:
+    endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
 EOF
 ```

@@ -1,13 +1,15 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: theshire-storage-account
   namespace: fybrik-system
 spec:
   id: theshire-object-store
-  region: theshire
-  endpoint: "http://s3.fybrik-system.svc.cluster.local:9090"
+  geography: theshire
+  type: s3
   secretRef:  bucket-creds
+  s3:
+    endpoint: "http://s3.fybrik-system.svc.cluster.local:9090"
