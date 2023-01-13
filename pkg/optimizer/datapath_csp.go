@@ -152,7 +152,8 @@ func (dpc *DataPathCSP) addInterface(intfc *taxonomy.Interface) {
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // Returns a file name where the model was dumped
 // NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
-//       The only exception is with interfaces (0 means nil)
+//
+//	The only exception is with interfaces (0 means nil)
 func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
