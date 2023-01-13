@@ -98,7 +98,8 @@ func (c *Connection) RemovePolicyFromIdentity(identity, policyName, auth string)
 // WritePolicy stores in vault the policy indicated.  This can be associated with a vault token or
 // an authentication identity to ensure proper use of secrets.
 // Example policy: "path \"identities/test-identity\" {\n	capabilities = [\"read\"]\n }"
-// 		NOTE the line returns and the tab.  Without them it fails!
+//
+//	NOTE the line returns and the tab.  Without them it fails!
 func (c *Connection) WritePolicy(policyName, policy string) error {
 	sys := c.Client.Sys()
 

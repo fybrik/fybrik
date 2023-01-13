@@ -52,8 +52,8 @@ func (r ApiCreateAssetRequest) Execute() (CreateAssetResponse, *_nethttp.Respons
 /*
 CreateAsset This REST API writes data asset information to the data catalog configured in fybrik
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiCreateAssetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateAssetRequest
 */
 func (a *DefaultApiService) CreateAsset(ctx _context.Context) ApiCreateAssetRequest {
 	return ApiCreateAssetRequest{
@@ -63,7 +63,8 @@ func (a *DefaultApiService) CreateAsset(ctx _context.Context) ApiCreateAssetRequ
 }
 
 // Execute executes the request
-//  @return CreateAssetResponse
+//
+//	@return CreateAssetResponse
 func (a *DefaultApiService) CreateAssetExecute(r ApiCreateAssetRequest) (CreateAssetResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPost
@@ -172,8 +173,8 @@ func (r ApiDeleteAssetRequest) Execute() (DeleteAssetResponse, *_nethttp.Respons
 /*
 DeleteAsset This REST API deletes data asset
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiDeleteAssetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiDeleteAssetRequest
 */
 func (a *DefaultApiService) DeleteAsset(ctx _context.Context) ApiDeleteAssetRequest {
 	return ApiDeleteAssetRequest{
@@ -183,7 +184,8 @@ func (a *DefaultApiService) DeleteAsset(ctx _context.Context) ApiDeleteAssetRequ
 }
 
 // Execute executes the request
-//  @return DeleteAssetResponse
+//
+//	@return DeleteAssetResponse
 func (a *DefaultApiService) DeleteAssetExecute(r ApiDeleteAssetRequest) (DeleteAssetResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodDelete
@@ -292,8 +294,8 @@ func (r ApiGetAssetInfoRequest) Execute() (GetAssetResponse, *_nethttp.Response,
 /*
 GetAssetInfo This REST API gets data asset information from the data catalog configured in fybrik for the data sets indicated in FybrikApplication yaml
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetAssetInfoRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetAssetInfoRequest
 */
 func (a *DefaultApiService) GetAssetInfo(ctx _context.Context) ApiGetAssetInfoRequest {
 	return ApiGetAssetInfoRequest{
@@ -303,7 +305,8 @@ func (a *DefaultApiService) GetAssetInfo(ctx _context.Context) ApiGetAssetInfoRe
 }
 
 // Execute executes the request
-//  @return GetAssetResponse
+//
+//	@return GetAssetResponse
 func (a *DefaultApiService) GetAssetInfoExecute(r ApiGetAssetInfoRequest) (GetAssetResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPost
@@ -412,8 +415,8 @@ func (r ApiUpdateAssetRequest) Execute() (UpdateAssetResponse, *_nethttp.Respons
 /*
 UpdateAsset This REST API updates data asset information in the data catalog configured in fybrik
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiUpdateAssetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiUpdateAssetRequest
 */
 func (a *DefaultApiService) UpdateAsset(ctx _context.Context) ApiUpdateAssetRequest {
 	return ApiUpdateAssetRequest{
@@ -423,7 +426,8 @@ func (a *DefaultApiService) UpdateAsset(ctx _context.Context) ApiUpdateAssetRequ
 }
 
 // Execute executes the request
-//  @return UpdateAssetResponse
+//
+//	@return UpdateAssetResponse
 func (a *DefaultApiService) UpdateAssetExecute(r ApiUpdateAssetRequest) (UpdateAssetResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPatch
