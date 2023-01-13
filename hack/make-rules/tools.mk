@@ -13,7 +13,7 @@ $(TOOLBIN)/yq:
 
 INSTALL_TOOLS += $(TOOLBIN)/controller-gen
 $(TOOLBIN)/controller-gen:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.1
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/dlv
