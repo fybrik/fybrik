@@ -1,11 +1,14 @@
-apiVersion: app.fybrik.io/v1beta1
+apiVersion: app.fybrik.io/v1beta2
 kind: FybrikStorageAccount
 metadata:
   generateName: account-neverland
   namespace: fybrik-system
 spec:
   id: neverland-object-store
+  type: s3
   secretRef: credentials-neverland
-  endpoint: http://s3.eu.cloud-object-storage.appdomain.cloud
-  region: neverland
+  geography: neverland
+  s3:
+    endpoint: 'https://s3.eu-gb.cloud-object-storage.appdomain.cloud'
+    region: "eu-gb"
 

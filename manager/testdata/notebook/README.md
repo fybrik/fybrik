@@ -4,12 +4,13 @@
 are configured to use TLS:
 
 - OPA connector
-- katalog connector
+- Openmetadata connector
+- Openmetadata server
 - OPA server
 - Fybrik manager
 - Vault
 
-All servers above use mutual TLS.
+All servers above except Openmetadata server use mutual TLS.
 
 The flow of the tests is as follows:
 
@@ -23,11 +24,12 @@ To simplify the process, the same CA certificate which is used to sign the compo
 To do so, a cert-manager [`Certificate`](https://cert-manager.io/docs/concepts/certificate/) resource is created in `fybrik-system` namespace for the arrow-flight-module as before, where the `dnsNames` field in the certificate contains the module service name. This will create a secret in `fybrik-system` namespace with the module certificates.
 To create this secret in `fybrik-blueprints` namespace the [reflector](https://github.com/emberstack/kubernetes-reflector/blob/main/README.md) mechanism for syncing secrets across namespaces is used as shown in this [tutorial](https://cert-manager.io/docs/tutorials/syncing-secrets-across-namespaces).
 4) Vault is deployed with values from `charts/vault/env/ha/vault-single-cluster-values-tls.yaml` which configure it to use mutual TLS.
-5) Fybrik is deployed in `fybrik-system` namespace with values from `charts/fybrik/notebook-test-readflow.tls.values.yaml` file which configures the control-plane components to use mutual tls.
-6) The deployed FybrikModule resource is patched with the details of the secret generated in step 3 which includes the arrow-flight-module TLS certificates. This will allow the arrow-flight-module to communicate with Vault using mutual TLS once it is up and running.
+5) Openmetadata server is deployed without TLS support.
+6) Fybrik is deployed in `fybrik-system` namespace with values from `charts/fybrik/notebook-test-readflow.tls.values.yaml` file which configures the control-plane components to use mutual tls.
+7) The deployed FybrikModule resource is patched with the details of the secret generated in step 3 which includes the arrow-flight-module TLS certificates. This will allow the arrow-flight-module to communicate with Vault using mutual TLS once it is up and running.
 
 [`run-notebook-readflow-tls-system-cacerts-tests`](https://github.com/fybrik/fybrik/blob/master/Makefile#L123) test is similar to the above test with the following exceptions:
 
-- Vault server and OPA server do not use TLS.
+- Vault server, Openmetadata server and OPA server do not use TLS.
 - The CA certificates of the components in `fybrik-system` namespace are copied directly to `/etc/ssl/certs/` directory in the manager/connector pods and thus not specified in the helm chart values upon deployment as shown in [`manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh`](https://github.com/fybrik/fybrik/blob/master/manager/testdata/notebook/read-flow-tls/copy-cacert-to-pods.sh).
 

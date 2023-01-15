@@ -9,7 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	app "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 )
 
 // Creates a scheme that can be used in unit tests
@@ -26,9 +27,14 @@ func NewScheme(g *gomega.WithT) *runtime.Scheme {
 	if g != nil {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
-	err = app.AddToScheme(s)
+	err = fappv1.AddToScheme(s)
 	if g != nil {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 	}
+	err = fappv2.AddToScheme(s)
+	if g != nil {
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+	}
+
 	return s
 }
