@@ -62,8 +62,7 @@ type compileOptions struct {
 // Option is the type for Compile options
 type Option func(*compileOptions)
 
-// WithCodeGenerationTarget option to enable generating an output
-//  that is more suitable for code generation tools
+// WithCodeGenerationTarget option to enable generating an output that is more suitable for code generation tools
 func WithCodeGenerationTarget(enabled bool) Option {
 	return func(h *compileOptions) {
 		h.codegenTarget = enabled

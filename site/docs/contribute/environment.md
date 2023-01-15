@@ -13,7 +13,7 @@ a remote Linux machine, or any other solution such as a virtual machine.
 
 Install the following on your machine:
 
-1. [go](https://golang.org/dl/) 1.18
+1. [go](https://golang.org/dl/) 1.19
 1. [Docker](https://docs.docker.com/get-docker/)
 1. `make`
 1. `jq`
