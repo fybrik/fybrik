@@ -14,9 +14,9 @@ on:
 env:
   GO_VERSION: 1.18
   # the newest supported K8s version and its respective kind image
-  NEW_K8S_VERSION: v1.24.0@sha256:406fd86d48eaf4c04c7280cd1d2ca1d61e7d0d61ddef0125cb097bc7b82ed6a1
+  NEW_K8S_VERSION: v1.25.3@sha256:f52781bc0d7a19fb6c405c2af83abfeb311f130707a0e219175677e366cc45d1
   # the oldest supported K8s version and its respective kind image
-  OLD_K8S_VERSION: v1.22.9@sha256:6e57a6b0c493c7d7183a1151acff0bfa44bf37eb668826bf00da5637c55b6d5e 
+  OLD_K8S_VERSION: v1.23.13@sha256:ef453bb7c79f0e3caba88d2067d4196f427794086a7d0df8df4f019d5e336b61
   LATEST_BACKWARD_SUPPORTED_VERSION: 0.7.0
 
 jobs:
