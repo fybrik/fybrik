@@ -40,6 +40,7 @@ func deserializeToTaxonomyAction(action map[string]interface{}, taxAction *taxon
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
+//
 //nolint:funlen
 func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyDecisionsRequest,
 	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {

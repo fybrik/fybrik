@@ -51,8 +51,8 @@ func (r ApiGetPoliciesDecisionsRequest) Execute() (GetPolicyDecisionsResponse, *
 /*
 GetPoliciesDecisions This REST API gets data governance decisions for the data sets indicated in FybrikApplication yaml based on the context indicated
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetPoliciesDecisionsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiGetPoliciesDecisionsRequest
 */
 func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPoliciesDecisionsRequest {
 	return ApiGetPoliciesDecisionsRequest{
@@ -62,7 +62,8 @@ func (a *DefaultApiService) GetPoliciesDecisions(ctx _context.Context) ApiGetPol
 }
 
 // Execute executes the request
-//  @return GetPolicyDecisionsResponse
+//
+//	@return GetPolicyDecisionsResponse
 func (a *DefaultApiService) GetPoliciesDecisionsExecute(r ApiGetPoliciesDecisionsRequest) (GetPolicyDecisionsResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPost

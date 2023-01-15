@@ -332,6 +332,7 @@ func match(source, sink *taxonomy.Interface) bool {
 }
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
+//
 //nolint:dupl
 func supportsSourceInterface(edge *datapath.Edge, sourceNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
@@ -361,6 +362,7 @@ func supportsSourceInterface(edge *datapath.Edge, sourceNode *datapath.Node) boo
 }
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
+//
 //nolint:dupl
 func supportsSinkInterface(edge *datapath.Edge, sinkNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
