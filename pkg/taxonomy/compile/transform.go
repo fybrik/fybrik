@@ -16,8 +16,8 @@ const nameKey = "name"
 
 // transform applies transformations over an input document to make it structural.
 // It requires a base document and the document to transform (mutable).
-// The codegenTarget can be set to true to apply more transformations to make the document
-//  more suitable for code generation tools.
+// The codegenTarget can be set to true to apply more transformations to make the document more suitable for code
+// generation tools.
 func transform(base, doc *model.Document, codegenTarget bool) (*model.Document, error) {
 	t := &transformer{
 		doc:     doc,

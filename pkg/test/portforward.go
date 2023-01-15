@@ -16,6 +16,7 @@ const (
 )
 
 // TODO support other ports besides 80
+//
 //nolint:gocritic // Bad regex - according to gocritic this regex can be optimized
 var (
 	portForwardRegexp = regexp.MustCompile(`Forwarding from (127.0.0.1|\\[::1\\]):([0-9]+) -> 80`)
