@@ -88,17 +88,9 @@ func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string)
 }
 
 // Enables writing of assets to katalog. The different flows supported are:
-// (a) When DestinationAssetID is specified:
-//
-//	Then an asset id is created with name : <DestinationAssetID>
-//
-// (b) When DestinationAssetID is specified:
-//
-//	Then an asset is created with name: <DestinationAssetID>-<Kubernetes Generated Random String>
-//
-// (c) When DestinationAssetID is not specified:
-//
-//	Then an asset is created with name: fybrik-<Kubernetes Generated Random String>
+// (a) When DestinationAssetID is specified then an asset id is created with name: <DestinationAssetID>
+// (b) When DestinationAssetID is specified then an asset is created with name: <DestinationAssetID>-<Kubernetes Generated Random String>
+// (c) When DestinationAssetID is not specified then an asset is created with name: fybrik-<Kubernetes Generated Random String>
 func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
