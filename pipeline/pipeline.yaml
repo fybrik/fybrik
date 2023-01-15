@@ -49,7 +49,7 @@ spec:
     description: values to pass to helm install of fybrik charts
     type: string
     name: fybrik-values
-  - default: "docker.io/yakinikku/suede_compile:latest"
+  - default: "ghcr.io/fybrik/suede_compile:0.1.0"
     description: image to use for build
     name: build_image
     type: string
