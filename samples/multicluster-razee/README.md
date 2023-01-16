@@ -71,7 +71,7 @@ sh ./hack/setup-local-multi-cluster.sh
 
 You can also manually execute the commands in this script one by one.
 
-This script will setup two Kind clusters, install and configure Razee, Vault, Cert-manager, Datashim to them. After the script finishes running, we will get a multicluster environment consisting of two clusters:
+This script will setup two Kind clusters, install and configure Razee, Vault, Cert-manager to them. After the script finishes running, we will get a multicluster environment consisting of two clusters:
 
 - kind-control
 - kind-kind
@@ -263,9 +263,7 @@ metadata:
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
-  accessKeyID: "${ACCESS_KEY}"
   secret_key: "${SECRET_KEY}"
-  secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
 

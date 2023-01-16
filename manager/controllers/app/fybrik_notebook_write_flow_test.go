@@ -185,8 +185,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
 	// check provisioned storage
-	g.Expect(writeApplication.Status.ProvisionedStorage["new-data"].DatasetRef).
-		ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(writeApplication.Status.ProvisionedStorage).To(gomega.HaveKey("new-data"), "No storage provisioned")
 
 	// Get the new connection details
 	var newBucket, newObject string

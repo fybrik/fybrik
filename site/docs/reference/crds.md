@@ -1395,7 +1395,7 @@ DatasetDetails holds details of the provisioned storage
         <td><b>datasetRef</b></td>
         <td>string</td>
         <td>
-          Reference to a Dataset resource containing the request to provision storage<br/>
+          deprecated<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1403,6 +1403,13 @@ DatasetDetails holds details of the provisioned storage
         <td>object</td>
         <td>
           Dataset information<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>persistent</b></td>
+        <td>boolean</td>
+        <td>
+          Persistent storage (not to be removed after FybrikApplication is deleted)<br/>
         </td>
         <td>false</td>
       </tr><tr>

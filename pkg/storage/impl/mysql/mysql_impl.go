@@ -5,6 +5,7 @@ package mysql
 
 import (
 	"github.com/rs/zerolog"
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
@@ -40,11 +41,12 @@ func (impl *MySQLImpl) GetConnectionType() taxonomy.ConnectionType {
 
 // storage allocation - placeholder
 func (impl *MySQLImpl) AllocateStorage(account *fappv2.FybrikStorageAccountSpec,
-	secret *fappv1.SecretRef, opts *agent.Options) (taxonomy.Connection, error) {
+	secret *fappv1.SecretRef, opts *agent.Options, client kclient.Client) (taxonomy.Connection, error) {
 	return taxonomy.Connection{Name: impl.Name}, nil
 }
 
 // storage deletion - placeholder
-func (impl *MySQLImpl) DeleteStorage(connection *taxonomy.Connection, secret *fappv1.SecretRef, opts *agent.Options) error {
+func (impl *MySQLImpl) DeleteStorage(connection *taxonomy.Connection, secret *fappv1.SecretRef,
+	opts *agent.Options, client kclient.Client) error {
 	return nil
 }

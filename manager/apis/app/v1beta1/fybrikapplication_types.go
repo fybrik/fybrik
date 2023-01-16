@@ -116,7 +116,7 @@ type SecretRef struct {
 
 // DatasetDetails holds details of the provisioned storage
 type DatasetDetails struct {
-	// Reference to a Dataset resource containing the request to provision storage
+	// deprecated
 	// +optional
 	DatasetRef string `json:"datasetRef,omitempty"`
 
@@ -131,6 +131,10 @@ type DatasetDetails struct {
 	// Resource Metadata
 	// +optional
 	ResourceMetadata *datacatalog.ResourceMetadata `json:"resourceMetadata,omitempty"`
+
+	// Persistent storage (not to be removed after FybrikApplication is deleted)
+	// +optional
+	Persistent bool `json:"persistent,omitempty"`
 }
 
 // AssetState defines the observed state of an asset

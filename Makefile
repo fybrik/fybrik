@@ -218,14 +218,12 @@ ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
-	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy-wait
 endif
-	$(MAKE) -C third_party/datashim deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
 
 .PHONY: clean-cluster-prepare
@@ -237,7 +235,6 @@ ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata undeploy
 endif
 	$(MAKE) -C third_party/vault undeploy
-	$(MAKE) -C third_party/datashim undeploy
 	
 
 # Build only the docker images needed for integration testing
