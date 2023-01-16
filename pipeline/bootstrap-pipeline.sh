@@ -230,7 +230,7 @@ EOH
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.43.2/release.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.32.1/release.yaml
     set +e
     kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
     kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
