@@ -102,6 +102,7 @@ type EvaluationOutputStructure struct {
 }
 
 // Validation of an object with respect to the admin config restriction
+//
 //nolint:gocyclo
 func (restrict Restriction) SatisfiedByResource(attrManager *infrastructure.AttributeManager, spec interface{}, instanceName string) bool {
 	details, err := utils.StructToMap(spec)
