@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 
 .PHONY: test
 test: *.go
-	go test -v
+	go test $(TEST_OPTIONS)
 
 DEBUG := ./debug.out
 

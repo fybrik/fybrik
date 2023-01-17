@@ -32,7 +32,7 @@ run:
 
 .PHONY: test
 test:
-	go test -v ./...
+	go test $(TEST_OPTIONS) ./...
 
 .PHONY: opaserver
 opaserver: $(TOOLBIN)/opa
