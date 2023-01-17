@@ -665,36 +665,36 @@ spec:
       Operator: notin
       Values:
       - "true"
-  - name: upgrade-helm-partial
-    params:
-    - name: charts_dir
-      value: /workspace/source/fybrik/charts/fybrik
-    - name: release_name
-      value: fybrik --reuse-values
-      # --values /workspace/source/pipeline/pullsecrets.yaml --reuse-values
-    - name: release_namespace
-      value: $(params.NAMESPACE)
-    - name: overwrite_values
-      value: $(params.IMAGE_ID)=$(params.IMAGE_NAME)@$(params.IMAGE_DIGEST)
-    - name: release_version
-      value: 0.1.0
-    - name: image
-      value: $(params.helm_image)
-    taskRef:
-      kind: Task
-      name: helm-upgrade-from-source
-    workspaces:
-    - name: source
-      workspace: shared-workspace
-    when:
-    - Input: $(params.IMAGE_DIGEST)
-      Operator: notin
-      Values:
-      - "none"
-    - Input: $(params.INCREMENTAL_RESTART)
-      Operator: in
-      Values:
-      - "true"
+#  - name: upgrade-helm-partial
+#    params:
+#    - name: charts_dir
+#      value: /workspace/source/fybrik/charts/fybrik
+#    - name: release_name
+#      value: fybrik --reuse-values
+#      # --values /workspace/source/pipeline/pullsecrets.yaml --reuse-values
+#    - name: release_namespace
+#      value: $(params.NAMESPACE)
+#    - name: overwrite_values
+#      value: $(params.IMAGE_ID)=$(params.IMAGE_NAME)@$(params.IMAGE_DIGEST)
+#    - name: release_version
+#      value: 0.1.0
+#    - name: image
+#      value: $(params.helm_image)
+#    taskRef:
+#      kind: Task
+#      name: helm-upgrade-from-source
+#    workspaces:
+#    - name: source
+#      workspace: shared-workspace
+#    when:
+#    - Input: $(params.IMAGE_DIGEST)
+#      Operator: notin
+#      Values:
+#      - "none"
+#    - Input: $(params.INCREMENTAL_RESTART)
+#      Operator: in
+#      Values:
+#      - "true"
   - name: upgrade-helm-crd-from-source
     params:
     - name: charts_dir
@@ -837,29 +837,29 @@ spec:
     workspaces:
     - name: source
       workspace: shared-workspace
-  - name: run-integration-tests-partial-deploy
-    params:
-    - name: target
-      value: run-integration-tests
-    - name: context
-      value: fybrik/manager
-    - name: image
-      value: $(params.build_image)
-    - name: flags
-      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
-    runAfter:
-    - upgrade-helm-partial
-    when:
-    - Input: $(params.skipTests)
-      Operator: notin
-      Values:
-      - "true"
-    taskRef:
-      kind: Task
-      name: make
-    workspaces:
-    - name: source
-      workspace: shared-workspace
+#  - name: run-integration-tests-partial-deploy
+#    params:
+#    - name: target
+#      value: run-integration-tests
+#    - name: context
+#      value: fybrik/manager
+#    - name: image
+#      value: $(params.build_image)
+#    - name: flags
+#      value: DOCKER_HOSTNAME=$(params.docker-hostname) DOCKER_NAMESPACE=$(params.docker-namespace) USE_MOCKUP_CONNECTOR=false CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
+#    runAfter:
+#    - upgrade-helm-partial
+#    when:
+#    - Input: $(params.skipTests)
+#      Operator: notin
+#      Values:
+#      - "true"
+#    taskRef:
+#      kind: Task
+#      name: make
+#    workspaces:
+#    - name: source
+#      workspace: shared-workspace
   - name: run-unit-tests-full-deploy
     params:
     - name: target
@@ -885,29 +885,29 @@ spec:
     workspaces:
     - name: source
       workspace: shared-workspace
-  - name: run-unit-tests-partial-deploy
-    params:
-    - name: target
-      value: test
-    - name: context
-      value: fybrik
-    - name: flags
-      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace) 
-    - name: image
-      value: $(params.build_image)
-    runAfter:
-    - upgrade-helm-partial
-    when:
-    - Input: $(params.skipTests)
-      Operator: notin
-      Values:
-      - "true"
-    taskRef:
-      kind: Task
-      name: make
-    workspaces:
-    - name: source
-      workspace: shared-workspace
+#  - name: run-unit-tests-partial-deploy
+#    params:
+#    - name: target
+#      value: test
+#    - name: context
+#      value: fybrik
+#    - name: flags
+#      value: CONTROLLER_NAMESPACE=$(params.NAMESPACE) MODULES_NAMESPACE=$(params.modulesNamespace)
+#    - name: image
+#      value: $(params.build_image)
+#    runAfter:
+#    - upgrade-helm-partial
+#    when:
+#    - Input: $(params.skipTests)
+#      Operator: notin
+#      Values:
+#      - "true"
+#    taskRef:
+#      kind: Task
+#      name: make
+#    workspaces:
+#    - name: source
+#      workspace: shared-workspace
   finally:
   - name: finally-remove-creds
     params:
