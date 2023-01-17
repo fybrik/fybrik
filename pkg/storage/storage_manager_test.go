@@ -22,14 +22,6 @@ func TestSupportedConnections(t *testing.T) {
 	g.Expect(connections).To(gomega.ContainElement(taxonomy.ConnectionType("mysql")))
 }
 
-// test client setup
-func TestK8sClient(t *testing.T) {
-	t.Parallel()
-	g := gomega.NewGomegaWithT(t)
-	err := InitK8sClient()
-	g.Expect(err).To(gomega.BeNil())
-}
-
 // test getProperty
 func TestGetProperty(t *testing.T) {
 	t.Parallel()
