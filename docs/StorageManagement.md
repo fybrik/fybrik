@@ -7,9 +7,6 @@ When we say that Fybrik allocates storage, we actually mean that Fybrik allocate
 
 Modules that write data to this storage, receive from Fybrik a connection that holds the relevant information about the storage (e.g. endpoint and write credentials).
 
-Currently, only S3 storage is supported. Both allocation and deletion of the storage (if temporary) is done using [Datashim](https://datashim.io/).
-Business logic related to storage management is hard-coded in Fybrik.
-
 ## Gaps / Requirements
 
 - Support additional connection types (e.g. [MySQL](https://www.mysql.com/), [Google Sheets](https://learn.microsoft.com/en-us/connectors/googlesheet/))
