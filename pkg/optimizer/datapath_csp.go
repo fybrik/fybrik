@@ -11,7 +11,6 @@ import (
 
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -999,7 +998,7 @@ func arrayOfSameInt(num, arrayLen int) []string {
 
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
-		return taxonomy.Interface{Protocol: utils.GetDefaultConnectionType(), DataFormat: ""}
+		return taxonomy.Interface{Protocol: "", DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }
