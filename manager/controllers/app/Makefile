@@ -12,4 +12,4 @@ debug: $(TOOLBIN)/dlv $(DEBUG)
 	$(ABSTOOLBIN)/dlv exec $(DEBUG)
 
 $(DEBUG): *.go
-	go test -c -o $(DEBUG)
+	go test $(TEST_OPTIONS) -c -o $(DEBUG)
