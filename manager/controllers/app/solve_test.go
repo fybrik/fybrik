@@ -510,6 +510,70 @@ func TestWriteNewAsset(t *testing.T) {
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeModule.Name))
 }
 
+// This test checks the write scenario for a new asset.
+// Storage account is for MySQL, module supports S3 only.
+// Result: failure to create the data path
+func TestStorageAndModuleMismatch(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	writeModule := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeModule)
+	account := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Spec.Type = "mysql"
+	addStorageAccount(env, account)
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
+	asset := createWriteNewAssetRequest()
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
+	asset.Configuration.ConfigDecisions["write"] = adminconfig.Decision{
+		Deploy: adminconfig.StatusTrue,
+		DeploymentRestrictions: adminconfig.Restrictions{
+			StorageAccounts: []adminconfig.Restriction{{Property: "geography", Values: adminconfig.StringList{string(account.Spec.Geography)}}}},
+	}
+	_, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).To(gomega.HaveOccurred())
+}
+
+// This test checks the write scenario for a new asset.
+// Storage accounts are for MySQL and S3, modules support MySQL and S3.
+// Policy to select MySQL storage
+// Result: the correct module is chosen.
+func TestStorageTypeRestriction(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	writeS3 := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeS3)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeS3)
+	writeMySQL := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-write-mysql.yaml", writeMySQL)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeMySQL)
+	accountS3 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", accountS3)).NotTo(gomega.HaveOccurred())
+	addStorageAccount(env, accountS3)
+	accountMySQL := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", accountMySQL)).NotTo(gomega.HaveOccurred())
+	accountMySQL.Spec.Type = "mysql"
+	addStorageAccount(env, accountMySQL)
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(accountS3.Spec.Geography)}})
+	asset := createWriteNewAssetRequest()
+	asset.StorageRequirements[accountS3.Spec.Geography] = []taxonomy.Action{}
+	asset.StorageRequirements[accountMySQL.Spec.Geography] = []taxonomy.Action{}
+	asset.Configuration.ConfigDecisions["write"] = adminconfig.Decision{
+		Deploy: adminconfig.StatusTrue,
+		DeploymentRestrictions: adminconfig.Restrictions{
+			StorageAccounts: []adminconfig.Restriction{{Property: "type", Values: adminconfig.StringList{string(accountMySQL.Spec.Type)}}}},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	// write
+	g.Expect(solution.DataPath[0].StorageAccount.Type).To(gomega.Equal(accountMySQL.Spec.Type))
+	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeMySQL.Name))
+}
+
 // This test checks the write scenario
 // Asset exists, no storage is required
 func TestWriteExistingAsset(t *testing.T) {
