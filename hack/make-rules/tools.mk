@@ -95,7 +95,7 @@ $(TOOLBIN)/oapi-codegen:
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.6.1
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.6.2
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/json-schema-generator
