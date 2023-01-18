@@ -14,9 +14,10 @@ For a One Click Demo of Fybrik and a read data scenario, refer to [OneClickDemo]
 
 Ensure that you have the following:
 
-- [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.20 or newer must be installed on your machine.
-- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator. Kubernetes version support range is 1.24-1.22 although older versions may work well.
+- [Helm](https://helm.sh/) 3.7.0 or greater must be installed and configured on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.23 or newer must be installed on your machine.
+- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator. Kubernetes version 
+support range is 1.23 - 1.25 although older versions may work well.
 
 
 ## Add required Helm repositories

@@ -29,9 +29,6 @@ make install-tools
 
 This installs additional dependencies to `hack/tools/bin`. The `make` targets (e.g., `make test`) are configured to use the binaries from `hack/tools/bin`. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using `kubectl`).
 
-Please note: For fybrik version 0.5.x and lower, Helm version greater than 3.3 but less than 3.7 is required when contributing. 
-On the other side, for fybrik v0.6.x, Helm v3.7 or above is required. 
-
 ## Editors
 
 The project is predominantly written in Go, so we recommend [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-vscode.Go) for its good Go support. Alternatively you can select from [Editors](https://golang.org/doc/editors.html)
