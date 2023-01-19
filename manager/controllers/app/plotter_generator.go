@@ -5,7 +5,6 @@ package app
 
 import (
 	"bytes"
-	"strings"
 	tmpl "text/template"
 
 	"emperror.dev/errors"
@@ -24,73 +23,44 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
+	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-const (
-	objectKeyHashLength  = 10
-	bucketNameHashLength = 10
-	endpointKey          = "endpoint"
-)
-
 // NewAssetInfo points to the provisoned storage and hold information about the new asset
 type NewAssetInfo struct {
-	Storage *storage.ProvisionedBucket
-	Details *fappv1.DataStore
+	StorageAccount *fappv2.FybrikStorageAccountSpec
+	Details        *fappv1.DataStore
+	Persistent     bool
 }
 
 // PlotterGenerator constructs a plotter based on the requirements (governance actions, data location) and the existing set of FybrikModules
 type PlotterGenerator struct {
 	Client             client.Client
 	Log                *zerolog.Logger
+	UUID               string
 	Owner              types.NamespacedName
-	Provision          storage.ProvisionInterface
+	StorageManager     storage.StorageManagerInterface
 	ProvisionedStorage map[string]NewAssetInfo
 }
 
-// AllocateStorage creates a Dataset for bucket allocation
-func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
+// Provision allocates storage based on the selected account and generates the destination data store for the plotter
+func (p *PlotterGenerator) Provision(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
 	account *fappv2.FybrikStorageAccountSpec) (*fappv1.DataStore, error) {
 	// provisioned storage
-	var genBucketName, genObjectKeyName string
-	if item.DataDetails.ResourceMetadata.Name != "" {
-		genObjectKeyName = item.DataDetails.ResourceMetadata.Name + utils.Hash(p.Owner.Name+p.Owner.Namespace, objectKeyHashLength)
-	} else {
-		genObjectKeyName = p.Owner.Name + utils.Hash(item.Context.DataSetID, objectKeyHashLength)
-	}
-	genBucketName = generateBucketName(p.Owner, item.Context.DataSetID)
-	if account.AdditionalProperties.Items[string(account.Type)] == nil {
-		logging.LogStructure("Account", account, p.Log, zerolog.ErrorLevel, false, false)
-		return nil, errors.New("S3 properties have not been specified")
-	}
-	details := account.AdditionalProperties.Items[string(account.Type)].(map[string]interface{})
-	bucket := &storage.ProvisionedBucket{
-		Name:      genBucketName,
-		Endpoint:  details[endpointKey].(string),
-		SecretRef: types.NamespacedName{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()},
-		Region:    string(account.Geography),
-	}
-	bucketRef := &types.NamespacedName{Name: bucket.Name, Namespace: environment.GetSystemNamespace()}
-	if err := p.Provision.CreateDataset(bucketRef, bucket, &p.Owner); err != nil {
-		p.Log.Error().Err(err).Msg("Dataset creation failed")
+	secret := &fappv1.SecretRef{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()}
+	connection, err := p.StorageManager.AllocateStorage(account, secret, &agent.Options{
+		AppDetails:        agent.ApplicationDetails{Owner: &p.Owner, UUID: p.UUID},
+		DatasetProperties: agent.DatasetDetails{Name: item.Context.DataSetID},
+		ConfigurationOpts: agent.ConfigOptions{},
+	})
+	if err != nil {
+		p.Log.Error().Err(err).Msg("Storage allocation failed")
 		return nil, err
 	}
 
-	connection := taxonomy.Connection{
-		Name: account.Type,
-		AdditionalProperties: serde.Properties{
-			Items: map[string]interface{}{
-				string(account.Type): map[string]interface{}{
-					endpointKey:  bucket.Endpoint,
-					"bucket":     bucket.Name,
-					"object_key": genObjectKeyName,
-				},
-			},
-		},
-	}
-
-	vaultSecretPath := vault.PathForReadingKubeSecret(bucket.SecretRef.Namespace, bucket.SecretRef.Name)
+	vaultSecretPath := vault.PathForReadingKubeSecret(secret.Namespace, secret.Name)
 	vaultMap := make(map[string]fappv1.Vault)
 	if environment.IsVaultEnabled() {
 		vaultMap[string(taxonomy.WriteFlow)] = fappv1.Vault{
@@ -114,8 +84,8 @@ func (p *PlotterGenerator) AllocateStorage(item *datapath.DataInfo, destinationI
 		Format:     destinationInterface.DataFormat,
 	}
 	assetInfo := NewAssetInfo{
-		Storage: bucket,
-		Details: datastore,
+		StorageAccount: account,
+		Details:        datastore,
 	}
 	p.ProvisionedStorage[item.Context.DataSetID] = assetInfo
 	logging.LogStructure("ProvisionedStorage element", assetInfo, p.Log, zerolog.DebugLevel, false, true)
@@ -252,7 +222,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 	element.Sink.Connection.DataFormat = p.getSupportedFormat(&capability)
 
 	// allocate storage
-	if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
+	if sinkDataStore, err = p.Provision(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 		p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation failed")
 		return err
 	}
@@ -315,9 +285,9 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 			}
 		}
 		if element.Sink != nil && !element.Sink.Virtual && element.StorageAccount.Geography != "" {
-			// allocate storage and create a temoprary asset
+			// allocate storage and create a temporary asset
 			var sinkDataStore *fappv1.DataStore
-			if sinkDataStore, err = p.AllocateStorage(item, element.Sink.Connection, &element.StorageAccount); err != nil {
+			if sinkDataStore, err = p.Provision(item, element.Sink.Connection, &element.StorageAccount); err != nil {
 				p.Log.Error().Err(err).Str(logging.DATASETID, item.Context.DataSetID).Msg("Storage allocation for copy failed")
 				return err
 			}
@@ -417,12 +387,6 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fappv1.Capabilit
 		DataFormat: api.DataFormat,
 	}
 	return service, nil
-}
-
-func generateBucketName(owner types.NamespacedName, id string) string {
-	name := owner.Name + "-" + owner.Namespace + utils.Hash(id, bucketNameHashLength)
-	name = strings.ReplaceAll(name, ".", "-")
-	return utils.K8sConformName(name)
 }
 
 // resolve string fields that are templated using the values map

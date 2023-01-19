@@ -9,7 +9,6 @@ metadata:
 type: Opaque
 stringData:
   access_key: "ak"
-  accessKeyID: "ak"
   secret_key: "sk"
-  secretAccessKey: "sk"
+  
 

@@ -7,9 +7,6 @@ When we say that Fybrik allocates storage, we actually mean that Fybrik allocate
 
 Modules that write data to this storage, receive from Fybrik a connection that holds the relevant information about the storage (e.g. endpoint and write credentials).
 
-Currently, only S3 storage is supported. Both allocation and deletion of the storage (if temporary) is done using [Datashim](https://datashim.io/).
-Business logic related to storage management is hard-coded in Fybrik.
-
 ## Gaps / Requirements
 
 - Support additional connection types (e.g. [MySQL](https://www.mysql.com/), [Google Sheets](https://learn.microsoft.com/en-us/connectors/googlesheet/))
@@ -268,11 +265,11 @@ Currently, the only available storage connection type is S3. It has been hard-co
 
 - Provide connection taxonomy layer for s3, db2, kafka, arrow-flight, what else?
 
-- Changes to FybrikStorageAccount CR
+- [Changes to FybrikStorageAccount CR](https://github.com/fybrik/fybrik/pull/1855)
 
 - Implement StorageManager with the defined API for s3 using minio sdk.
 
-- Remove dependency on datashim
+- [Remove dependency on datashim](https://github.com/fybrik/fybrik/pull/1903)
 
 - Update documentation accordingly
 

@@ -175,7 +175,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			policyManager,
 			catalog,
 			clusterManager,
-			storage.NewProvisionImpl(mgr.GetClient()),
+			storage.NewStorageManager(),
 			evaluator,
 			infrastructureManager,
 		)
