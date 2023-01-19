@@ -1719,10 +1719,6 @@ aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set
 </ol>
 </details>
 <h2 id="deploy-resources-for-write-scenarios">Deploy resources for write scenarios</h2>
-<p>Deploy <a href="https://github.com/datashim-io/datashim">Datashim</a>: 
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">kubectl apply -f https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/datashim/dlf.yaml</span>
-</code></pre></div></p>
-<p>For more deployment options of Datashim based on your environment please refer to the <a href="https://github.com/datashim-io/datashim">datashim site</a>.</p>
 <p>Register the credentials required for accessing the object storage. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
 <p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
@@ -1733,9 +1729,7 @@ aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set
 <span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Opaque</span>
 <span class="nt">stringData</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ACCESS_KEY}&quot;</span>
-<span class="w">  </span><span class="nt">accessKeyID</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ACCESS_KEY}&quot;</span>
 <span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span>
-<span class="w">  </span><span class="nt">secretAccessKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span>
 <span class="l l-Scalar l-Scalar-Plain">EOF</span>
 </code></pre></div>
 Then, register two storage accounts: one in <code>theshire</code> and one in <code>neverland</code>. Replace the value for <code>endpoint</code> with value from the object storage service that you used and run:</p>
