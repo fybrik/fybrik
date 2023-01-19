@@ -10,16 +10,13 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 const (
-	StepNameHashLength                               = 10
-	hashPostfixLength                                = 5
-	k8sMaxConformNameLength                          = 63
-	helmMaxConformNameLength                         = 53
-	S3                       taxonomy.ConnectionType = "s3"
+	StepNameHashLength       = 10
+	hashPostfixLength        = 5
+	k8sMaxConformNameLength  = 63
+	helmMaxConformNameLength = 53
 )
 
 // Intersection finds a common subset of two given sets of strings
