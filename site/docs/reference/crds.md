@@ -299,7 +299,7 @@ AssetContext defines the input parameters for modules that access an asset
 
 
 
-DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
 
 <table>
     <thead>
@@ -314,7 +314,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -340,7 +340,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -1450,7 +1450,7 @@ Dataset information
         <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1476,7 +1476,7 @@ Dataset information
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -2520,7 +2520,7 @@ AssetDetails is a list of assets used in the fybrikapplication. In addition to a
         <td><b><a href="#plotterspecassetskeyassetdetails">assetDetails</a></b></td>
         <td>object</td>
         <td>
-          DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.<br/>
+          DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2539,7 +2539,7 @@ AssetDetails is a list of assets used in the fybrikapplication. In addition to a
 
 
 
-DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
 
 <table>
     <thead>
@@ -2554,7 +2554,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
         <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2580,7 +2580,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>

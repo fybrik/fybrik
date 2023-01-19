@@ -255,7 +255,7 @@ spec:
                         description: Dataset information
                         properties:
                           connection:
-                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                            description: Connection has the relevant details for accessing the data (url, table, ssl, etc.)
                             properties:
                               name:
                                 description: Name of the connection to the data source

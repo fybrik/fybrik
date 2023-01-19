@@ -265,11 +265,11 @@ Currently, the only available storage connection type is S3. It has been hard-co
 
 - Provide connection taxonomy layer for s3, db2, kafka, arrow-flight, what else?
 
-- Changes to FybrikStorageAccount CR
+- [Changes to FybrikStorageAccount CR](https://github.com/fybrik/fybrik/pull/1855)
 
 - Implement StorageManager with the defined API for s3 using minio sdk.
 
-- Remove dependency on datashim
+- [Remove dependency on datashim](https://github.com/fybrik/fybrik/pull/1903)
 
 - Update documentation accordingly
 

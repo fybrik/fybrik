@@ -93,10 +93,10 @@ spec:
                                 args:
                                   description: List of datastores associated with the asset
                                   items:
-                                    description: DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+                                    description: DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
                                     properties:
                                       connection:
-                                        description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                                        description: Connection has the relevant details for accessing the data (url, table, ssl, etc.)
                                         properties:
                                           name:
                                             description: Name of the connection to the data source
