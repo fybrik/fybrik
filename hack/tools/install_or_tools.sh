@@ -25,7 +25,7 @@ case ${os} in
 esac
 
 header_text "Checking for bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}"
-[[ -f bin/fzn-or-tools ]] && [[ -f "${BUILD_FILE}" ]] && [[ `cat "${BUILD_FILE}"` == "${OR_TOOLS_BUILD}" ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${OR_TOOLS_VERSION}" ]] && exit 0
+# [[ -f bin/fzn-or-tools ]] && [[ -f "${BUILD_FILE}" ]] && [[ `cat "${BUILD_FILE}"` == "${OR_TOOLS_BUILD}" ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${OR_TOOLS_VERSION}" ]] && exit 0
 
 header_text "Installing bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}"
 mkdir -p ./bin
@@ -39,5 +39,5 @@ tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
 chmod +x ./bin/fzn-or-tools
-echo ${OR_TOOLS_BUILD} > ${BUILD_FILE}
-echo ${OR_TOOLS_VERSION} > ${VERSION_FILE}
+# echo ${OR_TOOLS_BUILD} > ${BUILD_FILE}
+# echo ${OR_TOOLS_VERSION} > ${VERSION_FILE}
