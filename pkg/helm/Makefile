@@ -20,7 +20,7 @@ test: $(ABSTOOLBIN)/helm
 	cd $(TMP) && $(ABSTOOLBIN)/helm create $(CHART_NAME)
 	cd $(TMP) && $(ABSTOOLBIN)/helm package $(CHART_NAME) -d $(TMP)  --version $(VERSION)
 	cd $(TMP) && $(ABSTOOLBIN)/helm push $(TMP)/$(CHART_FILE_NAME) oci://localhost:5000/fybrik-system/
-	TMP_CHART=$(TMP)/$(CHART_NAME) go test -v $(SOURCE)
+	TMP_CHART=$(TMP)/$(CHART_NAME) go test $(TEST_OPTIONS) $(SOURCE)
 	rm -rf $(TMP)/$(CHART_FILE_NAME)
 
 .PHONY: build
