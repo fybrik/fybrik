@@ -18,8 +18,12 @@ export COPY_TEST_CACERTS ?= 0
 export RUN_VAULT_CONFIGURATION_SCRIPT ?= 1
 # if set, it contains the openmetadata asset name used for testing
 export CATALOGED_ASSET ?= openmetadata-s3.default.bucket1."data.csv"
-# If true, deploy openmetadata
-export DEPLOY_OPENMETADATA ?= 1
+# If true, deploy openmetadata server
+export DEPLOY_OPENMETADATA_SERVER ?= 1
+# If true, use openmetadata as the catalog. Otherwise assume built-in catalog is used.
+export USE_OPENMETADATA_CATALOG ?= 1
+# If true, avoid creating a new cluster.
+export USE_EXISTING_CLUSTER ?= 0
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -33,6 +37,10 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
+	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
+	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
+		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
+	go fix ./...
 
 .PHONY: generate-docs
 generate-docs:
@@ -60,6 +68,11 @@ manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 .PHONY: docker-mirror-read
 docker-mirror-read:
 	$(TOOLS_DIR)/docker_mirror.sh $(TOOLS_DIR)/docker_mirror.conf
+
+.PHONY: undeploy-fybrik
+undeploy-fybrik:
+	$(TOOLBIN)/helm uninstall fybrik-crd --namespace $(KUBE_NAMESPACE)
+	$(TOOLBIN)/helm uninstall fybrik --namespace $(KUBE_NAMESPACE)
 
 .PHONY: deploy-fybrik
 deploy-fybrik: export VALUES_FILE?=charts/fybrik/values.yaml
@@ -92,7 +105,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
 	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-  	-b charts/fybrik/files/taxonomy/taxonomy.json \
+	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
 		$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
@@ -101,12 +114,14 @@ test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
 test: pre-test
-	go test -v ./...
-	USE_CSP=true go test -v ./manager/controllers/app -count 1
+	go test $(TEST_OPTIONS) ./...
+	USE_CSP=true go test $(TEST_OPTIONS) ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
+run-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
+run-integration-tests: export USE_OPENMETADATA_CATALOG=0
 run-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C modules helm
@@ -125,7 +140,8 @@ run-notebook-readflow-tests:
 run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
 run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
-run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA=0
+run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
+run-notebook-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
 run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
@@ -136,19 +152,13 @@ run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
 run-notebook-readflow-tls-tests: export PATCH_FYBRIK_MODULE=1
-run-notebook-readflow-tls-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
-run-notebook-readflow-tls-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-tests: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
 run-notebook-readflow-tls-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
-run-notebook-readflow-tls-system-cacerts-tests: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
-run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_OPENMETADATA=0
-run-notebook-readflow-tls-system-cacerts-tests: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
-run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.6
+run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.7
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests: export COPY_TEST_CACERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
@@ -171,6 +181,8 @@ run-notebook-writeflow-tests:
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
 run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-namescope-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
+run-namescope-integration-tests: export USE_OPENMETADATA_CATALOG=0
 run-namescope-integration-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-integration-tests
@@ -179,7 +191,9 @@ run-namescope-integration-tests:
 setup-cluster: export DOCKER_HOSTNAME?=localhost:5000
 setup-cluster: export DOCKER_NAMESPACE?=fybrik-system
 setup-cluster:
+ifeq ($(USE_EXISTING_CLUSTER),0)
 	$(MAKE) kind
+endif
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
@@ -200,19 +214,28 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
-ifeq ($(DEPLOY_OPENMETADATA),1)
+ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
-	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy-wait
 endif
-	$(MAKE) -C third_party/datashim deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
+
+.PHONY: clean-cluster-prepare
+clean-cluster-prepare:
+	cd manager/testdata/notebook/read-flow-tls && ./clean-certs.sh || true
+	$(MAKE) -C third_party/cert-manager undeploy
+	$(MAKE) -C third_party/kubernetes-reflector undeploy || true
+ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
+	$(MAKE) -C third_party/openmetadata undeploy
+endif
+	$(MAKE) -C third_party/vault undeploy
+	
 
 # Build only the docker images needed for integration testing
 .PHONY: docker-minimal-it

@@ -16,9 +16,9 @@ Ensure that you have the following installed on your machine:
 - make
 - jq
 - unzip
-- [Go](https://go.dev/) 1.16 or greater 
+- [Go](https://go.dev/) 1.19
 - [Helm](https://helm.sh/) 3.7 or greater
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.18 or greater
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.22 or greater
 - [Kind](http://kind.sigs.k8s.io/)
 - A web browser
 
@@ -71,7 +71,7 @@ sh ./hack/setup-local-multi-cluster.sh
 
 You can also manually execute the commands in this script one by one.
 
-This script will setup two Kind clusters, install and configure Razee, Vault, Cert-manager, Datashim to them. After the script finishes running, we will get a multicluster environment consisting of two clusters:
+This script will setup two Kind clusters, install and configure Razee, Vault, Cert-manager to them. After the script finishes running, we will get a multicluster environment consisting of two clusters:
 
 - kind-control
 - kind-kind
@@ -240,8 +240,11 @@ metadata:
   namespace: fybrik-system
 spec:
   id: homeoffice
-  endpoints:
-    homeoffice: "http://control-control-plane:30566"
+  type: s3
+  geography: homeoffice
+  s3:
+    endpoint: "http://control-control-plane:30566"
+    region: homeoffice
   secretRef:  bucket-creds
 EOF
 ```
@@ -260,9 +263,7 @@ metadata:
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
-  accessKeyID: "${ACCESS_KEY}"
   secret_key: "${SECRET_KEY}"
-  secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
 

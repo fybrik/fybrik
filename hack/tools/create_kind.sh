@@ -8,7 +8,7 @@ op=$1
 
 source ./common.sh
 
-K8S_VERSION=${K8S_VERSION:-v1.22.9@sha256:6e57a6b0c493c7d7183a1151acff0bfa44bf37eb668826bf00da5637c55b6d5e}
+K8S_VERSION=${K8S_VERSION:-v1.25.3@sha256:f52781bc0d7a19fb6c405c2af83abfeb311f130707a0e219175677e366cc45d1}
 : ${KUBE_NAMESPACE:=fybrik-system}
 : ${KEEP_PROXY:=true}
 

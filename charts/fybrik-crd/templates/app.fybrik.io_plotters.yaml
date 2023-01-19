@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.11.1
   name: plotters.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -79,6 +79,7 @@ spec:
                           description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
                           type: object
                       type: object
+                      x-kubernetes-map-type: atomic
                   required:
                     - workloadSelector
                   type: object
@@ -90,10 +91,10 @@ spec:
                         description: AdvertisedAssetID links this asset to asset from fybrikapplication and is used by user facing services
                         type: string
                       assetDetails:
-                        description: DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+                        description: DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
                         properties:
                           connection:
-                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                            description: Connection has the relevant details for accessing the data (url, table, ssl, etc.)
                             properties:
                               name:
                                 description: Name of the connection to the data source
@@ -188,8 +189,10 @@ spec:
                                         action:
                                           description: Actions are the data transformations that the module supports
                                           items:
+                                            description: Action to be performed on the data, e.g., masking
                                             properties:
                                               name:
+                                                description: Action name
                                                 type: string
                                             required:
                                               - name
@@ -494,9 +497,3 @@ spec:
       storage: true
       subresources:
         status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

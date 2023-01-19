@@ -2,6 +2,7 @@
 # Copyright 2021 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
+kubectl delete namespace fybrik-notebook-sample || true
 kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 

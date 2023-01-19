@@ -35,7 +35,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 	} else {
 		resourceMetadata.Name = assetID
 	}
-	// Update the Geography with the allocated storage region
+	// Update the Geography with the allocated storage geography
 	if info.ResourceMetadata != nil {
 		resourceMetadata.Geography = info.ResourceMetadata.Geography
 	}
@@ -51,7 +51,7 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		DestinationCatalogID: catalogID,
 		DestinationAssetID:   assetID,
 	}
-	// credentialPath is constructed even if vault is not used for credential managment
+	// credentialPath is constructed even if vault is not used for credential management
 	// in order to enable the connector to get the credentials directly from the secret
 	// using the secret information extracted from the credentialPath string.
 	credentialPath := vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)

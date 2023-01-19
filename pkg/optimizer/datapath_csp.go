@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
@@ -46,8 +46,8 @@ const (
 
 // Couples together a module and one of its capabilities
 type moduleAndCapability struct {
-	module        *appApi.FybrikModule
-	capability    *appApi.ModuleCapability
+	module        *fappv1.FybrikModule
+	capability    *fappv1.ModuleCapability
 	capabilityIdx int  // The index of capability in module's spec
 	virtualSource bool // whether data is consumed via API
 	virtualSink   bool // whether data is transferred in memory via API
@@ -151,8 +151,9 @@ func (dpc *DataPathCSP) addInterface(intfc *taxonomy.Interface) {
 
 // This is the main method for building a FlatZinc CSP out of the data-path parameters and constraints.
 // Returns a file name where the model was dumped
-// NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid confusion
-//       The only exception is with interfaces (0 means nil)
+//
+// NOTE: Minimal index of FlatZinc arrays is always 1. Hence, we use 1-based modeling all over the place to avoid
+// confusion. The only exception is with interfaces (0 means nil)
 func (dpc *DataPathCSP) BuildFzModel(pathLength int) (string, error) {
 	dpc.fzModel.Clear() // This function can be called multiple times - clear vars and constraints from last call
 	// Variables to select the module capability we use on each data-path location
@@ -298,7 +299,7 @@ func (dpc *DataPathCSP) clusterSatisfiesRestrictions(cluster multicluster.Cluste
 }
 
 // Decide if a given storage account satisfies all administrator's restrictions
-func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *appApi.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
+func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *fappv2.FybrikStorageAccount, restrictions []adminconfig.Restriction) bool {
 	for _, restriction := range restrictions {
 		if !restriction.SatisfiedByResource(dpc.env.AttributeManager, &sa.Spec, sa.Name) {
 			return false
@@ -433,7 +434,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 
 	if dpc.problemData.Context.Flow != taxonomy.WriteFlow || dpc.problemData.Context.Requirements.FlowParams.IsNewDataSet {
 		for saIdx, sa := range dpc.env.StorageAccounts {
-			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Region]
+			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Geography]
 			if !found { //
 				dpc.preventAssignments([]string{saVarname}, []int{saIdx + 1}, pathLength)
 			} else {
@@ -850,7 +851,7 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	}
 	for _, sa := range dpc.env.StorageAccounts {
 		for _, cluster := range dpc.env.Clusters {
-			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Region), cluster.Metadata.Region)
+			value, err := dpc.env.AttributeManager.GetNormAttrValFromArgs(attr, string(sa.Spec.Geography), cluster.Metadata.Region)
 			if err != nil {
 				return "", err
 			}
@@ -941,7 +942,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 		modCap := dpc.modulesCapabilities[modCapIdx-1]
 		clusterIdx, _ := strconv.Atoi(clusterSolution[pathPos])
 		saIdx, _ := strconv.Atoi(saSolution[pathPos])
-		sa := appApi.FybrikStorageAccountSpec{}
+		sa := fappv2.FybrikStorageAccountSpec{}
 		if saIdx != dpc.noStorageAccountVal {
 			sa = dpc.env.StorageAccounts[saIdx-1].Spec
 		}
@@ -997,7 +998,7 @@ func arrayOfSameInt(num, arrayLen int) []string {
 
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
-		return taxonomy.Interface{Protocol: utils.GetDefaultConnectionType(), DataFormat: ""}
+		return taxonomy.Interface{Protocol: "s3", DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }

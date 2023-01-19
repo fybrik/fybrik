@@ -1,16 +1,6 @@
-{% if FybrikRelease is ne('__Release__') %}
-    {% set currentRelease = FybrikRelease %}
-    {% set fybrikVersionFlag = '--version ' + currentRelease|replace("v","") %}
-    {% if arrowFlight[currentRelease]  is defined %}
-         {% set arrowFlightRelease = arrowFlight[currentRelease] %}
-    {% elif arrowFlight[currentRelease|truncate(4, True, '', 0)] is defined %}
-        {% set arrowFlightRelease = arrowFlight[currentRelease|truncate(4, True, '', 0)] %}
-    {% endif %}
-{% endif %}
-
-{% if arrowFlightRelease  is not defined %}
-    {% set arrowFlightRelease = 'latest' %}
-{% endif %}
+{% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
+{% set currentRelease = fybrik_version(FybrikRelease) %}
+{% set fybrikVersionFlag = fybrik_version_flag(FybrikRelease) %}
 
 # Quick Start Guide
 
@@ -18,13 +8,16 @@ Follow this guide to install Fybrik using default parameters that are suitable f
 
 <!-- For a full installation refer to the [full installation guide](./setup/install) instead. -->
 
+For a One Click Demo of Fybrik and a read data scenario, refer to [OneClickDemo](./OneClickDemo.md).
+
 ## Before you begin
 
 Ensure that you have the following:
 
-- [Helm](https://helm.sh/) 3.3 or greater must be installed and configured on your machine.
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.20 or newer must be installed on your machine.
-- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator. Kubernetes version support range is 1.24-1.22 although older versions may work well.
+- [Helm](https://helm.sh/) 3.7.0 or greater must be installed and configured on your machine.
+- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) 1.23 or newer must be installed on your machine.
+- Access to a Kubernetes cluster such as [Kind](http://kind.sigs.k8s.io/) as a cluster administrator. Kubernetes version 
+support range is 1.23 - 1.25 although older versions may work well.
 
 
 ## Add required Helm repositories

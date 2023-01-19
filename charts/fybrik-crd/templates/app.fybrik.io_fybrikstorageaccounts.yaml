@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.11.1
   name: fybrikstorageaccounts.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -13,7 +13,9 @@ spec:
     singular: fybrikstorageaccount
   scope: Namespaced
   versions:
-    - name: v1beta1
+    - deprecated: true
+      deprecationWarning: v1beta1 version of fybrikstorageaccount is deprecated and will be removed soon, please use v1beta2 version instead
+      name: v1beta1
       schema:
         openAPIV3Schema:
           description: FybrikStorageAccount defines a storage account used for copying data. Only S3 based storage is supported. It contains endpoint, region and a reference to the credentials a Owner of the asset is responsible to store the credentials
@@ -54,10 +56,47 @@ spec:
             - spec
           type: object
       served: true
+      storage: false
+    - name: v1beta2
+      schema:
+        openAPIV3Schema:
+          description: FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space for datasets whose creation or copy it orchestrates.
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
+              properties:
+                geography:
+                  description: Storage geography
+                  type: string
+                id:
+                  description: Identification of a storage account
+                  type: string
+                secretRef:
+                  description: A name of k8s secret deployed in the control plane.
+                  type: string
+                type:
+                  description: Type of the storage, e.g., s3
+                  type: string
+              required:
+                - geography
+                - id
+                - secretRef
+                - type
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            status:
+              description: FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
       storage: true
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

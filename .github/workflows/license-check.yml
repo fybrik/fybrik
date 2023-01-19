@@ -12,10 +12,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
       - name: Run license check
         run: |
-          go get -u github.com/google/addlicense
+          go install github.com/google/addlicense@latest
           export PATH=$PATH:$(go env GOPATH)/bin
           addlicense -f hack/LICENSE.go.txt -check $(find $PWD -type f -name '*.go')
 

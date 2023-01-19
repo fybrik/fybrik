@@ -30,7 +30,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/test"
 )
 
@@ -43,7 +44,9 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	defer GinkgoRecover()
 
-	err := fapp.AddToScheme(scheme.Scheme)
+	err := fappv1.AddToScheme(scheme.Scheme)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	err = fappv2.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -74,7 +77,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	writeApplication := &fapp.FybrikApplication{}
+	writeApplication := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
 	writeApplicationKey := client.ObjectKeyFromObject(writeApplication)
@@ -128,13 +131,13 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
-	writeApplication = &fapp.FybrikApplication{}
+	writeApplication = &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
 	writeApplicationKey = client.ObjectKeyFromObject(writeApplication)
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		application := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
+		application := &fappv1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
 			Name: writeApplicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), writeApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
@@ -150,13 +153,13 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}, timeout, interval).Should(gomega.Succeed())
 
 	fmt.Println("Expecting plotter to be constructed")
-	g.Eventually(func() *fapp.ResourceReference {
+	g.Eventually(func() *fappv1.ResourceReference {
 		_ = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 		return writeApplication.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter := &fapp.Plotter{}
+	plotter := &fappv1.Plotter{}
 	plotterObjectKey := client.ObjectKey{Namespace: writeApplication.Status.Generated.Namespace, Name: writeApplication.Status.Generated.Name}
 	fmt.Println("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
@@ -182,8 +185,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	g.Expect(len(writeApplication.Status.ProvisionedStorage)).To(gomega.Equal(1))
 	// check provisioned storage
-	g.Expect(writeApplication.Status.ProvisionedStorage["new-data"].DatasetRef).
-		ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(writeApplication.Status.ProvisionedStorage).To(gomega.HaveKey("new-data"), "No storage provisioned")
 
 	// Get the new connection details
 	var newBucket, newObject string
@@ -279,7 +281,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	fmt.Println("Starting read scenario")
 	// Installing application to read new data
-	readApplication := &fapp.FybrikApplication{}
+	readApplication := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-read.yaml", readApplication)).
 		ToNot(gomega.HaveOccurred())
 	// Update the name of the dataset id
@@ -296,19 +298,19 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}, timeout, interval).Should(gomega.Succeed())
 	// Ensure getting cleaned up after tests finish
 	defer func() {
-		application := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
+		application := &fappv1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
 			Name: readApplicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), readApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
 	}()
 	fmt.Println("Expecting plotter to be constructed")
-	g.Eventually(func() *fapp.ResourceReference {
+	g.Eventually(func() *fappv1.ResourceReference {
 		_ = k8sClient.Get(context.Background(), readApplicationKey, readApplication)
 		return readApplication.Status.Generated
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter = &fapp.Plotter{}
+	plotter = &fappv1.Plotter{}
 	plotterObjectKey = client.ObjectKey{Namespace: readApplication.Status.Generated.Namespace, Name: readApplication.Status.Generated.Name}
 	fmt.Println("Expecting plotter to be fetchable")
 	g.Eventually(func() error {
