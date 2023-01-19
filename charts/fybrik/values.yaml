@@ -296,7 +296,7 @@ opaServer:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "openpolicyagent/opa:0.43.1"
+  image: "openpolicyagent/opa:0.48.0"
   
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"
