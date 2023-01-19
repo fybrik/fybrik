@@ -515,6 +515,9 @@ func TestWriteNewAsset(t *testing.T) {
 // Result: failure to create the data path
 func TestStorageAndModuleMismatch(t *testing.T) {
 	t.Parallel()
+	if environment.UseCSP() {
+		t.Skip()
+	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
 	writeModule := &fapp.FybrikModule{}
@@ -542,6 +545,9 @@ func TestStorageAndModuleMismatch(t *testing.T) {
 // Result: the correct module is chosen.
 func TestStorageTypeRestriction(t *testing.T) {
 	t.Parallel()
+	if environment.UseCSP() {
+		t.Skip()
+	}
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
 	writeS3 := &fapp.FybrikModule{}

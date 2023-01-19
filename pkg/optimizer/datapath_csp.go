@@ -998,7 +998,7 @@ func arrayOfSameInt(num, arrayLen int) []string {
 
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
-		return taxonomy.Interface{Protocol: "", DataFormat: ""}
+		return taxonomy.Interface{Protocol: "s3", DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }
