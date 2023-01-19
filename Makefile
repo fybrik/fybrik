@@ -114,8 +114,8 @@ test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
 test: pre-test
-	go test -v ./...
-	USE_CSP=true go test -v ./manager/controllers/app -count 1
+	go test $(TEST_OPTIONS) ./...
+	USE_CSP=true go test $(TEST_OPTIONS) ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
 run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
@@ -218,14 +218,12 @@ ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
-	$(MAKE) -C third_party/datashim deploy
 
 .PHONY: cluster-prepare-wait
 cluster-prepare-wait:
 ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	$(MAKE) -C third_party/kubernetes-reflector deploy-wait
 endif
-	$(MAKE) -C third_party/datashim deploy-wait
 	$(MAKE) -C third_party/vault deploy-wait
 
 .PHONY: clean-cluster-prepare
@@ -237,7 +235,6 @@ ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 	$(MAKE) -C third_party/openmetadata undeploy
 endif
 	$(MAKE) -C third_party/vault undeploy
-	$(MAKE) -C third_party/datashim undeploy
 	
 
 # Build only the docker images needed for integration testing

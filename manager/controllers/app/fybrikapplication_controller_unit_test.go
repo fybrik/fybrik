@@ -78,7 +78,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 			Client: cl,
 		},
 		ClusterManager:  &mockup.ClusterLister{},
-		Provision:       &storage.ProvisionTest{},
+		StorageManager:  storage.NewFakeStorageManager(),
 		ConfigEvaluator: evaluator,
 		Infrastructure:  infrastructureManager,
 	}
@@ -558,7 +558,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(application.Status.AssetStates["s3/deny-dataset"].Conditions[DenyConditionIndex].Status).
 		To(gomega.BeIdenticalTo(corev1.ConditionTrue))
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage["db2/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage).To(gomega.HaveKey("db2/redact-dataset"), "No storage provisioned")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -785,7 +785,7 @@ func TestMultipleRegions(t *testing.T) {
 	err = cl.Get(context.TODO(), req.NamespacedName, application)
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage["s3-external/redact-dataset"].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage).To(gomega.HaveKey("s3-external/redact-dataset"), "No storage provisioned")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
 	plotterObjectKey := types.NamespacedName{
@@ -872,7 +872,7 @@ func TestCopyData(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
 
 	// check provisioned storage
-	g.Expect(application.Status.ProvisionedStorage[assetName].DatasetRef).ToNot(gomega.BeEmpty(), "No storage provisioned")
+	g.Expect(application.Status.ProvisionedStorage).To(gomega.HaveKey(assetName), "No storage provisioned")
 	g.Expect(application.Status.ProvisionedStorage[assetName].SecretRef.Name).To(gomega.Equal("credentials-theshire"),
 		"Incorrect storage was selected")
 	// check plotter creation

@@ -48,18 +48,18 @@ prep-test: wait_for_manager
 
 .PHONY: run-integration-tests
 run-integration-tests: prep-test
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestAPIs -count 1
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... $(TEST_OPTIONS) -run TestAPIs -count 1
 
 
 .PHONY: run-notebook-readflow-tests
 run-notebook-readflow-tests: prep-test
 	cd testdata/notebook/read-flow && ./setup.sh
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3NotebookReadFlow -count 1
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... $(TEST_OPTIONS) -run TestS3NotebookReadFlow -count 1
 
 .PHONY: run-notebook-writeflow-tests
 run-notebook-writeflow-tests: prep-test
 	cd testdata/notebook/write-flow && ./setup.sh
-	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... -v -run TestS3NotebookWriteFlow -count 1
+	NO_SIMULATED_PROGRESS=true USE_EXISTING_CONTROLLER=true USE_EXISTING_CLUSTER=true go test ./... $(TEST_OPTIONS) -run TestS3NotebookWriteFlow -count 1
 
 DEBUG := ./debug.out
 

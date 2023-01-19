@@ -19,7 +19,7 @@ run: fmt vet
 test: build
 	./datauserserver&
 	sleep 10
-	go test -v ./...
+	go test $(TEST_OPTIONS) ./...
 
 # Build as linux binary
 .PHONY: build
