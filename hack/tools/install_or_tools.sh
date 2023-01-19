@@ -6,8 +6,8 @@
 cd "${0%/*}"
 source ./common.sh
 
-BUILD_FILE=lib/build
-VERSION_FILE=lib/version
+BUILD_FILE=lib/fzn-or-tools-build
+VERSION_FILE=lib/fzn-or-tools-version
 
 case ${os} in
     linux)
