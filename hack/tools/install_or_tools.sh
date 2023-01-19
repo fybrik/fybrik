@@ -39,5 +39,5 @@ tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
 chmod +x ./bin/fzn-or-tools
-# echo ${OR_TOOLS_BUILD} > ${BUILD_FILE}
-# echo ${OR_TOOLS_VERSION} > ${VERSION_FILE}
+echo ${OR_TOOLS_BUILD} > ${BUILD_FILE}
+echo ${OR_TOOLS_VERSION} > ${VERSION_FILE}
