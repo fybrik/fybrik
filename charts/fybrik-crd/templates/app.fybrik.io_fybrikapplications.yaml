@@ -249,13 +249,13 @@ spec:
                     description: DatasetDetails holds details of the provisioned storage
                     properties:
                       datasetRef:
-                        description: Reference to a Dataset resource containing the request to provision storage
+                        description: deprecated
                         type: string
                       details:
                         description: Dataset information
                         properties:
                           connection:
-                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                            description: Connection has the relevant details for accessing the data (url, table, ssl, etc.)
                             properties:
                               name:
                                 description: Name of the connection to the data source
@@ -294,6 +294,9 @@ spec:
                         required:
                           - connection
                         type: object
+                      persistent:
+                        description: Persistent storage (not to be removed after FybrikApplication is deleted)
+                        type: boolean
                       resourceMetadata:
                         description: Resource Metadata
                         properties:
