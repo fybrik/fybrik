@@ -1,0 +1,25 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikModule
+metadata:
+  name: write-mysql
+  namespace: fybrik-system
+spec:
+  chart:
+    name:  ghcr.io/fybrik/fybrik-template:0.1.0
+  type: service
+  capabilities:
+    - capability: write
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: read-write-module
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+      - sink:
+          protocol: mysql

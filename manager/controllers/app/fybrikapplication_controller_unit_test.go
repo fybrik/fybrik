@@ -1535,7 +1535,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	err = cl.Get(context.Background(), plotterObjectKey, plotter)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(1))
-	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(utils.GetDefaultConnectionType()))
+	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Connection.Name).To(gomega.Equal(account.Spec.Type))
 	g.Expect(plotter.Spec.Assets["s3-not-exists/new-dataset"].DataStore.Format).ToNot(gomega.BeEmpty())
 	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
 }
