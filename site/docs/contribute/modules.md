@@ -7,21 +7,22 @@ A module is packaged as a Helm chart that the control plane can install to a wor
 To first make a module available to the control plane, it must be registered by applying a FybrikModule custom resource.
 
 After that, a FybrikApplication can be submitted.  
-The FybrikApplication controller chooses the best modules to accommodate the data needs requested in the FybrikApplication, and an instace of each selected module is deployed.  
+For each FybrikApplication submitted, Fybrik chooses the best modules to accommodate the data needs specified in the FybrikApplication, and deploys them.  
 
-Each module is deployed using its Helm chart, and vaules from the FybrikApplication are passed to the module using the values.yaml of the helm chart, so that the module has the needed configuration paramters.
+Each module is deployed using its Helm chart.
+Fybrik passes the needed configuration parameters to the module using the [Helm mechanism for passing values](https://helm.sh/docs/chart_template_guide/values_files/).
 
 ## Steps for creating a module
 
-1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving paramaters from the control plane and passing them to the external component.
+1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving parameters from the control plane and passing them to the external component.
 1. Create and publish the Docker image that contains the module logic.
 1. Create and publish the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module workload, update it, and delete it as necessary.
 1. Create the [FybrikModule YAML](#fybrikmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
-1. [Test](#test) the new module
+1. [Test](#test) the new module.
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [fybrik](https://github.com/fybrik/fybrik) repository.
+These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [Fybrik](https://github.com/fybrik/fybrik) repository.
 
-before you start, consider using the [template module](https://github.com/fybrik/template-module), where you can create a new module repo with all the needed template for the files you need.
+before you start, consider using the [template module](https://github.com/fybrik/template-module), where you can create a new module repository with all the needed templates for the files you need.
 
 ## Module Workload
 
@@ -37,13 +38,16 @@ The control plane deploys the relevant transform plugin as well as the read modu
 
 ### Configuration
 
-Modules receive the parameters that define the configuration needed for the module (such as data aseests, connection endpoints and so on) in the values.yaml of the Helm chart.  
-example of parameters passed and the format for the vaules.yaml can be found in the [Helm chart](#Module-Helm-Chart) section.
+Modules receive the parameters that define the configuration needed for the module (such as data asset connection information, required transformations, and so on) as Helm chart values.  
+An example of parameters passed and the format for the values.yaml can be found in the [Helm chart](#Module-Helm-Chart) section.
 
-to read the parameters, most modules define a conf.yaml file that grabs the relevant values defined in the values.yaml, and is copied to the Docker container.
+To read the parameters, most modules define a conf.yaml file that grabs the relevant values defined in the values.yaml, and is copied to the environment of the module container.
 
 An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/main/helm/abm/files/conf.yaml).  
 An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/main/abm/config.py)
+
+> **NOTE**: Helm values that are passed to the modules, override the default values defined in the values.yaml file.  
+Therefore, to add additional parameters to be passed to the module, it is recommended to use and configure a conf.yaml file, and not to add fields or values to the values.yaml file.
 
 ### Credential management
 
@@ -65,14 +69,14 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 Fybrik repository contains a [Python Vault package](https://github.com/fybrik/fybrik/tree/master/python/vault) that modules can use to
 retrieve the credentials.
 
-an example of the [arrow flight module][https://github.com/fybrik/arrow-flight-module] using Vault to retrieve credentials, in order to login to s3, can be found [here](https://github.com/fybrik/arrow-flight-module/blob/master/afm/filesystems/s3.py).
+An example of the [arrow flight module][https://github.com/fybrik/arrow-flight-module] using Vault to retrieve credentials, in order to login to s3, can be found [here](https://github.com/fybrik/arrow-flight-module/blob/master/afm/filesystems/s3.py).
 
 ## Docker image
 
-For a module to be installed using a Helm chart, A docker image needs to be published with the logic of the module.
-follow the docker [packging guide](https://docs.docker.com/build/building/packaging/) if you are unfamiliar with publishing a Docker image.
+For a module to be installed using a Helm chart, a docker image needs to be published with the logic of the module.
+Follow the docker [packaging guide](https://docs.docker.com/build/building/packaging/) if you are unfamiliar with publishing a Docker image.
 
-to see an example, see the [Dockerfile](https://github.com/fybrik/arrow-flight-module/blob/master/build/Dockerfile) of the Arrow Flight module.
+To see an example, see the [Dockerfile](https://github.com/fybrik/arrow-flight-module/blob/master/build/Dockerfile) of the Arrow Flight module.
 
 ## Module Helm Chart
 
