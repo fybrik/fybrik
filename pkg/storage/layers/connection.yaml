@@ -11,6 +11,8 @@ definitions:
         $ref: "#/definitions/kafka"
       fybrik-arrow-flight:
         $ref: "#/definitions/fybrik-arrow-flight"
+      mysql:
+        $ref: "#/definitions/mysql"
   s3:
     description: Connection information for S3 compatible object store
     type: object
@@ -32,7 +34,7 @@ definitions:
     - endpoint
     - object_key
   db2:
-    description: Connection information for accessing a table in a database
+    description: Connection information for accessing a table in a db2 database
     type: object
     properties:
       database:
@@ -106,3 +108,28 @@ definitions:
     - hostname  
     - port
     - scheme
+  mysql:
+    description: Connection information for accessing a table in a mysql database
+    type: object
+    properties:
+      host:
+        type: string
+        description: Server host
+      port:
+        type: integer
+        description: Server port
+      database:
+        type: string
+        description: Database name
+      table:
+        type: string
+        description: Table name
+      ssl:
+        description: SSL indicates whether to encrypt data using SSL
+        type: boolean
+        default: false
+    required:
+    - database
+    - host
+    - port
+
