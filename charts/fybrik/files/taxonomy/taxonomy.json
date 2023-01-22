@@ -54,6 +54,9 @@
         "kafka": {
           "$ref": "#/definitions/kafka"
         },
+        "mysql": {
+          "$ref": "#/definitions/mysql"
+        },
         "name": {
           "description": "Name of the connection to the data source",
           "$ref": "#/definitions/ConnectionType"
@@ -215,7 +218,7 @@
     },
     "db2": {
       "type": "object",
-      "description": "Connection information for accessing a table in a database",
+      "description": "Connection information for accessing a table in a db2 database",
       "properties": {
         "database": {
           "type": "string",
@@ -311,6 +314,38 @@
       "required": [
         "bootstrap_servers",
         "topic_name"
+      ]
+    },
+    "mysql": {
+      "type": "object",
+      "description": "Connection information for accessing a table in a mysql database",
+      "properties": {
+        "database": {
+          "type": "string",
+          "description": "Database name"
+        },
+        "host": {
+          "type": "string",
+          "description": "Server host"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Server port"
+        },
+        "ssl": {
+          "type": "boolean",
+          "description": "SSL indicates whether to encrypt data using SSL",
+          "default": false
+        },
+        "table": {
+          "type": "string",
+          "description": "Table name"
+        }
+      },
+      "required": [
+        "database",
+        "host",
+        "port"
       ]
     },
     "s3": {
