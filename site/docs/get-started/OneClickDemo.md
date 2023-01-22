@@ -19,8 +19,12 @@ You can also try to do this, and the next parts of the demo, step by step in the
 
 6.  The **data user** can consume the governed data instantly.
 
-All your require for the demo is a working bash terminal and docker installed.  
-The demo will make a bin folder at your current directory with all the required dependencies for Fybrik.
+## Requirements
+
+1. Linux based OS, using a bash terminal (MacOS support coming soon).
+2. Docker [installed and deployed](https://docs.docker.com/get-docker/). 
+
+The demo will make a bin folder at your current directory with all the other required dependencies for Fybrik.
 
 ## The Demo
 We recommend trying Fybrik with its main data catalog [OpenMetaData](https://open-metadata.org/), but it takes ~25 minutes on most machines, so grab a coffee while you wait!  
