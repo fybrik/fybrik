@@ -184,10 +184,10 @@ func (p *PlotterGenerator) addStep(element *datapath.ResolvedEdge, datasetID str
 	return steps
 }
 
-// getSupportedFormat returns the first dataformat supported by the module's capability sink interface
-func (p *PlotterGenerator) getSupportedFormat(capability *fappv1.ModuleCapability) taxonomy.DataFormat {
+// getSupportedFormat returns the first dataformat supported by the module's capability sink interface that matches the protocol
+func (p *PlotterGenerator) getSupportedFormat(capability *fappv1.ModuleCapability, protocol taxonomy.ConnectionType) taxonomy.DataFormat {
 	for _, inter := range capability.SupportedInterfaces {
-		if inter.Sink != nil {
+		if inter.Sink != nil && inter.Sink.Protocol == protocol {
 			return inter.Sink.DataFormat
 		}
 	}
@@ -219,7 +219,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 
 	// Fill in the empty dataFormat in the sink node
 	capability := element.Module.Spec.Capabilities[element.CapabilityIndex]
-	element.Sink.Connection.DataFormat = p.getSupportedFormat(&capability)
+	element.Sink.Connection.DataFormat = p.getSupportedFormat(&capability, element.StorageAccount.Type)
 
 	// allocate storage
 	if sinkDataStore, err = p.Provision(item, element.Sink.Connection, &element.StorageAccount); err != nil {
