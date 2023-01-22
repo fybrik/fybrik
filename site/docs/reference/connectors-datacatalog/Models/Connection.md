@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **kafka** | [kafka](../Models/kafka.md) |  | [optional] [default: null]
 **mysql** | [mysql](../Models/mysql.md) |  | [optional] [default: null]
 **name** | String | Name of the connection type to the data source | [default: null]
+**postgres** | [postgres](../Models/postgres.md) |  | [optional] [default: null]
 **s3** | [s3](../Models/s3.md) |  | [optional] [default: null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to API-Specification]](../README.md)

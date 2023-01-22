@@ -17,5 +17,6 @@ Models/fybrik-arrow-flight.md
 Models/google-sheets.md
 Models/kafka.md
 Models/mysql.md
+Models/postgres.md
 Models/s3.md
 README.md

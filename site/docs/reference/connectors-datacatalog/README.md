@@ -33,6 +33,7 @@ Class | Method | HTTP request | Description
  - [google-sheets](Models/google-sheets.md)
  - [kafka](Models/kafka.md)
  - [mysql](Models/mysql.md)
+ - [postgres](Models/postgres.md)
  - [s3](Models/s3.md)
 
 

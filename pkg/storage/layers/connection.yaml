@@ -15,6 +15,8 @@ definitions:
         $ref: "#/definitions/mysql"
       google-sheets:
         $ref: "#/definitions/google-sheets"
+      postgres:
+        $ref: "#/definitions/postgres"
   s3:
     description: Connection information for S3 compatible object store
     type: object
@@ -145,4 +147,27 @@ definitions:
           - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
     required:
     - spreadsheet_id
-
+  postgres:
+    description: Connection information for accessing a table in a postgres database
+    type: object
+    properties:
+      host:
+        type: string
+        description: Server host
+      port:
+        type: integer
+        description: Server port
+      database:
+        type: string
+        description: Database name
+      table:
+        type: string
+        description: Table name
+      ssl:
+        description: SSL indicates whether to encrypt data using SSL
+        type: boolean
+        default: false
+    required:
+    - database
+    - host
+    - port
