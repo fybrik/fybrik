@@ -2,10 +2,10 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-
 cd "${0%/*}"
 source ./common.sh
 
+VERSION_FILE=lib/fzn-or-tools-version
 
 case ${os} in
     linux)
@@ -22,10 +22,12 @@ case ${os} in
         ;;
 esac
 
-header_text "Checking for bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}"
-[[ -f bin/fzn-or-tools ]] && [[ -f lib/libfz.so ]] && exit 0
+DEPLOY="${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}_for_${arch}_${target_os}"
 
-header_text "Installing bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}"
+header_text "Checking for bin/fzn-or-tools ${DEPLOY}"
+[[ -f bin/fzn-or-tools ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${DEPLOY}" ]] && exit 0
+header_text "Installing bin/fzn-or-tools ${DEPLOY}"
+
 mkdir -p ./bin
 mkdir -p ./lib
 
@@ -37,3 +39,4 @@ tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
 chmod +x ./bin/fzn-or-tools
+echo ${DEPLOY} > ${VERSION_FILE}
