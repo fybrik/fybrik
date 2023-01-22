@@ -239,6 +239,7 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 				provisioned.ResourceMetadata = reqResource.DeepCopy()
 				provisioned.ResourceMetadata.Geography = geo
 			}
+			applicationContext.Application.Status.ProvisionedStorage[assetID] = provisioned
 			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
 				&provisioned, applicationContext.Application); err == nil {
