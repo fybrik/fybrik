@@ -25,6 +25,7 @@ case ${os} in
 esac
 
 header_text "Checking for bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}"
+[[ -f bin/fzn-or-tools ]] && exit 0
 # [[ -f bin/fzn-or-tools ]] && [[ -f "${BUILD_FILE}" ]] && [[ `cat "${BUILD_FILE}"` == "${OR_TOOLS_BUILD}" ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${OR_TOOLS_VERSION}" ]] && exit 0
 
 header_text "Installing bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD} for ${arch}_${target_os}"
