@@ -17,6 +17,8 @@ definitions:
         $ref: "#/definitions/google-sheets"
       postgres:
         $ref: "#/definitions/postgres"
+      us-census:
+        $ref: "#/definitions/us-census"
   s3:
     description: Connection information for S3 compatible object store
     type: object
@@ -171,3 +173,11 @@ definitions:
     - database
     - host
     - port
+  us-census:
+    description: Connection information for accessing data in us-census
+    type: object
+    properties:
+      query_path: 
+        type: string
+        description: The path portion of the GET request
+
