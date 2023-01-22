@@ -6,6 +6,8 @@ package storage
 import (
 	"errors"
 
+	kclient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -20,6 +22,14 @@ import (
 // internal implementation of StorageManager APIs
 // OpenAPI - TBD
 
+var kClient kclient.Client
+
+func InitK8sClient() error {
+	var err error
+	kClient, err = K8sInit()
+	return err
+}
+
 // AllocateStorage allocates storage based on the selected storage account by invoking the specific implementation agent
 // returns a Connection object in case of success, and an error - otherwise
 func AllocateStorage(account *fappv2.FybrikStorageAccountSpec, secret *fappv1.SecretRef, opts *agent.Options) (taxonomy.Connection, error) {
@@ -30,7 +40,7 @@ func AllocateStorage(account *fappv2.FybrikStorageAccountSpec, secret *fappv1.Se
 	if err != nil {
 		return taxonomy.Connection{}, err
 	}
-	return impl.AllocateStorage(account, secret, opts)
+	return impl.AllocateStorage(account, secret, opts, kClient)
 }
 
 // DeleteStorage deletes the existing storage by invoking the specific implementation agent based on the connection type
@@ -42,7 +52,7 @@ func DeleteStorage(connection *taxonomy.Connection, secret *fappv1.SecretRef, op
 	if err != nil {
 		return err
 	}
-	return impl.DeleteStorage(connection, secret, opts)
+	return impl.DeleteStorage(connection, secret, opts, kClient)
 }
 
 // retun a list of supported connection types
