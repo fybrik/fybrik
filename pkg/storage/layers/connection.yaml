@@ -13,6 +13,8 @@ definitions:
         $ref: "#/definitions/fybrik-arrow-flight"
       mysql:
         $ref: "#/definitions/mysql"
+      google-sheets:
+        $ref: "#/definitions/google-sheets"
   s3:
     description: Connection information for S3 compatible object store
     type: object
@@ -132,4 +134,15 @@ definitions:
     - database
     - host
     - port
+  google-sheets:
+    description: Connection information for accessing data in google-sheets
+    type: object
+    properties:
+      spreadsheet_id:
+        type: string
+        description: The link to the Google spreadsheet
+        examples:
+          - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    required:
+    - spreadsheet_id
 

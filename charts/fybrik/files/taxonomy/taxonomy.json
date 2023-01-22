@@ -51,6 +51,9 @@
         "fybrik-arrow-flight": {
           "$ref": "#/definitions/fybrik-arrow-flight"
         },
+        "google-sheets": {
+          "$ref": "#/definitions/google-sheets"
+        },
         "kafka": {
           "$ref": "#/definitions/kafka"
         },
@@ -270,6 +273,19 @@
         "hostname",
         "port",
         "scheme"
+      ]
+    },
+    "google-sheets": {
+      "type": "object",
+      "description": "Connection information for accessing data in google-sheets",
+      "properties": {
+        "spreadsheet_id": {
+          "type": "string",
+          "description": "The link to the Google spreadsheet"
+        }
+      },
+      "required": [
+        "spreadsheet_id"
       ]
     },
     "kafka": {
