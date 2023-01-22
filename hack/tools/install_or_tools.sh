@@ -6,8 +6,8 @@
 cd "${0%/*}"
 source ./common.sh
 
-BUILD_FILE=fzn-or-tools-build
-VERSION_FILE=fzn-or-tools-version
+BUILD_FILE=lib/fzn-or-tools-build
+VERSION_FILE=lib/fzn-or-tools-version
 
 case ${os} in
     linux)
@@ -26,9 +26,9 @@ esac
 
 header_text "Checking for bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD} for for ${arch}_${target_os}"
 echo "${BUILD_FILE}"
-cat "${BUILD_FILE}"
+cat "${BUILD_FILE}" || true
 echo "${VERSION_FILE}"
-cat "${VERSION_FILE}"
+cat "${VERSION_FILE}" || true
 
 [[ -f bin/fzn-or-tools ]] && [[ -f "${BUILD_FILE}" ]] && [[ `cat "${BUILD_FILE}"` == "${OR_TOOLS_BUILD}" ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${OR_TOOLS_VERSION}" ]] && exit 0
 
