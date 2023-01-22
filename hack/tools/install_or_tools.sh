@@ -2,11 +2,9 @@
 # Copyright 2020 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-
 cd "${0%/*}"
 source ./common.sh
 
-BUILD_FILE=lib/fzn-or-tools-build
 VERSION_FILE=lib/fzn-or-tools-version
 
 case ${os} in
@@ -24,15 +22,12 @@ case ${os} in
         ;;
 esac
 
-header_text "Checking for bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD} for for ${arch}_${target_os}"
-echo "${BUILD_FILE}"
-cat "${BUILD_FILE}" || true
-echo "${VERSION_FILE}"
-cat "${VERSION_FILE}" || true
+DEPLOY="${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}_for_${arch}_${target_os}"
 
-[[ -f bin/fzn-or-tools ]] && [[ -f "${BUILD_FILE}" ]] && [[ `cat "${BUILD_FILE}"` == "${OR_TOOLS_BUILD}" ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${OR_TOOLS_VERSION}" ]] && exit 0
+header_text "Checking for bin/fzn-or-tools ${DEPLOY}"
+[[ -f bin/fzn-or-tools ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${DEPLOY}" ]] && exit 0
+header_text "Installing bin/fzn-or-tools ${DEPLOY}"
 
-header_text "Installing bin/fzn-or-tools ${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD} for ${arch}_${target_os}"
 mkdir -p ./bin
 mkdir -p ./lib
 
@@ -44,5 +39,4 @@ tar -zxvf ./${download_file} -C $tmp
 mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
 chmod +x ./bin/fzn-or-tools
-echo ${OR_TOOLS_BUILD} > ${BUILD_FILE}
-echo ${OR_TOOLS_VERSION} > ${VERSION_FILE}
+echo ${DEPLOY} > ${VERSION_FILE}
