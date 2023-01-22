@@ -31,6 +31,7 @@ Class | Method | HTTP request | Description
  - [db2](Models/db2.md)
  - [fybrik-arrow-flight](Models/fybrik-arrow-flight.md)
  - [kafka](Models/kafka.md)
+ - [mysql](Models/mysql.md)
  - [s3](Models/s3.md)
 
 

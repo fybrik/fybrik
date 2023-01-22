@@ -15,5 +15,6 @@ Models/UpdateAssetResponse.md
 Models/db2.md
 Models/fybrik-arrow-flight.md
 Models/kafka.md
+Models/mysql.md
 Models/s3.md
 README.md
