@@ -223,9 +223,9 @@ In this step you are performing the role of the data owner, registering his data
     ```bash
     {"assetID":"paysim-csv-ab123"}
     ```
-    Store the asset ID in a `CATALOGED_ASSET` variable:
+    Store the asset name in a `CATALOGED_ASSET` variable. When you use the Katalog data catalog, the asset name includes the kubernetes namespace, as in:
     ```bash
-    CATALOGED_ASSET="paysim-csv-ab123"
+    CATALOGED_ASSET="fybrik-notebook-sample/paysim-csv-ab123"
     ```
 
 If you look at the asset creation request above, you will notice that in the `resourceMetadata` field, we request that the asset should be tagged with the `Purpose.finance` tag, and that three of its columns should be tagged with the `PII.Sensitive` tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.
