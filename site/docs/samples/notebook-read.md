@@ -173,63 +173,43 @@ In this step you are performing the role of the data owner, registering his data
     Next, register the data asset itself in the data catalog.
     We use port-forwarding to send asset creation requests to the Katalog connector.
     ```bash
-    kubectl port-forward svc/katalog-connector -n fybrik-system 8081:8080 &
-    ```
-    ```bash
-    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-    {
-      "destinationCatalogID": "fybrik-notebook-sample",
-      "destinationAssetID": "paysim-csv",
-      "credentials": "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample",
-      "details": {
-        "dataFormat": "csv",
-        "connection": {
-          "name": "s3",
-          "s3": {
-            "endpoint": "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566",
-            "bucket": "demo",
-            "object_key": "PS_20174392719_1491204439457_log.csv"
-          }
-        }
-      },
-      "resourceMetadata": {
-        "name": "Synthetic Financial Datasets For Fraud Detection",
-        "geography": "theshire ",
-        "tags": {
-          "Purpose.finance": "true"
-        },
-        "columns": [
-          {
-            "name": "nameOrig",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          },
-          {
-            "name": "oldbalanceOrg",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          },
-          {
-            "name": "newbalanceOrig",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          }
-        ]
-      }
-    }
+    cat << EOF | kubectl apply -f -
+    apiVersion: katalog.fybrik.io/v1alpha1
+    kind: Asset
+    metadata:
+      name: paysim-csv
+    spec:
+      secretRef:
+        name: paysim-csv
+      details:
+        dataFormat: csv
+        connection:
+          name: s3
+          s3:
+            endpoint: “http://localstack.fybrik-notebook-sample.svc.cluster.local:4566”
+            bucket: “demo”
+            object_key: “PS_20174392719_1491204439457_log.csv”
+      metadata:
+        name: Synthetic Financial Datasets For Fraud Detection
+        geography: theshire
+        tags:
+          Purpose.finance: true
+        columns:
+          - name: nameOrig
+            tags:
+              PII.Sensitive: true
+          - name: oldbalanceOrg
+            tags:
+              PII.Sensitive: true
+          - name: newbalanceOrig
+            tags:
+              PII.Sensitive: true
     EOF
     ```
 
-    The response from the Katalog connector should look like this:
+    Store the asset name in a `CATALOGED_ASSET` variable:
     ```bash
-    {"assetID":"paysim-csv-ab123"}
-    ```
-    Store the asset name in a `CATALOGED_ASSET` variable. When you use the Katalog data catalog, the asset name includes the kubernetes namespace, as in:
-    ```bash
-    CATALOGED_ASSET="fybrik-notebook-sample/paysim-csv-ab123"
+    CATALOGED_ASSET="fybrik-notebook-sample/paysim-csv"
     ```
 
 If you look at the asset creation request above, you will notice that in the `resourceMetadata` field, we request that the asset should be tagged with the `Purpose.finance` tag, and that three of its columns should be tagged with the `PII.Sensitive` tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.
