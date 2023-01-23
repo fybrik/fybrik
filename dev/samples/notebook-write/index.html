@@ -1734,7 +1734,7 @@ aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set
 </code></pre></div>
 Then, register two storage accounts: one in <code>theshire</code> and one in <code>neverland</code>. Replace the value for <code>endpoint</code> with value from the object storage service that you used and run:</p>
 <p><div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta2</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">FybrikStorageAccount</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">theshire-storage-account</span>
@@ -1749,7 +1749,7 @@ Then, register two storage accounts: one in <code>theshire</code> and one in <co
 <span class="l l-Scalar l-Scalar-Plain">EOF</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
-<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta2</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">FybrikStorageAccount</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">neverland-storage-account</span>
