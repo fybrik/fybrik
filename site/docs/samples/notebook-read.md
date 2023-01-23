@@ -186,9 +186,9 @@ In this step you are performing the role of the data owner, registering his data
         connection:
           name: s3
           s3:
-            endpoint: “http://localstack.fybrik-notebook-sample.svc.cluster.local:4566”
-            bucket: “demo”
-            object_key: “PS_20174392719_1491204439457_log.csv”
+            endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+            bucket: "demo"
+            object_key: "PS_20174392719_1491204439457_log.csv"
       metadata:
         name: Synthetic Financial Datasets For Fraud Detection
         geography: theshire
@@ -342,7 +342,7 @@ The next steps use the endpoint to read the data in a python notebook
 
   # Prepare the request
   request = {
-      "asset": "openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\"",
+      "asset": '<CATALOGED_ASSET>',
       # To request specific columns add to the request a "columns" key with a list of column names
       # "columns": [...]
   }
