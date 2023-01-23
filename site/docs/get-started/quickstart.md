@@ -108,9 +108,7 @@ Fybrik assumes the existence of a data catalog that contains the metadata and co
  1. [OpenMetadata](https://open-metadata.org/): An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.
  2. [Katalog](https://fybrik.io/dev/reference/katalog/): a data catalog stub used for testing and evaluation purposes.
 
-If you plan to use [Katalog](https://fybrik.io/dev/reference/katalog/), you can skip to the [next section](#install-control-plane). Katalog is mostly suitable for development and testing.
-
-In this guide we use the OpenMetadata data catalog.
+If you plan to use [Katalog](https://fybrik.io/dev/reference/katalog/), you can skip to the [next section](#install-control-plane) but keep in mind that Katalog is mostly suitable for development and testing.
 
 To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.
 
