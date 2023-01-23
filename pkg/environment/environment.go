@@ -29,6 +29,7 @@ const (
 	DatapathLimitKey                  string = "DATAPATH_LIMIT"
 	UseCSPKey                         string = "USE_CSP"
 	CSPPathKey                        string = "CSP_PATH"
+	CSPArgsKey                        string = "CSP_ARGS"
 	DataDir                           string = "DATA_DIR"
 	ModuleNamespace                   string = "MODULES_NAMESPACE"
 	ControllerNamespace               string = "CONTROLLER_NAMESPACE"
@@ -227,6 +228,11 @@ func UseCSP() bool {
 // GetCSPPath returns the path of the CSP solver to use when generating a plotter, or "" if no CSP solver is defined
 func GetCSPPath() string {
 	return os.Getenv(CSPPathKey)
+}
+
+// GetCSPArgs returns CSP solver arguments
+func GetCSPArgs() string {
+	return os.Getenv(CSPArgsKey)
 }
 
 // GetDataCatalogServiceAddress returns the address where data catalog is running
