@@ -94,6 +94,8 @@ In this step you are performing the role of the data owner, registering his data
         We use port-forwarding to send asset creation requests to the OpenMetadata connector.
         ```bash
         kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+        ```
+        ```bash
         cat << EOF | curl -X POST localhost:8081/createAsset -d @-
         {
           "destinationCatalogID": "openmetadata",
@@ -172,6 +174,8 @@ In this step you are performing the role of the data owner, registering his data
     We use port-forwarding to send asset creation requests to the Katalog connector.
     ```bash
     kubectl port-forward svc/katalog-connector -n fybrik-system 8081:8080 &
+    ```
+    ```bash
     cat << EOF | curl -X POST localhost:8081/createAsset -d @-
     {
       "destinationCatalogID": "fybrik-notebook-sample",
