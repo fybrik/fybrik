@@ -331,7 +331,7 @@ The next steps use the endpoint to read the data in a python notebook
   ```python
   %pip install pandas pyarrow==7.0.*
   ```
-2. Insert a new notebook cell to read the data using the endpoint value extracted from the `FybrikApplication` in the previous step:
+2. Insert a new notebook cell to read the data. You need to replace both the `ENDPOINT` and the `CATALOGED_ASSET` values, which were obtained in previous steps:
   ```bash
   import json
   import pyarrow.flight as fl
