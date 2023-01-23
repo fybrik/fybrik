@@ -279,6 +279,8 @@ manager:
     image: "ghcr.io/fybrik/optimizer:0.0.1"
     # Set to true to enable the use of the solver by Fybrik
     enabled: false
+    # additional argments
+    args: "--logtostderr"
     # Set the size limit of the directory which holds the solver image.
     dirSizeLimit: 200Mi
 

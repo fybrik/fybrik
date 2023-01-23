@@ -113,6 +113,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
+test: export CSP_ARGS=--logtostderr
 test: pre-test
 	go test $(TEST_OPTIONS) ./...
 	USE_CSP=true go test $(TEST_OPTIONS) ./manager/controllers/app -count 1
