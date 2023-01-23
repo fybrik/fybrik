@@ -54,8 +54,14 @@
         "google-sheets": {
           "$ref": "#/definitions/google-sheets"
         },
+        "https": {
+          "$ref": "#/definitions/https"
+        },
         "kafka": {
           "$ref": "#/definitions/kafka"
+        },
+        "localfile": {
+          "$ref": "#/definitions/localfile"
         },
         "mysql": {
           "$ref": "#/definitions/mysql"
@@ -294,6 +300,19 @@
         "spreadsheet_id"
       ]
     },
+    "https": {
+      "type": "object",
+      "description": "Connection information for accessing data via https",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL path to access the file."
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
     "kafka": {
       "type": "object",
       "description": "Connection information for accessing a kafka topic",
@@ -336,6 +355,19 @@
       "required": [
         "bootstrap_servers",
         "topic_name"
+      ]
+    },
+    "localfile": {
+      "type": "object",
+      "description": "Connection information for accessing data in local filesystem",
+      "properties": {
+        "destination_path": {
+          "type": "string",
+          "description": "Path to the directory where the data is stored"
+        }
+      },
+      "required": [
+        "destination_path"
       ]
     },
     "mysql": {
@@ -437,7 +469,10 @@
           "type": "string",
           "description": "The path portion of the GET request"
         }
-      }
+      },
+      "required": [
+        "query_path"
+      ]
     }
   }
 }

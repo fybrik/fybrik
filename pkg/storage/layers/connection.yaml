@@ -19,6 +19,10 @@ definitions:
         $ref: "#/definitions/postgres"
       us-census:
         $ref: "#/definitions/us-census"
+      localfile:
+        $ref: "#/definitions/localfile"
+      https:
+        $ref: "#/definitions/https"
   s3:
     description: Connection information for S3 compatible object store
     type: object
@@ -180,4 +184,23 @@ definitions:
       query_path: 
         type: string
         description: The path portion of the GET request
-
+    required:
+    - query_path
+  localfile:
+    description: Connection information for accessing data in local filesystem
+    type: object
+    properties:
+      destination_path:
+        type: string
+        description: Path to the directory where the data is stored
+    required:
+    - destination_path
+  https:
+    description: Connection information for accessing data via https
+    type: object
+    properties:
+      url:
+        type: string
+        description: The URL path to access the file.
+    required:
+    - url
