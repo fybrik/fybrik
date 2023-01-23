@@ -33,11 +33,9 @@ Class | Method | HTTP request | Description
  - [google-sheets](Models/google-sheets.md)
  - [https](Models/https.md)
  - [kafka](Models/kafka.md)
- - [localfile](Models/localfile.md)
  - [mysql](Models/mysql.md)
  - [postgres](Models/postgres.md)
  - [s3](Models/s3.md)
- - [us-census](Models/us-census.md)
 
 
 <a name="documentation-for-authorization"></a>

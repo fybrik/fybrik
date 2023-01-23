@@ -60,9 +60,6 @@
         "kafka": {
           "$ref": "#/definitions/kafka"
         },
-        "localfile": {
-          "$ref": "#/definitions/localfile"
-        },
         "mysql": {
           "$ref": "#/definitions/mysql"
         },
@@ -75,9 +72,6 @@
         },
         "s3": {
           "$ref": "#/definitions/s3"
-        },
-        "us-census": {
-          "$ref": "#/definitions/us-census"
         }
       },
       "additionalProperties": true,
@@ -357,19 +351,6 @@
         "topic_name"
       ]
     },
-    "localfile": {
-      "type": "object",
-      "description": "Connection information for accessing data in local filesystem",
-      "properties": {
-        "destination_path": {
-          "type": "string",
-          "description": "Path to the directory where the data is stored"
-        }
-      },
-      "required": [
-        "destination_path"
-      ]
-    },
     "mysql": {
       "type": "object",
       "description": "Connection information for accessing a table in a mysql database",
@@ -459,19 +440,6 @@
         "bucket",
         "endpoint",
         "object_key"
-      ]
-    },
-    "us-census": {
-      "type": "object",
-      "description": "Connection information for accessing data in us-census",
-      "properties": {
-        "query_path": {
-          "type": "string",
-          "description": "The path portion of the GET request"
-        }
-      },
-      "required": [
-        "query_path"
       ]
     }
   }

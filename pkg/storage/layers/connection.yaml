@@ -17,10 +17,6 @@ definitions:
         $ref: "#/definitions/google-sheets"
       postgres:
         $ref: "#/definitions/postgres"
-      us-census:
-        $ref: "#/definitions/us-census"
-      localfile:
-        $ref: "#/definitions/localfile"
       https:
         $ref: "#/definitions/https"
   s3:
@@ -177,24 +173,6 @@ definitions:
     - database
     - host
     - port
-  us-census:
-    description: Connection information for accessing data in us-census
-    type: object
-    properties:
-      query_path: 
-        type: string
-        description: The path portion of the GET request
-    required:
-    - query_path
-  localfile:
-    description: Connection information for accessing data in local filesystem
-    type: object
-    properties:
-      destination_path:
-        type: string
-        description: Path to the directory where the data is stored
-    required:
-    - destination_path
   https:
     description: Connection information for accessing data via https
     type: object
