@@ -457,7 +457,7 @@ The next steps use the endpoint to read the data in a python notebook.
   ```
   df_read
   ```
-5. Execute all notebook cells and notice that the `oldbalanceOrg` column does not appear because it was redacted.
+5. Execute all notebook cells and notice that data in the `oldbalanceOrg` column was redacted.
 
 ## Cleanup
 You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and objects created in this sample.
