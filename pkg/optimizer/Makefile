@@ -13,6 +13,6 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 .PHONY: docker-build
 docker-build: 	
 	mkdir -p solver-tools
-	cp $(TOOLS_DIR)/install_or_tools.sh $(TOOLS_DIR)/common.sh $(TOOLS_DIR)/requirements.sh solver-tools
+	cp $(TOOLS_DIR)/install_or_tools.sh $(TOOLS_DIR)/common.sh $(TOOLS_DIR)/requirements.env solver-tools
 	docker build . -t ${IMG} -f Dockerfile
 	rm -rf solver-tools

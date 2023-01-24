@@ -43,7 +43,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Verify
@@ -71,7 +71,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Test
@@ -104,7 +104,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Namescope integration tests
@@ -159,7 +159,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Read flow notebook tests old
@@ -186,7 +186,7 @@ jobs:
 #          ~/go/pkg/mod
 #          ${{ github.workspace }}/hack/tools/bin
 #          ${{ github.workspace }}/hack/tools/lib
-#        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+#        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
 #    - name: Install tools
 #      run: make install-tools
 #    - name: Read flow notebook tests bc version
@@ -221,7 +221,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Write flow notebook tests
@@ -292,7 +292,7 @@ jobs:
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
           ${{ github.workspace }}/hack/tools/lib
-        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.sh') }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
       run: make install-tools
     - name: Integration tests
