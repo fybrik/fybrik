@@ -39,15 +39,13 @@ The control plane deploys the relevant transform plugin as well as the read modu
 ### Configuration
 
 Modules receive the parameters that define the configuration needed for the module (such as data asset connection information, required transformations, and so on) as Helm chart values.  
-An example of parameters passed and the format for the values.yaml can be found in the [Helm chart](#Module-Helm-Chart) section.
+The list of the parameters passed, and an example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
 
-To read the parameters, most modules define a conf.yaml file that grabs the relevant values defined in the values.yaml, and is copied to the environment of the module container.
+To read the parameters, most modules define a conf.yaml file that grabs the relevant Helm values, and is copied to the environment of the module container.
 
-An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/main/helm/abm/files/conf.yaml).  
-An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/main/abm/config.py)
+An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/main/helm/abm/files/conf.yaml). 
+An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/main/abm/config.py).
 
-> **NOTE**: Helm values that are passed to the modules, override the default values defined in the values.yaml file.  
-Therefore, to add additional parameters to be passed to the module, it is recommended to use and configure a conf.yaml file, and not to add fields or values to the values.yaml file.
 
 ### Credential management
 
@@ -83,6 +81,9 @@ To see an example, see the [Dockerfile](https://github.com/fybrik/arrow-flight-m
 For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.7 or above is required.
 
 The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilities.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
+
+
+### Helm values passed to the module
 
 Because the chart is installed by the control plane, the input `values` to the chart will contain the following information:
 
@@ -132,6 +133,9 @@ assets:
 If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
 For a full example see the [Arrow Flight Module chart](https://github.com/fybrik/arrow-flight-module/tree/master/helm/afm).
+
+> **NOTE**: Helm values that are passed from Fybrik to the modules, override the default values defined in the values.yaml file.  
+To add additional parameters to be passed to the module, it is recommended to use and configure a conf.yaml file.  
 
 ### Publishing the Helm Chart
 
