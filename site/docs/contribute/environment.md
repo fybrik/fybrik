@@ -29,7 +29,7 @@ make install-tools
 
 This installs additional dependencies to `hack/tools/bin`. The `make` targets (e.g., `make test`) are configured to use the binaries from `hack/tools/bin`. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using `kubectl`).
 
-> NOTE: If you want to contribute to the documentation on the website, you can preview the website locally, after you take [a few more steps](https://github.com/fybrik/fybrik/tree/master/site).
+> NOTE: If you want to contribute to the documentation on the website, and preview the website locally, you should [install Mkdocs-Material](https://squidfunk.github.io/mkdocs-material/getting-started/) and follow a [few more steps](https://github.com/fybrik/fybrik/blob/master/site/README.md).
 
 ## Editors
 

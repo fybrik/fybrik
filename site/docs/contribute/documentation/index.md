@@ -6,4 +6,4 @@ Reference pages are auto generated from the source code. Therefore, if you chang
 
 Contributing to the documentation is therefore similar to code contribution and follows the same process of using pull requests. However, when writing documentation you must also follow the [formatting](./formatting) and [style](./style) guidelines.
 
-Before opening a pull request, you can preview the website locally with a few [simple steps](https://github.com/fybrik/fybrik/tree/master/site).
+Before opening a pull request, to preview the website locally, you should [install Mkdocs-Material](https://squidfunk.github.io/mkdocs-material/getting-started/) and follow a [few more steps](https://github.com/fybrik/fybrik/blob/master/site/README.md).
