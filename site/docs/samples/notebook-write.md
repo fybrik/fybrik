@@ -72,7 +72,7 @@ Then, register two storage accounts: one in `theshire` and one in `neverland`. R
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: theshire-storage-account
@@ -88,7 +88,7 @@ EOF
 ```
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: neverland-storage-account
