@@ -96,6 +96,7 @@ func NewDataPathCSP(problemData *datapath.DataInfo, env *datapath.Environment) *
 		}
 	}
 
+	dpCSP.addStorageAccountInterfaces()
 	dpCSP.fzModel.AddHeaderComment("Encoding of interfaces:")
 	for intfc, intfcIdx := range dpCSP.interfaceIdx {
 		dpCSP.fzModel.AddHeaderComment(encodingComment(intfcIdx, fmt.Sprintf("%v", intfc)))
@@ -136,10 +137,17 @@ func (dpc *DataPathCSP) addModCapInterfacesToMaps(modcap *moduleAndCapability) {
 	}
 }
 
+// Add interfaces used by storage accounts
+func (dpc *DataPathCSP) addStorageAccountInterfaces() {
+	for _, sa := range dpc.env.StorageAccounts {
+		dpc.addInterface(&taxonomy.Interface{Protocol: sa.Spec.Type, DataFormat: ""})
+	}
+}
+
 // Add the given interface to the 2 interface maps (but avoid duplicates)
 func (dpc *DataPathCSP) addInterface(intfc *taxonomy.Interface) {
 	if intfc == nil {
-		intfc = &taxonomy.Interface{}
+		intfc = &taxonomy.Interface{Protocol: "@@This is not a protocol@@"}
 	}
 	_, found := dpc.interfaceIdx[*intfc]
 	if !found {
@@ -533,6 +541,23 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 		realSAAtPos := varAtPos(realSA, pathPos)
 		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{realSAAtPos, noSaRequiredAtPos})
 	}
+	dpc.setSAIntfc(pathLength)
+}
+
+// Adds constraints to make sure that the module's sink interface matches the storage-account interface
+func (dpc *DataPathCSP) setSAIntfc(pathLength int) {
+	for saIdx, sa := range dpc.env.StorageAccounts {
+		saIntfc := taxonomy.Interface{Protocol: sa.Spec.Type, DataFormat: ""}
+		saIntfcIndices := dpc.getMatchingInterfaces(&saIntfc)
+		saIntfcInd := dpc.addSetInIndicator(sinkIntfcVarname, saIntfcIndices, pathLength)
+		saVarNeqSaIdx := dpc.addEqualityIndicator(saVarname, saIdx+1, pathLength, false)
+		for pathPos := 1; pathPos <= pathLength; pathPos++ {
+			saIntfcIndAtPos := varAtPos(saIntfcInd, pathPos)
+			saVarNeqSaIdxAtPos := varAtPos(saVarNeqSaIdx, pathPos)
+			orArray := fznCompoundLiteral([]string{saIntfcIndAtPos, saVarNeqSaIdxAtPos}, false)
+			dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{orArray, TrueValue})
+		}
+	}
 }
 
 // Return a list of indexes of interfaces that match the input interface
@@ -588,7 +613,7 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 		}
 		floatWeight := 1.
 		if weight != "" {
-			floatWeight, err = strconv.ParseFloat(weight, 64) //nolint:revive,gomnd // Ignore magic number 64
+			floatWeight, err = strconv.ParseFloat(weight, 64) //nolint:revive // Ignore magic number 64
 			if err != nil {
 				return err
 			}
@@ -965,7 +990,7 @@ func (dpc *DataPathCSP) decodeSolverSolution(solverSolutionStr string, pathLen i
 
 	score := math.NaN()
 	if scoreStr, found := solverSolution[jointGoalVarname]; found {
-		score, err = strconv.ParseFloat(scoreStr[0], 64) //nolint:revive,gomnd // Ignore magic number 64
+		score, err = strconv.ParseFloat(scoreStr[0], 64) //nolint:revive // Ignore magic number 64
 		if err != nil {
 			score = math.NaN()
 		}
@@ -998,7 +1023,7 @@ func arrayOfSameInt(num, arrayLen int) []string {
 
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
-		return taxonomy.Interface{Protocol: "s3", DataFormat: ""}
+		return taxonomy.Interface{Protocol: "", DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
 }
@@ -1022,16 +1047,12 @@ func getWorkloadClusterIndex(wlCluster multicluster.Cluster, clusters []multiclu
 
 // returns whether an interface supported by a module (at source or at sink) matches another interface
 func interfacesMatch(moduleIntfc, otherIntfc *taxonomy.Interface) bool {
-	if moduleIntfc == nil {
-		moduleIntfc = &taxonomy.Interface{}
-	}
-	if otherIntfc == nil {
-		otherIntfc = &taxonomy.Interface{}
-	}
-	if moduleIntfc.Protocol != otherIntfc.Protocol {
+	if moduleIntfc == nil || otherIntfc == nil {
 		return false
 	}
 
-	// an empty DataFormat in the module's interface means it supports all formats
-	return moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
+	// an empty Protocol/DataFormat in the module's interface means it supports all formats
+	protocolsMatch := moduleIntfc.Protocol == "" || moduleIntfc.Protocol == otherIntfc.Protocol
+	dataFormatsMatch := moduleIntfc.DataFormat == "" || moduleIntfc.DataFormat == otherIntfc.DataFormat
+	return protocolsMatch && dataFormatsMatch
 }
