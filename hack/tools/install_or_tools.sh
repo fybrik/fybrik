@@ -36,7 +36,8 @@ curl -L -O https://github.com/google/or-tools/releases/download/v${OR_TOOLS_VERS
 trap "rm ${download_file}" err exit
 tmp=$(mktemp -d /tmp/or-tools.XXXXXX)
 tar -zxvf ./${download_file} -C $tmp
-mv $tmp/*/bin/fzn-ortools ./bin/solver
+mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
-chmod +x ./bin/solver
+chmod +x ./bin/fzn-or-tools
+cp ./bin/fzn-or-tools ./bin/solver
 echo ${DEPLOY} > ${VERSION_FILE}
