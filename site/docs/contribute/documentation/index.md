@@ -5,3 +5,5 @@ The content of this website is the documentation of the project. The documentati
 Reference pages are auto generated from the source code. Therefore, if you change Kubernetes Custom Resource Definitions or the connectors API then you must add reasonable documentation comments. The rest of the documentation pages are written manually.
 
 Contributing to the documentation is therefore similar to code contribution and follows the same process of using pull requests. However, when writing documentation you must also follow the [formatting](./formatting) and [style](./style) guidelines.
+
+Before opening a pull request, you can preview the website locally with a few [simple steps](https://github.com/fybrik/fybrik/tree/master/site).
