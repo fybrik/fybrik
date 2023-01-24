@@ -1,3 +1,4 @@
+include $(TOOLS_DIR)/requirements.env
 SKIP_INSTALL_CHECK ?= true
 
 define post-install-check
@@ -13,12 +14,12 @@ $(TOOLBIN)/yq:
 
 INSTALL_TOOLS += $(TOOLBIN)/controller-gen
 $(TOOLBIN)/controller-gen:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.11.1
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@v$(CONTROLLER_GEN_VERSION) 
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/dlv
 $(TOOLBIN)/dlv:
-	GOBIN=$(ABSTOOLBIN) go install github.com/go-delve/delve/cmd/dlv@v1.4.1
+	GOBIN=$(ABSTOOLBIN) go install github.com/go-delve/delve/cmd/dlv@v$(DLV_VERSION)
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/helm
@@ -29,7 +30,7 @@ $(TOOLBIN)/helm:
 
 INSTALL_TOOLS += $(TOOLBIN)/golangci-lint
 $(TOOLBIN)/golangci-lint:
-	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.1
+	GOBIN=$(ABSTOOLBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v$(GOLANGCI_LINT_VERSION)
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/kubebuilder
@@ -46,7 +47,7 @@ $(TOOLBIN)/kustomize:
 
 INSTALL_TOOLS += $(TOOLBIN)/kind
 $(TOOLBIN)/kind:
-	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v0.13.0
+	GOBIN=$(ABSTOOLBIN) go install sigs.k8s.io/kind@v$(KIND_VERSION)
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/istioctl
@@ -63,7 +64,7 @@ $(TOOLBIN)/oc:
 
 INSTALL_TOOLS += $(TOOLBIN)/misspell
 $(TOOLBIN)/misspell:
-	GOBIN=$(ABSTOOLBIN) go install github.com/client9/misspell/cmd/misspell@v0.3.4
+	GOBIN=$(ABSTOOLBIN) go install github.com/client9/misspell/cmd/misspell@v$(MISSPELL_VERSION)
 	$(call post-install-check)
 
 $(TOOLBIN)/license_finder:
@@ -90,12 +91,12 @@ $(TOOLBIN)/vault:
 
 INSTALL_TOOLS += $(TOOLBIN)/oapi-codegen
 $(TOOLBIN)/oapi-codegen:
-	GOBIN=$(ABSTOOLBIN) go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.4.2
+	GOBIN=$(ABSTOOLBIN) go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v$(OAPI_CODEGEN_VERSION)
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/crdoc
 $(TOOLBIN)/crdoc:
-	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v0.6.2
+	GOBIN=$(ABSTOOLBIN) go install fybrik.io/crdoc@v$(CRDOC_VERSION)
 	$(call post-install-check)
 
 INSTALL_TOOLS += $(TOOLBIN)/json-schema-generator
