@@ -251,12 +251,24 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for new-data asset" && sleep 5; done
 ```
 
-Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in [Scenario 3](#scenario-3-read-the-newly-written-data), where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.
 
-```bash
-CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
-CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
-```
+=== "With OpenMetadata"
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+
+    ```bash
+    CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+    CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+    ```
+
+=== "With Katalog"
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+
+    ```bash
+    CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+    CATALOGED_ASSET=fybrik-notebook-sample/${CATALOGED_ASSET}
+    CATALOGED_ASSET_MODIFIED=${CATALOGED_ASSET}
+    ```
 
 ### Write the data from the notebook
 
@@ -328,7 +340,7 @@ writer.close()
 ```
 
 ### View new asset through OpenMetadata UI
-The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
+If Fybrik is configured to work with the OpenMetadata data catalog, then the newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
 
 ### Cleanup scenario two
 
@@ -440,7 +452,7 @@ The next steps use the endpoint to read the data in a python notebook.
   ```
   df_read
   ```
-5. Execute all notebook cells and notice that the `oldbalanceOrg` column does not appear because it was redacted.
+5. Execute all notebook cells and notice that data in the `oldbalanceOrg` column was redacted.
 
 ## Cleanup
 You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and objects created in this sample.
