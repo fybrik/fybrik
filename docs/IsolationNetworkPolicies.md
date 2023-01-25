@@ -1,6 +1,6 @@
 # Isolation 
 
-_**Note:**_ below we start with Network Polices as an isolation method, lather we will add another methods.
+_**Note:**_ below we start with Network Polices as an isolation method, later we will add another methods.
 
 ## Introduction
 
@@ -13,7 +13,7 @@ _Note:_ the same situation exists between chained modules.
 
 ## Challenge
 
-When we talk about access Fybrik data plane, we are talking about connectivity between a user workload, which is out of 
+When we talk about accessing Fybrik data plane, we are talking about connectivity between a user workload, which is out of 
 Fybrik scope, and Fybrik module, which can be developed by a third party. Therefore, in this document (and in its 
 extensions) we provide our recommendations how to protect data plane access and possible solutions.Responsibility of the
 data plane isolation is shared between Fybrik core, Fybrik users, module developers and probably IT teams.
