@@ -33,7 +33,9 @@ In some complicated cases, IT teams interfere can be required, e.g. to configure
 - We do not assume that client workloads will be collocated on the same Kubernetes cluster with the data module, 
 furthermore they can run out of Kubernetes at all. 
   - However, we do check the collocation of a Fybrik module and a relevant workload in the same cluster as a specific use case. 
-- We should allow workload client connections from different IP addresses. 
+- We should allow workload client connections from different IP addresses.
+- Isolation of modules in the data plane. I.e. Modules should not be able to interface "illegally" with modules outside
+of the defined data plane(s) and connect to only predefined data sets.
 
 
 ## Network Policies
@@ -70,8 +72,11 @@ address blocks.
 
 Current “FybrikApplicationSpec” has the “[selector](https://fybrik.io/v1.2/reference/crds/#fybrikapplicationspecselector)” 
 element, which is a combination of “clusterName” and “workloadSelector”. Unfortunately, based on this information we can 
-implement only one label based “podSelector”. Furthermore, for the backward compatibility of the current implementation 
+implement only one label-based “podSelector”. Furthermore, for the backward compatibility of the current implementation 
 assumes that a Read scenario should have at least one label, which is not always true. 
+
+Similarly, the "egress.to" element restricts teh outgoing connections. In this way we can restrict destinations where a  
+module can connect.
 
 ### Suggetions:
 
@@ -91,6 +96,9 @@ It was deprecated several Fybrik versions ago.
 
 - if the NetworkPolicyPeers array and “workloadSelector” are empty, no Network Policies will be created, which is 
 similar to current implementation.
+
+- allow to user by modifying the "FybrikApplication.spec.selector" in the instance of its fybrikapplication to modify 
+the NP without modification/redeployment of the data plane. *TODO:* we have to check if it is possible.    
 
 - extend blueprint’s module install/uninstall process by installation of a relevant instance of network policies.
 
