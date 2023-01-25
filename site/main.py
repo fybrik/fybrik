@@ -1,3 +1,5 @@
+import re
+
 def define_env(env):
   "Hook function"
 
@@ -15,14 +17,12 @@ def define_env(env):
 
   @env.macro
   def fybrik_version_flag(version):
-    if version == "__Release__":
-        return "--version master"
-    return  '--version ' + version[1:]
+    if re.match('^v[0-9]+\.[0-9]+(\.[0-9]+)*', version):
+      return  '--version ' + version[1:]
+    return "--version master"
 
   @env.macro
   def arrow_flight_module_version(version, arrow_flight_version):
-    if version == "__Release__":
-        return "latest"
     if version in arrow_flight_version:
         return arrow_flight_version[version]
     major_version = version[:4]
