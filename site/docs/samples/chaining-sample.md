@@ -18,18 +18,46 @@ This sample shows how to implement a use case where, based on the data source an
 
 The data read in this example is the `userdata` dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet. Two FybrikModules are available for use by the Fybrik control plane: the [arrow-flight-module](https://github.com/fybrik/arrow-flight-module) and the [airbyte-module](https://github.com/fybrik/airbyte-module). Only the airbyte-module can give read access to the dataset. However, it does not have any data transformation capabilities. Therefore, to satisfy constraints, the Fybrik manager must deploy both modules: the airbyte module for reading the dataset, and the arrow-flight-module for transforming the dataset based on the governance policies.
 
-To recreate this scenario, you will need a copy of the Fybrik repository (`git clone https://github.com/fybrik/fybrik.git`), and a copy of the airbyte-module repository (`git clone https://github.com/fybrik/airbyte-module.git`). Set the following environment variables: FYBRIK_DIR for the path of the `fybrik` directory, and AIRBYTE_MODULE_DIR for the path of the `airbyte-module` directory.
+To recreate this scenario, you will need a copy of the Fybrik repository and a copy of the airbyte-module repository.
+
+1. Set the FYBRIK_DIR environment variable to be the path of the `fybrik` directory:
+    ```bash
+    cd /tmp
+    git clone https://github.com/fybrik/fybrik.git
+    cd fybrik
+    export FYBRIK_DIR=${PWD}
+    git checkout {{ currentRelease|default('remotes/origin/releases/1.2.1') }}
+    ```
+
+1. Set the AIRBYTE_MODULE_DIR environment variable to be the path of the `airbyte-module` directory:
+    ```bash
+    cd /tmp
+    git clone https://github.com/fybrik/airbyte-module.git
+    cd airbyte-module
+    git checkout v0.2.0
+    export AIRBYTE_MODULE_DIR=${PWD}
+    ```
 
 1. Install Fybrik Prerequisites. Follow the instruction in the Fybrik [Quick Start Guide](https://fybrik.io/dev/get-started/quickstart/). Stop before the "Install control plane" section.
 
-1. Before installing the control plane, we need to customize the [Fybrik taxonomy](https://fybrik.io/dev/tasks/custom-taxonomy/) to define the new connection and interface types. Run:
-    ```bash
-    cd $FYBRIK_DIR
-    git checkout {{ currentRelease|default('master') }}
-    go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
-    helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api --set global.tag={{ currentImageTag|default('master') }} -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
-    ```
+1. Before installing the control plane, we need to customize the [Fybrik taxonomy](https://fybrik.io/dev/tasks/custom-taxonomy/) to define the new connection and interface types. Depending on the data catalog you choose ([OpenMetadata](https://open-metadata.org/) or [Katalog](https://fybrik.io/dev/reference/katalog/)), you should run:
+
+
+    === "With OpenMetadata"
+        ```bash
+        cd $FYBRIK_DIR
+        go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
+        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+        helm install fybrik charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api --set global.tag={{ currentImageTag|default('1.2.1') }} -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+        ```
+
+    === "With Katalog"
+        ```bash
+        cd $FYBRIK_DIR
+        go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json $AIRBYTE_MODULE_DIR/fybrik/fybrik-taxonomy-customize.yaml
+        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+        helm install fybrik charts/fybrik --set coordinator.catalog=katalog --set global.tag={{ currentImageTag|default('1.2.1') }} -n fybrik-system --wait --set-file taxonomyOverride=custom-taxonomy.json
+        ```
 
 1. Install the Airbyte module:
     ```bash
@@ -51,68 +79,80 @@ To recreate this scenario, you will need a copy of the Fybrik repository (`git c
     kubectl config set-context --current --namespace=fybrik-airbyte-sample
     ```
 
-1. Next, register the data asset itself in the data catalog. We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-    ```bash
-    kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
-    cat << EOF | curl -X POST localhost:8081/createAsset -d @-
-    {
-      "destinationCatalogID": "openmetadata",
-      "destinationAssetID": "userdata",
-      "details": {
-        "dataFormat": "csv",
-        "connection": {
-          "name": "file",
-          "file": {
-            "connector": "airbyte/source-file",
-            "dataset_name": "userdata",
-            "format": "parquet",
-            "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet",
-            "provider": {
-              "storage": "HTTPS"
+1. Next, register the data asset itself in the data catalog. The way to do it depends on the data catalog with which you are working:
+
+    === "With OpenMetadata"
+        We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+        ```bash
+        kubectl port-forward svc/openmetadata-connector -n fybrik-system 8081:8080 &
+        cat << EOF | curl -X POST localhost:8081/createAsset -d @-
+        {
+          "destinationCatalogID": "openmetadata",
+          "destinationAssetID": "userdata",
+          "details": {
+            "dataFormat": "csv",
+            "connection": {
+              "name": "file",
+              "file": {
+                "connector": "airbyte/source-file",
+                "dataset_name": "userdata",
+                "format": "parquet",
+                "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet",
+                "provider": {
+                  "storage": "HTTPS"
+                }
+              }
             }
+          },
+          "resourceMetadata": {
+            "name": "test data",
+            "geography": "theshire ",
+            "tags": {
+              "Purpose.finance": "true"
+            },
+            "columns": [
+              {
+                "name": "first_name",
+                "tags": {
+                  "PII.Sensitive": "true"
+                }
+              },
+              {
+                "name": "last_name",
+                "tags": {
+                  "PII.Sensitive": "true"
+                }
+              },
+              {
+                "name": "birthdate",
+                "tags": {
+                  "PII.Sensitive": "true"
+                }
+              }
+            ]
           }
         }
-      },
-      "resourceMetadata": {
-        "name": "test data",
-        "geography": "theshire ",
-        "tags": {
-          "Purpose.finance": "true"
-        },
-        "columns": [
-          {
-            "name": "first_name",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          },
-          {
-            "name": "last_name",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          },
-          {
-            "name": "birthdate",
-            "tags": {
-              "PII.Sensitive": "true"
-            }
-          }
-        ]
-      }
-    }
-    EOF
-    ```
+        EOF
+        ```
 
-    The response from the OpenMetadata connector should look like this:
-    ```bash
-    {"assetID":"openmetadata-file.default.openmetadata.userdata"}
-    ```
+        The response from the OpenMetadata connector should look like this:
+        ```bash
+        {"assetID":"openmetadata-file.default.openmetadata.userdata"}
+        ```
 
-    The asset is now registered in the catalog. Store the asset ID in a `CATALOGED_ASSET` variable:
-    ```bash
-    CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
-    ```
+        The asset is now registered in the catalog. Store the asset ID in a `CATALOGED_ASSET` variable:
+        ```bash
+        CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
+        ```
+
+    === "With Katalog"
+        ```bash
+        kubectl apply -f $AIRBYTE_MODULE_DIR/fybrik/read-flow/asset.yaml
+        ```
+        The asset is now registered in the catalog. Store the asset ID in a CATALOGED_ASSET variable:
+        ```bash
+        CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+        ```
 
 1. Create the policy to access the asset (we use a policy that requires redactions of `PII.Sensitive` columns):
    ```bash
