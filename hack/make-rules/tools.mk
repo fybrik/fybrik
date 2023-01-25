@@ -76,9 +76,9 @@ $(TOOLBIN)/opa:
 	cd $(TOOLS_DIR); ./install_opa.sh
 	$(call post-install-check)
 
-INSTALL_TOOLS += $(TOOLBIN)/fzn-or-tools
-.PHONY: $(TOOLBIN)/fzn-or-tools
-$(TOOLBIN)/fzn-or-tools:
+INSTALL_TOOLS += $(TOOLBIN)/solver
+.PHONY: $(TOOLBIN)/solver
+$(TOOLBIN)/solver:
 	cd $(TOOLS_DIR); ./install_or_tools.sh
 	$(call post-install-check)
 
