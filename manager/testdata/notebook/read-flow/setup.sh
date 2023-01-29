@@ -39,9 +39,6 @@ else
   done
 fi
 
-# Avoid using webhooks in tests
-kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
-
 if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
   # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
   kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
