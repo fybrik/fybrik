@@ -259,6 +259,7 @@ Although the dataset has not yet been written to the object storage, a data asse
     ```bash
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
     CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+    BUCKET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}')
     ```
 
 === "With Katalog"
@@ -268,6 +269,7 @@ Although the dataset has not yet been written to the object storage, a data asse
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
     CATALOGED_ASSET=fybrik-notebook-sample/${CATALOGED_ASSET}
     CATALOGED_ASSET_MODIFIED=${CATALOGED_ASSET}
+    BUCKET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}')
     ```
 
 ### Write the data from the notebook
@@ -459,7 +461,6 @@ You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and 
 
 To list all the created objects, run:
 ```bash
-BUCKET=$(echo $CATALOGED_ASSET | awk -F"." '{print $3}')
 aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} list-objects
 ```
 
