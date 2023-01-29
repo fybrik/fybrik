@@ -115,6 +115,11 @@ te-module` directory:
         CATALOGED_ASSET=fybrik-airbyte-sample/userdata
         ```
 
+1. Before creating a policy for accessing the asset, make sure that you clean up previously existing access policies:
+   ```bash
+   NS="fybrik-system"; kubectl -n $NS get configmap | awk '/sample/{print $1}' | xargs  kubectl delete -n $NS configmap
+   ```
+
 1. Create the policy to access the asset (we use a policy that requires redactions of `PII.Sensitive` columns):
    ```bash
    kubectl -n fybrik-system create configmap sample-policy --from-file=$AIRBYTE_MODULE_DIR/fybrik/sample-policy-restrictive.rego

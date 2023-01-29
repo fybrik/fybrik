@@ -262,6 +262,7 @@ rule[{}] {
 In this sample only the policy above is applied. Copy the policy to a file named `sample-policy.rego` and then run:
 
 ```bash
+NS="fybrik-system"; kubectl -n $NS get configmap | awk '/sample/{print $1}' | xargs  kubectl delete -n $NS configmap
 kubectl -n fybrik-system create configmap sample-policy --from-file=sample-policy.rego
 kubectl -n fybrik-system label configmap sample-policy openpolicyagent.org/policy=rego
 while [[ $(kubectl get cm sample-policy -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
