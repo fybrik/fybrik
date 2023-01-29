@@ -106,9 +106,9 @@ Run the following to install vault and the plugin in development mode:
 Fybrik assumes the existence of a data catalog that contains the metadata and connection information for data assets. Fybrik currently supports:
 
  1. [OpenMetadata](https://open-metadata.org/): An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.
- 2. [katalog](https://fybrik.io/dev/reference/katalog/): a data catalog stub used for testing and evaluation purposes.
+ 2. [Katalog](https://fybrik.io/dev/reference/katalog/): a data catalog stub used for testing and evaluation purposes.
 
-In this guide we use the OpenMetadata data catalog.
+If you plan to use [Katalog](https://fybrik.io/dev/reference/katalog/), you can skip to the [next section](#install-control-plane), but keep in mind that Katalog is mostly suitable for development and testing.
 
 To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.
 
@@ -161,27 +161,49 @@ Running `make` installs OpenMetadata in the `open-metadata` namespace. To instal
 
 ## Install control plane
 
-When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`. If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in the helm installation command.
+=== "With OpenMetadata"
+    When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`. If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in the helm installation command.
 
-??? tip "Install latest development version from GitHub"
+    ??? tip "Install latest development version from GitHub"
 
-    The published Helm charts are only available for released versions.
-    To install the `dev` version install the charts from the source code.
-    For example:
+        The published Helm charts are only available for released versions.
+        To install the `dev` version install the charts from the source code.
+        For example:
+        ```bash
+        git clone https://github.com/fybrik/fybrik.git
+        cd fybrik
+        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+        helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
+        ```
+
+    The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
+    Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+
     ```bash
-    git clone https://github.com/fybrik/fybrik.git
-    cd fybrik
-    helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-    helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
+    helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
+    helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system {{ fybrikVersionFlag }} --wait
     ```
 
-The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
-Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
+=== "With Katalog"
+    ??? tip "Install latest development version from GitHub"
+
+        The published Helm charts are only available for released versions.
+        To install the `dev` version install the charts from the source code.
+        For example:
+        ```bash
+        git clone https://github.com/fybrik/fybrik.git
+        cd fybrik
+        helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
+        helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=katalog -n fybrik-system --wait
+        ```
+
+        The control plane includes a `manager` service that connects to a data catalog and to a policy manager.
+        Install the Fybrik release with [Katalog](https://fybrik.io/dev/reference/katalog/)) as the data catalog and with [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager:
     
-```bash
-helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
-helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system {{ fybrikVersionFlag }} --wait
-```
+    ```bash
+    helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system {{ fybrikVersionFlag }} --wait
+    helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=katalog -n fybrik-system {{ fybrikVersionFlag }} --wait
+    ```
 
 ## Install modules
 
