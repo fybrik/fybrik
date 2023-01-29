@@ -15,7 +15,8 @@ import (
 const (
 	StepNameHashLength       = 10
 	hashPostfixLength        = 5
-	k8sMaxConformNameLength  = 63
+	K8sUniqueNameLeftover    = 10
+	K8sMaxConformNameLength  = 63
 	helmMaxConformNameLength = 53
 )
 
@@ -94,7 +95,7 @@ func ShortenedName(name string, maxLength, hashLength int) string {
 // This method shortens the name keeping a prefix and using the last 5 characters of the
 // new name for the hash of the postfix.
 func K8sConformName(name string) string {
-	return ShortenedName(name, k8sMaxConformNameLength, hashPostfixLength)
+	return ShortenedName(name, K8sMaxConformNameLength, hashPostfixLength)
 }
 
 // Helm has stricter restrictions than K8s and restricts release names to 53 characters
