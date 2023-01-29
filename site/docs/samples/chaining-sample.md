@@ -10,8 +10,7 @@ The data read in this example is the `userdata` dataset, a Parquet file found in
 
 To recreate this scenario, you will need a copy of the airbyte-module repository.
 
-1. Set the AIRBYTE_MODULE_DIR environment variable to be the path of the `airby
-te-module` directory:
+1. Set the AIRBYTE_MODULE_DIR environment variable to be the path of the `airbyte-module` directory:
     ```bash
     cd /tmp
     git clone https://github.com/fybrik/airbyte-module.git

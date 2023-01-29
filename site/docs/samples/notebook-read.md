@@ -73,7 +73,7 @@ In this step you are performing the role of the data owner, registering his data
         ```
 
     === "Registering Dataset via Connector"
-        We now explain how to register a dataset in the Katalog data catalog.
+        We now explain how to register a dataset using the OpenMetadata connector.
 
         Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
@@ -153,7 +153,7 @@ In this step you are performing the role of the data owner, registering his data
         ```
 
 === "With Katalog"
-    We now explain how to register a dataset using the Katalog connector.
+    We now explain how to register a dataset in the Katalog data catalog.
 
     Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
