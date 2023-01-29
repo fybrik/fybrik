@@ -1564,9 +1564,9 @@ kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </sp
 <p>Fybrik assumes the existence of a data catalog that contains the metadata and connection information for data assets. Fybrik currently supports:</p>
 <ol>
 <li><a href="https://open-metadata.org/">OpenMetadata</a>: An open-source end-to-end metadata management solution that includes data discovery, governance, data quality, observability, collaboration, and lineage.</li>
-<li><a href="https://fybrik.io/dev/reference/katalog/">katalog</a>: a data catalog stub used for testing and evaluation purposes.</li>
+<li><a href="https://fybrik.io/dev/reference/katalog/">Katalog</a>: a data catalog stub used for testing and evaluation purposes.</li>
 </ol>
-<p>In this guide we use the OpenMetadata data catalog.</p>
+<p>If you plan to use <a href="https://fybrik.io/dev/reference/katalog/">Katalog</a>, you can skip to the <a href="#install-control-plane">next section</a>, but keep in mind that Katalog is mostly suitable for development and testing.</p>
 <p>To use OpenMetadata, you can either use an existing deployment, or run the following commands to deploy OpenMetadata in kubernetes.</p>
 <p><em>Note:</em> OpenMetadata deployment requires a cluster storage provisioner that has PersistentVolume capability of ReadWriteMany Access Mode.
 Below we provide examples of OpenMetadata installations on a single node kind cluster (for development and testing) and an 
@@ -1609,6 +1609,9 @@ Follow the instructions that appear on screen to change the OpenMetadata locatio
 </div>
 <p>Running <code>make</code> installs OpenMetadata in the <code>open-metadata</code> namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the <code>Makefile.env</code> file.</p>
 <h2 id="install-control-plane">Install control plane</h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">With OpenMetadata</label><label for="__tabbed_4_2">With Katalog</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <p>When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata. The default value for that endpoint is <code>http://openmetadata.open-metadata:8585/api</code>. If you are using a different OpenMetadata deployment, replace the <code>openmetadataConnector.openmetadata_endpoint</code> value in the helm installation command.</p>
 <details class="tip">
 <summary>Install latest development version from GitHub</summary>
@@ -1626,6 +1629,27 @@ Install the Fybrik release with <a href="https://open-metadata.org/">OpenMetadat
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
 helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
 </code></pre></div>
+</div>
+<div class="tabbed-block">
+<details class="tip">
+<summary>Install latest development version from GitHub</summary>
+<p>The published Helm charts are only available for released versions.
+To install the <code>dev</code> version install the charts from the source code.
+For example:
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+</code></pre></div></p>
+<p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager.
+Install the Fybrik release with <a href="https://fybrik.io/dev/reference/katalog/">Katalog</a>) as the data catalog and with <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager:</p>
+</details>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
+</code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
 <summary>Install latest development version from GitHub</summary>

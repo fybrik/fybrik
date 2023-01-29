@@ -1519,9 +1519,11 @@ aws<span class="w"> </span>--endpoint-url<span class="o">=</span><span class="si
 </details>
 <h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
 <p>In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.</p>
-<p>In this tutorial, we assume that OpenMetadata is used as the data catalog.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <p>Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Register an asset through the OpenMetadata UI</label><label for="__tabbed_1_2">Registering Dataset via Connector</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Register an asset through the OpenMetadata UI</label><label for="__tabbed_2_2">Registering Dataset via Connector</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>To register an asset directly through the OpenMetadata UI, follow the instructions <a href="../../tasks/omd-discover-s3-asset/">here</a>. These instructions also explain how to determine the asset ID.</p>
@@ -1546,7 +1548,8 @@ aws<span class="w"> </span>--endpoint-url<span class="o">=</span><span class="si
 <p>Next, register the data asset itself in the data catalog.
 We use port-forwarding to send asset creation requests to the OpenMetadata connector.
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/openmetadata-connector<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="m">8081</span>:8080<span class="w"> </span><span class="p">&amp;</span>
-cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
 <span class="s">{</span>
 <span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
 <span class="s">  &quot;destinationAssetID&quot;: &quot;paysim-csv&quot;,</span>
@@ -1598,10 +1601,66 @@ cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost
 Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-s3.default.demo.\&quot;PS_20174392719_1491204439457_log.csv\&quot;&quot;</span>
 </code></pre></div></p>
+</div>
+</div>
+</div>
+</div>
+<div class="tabbed-block">
+<p>We now explain how to register a dataset in the Katalog data catalog.</p>
+<p>Begin by registering the credentials required for accessing the dataset as a kubernetes secret. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt; EOF | kubectl apply -f -</span>
+<span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paysim-csv</span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Opaque</span>
+<span class="nt">stringData</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">access_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ACCESS_KEY}&quot;</span>
+<span class="w">  </span><span class="nt">secret_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${SECRET_KEY}&quot;</span>
+<span class="l l-Scalar l-Scalar-Plain">EOF</span>
+</code></pre></div>
+<p>Next, register the data asset itself in the data catalog.
+We use port-forwarding to send asset creation requests to the Katalog connector.
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | kubectl apply -f -</span>
+<span class="s">apiVersion: katalog.fybrik.io/v1alpha1</span>
+<span class="s">kind: Asset</span>
+<span class="s">metadata:</span>
+<span class="s">  name: paysim-csv</span>
+<span class="s">spec:</span>
+<span class="s">  secretRef:</span>
+<span class="s">    name: paysim-csv</span>
+<span class="s">  details:</span>
+<span class="s">    dataFormat: csv</span>
+<span class="s">    connection:</span>
+<span class="s">      name: s3</span>
+<span class="s">      s3:</span>
+<span class="s">        endpoint: &quot;http://localstack.fybrik-notebook-sample.svc.cluster.local:4566&quot;</span>
+<span class="s">        bucket: &quot;demo&quot;</span>
+<span class="s">        object_key: &quot;PS_20174392719_1491204439457_log.csv&quot;</span>
+<span class="s">  metadata:</span>
+<span class="s">    name: Synthetic Financial Datasets For Fraud Detection</span>
+<span class="s">    geography: theshire</span>
+<span class="s">    tags:</span>
+<span class="s">      Purpose.finance: true</span>
+<span class="s">    columns:</span>
+<span class="s">      - name: nameOrig</span>
+<span class="s">        tags:</span>
+<span class="s">          PII.Sensitive: true</span>
+<span class="s">      - name: oldbalanceOrg</span>
+<span class="s">        tags:</span>
+<span class="s">          PII.Sensitive: true</span>
+<span class="s">      - name: newbalanceOrig</span>
+<span class="s">        tags:</span>
+<span class="s">          PII.Sensitive: true</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<p>Store the asset name in a <code>CATALOGED_ASSET</code> variable:
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;fybrik-notebook-sample/paysim-csv&quot;</span>
+</code></pre></div></p>
+</div>
+</div>
+</div>
 <p>If you look at the asset creation request above, you will notice that in the <code>resourceMetadata</code> field, we request that the asset should be tagged with the <code>Purpose.finance</code> tag, and that three of its columns should be tagged with the <code>PII.Sensitive</code> tag. Those tags will be referenced below in the access policy rules. Tags are important because they are used to determine whether an application would be allowed to access a dataset, and if so, which transformations should be applied to it.</p>
-</div>
-</div>
-</div>
 <p>The asset is now registered in the catalog.</p>
 <p>Notice the <code>resourceMetadata</code> field above. It specifies the dataset geography and tags. These attributes can later be used in policies.</p>
 <p>For example, in the json above, the <code>geography</code> is set to <code>theshire</code>. You need make sure that it is same as the region of your fybrik control plane. You can get this information using the following command:</p>
@@ -1644,7 +1703,7 @@ kubectl<span class="w"> </span>expose<span class="w"> </span>deployment<span cla
 <li>Create a new notebook in the server</li>
 </ol>
 <h2 id="create-a-fybrikapplication-resource-for-the-notebook">Create a <code>FybrikApplication</code> resource for the notebook</h2>
-<p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik. The value you place in the <code>dataSetID</code> field is your asset ID, as explained above. If you registered your dataset through the OpenMetadata connector, enter the <code>assetID</code> which was returned to you by the OpenMetadata connector, e.g. <code>"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""</code>.</p>
+<p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik. The value you place in the <code>dataSetID</code> field is your asset ID, as explained above. If you registered your dataset through the data catalog connector, enter the <code>assetID</code> which was returned to you by the connector, e.g. <code>"openmetadata-s3.default.demo.\"PS_20174392719_1491204439457_log.csv\""</code>.</p>
 <!-- TODO: role field removed but code still requires it -->
 <div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">cat &lt;&lt;EOF | kubectl apply -f -</span>
 <span class="l l-Scalar l-Scalar-Plain">apiVersion</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">app.fybrik.io/v1beta1</span>
@@ -1690,7 +1749,7 @@ The next steps use the endpoint to read the data in a python notebook</p>
 <li>Insert a new notebook cell to install pandas and pyarrow packages:
   <div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">pandas</span> <span class="n">pyarrow</span><span class="o">==</span><span class="mf">7.0</span><span class="o">.*</span>
 </code></pre></div></li>
-<li>Insert a new notebook cell to read the data using the endpoint value extracted from the <code>FybrikApplication</code> in the previous step:
+<li>Insert a new notebook cell to read the data. You need to replace both the <code>ENDPOINT</code> and the <code>CATALOGED_ASSET</code> values, which were obtained in previous steps:
   <div class="highlight"><pre><span></span><code>import<span class="w"> </span>json
 import<span class="w"> </span>pyarrow.flight<span class="w"> </span>as<span class="w"> </span>fl
 import<span class="w"> </span>pandas<span class="w"> </span>as<span class="w"> </span>pd
@@ -1700,7 +1759,7 @@ import<span class="w"> </span>pandas<span class="w"> </span>as<span class="w"> <
 
 <span class="c1"># Prepare the request</span>
 <span class="nv">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
-<span class="w">    </span><span class="s2">&quot;asset&quot;</span>:<span class="w"> </span><span class="s2">&quot;openmetadata-s3.default.demo.\&quot;PS_20174392719_1491204439457_log.csv\&quot;&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;asset&quot;</span>:<span class="w"> </span><span class="s1">&#39;&lt;CATALOGED_ASSET&gt;&#39;</span>,
 <span class="w">    </span><span class="c1"># To request specific columns add to the request a &quot;columns&quot; key with a list of column names</span>
 <span class="w">    </span><span class="c1"># &quot;columns&quot;: [...]</span>
 <span class="o">}</span>

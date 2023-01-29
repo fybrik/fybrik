@@ -1873,10 +1873,26 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span clas
 <div class="highlight"><pre><span></span><code><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.ready}&#39;</span><span class="k">)</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">&quot;true&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;waiting for FybrikApplication&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
 <span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">&quot;True&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;waiting for new-data asset&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
 </code></pre></div>
+<p>Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in <a href="#scenario-3-read-the-newly-written-data">Scenario 3</a>, where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
 <span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
+<span class="nv">BUCKET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}&#39;</span><span class="k">)</span>
 </code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
+<span class="nv">CATALOGED_ASSET</span><span class="o">=</span>fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
+<span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
+<span class="nv">BUCKET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}&#39;</span><span class="k">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
 <h3 id="write-the-data-from-the-notebook">Write the data from the notebook</h3>
 <p>This sample uses the <a href="https://www.kaggle.com/ealaxi/paysim1">Synthetic Financial Datasets For Fraud Detection</a> dataset<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> as the data that the notebook needs to write. Download and extract the file to your machine. You should now see a file named <code>PS_20174392719_1491204439457_log.csv</code>. Alternatively, use a sample of 100 lines of the same dataset by downloading <a href="https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv"><code>PS_20174392719_1491204439457_log.csv</code></a> from GitHub.</p>
 <p>To reference <code>PS_20174392719_1491204439457_log.csv</code> from Jupyter notebook cells as shown later in this section do the following:</p>
@@ -1929,7 +1945,7 @@ writer.close()
 </code></pre></div></li>
 </ol>
 <h3 id="view-new-asset-through-openmetadata-ui">View new asset through OpenMetadata UI</h3>
-<p>The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found <a href="../../tasks/omd-discover-s3-asset/">here</a>. It begins with an explanation how to connect to the UI and login. Once you are logged in, choose <code>Tables</code> on the menu on the left and you will see all the registered assets.</p>
+<p>If Fybrik is configured to work with the OpenMetadata data catalog, then the newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found <a href="../../tasks/omd-discover-s3-asset/">here</a>. It begins with an explanation how to connect to the UI and login. Once you are logged in, choose <code>Tables</code> on the menu on the left and you will see all the registered assets.</p>
 <h3 id="cleanup-scenario-two">Cleanup scenario two</h3>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>cm<span class="w"> </span>sample-policy-write<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 kubectl<span class="w"> </span>delete<span class="w"> </span>fybrikapplications.app.fybrik.io<span class="w"> </span>my-notebook-write<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample
@@ -2017,13 +2033,12 @@ df_read:<span class="w"> </span>pd.DataFrame<span class="w"> </span><span class=
 <li>Insert a new notebook cell with the following command to visualize the result:
   <div class="highlight"><pre><span></span><code>df_read
 </code></pre></div></li>
-<li>Execute all notebook cells and notice that the <code>oldbalanceOrg</code> column does not appear because it was redacted.</li>
+<li>Execute all notebook cells and notice that data in the <code>oldbalanceOrg</code> column was redacted.</li>
 </ol>
 <h2 id="cleanup">Cleanup</h2>
 <p>You can use the <a href="https://aws.amazon.com/cli/">AWS CLI</a> to remove the bucket and objects created in this sample.</p>
 <p>To list all the created objects, run:
-<div class="highlight"><pre><span></span><code><span class="nv">BUCKET</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span>-F<span class="s2">&quot;.&quot;</span><span class="w"> </span><span class="s1">&#39;{print $3}&#39;</span><span class="k">)</span>
-aws<span class="w"> </span>--endpoint-url<span class="o">=</span>http://localhost:4566<span class="w"> </span>s3api<span class="w">  </span>--bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="w"> </span>list-objects
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>--endpoint-url<span class="o">=</span>http://localhost:4566<span class="w"> </span>s3api<span class="w">  </span>--bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="w"> </span>list-objects
 </code></pre></div></p>
 <p>The output should look something like:
 <div class="highlight"><pre><span></span><code><span class="o">{</span>

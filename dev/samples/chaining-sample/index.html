@@ -1349,18 +1349,15 @@
 <h1 id="fybrikmodule-chaining-sample">FybrikModule chaining sample</h1>
 <p>This sample shows how to implement a use case where, based on the data source and governance policies, the Fybrik manager determines that it must deploy two FybrikModules to allow a workload access to a dataset. One FybrikModule handles reading the data and the second does the data transformation. Data is passed between the FybrikModules without writing to intermediate storage.</p>
 <p>The data read in this example is the <code>userdata</code> dataset, a Parquet file found in https://github.com/Teradata/kylo/blob/master/samples/sample-data/parquet/userdata2.parquet. Two FybrikModules are available for use by the Fybrik control plane: the <a href="https://github.com/fybrik/arrow-flight-module">arrow-flight-module</a> and the <a href="https://github.com/fybrik/airbyte-module">airbyte-module</a>. Only the airbyte-module can give read access to the dataset. However, it does not have any data transformation capabilities. Therefore, to satisfy constraints, the Fybrik manager must deploy both modules: the airbyte module for reading the dataset, and the arrow-flight-module for transforming the dataset based on the governance policies.</p>
-<p>To recreate this scenario, you will need a copy of the Fybrik repository (<code>git clone https://github.com/fybrik/fybrik.git</code>), and a copy of the airbyte-module repository (<code>git clone https://github.com/fybrik/airbyte-module.git</code>). Set the following environment variables: FYBRIK_DIR for the path of the <code>fybrik</code> directory, and AIRBYTE_MODULE_DIR for the path of the <code>airbyte-module</code> directory.</p>
+<p>To recreate this scenario, you will need a copy of the airbyte-module repository.</p>
 <ol>
 <li>
-<p>Install Fybrik Prerequisites. Follow the instruction in the Fybrik <a href="https://fybrik.io/dev/get-started/quickstart/">Quick Start Guide</a>. Stop before the "Install control plane" section.</p>
-</li>
-<li>
-<p>Before installing the control plane, we need to customize the <a href="https://fybrik.io/dev/tasks/custom-taxonomy/">Fybrik taxonomy</a> to define the new connection and interface types. Run:
-    <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span><span class="nv">$FYBRIK_DIR</span>
-git<span class="w"> </span>checkout<span class="w"> </span>master
-go<span class="w"> </span>run<span class="w"> </span>main.go<span class="w"> </span>taxonomy<span class="w"> </span>compile<span class="w"> </span>--out<span class="w"> </span>custom-taxonomy.json<span class="w"> </span>--base<span class="w"> </span>charts/fybrik/files/taxonomy/taxonomy.json<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/fybrik-taxonomy-customize.yaml
-helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>aster<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait<span class="w"> </span>--set-file<span class="w"> </span><span class="nv">taxonomyOverride</span><span class="o">=</span>custom-taxonomy.json
+<p>Set the AIRBYTE_MODULE_DIR environment variable to be the path of the <code>airbyte-module</code> directory:
+    <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/tmp
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/airbyte-module.git
+<span class="nb">cd</span><span class="w"> </span>airbyte-module
+git<span class="w"> </span>checkout<span class="w"> </span>v0.2.0
+<span class="nb">export</span><span class="w"> </span><span class="nv">AIRBYTE_MODULE_DIR</span><span class="o">=</span><span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>
 </code></pre></div></p>
 </li>
 <li>
@@ -1380,8 +1377,12 @@ kubectl<span class="w"> </span>config<span class="w"> </span>set-context<span cl
 </code></pre></div></p>
 </li>
 <li>
-<p>Next, register the data asset itself in the data catalog. We use port-forwarding to send asset creation requests to the OpenMetadata connector.
-    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/openmetadata-connector<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="m">8081</span>:8080<span class="w"> </span><span class="p">&amp;</span>
+<p>Next, register the data asset itself in the data catalog. The way to do it depends on the data catalog with which you are working:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>We use port-forwarding to send asset creation requests to the OpenMetadata connector.
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/openmetadata-connector<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="m">8081</span>:8080<span class="w"> </span><span class="p">&amp;</span>
 cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost:8081/createAsset -d @-</span>
 <span class="s">{</span>
 <span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
@@ -1436,6 +1437,21 @@ cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost
 </code></pre></div></p>
 <p>The asset is now registered in the catalog. Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>
+</code></pre></div></p>
+</div>
+<div class="tabbed-block">
+<p><div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/read-flow/asset.yaml
+</code></pre></div>
+The asset is now registered in the catalog. Store the asset ID in a CATALOGED_ASSET variable:
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span>fybrik-airbyte-sample/userdata
+</code></pre></div></p>
+</div>
+</div>
+</div>
+</li>
+<li>
+<p>Before creating a policy for accessing the asset, make sure that you clean up previously existing access policies:
+   <div class="highlight"><pre><span></span><code><span class="nv">NS</span><span class="o">=</span><span class="s2">&quot;fybrik-system&quot;</span><span class="p">;</span><span class="w"> </span>kubectl<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NS</span><span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/sample/{print $1}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w">  </span>kubectl<span class="w"> </span>delete<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NS</span><span class="w"> </span>configmap
 </code></pre></div></p>
 </li>
 <li>
