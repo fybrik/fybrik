@@ -7,7 +7,7 @@ A module is packaged as a Helm chart that the control plane can install to a wor
 To first make a module available to the control plane, it must be registered by applying a FybrikModule custom resource.
 
 After that, a FybrikApplication can be submitted.  
-For each FybrikApplication submitted, Fybrik chooses the best modules to accommodate the data needs specified in the FybrikApplication, and deploys them.  
+For each FybrikApplication submitted, Fybrik chooses the best modules to accommodate the data needs (specified in the FybrikApplication) and deploys them.  
 
 Each module is deployed using its Helm chart.
 Fybrik passes the needed configuration parameters to the module using the [Helm mechanism for passing values](https://helm.sh/docs/chart_template_guide/values_files/).
@@ -39,7 +39,7 @@ The control plane deploys the relevant transform plugin as well as the read modu
 ### Configuration
 
 Modules receive the parameters that define the configuration needed for the module (such as data asset connection information, required transformations, and so on) as Helm chart values.  
-The list of the parameters passed, and an example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
+an example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
 
 To read the parameters, most modules define a conf.yaml file that grabs the relevant Helm values, and is copied to the environment of the module container.
 
