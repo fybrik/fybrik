@@ -15,7 +15,7 @@
     
     
       
-        <title>db2 - Fybrik</title>
+        <title>mysql - Fybrik</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#db2" class="md-skip">
+        <a href="#mysql" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              db2
+              mysql
             
           </span>
         </div>
@@ -1339,14 +1339,14 @@
                 
                   
 
-  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-datacatalog/Models/db2.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/fybrik/fybrik/edit/master/site/docs/reference/connectors-datacatalog/Models/mysql.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
-<h1 id="db2">db2</h1>
-<p>Connection information for accessing a table in a db2 database</p>
+<h1 id="mysql">mysql</h1>
+<p>Connection information for accessing a table in a mysql database</p>
 <h2 id="properties">Properties</h2>
 <table>
 <thead>
@@ -1365,28 +1365,28 @@
 <td>[default: null]</td>
 </tr>
 <tr>
+<td><strong>host</strong></td>
+<td>String</td>
+<td>Server host</td>
+<td>[default: null]</td>
+</tr>
+<tr>
 <td><strong>port</strong></td>
 <td>Integer</td>
-<td>Database port</td>
+<td>Server port</td>
 <td>[default: null]</td>
 </tr>
 <tr>
 <td><strong>ssl</strong></td>
 <td>Boolean</td>
-<td>SSL indicates whether the website is secured by an SSL certificate</td>
+<td>SSL indicates whether to encrypt data using SSL</td>
 <td>[optional] [default: false]</td>
 </tr>
 <tr>
 <td><strong>table</strong></td>
 <td>String</td>
 <td>Table name</td>
-<td>[default: null]</td>
-</tr>
-<tr>
-<td><strong>url</strong></td>
-<td>String</td>
-<td>URL of the database server</td>
-<td>[default: null]</td>
+<td>[optional] [default: null]</td>
 </tr>
 </tbody>
 </table>
