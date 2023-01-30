@@ -51,12 +51,24 @@
         "fybrik-arrow-flight": {
           "$ref": "#/definitions/fybrik-arrow-flight"
         },
+        "google-sheets": {
+          "$ref": "#/definitions/google-sheets"
+        },
+        "https": {
+          "$ref": "#/definitions/https"
+        },
         "kafka": {
           "$ref": "#/definitions/kafka"
+        },
+        "mysql": {
+          "$ref": "#/definitions/mysql"
         },
         "name": {
           "description": "Name of the connection to the data source",
           "$ref": "#/definitions/ConnectionType"
+        },
+        "postgres": {
+          "$ref": "#/definitions/postgres"
         },
         "s3": {
           "$ref": "#/definitions/s3"
@@ -215,7 +227,7 @@
     },
     "db2": {
       "type": "object",
-      "description": "Connection information for accessing a table in a database",
+      "description": "Connection information for accessing a table in a db2 database",
       "properties": {
         "database": {
           "type": "string",
@@ -269,6 +281,32 @@
         "scheme"
       ]
     },
+    "google-sheets": {
+      "type": "object",
+      "description": "Connection information for accessing data in google-sheets",
+      "properties": {
+        "spreadsheet_id": {
+          "type": "string",
+          "description": "The link to the Google spreadsheet"
+        }
+      },
+      "required": [
+        "spreadsheet_id"
+      ]
+    },
+    "https": {
+      "type": "object",
+      "description": "Connection information for accessing data via https",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL path to access the file."
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
     "kafka": {
       "type": "object",
       "description": "Connection information for accessing a kafka topic",
@@ -311,6 +349,70 @@
       "required": [
         "bootstrap_servers",
         "topic_name"
+      ]
+    },
+    "mysql": {
+      "type": "object",
+      "description": "Connection information for accessing a table in a mysql database",
+      "properties": {
+        "database": {
+          "type": "string",
+          "description": "Database name"
+        },
+        "host": {
+          "type": "string",
+          "description": "Server host"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Server port"
+        },
+        "ssl": {
+          "type": "boolean",
+          "description": "SSL indicates whether to encrypt data using SSL",
+          "default": false
+        },
+        "table": {
+          "type": "string",
+          "description": "Table name"
+        }
+      },
+      "required": [
+        "database",
+        "host",
+        "port"
+      ]
+    },
+    "postgres": {
+      "type": "object",
+      "description": "Connection information for accessing a table in a postgres database",
+      "properties": {
+        "database": {
+          "type": "string",
+          "description": "Database name"
+        },
+        "host": {
+          "type": "string",
+          "description": "Server host"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Server port"
+        },
+        "ssl": {
+          "type": "boolean",
+          "description": "SSL indicates whether to encrypt data using SSL",
+          "default": false
+        },
+        "table": {
+          "type": "string",
+          "description": "Table name"
+        }
+      },
+      "required": [
+        "database",
+        "host",
+        "port"
       ]
     },
     "s3": {

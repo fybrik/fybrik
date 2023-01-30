@@ -1,5 +1,5 @@
 # db2
-Connection information for accessing a table in a database
+Connection information for accessing a table in a db2 database
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
