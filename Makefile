@@ -32,12 +32,18 @@ all: generate manifests generate-docs verify
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
 
+DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
+DOCKER_PUBLIC_NAMESPACE ?= fybrik
+DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:main
+
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
-	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
+	docker run --rm -u "$(id -u):$(id -g)" -v ${PWD}:/local -w /local/ \
+    	$(DOCKER_PUBLIC_HOSTNAME)/$(DOCKER_PUBLIC_NAMESPACE)/$(DOCKER_TAXONOMY_NAME_TAG) compile \
+		-o charts/fybrik/files/taxonomy/taxonomy.json \
 		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
 
@@ -115,9 +121,11 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
-	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
-		$(shell find samples/taxonomy/example -type f -name '*.yaml')
+	docker run --rm -u "$(id -u):$(id -g)" -v ${PWD}:/local -w /local/ \
+    	$(DOCKER_PUBLIC_HOSTNAME)/$(DOCKER_PUBLIC_NAMESPACE)/$(DOCKER_TAXONOMY_NAME_TAG) compile \
+    	-o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
+    	-b charts/fybrik/files/taxonomy/taxonomy.json \
+    	$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
 .PHONY: test
@@ -265,8 +273,6 @@ docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C connectors docker-push
 
-DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
-DOCKER_PUBLIC_NAMESPACE ?= fybrik
 DOCKER_PUBLIC_TAGNAME ?= master
 
 DOCKER_PUBLIC_NAMES := \
