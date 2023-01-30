@@ -43,8 +43,8 @@ The list of the parameters passed, and an example of parameters passed, can be f
 
 To read the parameters, most modules define a conf.yaml file that grabs the relevant Helm values, and is copied to the environment of the module container.
 
-An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/main/helm/abm/files/conf.yaml). 
-An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/main/abm/config.py).
+An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/v0.2.0/helm/abm/files/conf.yaml). 
+An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/v0.2.0/abm/config.py).
 
 
 ### Credential management
@@ -67,7 +67,7 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 Fybrik repository contains a [Python Vault package](https://github.com/fybrik/fybrik/tree/master/python/vault) that modules can use to
 retrieve the credentials.
 
-An example of the [arrow flight module][https://github.com/fybrik/arrow-flight-module] using Vault to retrieve credentials, in order to login to s3, can be found [here](https://github.com/fybrik/arrow-flight-module/blob/master/afm/filesystems/s3.py).
+An example of the [arrow flight module](https://github.com/fybrik/arrow-flight-module) using Vault to retrieve credentials, in order to login to s3, can be found [here](https://github.com/fybrik/arrow-flight-module/blob/v0.10.0/afm/filesystems/s3.py).
 
 ## Docker image
 
