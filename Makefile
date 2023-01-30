@@ -34,8 +34,7 @@ license: $(TOOLBIN)/license_finder
 
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
-	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -o charts/fybrik/files/taxonomy/
-	$(TOOLBIN)/json-schema-generator -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
+	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
 	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
@@ -94,7 +93,7 @@ else
 endif
 
 .PHONY: pre-test
-pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/fzn-or-tools
+pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN)/solver
 	mkdir -p $(DATA_DIR)/taxonomy
 	mkdir -p $(DATA_DIR)/adminconfig
 	cp charts/fybrik/files/taxonomy/*.json $(DATA_DIR)/taxonomy/
@@ -112,7 +111,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
-test: export CSP_PATH=$(ABSTOOLBIN)/fzn-or-tools
+test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test
 	go test $(TEST_OPTIONS) ./...
