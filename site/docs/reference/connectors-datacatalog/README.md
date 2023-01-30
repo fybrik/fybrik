@@ -30,7 +30,11 @@ Class | Method | HTTP request | Description
  - [UpdateAssetResponse](Models/UpdateAssetResponse.md)
  - [db2](Models/db2.md)
  - [fybrik-arrow-flight](Models/fybrik-arrow-flight.md)
+ - [google-sheets](Models/google-sheets.md)
+ - [https](Models/https.md)
  - [kafka](Models/kafka.md)
+ - [mysql](Models/mysql.md)
+ - [postgres](Models/postgres.md)
  - [s3](Models/s3.md)
 
 
