@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"fybrik.io/fybrik/pkg/environment"
-	validate "fybrik.io/fybrik/pkg/taxonomy/validate"
+	validate "fybrik.io/fybrik/pkg/validate"
 )
 
 var taxonomyFilePath = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
