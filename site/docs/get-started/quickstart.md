@@ -206,7 +206,7 @@ The control plane includes a `manager` service that connects to a data catalog a
     [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
 
     > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata.
-    ssss
+
     The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
     If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in
     the helm installation command.
