@@ -48,7 +48,7 @@ jobs:
       run: make install-tools
     - name: Verify
       run: |
-        make generate manifests generate-docs verify
+        make generate manifests generate-docs reconcile-requirements verify
         git diff --exit-code
   test:
     name: Unit tests

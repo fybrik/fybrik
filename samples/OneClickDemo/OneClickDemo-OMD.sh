@@ -2,14 +2,20 @@
 
 set -e
 
-# Tools versions:
+# Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
 KUBE_VERSION=1.22.0
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=1.6.2
-FYBRIK_VERSION=1.2.0
 AWSCLI_VERSION=2.7.18
+
+FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
+if [[ "$FYBRIK_VERSION" == "master" ]]; then
+  FYBRIK_VERSION=""
+else
+  FYBRIK_VERSION="--version ${FYBRIK_VERSION:1}"
+fi
 
 # Arguments handeling:
 usage() {
@@ -33,7 +39,6 @@ USE_KIND=1
 # Flags:
 # l - (optional) tools location - default: current dir
 # m - (optional) module name - default: afm. options: afm (arrow-flight-module), abm (airbyte-module).
-# f - (optional) module.yaml path - defaults to the latest yaml version of the module. options are a local module yaml path or a URL to a module yaml.
 # c - use kind or current cluster - default: use kind
 
 while getopts ":l:m:c" arg; do
@@ -215,7 +220,7 @@ header "\nInstall Vault"
 bin/helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
     --set "vault.injector.enabled=false" \
     --set "vault.server.dev.enabled=true" \
-    --values https://raw.githubusercontent.com/fybrik/fybrik/v${FYBRIK_VERSION}/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_VERSION_VAULT}/charts/vault/env/dev/vault-single-cluster-values.yaml
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
 # If using openshift:
@@ -234,9 +239,9 @@ curl https://raw.githubusercontent.com/fybrik/fybrik/v1.2.0/third_party/openmeta
 
 header "\nInstall control plane"
 
-bin/helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version ${FYBRIK_VERSION} --wait
+bin/helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system  ${FYBRIK_VERSION} --wait
 
-bin/helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --version ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
+bin/helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
 sleep 5
 
 header "\nInstall module"

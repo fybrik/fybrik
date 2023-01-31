@@ -46,6 +46,13 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 generate-docs:
 	$(MAKE) -C site generate
 
+.PHONY: reconcile-requirements
+reconcile-requirements:
+	sed -i 's/HELM_VERSION=.*/HELM_VERSION=$(HELM_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	sed -i 's/YQ_VERSION=.*/YQ_VERSION=$(YQ_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	sed -i 's/KUBE_VERSION=.*/KUBE_VERSION=$(KUBE_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	sed -i 's/KIND_VERSION=.*/KIND_VERSION=$(KIND_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
