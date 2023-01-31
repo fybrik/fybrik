@@ -20,15 +20,15 @@ This task describes how to deploy Fybrik with a custom `taxonomy.json` file that
 
 ## Taxonomy Compile CLI tool 
 
-A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in our repo.
+A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in the [taxonomy-cli repository](https://github.com/fybrik/taxonomy-cli), along with a [Docker image](https://github.com/fybrik/taxonomy-cli/pkgs/container/taxonomy-cli) to directly run the tool.
 
 The base taxonomy can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) and example layers can be found in [`samples/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example).
 
-The following command can be used from the root directory of our repo to run the Taxonomy Compile CLI tool. 
+The following command can be used to run the Taxonomy Compile CLI tool from the provided Docker image.
 
 Usage:
 ```bash
-  go run main.go taxonomy compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]
 ```
 
 Flags:
@@ -37,9 +37,14 @@ Flags:
 
 - --codegen : Best effort to make output suitable for code generation tools
 
-- -o, --out string : Path for output file (default "taxonomy.json")
+- -o, --out string : Path for output file (default `taxonomy.json`)
 
 This will generate a `taxonomy.json` file with the layers specified. 
+
+Alternatively, the tool can be run from the root of the taxonomy-cli repository. Usage:
+```bash
+  go run main.go compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]
+```
 
 ## Deploy Fybrik with Custom Taxonomy
 
@@ -89,7 +94,8 @@ The working directory is the fybrik repository.
 In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool is used in the following way:
 
 ```bash
-  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+      --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
 
 This command creates a `custom-taxonomy.json` file, which is included in the helm installation of fybrik using the following command:
@@ -220,7 +226,8 @@ The working directory is the fybrik repository.
 In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool is used in the following way:
 
 ```bash
-  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+      --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
 
 This command creates a `custom-taxonomy.json` file, which is included in the helm installation of fybrik using the following command:
@@ -280,7 +287,8 @@ definitions:
 Now we create the `custom-taxonomy.json` file as before, by using the following command:
 
 ```bash
-  go run main.go taxonomy compile --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml taxonomy-layer2.yaml
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+      --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml taxonomy-layer2.yaml
 ```
 
 Now we upgrade the fybrik helm chart using the following command:
