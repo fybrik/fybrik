@@ -124,7 +124,7 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	docker run --rm -u "$(id -u):$(id -g)" -v ${PWD}:/local -w /local/ \
     	$(DOCKER_PUBLIC_HOSTNAME)/$(DOCKER_PUBLIC_NAMESPACE)/$(DOCKER_TAXONOMY_NAME_TAG) compile \
     	-o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-    	-b charts/fybrik/files/taxonomy/taxonomy.json \
+    	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
     	$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
