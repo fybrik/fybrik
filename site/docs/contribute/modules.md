@@ -39,7 +39,7 @@ The control plane deploys the relevant transform plugin as well as the read modu
 ### Configuration
 
 Modules receive the parameters that define the configuration needed for the module (such as data asset connection information, required transformations, and so on) as Helm chart values.  
-an example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
+An example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
 
 To read the parameters, most modules define a conf.yaml file that grabs the relevant Helm values, and is copied to the environment of the module container.
 
