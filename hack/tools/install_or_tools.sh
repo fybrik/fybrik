@@ -24,9 +24,9 @@ esac
 
 DEPLOY="${OR_TOOLS_VERSION}.${OR_TOOLS_BUILD}_for_${arch}_${target_os}"
 
-header_text "Checking for bin/fzn-or-tools ${DEPLOY}"
-[[ -f bin/fzn-or-tools ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${DEPLOY}" ]] && exit 0
-header_text "Installing bin/fzn-or-tools ${DEPLOY}"
+header_text "Checking for bin/solver ${DEPLOY}"
+[[ -f bin/solver ]] && [[ -f "${VERSION_FILE}" ]] && [[ `cat "${VERSION_FILE}"` == "${DEPLOY}" ]] && exit 0
+header_text "Installing bin/solver ${DEPLOY}"
 
 mkdir -p ./bin
 mkdir -p ./lib
@@ -36,7 +36,7 @@ curl -L -O https://github.com/google/or-tools/releases/download/v${OR_TOOLS_VERS
 trap "rm ${download_file}" err exit
 tmp=$(mktemp -d /tmp/or-tools.XXXXXX)
 tar -zxvf ./${download_file} -C $tmp
-mv $tmp/*/bin/fzn-ortools ./bin/fzn-or-tools
+mv $tmp/*/bin/fzn-ortools ./bin/solver
 mv $tmp/*/lib*/lib*.${dyn_lib_ext}* ./lib
-chmod +x ./bin/fzn-or-tools
+chmod +x ./bin/solver
 echo ${DEPLOY} > ${VERSION_FILE}
