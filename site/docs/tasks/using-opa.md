@@ -44,12 +44,12 @@ An example of an object that may be returned by the rule above:
 
 ## Fybrik Default Policies
 
-Fybrik ***denys by default*** any request if no rule is triggered. This behavior can be changed to ***allow by default*** by creating the following rule and upload it to OPA using methods described in this page:
+Fybrik ***allows by default*** any request if no rule is triggered. This behavior can be changed to ***deny by default*** by creating the following rule and upload it to OPA using methods described in this page:
 
 ```yaml
 package dataapi.authz
 
-rule [{}] { true }
+rule [{}] { false }
 ```
 
 The verdict `allow` will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.

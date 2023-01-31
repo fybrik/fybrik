@@ -15,4 +15,4 @@ verdict[outputFormatted] {
 	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
 }
 
-rule[{}] { false }
+rule[{}] { true }
