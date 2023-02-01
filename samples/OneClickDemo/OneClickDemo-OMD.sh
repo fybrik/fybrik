@@ -7,7 +7,7 @@ HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
 KUBE_VERSION=1.22.0
 KIND_VERSION=0.17.0
-CERT_MANAGER_VERSION=1.6.2
+CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
 
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
@@ -211,7 +211,7 @@ bin/helm repo update
 header "\nInstall Cert-manager"
 bin/helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
-    --version v${CERT_MANAGER_VERSION} \
+    --version ${CERT_MANAGER_VERSION} \
     --create-namespace \
     --set installCRDs=true \
     --wait --timeout 600s
