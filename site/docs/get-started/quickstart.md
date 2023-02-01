@@ -177,8 +177,8 @@ The control plane includes a `manager` service that connects to a data catalog a
 
     > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for 
     OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
-    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in
-    the helm installation command.
+    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` 
+    value in the helm installation command.
 
     The published Helm charts are only available for released versions. To install the `dev` version install the charts from the source code.
     ```bash
@@ -205,11 +205,10 @@ The control plane includes a `manager` service that connects to a data catalog a
     Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with
     [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
 
-    > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for OpenMetadata.
-
-    The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
-    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` value in
-    the helm installation command.
+    > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for 
+    OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
+    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` 
+    value in the helm installation command.
     
     ??? tip "Install the latest development version from GitHub"
             To apply the latest development version of fybrik:
