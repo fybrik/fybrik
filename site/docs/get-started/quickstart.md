@@ -1,6 +1,8 @@
 {% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
 {% set currentRelease = fybrik_version(FybrikRelease) %}
 {% set fybrikVersionFlag = fybrik_version_flag(FybrikRelease) %}
+{% set CertMangerVersion = CertMangerVersion %}
+
 
 # Quick Start Guide
 
@@ -37,7 +39,7 @@ Many clusters already include cert-manager. Check if `cert-manager` namespace ex
 ```bash
 helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
-    --version v1.6.2 \
+    --version {{CertMangerVersion}} \
     --create-namespace \
     --set installCRDs=true \
     --wait --timeout 120s

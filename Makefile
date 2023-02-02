@@ -51,6 +51,18 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 generate-docs:
 	$(MAKE) -C site generate
 
+.PHONY: reconcile-requirements
+reconcile-requirements:
+	perl -i -pe 's/HELM_VERSION=.*/HELM_VERSION=$(HELM_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/YQ_VERSION=.*/YQ_VERSION=$(YQ_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/KUBE_VERSION=.*/KUBE_VERSION=$(KUBE_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/KIND_VERSION=.*/KIND_VERSION=$(KIND_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/AWSCLI_VERSION=.*/AWSCLI_VERSION=$(AWSCLI_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/CERT_MANAGER_VERSION=.*/CERT_MANAGER_VERSION=$(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/CertMangerVersion:.*/CertMangerVersion: $(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/site/external.yaml
+
+
+
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
 	$(TOOLBIN)/controller-gen --version
