@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"fybrik.io/fybrik/pkg/environment"
-	validate "fybrik.io/fybrik/pkg/validate"
+	"fybrik.io/fybrik/pkg/validate"
 )
 
 func (r *FybrikModule) SetupWebhookWithManager(mgr ctrl.Manager) error {
