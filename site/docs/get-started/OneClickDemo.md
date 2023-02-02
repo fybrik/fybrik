@@ -34,12 +34,13 @@ Alternatively you can try Fybrik with Katalog,  a data catalog stub, strictly us
 
 === "Demo with OpenMetaData" 
     ```bash
-    export FYBRIK_VERSION={{ currentRelease|default('master') }}; curl https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_VERSION}/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
+    
+    export FYBRIK_VERSION={{ currentRelease|default('master') }}; curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/samples/OneClickDemo/OneClickDemo-OMD.sh | bash -
     ```
 
 === "Demo with Katalog" 
     ```bash
-    export FYBRIK_VERSION={{ currentRelease|default('master') }}; curl https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_VERSION}/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
+    export FYBRIK_VERSION={{ currentRelease|default('master') }}; curl https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/samples/OneClickDemo/OneClickDemo-Katalog.sh | bash -
     ```
 
 > **NOTE**: At the end of the demo, you will see in your terminal a sample from a table that the data user consumed. one of the columns will display XXXXX instead of values, indicating that it has been automatically redacted due to data policies.
