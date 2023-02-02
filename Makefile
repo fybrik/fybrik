@@ -25,16 +25,16 @@ export USE_OPENMETADATA_CATALOG ?= 1
 # If true, avoid creating a new cluster.
 export USE_EXISTING_CLUSTER ?= 0
 
+DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
+DOCKER_PUBLIC_NAMESPACE ?= fybrik
+DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:0.1.0
+
 .PHONY: all
 all: generate manifests generate-docs verify
 
 .PHONY: license
 license: $(TOOLBIN)/license_finder
 	$(call license_go,.)
-
-DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
-DOCKER_PUBLIC_NAMESPACE ?= fybrik
-DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:main
 
 .PHONY: generate
 generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator

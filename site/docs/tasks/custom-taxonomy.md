@@ -20,7 +20,7 @@ This task describes how to deploy Fybrik with a custom `taxonomy.json` file that
 
 ## Taxonomy Compile CLI tool 
 
-A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in the [taxonomy-cli repository](https://github.com/fybrik/taxonomy-cli), along with a [Docker image](https://github.com/fybrik/taxonomy-cli/pkgs/container/taxonomy-cli) to directly run the tool.
+A CLI tool for compiling a base taxonomy and zero or more taxonomy layers is provided in the [taxonomy-cli repository](https://github.com/fybrik/taxonomy-cli), along with a Docker image to directly run the tool.
 
 The base taxonomy can be found in [`charts/fybrik/files/taxonomy/taxonomy.json`](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/taxonomy/taxonomy.json) and example layers can be found in [`samples/taxonomy/example`](https://github.com/fybrik/fybrik/tree/master/samples/taxonomy/example).
 
@@ -28,7 +28,7 @@ The following command can be used to run the Taxonomy Compile CLI tool from the 
 
 Usage:
 ```bash
-  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:0.1.0 compile --out <outputFile> --base <baseFile> [<layerFile> ...] [--codegen]
 ```
 
 Flags:
@@ -94,7 +94,7 @@ The working directory is the fybrik repository.
 In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool is used in the following way:
 
 ```bash
-  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:0.1.0 compile \
       --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
 
@@ -226,7 +226,7 @@ The working directory is the fybrik repository.
 In order to compile and merge the two taxonomies, the Taxonomy Compile CLI tool is used in the following way:
 
 ```bash
-  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:0.1.0 compile \
       --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml
 ```
 
@@ -287,7 +287,7 @@ definitions:
 Now we create the `custom-taxonomy.json` file as before, by using the following command:
 
 ```bash
-  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:main compile \
+  docker run --rm --volume ${PWD}:/local --workdir /local/ ghcr.io/fybrik/taxonomy-cli:0.1.0 compile \
       --out custom-taxonomy.json --base charts/fybrik/files/taxonomy/taxonomy.json taxonomy-layer.yaml taxonomy-layer2.yaml
 ```
 
