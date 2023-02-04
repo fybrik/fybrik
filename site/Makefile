@@ -2,7 +2,7 @@ ROOT_DIR := ..
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
-IGNORE := $(shell bash -c "sed -n /=/p  ${ROOT_DIR}/hack/tools/requirements.sh | sed 's/=/:=/' | sed 's/^/export /' > makeenv")
+IGNORE := $(shell bash -c "sed -n /=/p  ${ROOT_DIR}/hack/tools/requirements.env | sed 's/=/:=/' | sed 's/^/export /' > makeenv")
 include makeenv
 OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v$(OPENAPI_GENERATOR_VERSION)
 
