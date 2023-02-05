@@ -291,6 +291,16 @@ manager:
   # and place helm charts within the charts directory.
   chartsPersistentVolumeClaim: ""
 
+# Storage manager component used to manage storage within shared accounts
+storageManager:
+  # image of the container
+  # the component will be deployed in the manager pod
+  image: "storage-manager"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: "Always"
+  # server port
+  serverPort: "8082"
+
 # OPA server component
 opaServer:
   # Set to true to deploy OPA service or false to skip its deployment.

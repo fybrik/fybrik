@@ -33,17 +33,17 @@ import (
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	"fybrik.io/fybrik/pkg/storage"
-	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 	"fybrik.io/fybrik/pkg/taxonomy/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
@@ -306,8 +306,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	for datasetID, datasetDetails := range applicationContext.Application.Status.ProvisionedStorage {
 		var err error
 		if !datasetDetails.Persistent {
-			err = r.StorageManager.DeleteStorage(&datasetDetails.Details.Connection, &datasetDetails.SecretRef,
-				&agent.Options{ConfigurationOpts: agent.ConfigOptions{DeleteEmptyFolder: true}})
+			err = r.deleteTemporaryStorage(datasetDetails)
 		}
 		if err != nil {
 			errMsgs = append(errMsgs, err.Error())
@@ -418,7 +417,9 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{}, err
 	}
 	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
-	ownerRef := &fappv1.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
+	ownerRef := &fappv1.ResourceReference{
+		Name:       applicationContext.Application.Name,
+		Namespace:  applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
@@ -772,6 +773,15 @@ func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStor
 	return accounts, nil
 }
 
+func (r *FybrikApplicationReconciler) deleteTemporaryStorage(datasetDetails fappv1.DatasetDetails) error {
+	req := &storagemanager.DeleteStorageRequest{
+		Connection: datasetDetails.Details.Connection,
+		Secret:     datasetDetails.SecretRef,
+		Opts:       storagemanager.Options{},
+	}
+	return r.StorageManager.DeleteStorage(req)
+}
+
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext,
 	provisionedStorage map[string]NewAssetInfo) error {
 	// update allocated storage in the status
@@ -779,8 +789,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 	for datasetID, provisioned := range applicationContext.Application.Status.ProvisionedStorage {
 		if _, found := provisionedStorage[datasetID]; !found {
 			if !provisioned.Persistent {
-				if err := r.StorageManager.DeleteStorage(&provisioned.Details.Connection, &provisioned.SecretRef,
-					&agent.Options{ConfigurationOpts: agent.ConfigOptions{DeleteEmptyFolder: true}}); err != nil {
+				if err := r.deleteTemporaryStorage(provisioned); err != nil {
 					return err
 				}
 			}
@@ -795,7 +804,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
-			SecretRef:        fappv1.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
+			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Geography)},
 			Persistent:       info.Persistent,
@@ -809,7 +818,7 @@ func (r *FybrikApplicationReconciler) buildSolution(applicationContext Applicati
 	plotterGen := &PlotterGenerator{
 		Client:             r.Client,
 		Log:                applicationContext.Log,
-		Owner:              client.ObjectKeyFromObject(applicationContext.Application),
+		Owner:              types.NamespacedName{Namespace: applicationContext.Application.Namespace, Name: applicationContext.Application.Name},
 		UUID:               applicationContext.UUID,
 		StorageManager:     r.StorageManager,
 		ProvisionedStorage: make(map[string]NewAssetInfo),

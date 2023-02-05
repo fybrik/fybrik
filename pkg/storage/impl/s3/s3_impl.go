@@ -15,9 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/random"
 	"fybrik.io/fybrik/pkg/serde"
@@ -57,20 +56,18 @@ func (impl *S3Impl) GetConnectionType() taxonomy.ConnectionType {
 }
 
 // allocate storage for s3 - placeholder
-func (impl *S3Impl) AllocateStorage(account *fappv2.FybrikStorageAccountSpec, secret *fappv1.SecretRef,
-	opts *agent.Options, client kclient.Client) (taxonomy.Connection, error) {
-	endpoint, err := agent.GetProperty(account.AdditionalProperties.Items, impl.Name, endpointKey)
+func (impl *S3Impl) AllocateStorage(request *storagemanager.AllocateStorageRequest, client kclient.Client) (taxonomy.Connection, error) {
+	endpoint, err := agent.GetProperty(request.AccountProperties.Items, impl.Name, endpointKey)
 	if err != nil {
 		return taxonomy.Connection{}, err
 	}
-	key := types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}
 	// Initialize minio client object.
-	minioClient, err := NewClient(endpoint, key, client)
+	minioClient, err := NewClient(endpoint, &request.Secret, client)
 	if err != nil {
 		return taxonomy.Connection{}, err
 	}
-	genBucketName := generateBucketName(opts)
-	genObjectKey := generarateObjectKey(opts)
+	genBucketName := generateBucketName(&request.Opts)
+	genObjectKey := generarateObjectKey(&request.Opts)
 
 	if err = minioClient.MakeBucket(context.Background(), genBucketName, minio.MakeBucketOptions{}); err != nil {
 		return taxonomy.Connection{}, errors.Wrapf(err, "could not create a bucket %s", genBucketName)
@@ -91,19 +88,17 @@ func (impl *S3Impl) AllocateStorage(account *fappv2.FybrikStorageAccountSpec, se
 }
 
 // delete s3 storage
-func (impl *S3Impl) DeleteStorage(connection *taxonomy.Connection, secret *fappv1.SecretRef,
-	opts *agent.Options, client kclient.Client) error {
-	endpoint, err := agent.GetProperty(connection.AdditionalProperties.Items, impl.Name, endpointKey)
+func (impl *S3Impl) DeleteStorage(request *storagemanager.DeleteStorageRequest, client kclient.Client) error {
+	endpoint, err := agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, endpointKey)
 	if err != nil {
 		return err
 	}
-	bucket, err := agent.GetProperty(connection.AdditionalProperties.Items, impl.Name, bucketKey)
+	bucket, err := agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, bucketKey)
 	if err != nil {
 		return err
 	}
-	key := types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}
 	// Initialize minio client object.
-	minioClient, err := NewClient(endpoint, key, client)
+	minioClient, err := NewClient(endpoint, &request.Secret, client)
 	if err != nil {
 		return err
 	}
@@ -121,17 +116,17 @@ func (impl *S3Impl) DeleteStorage(connection *taxonomy.Connection, secret *fappv
 	return minioClient.RemoveBucket(context.Background(), bucket)
 }
 
-func generateBucketName(opts *agent.Options) string {
+func generateBucketName(opts *storagemanager.Options) string {
 	suffix, _ := random.Hex(nameHashLength)
-	name := opts.AppDetails.Owner.Name + "-" + opts.AppDetails.Owner.Namespace + suffix
+	name := opts.AppDetails.Name + "-" + opts.AppDetails.Namespace + suffix
 	return utils.K8sConformName(name)
 }
 
-func generarateObjectKey(opts *agent.Options) string {
+func generarateObjectKey(opts *storagemanager.Options) string {
 	return opts.DatasetProperties.Name + utils.Hash(opts.AppDetails.UUID, nameHashLength)
 }
 
-func NewClient(endpointArg string, secretKey types.NamespacedName, kClient kclient.Client) (*minio.Client, error) {
+func NewClient(endpointArg string, secretKey *taxonomy.SecretRef, kClient kclient.Client) (*minio.Client, error) {
 	prefix := "https://"
 	useSSL := strings.HasPrefix(endpointArg, prefix)
 	var endpoint string
@@ -141,7 +136,8 @@ func NewClient(endpointArg string, secretKey types.NamespacedName, kClient kclie
 	endpoint = strings.TrimPrefix(endpointArg, prefix)
 	// Get credentials
 	secret := v1.Secret{}
-	if err := kClient.Get(context.Background(), secretKey, &secret); err != nil {
+	if err := kClient.Get(context.Background(), types.NamespacedName{Name: secretKey.Name,
+		Namespace: secretKey.Namespace}, &secret); err != nil {
 		return nil, errors.Wrapf(err, "could not get a secret %s", secretKey.Name)
 	}
 

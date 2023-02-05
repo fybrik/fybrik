@@ -1,7 +1,7 @@
 // Copyright 2020 IBM Corp.
 // SPDX-License-Identifier: Apache-2.0
 
-package storage
+package main
 
 import (
 	"emperror.dev/errors"

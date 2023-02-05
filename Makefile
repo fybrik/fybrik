@@ -247,11 +247,13 @@ docker-minimal-it:
 docker-build:
 	$(MAKE) -C manager docker-build
 	$(MAKE) -C connectors docker-build
+	$(MAKE) -C pkg/storage docker-build
 
 .PHONY: docker-push
 docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C connectors docker-push
+	$(MAKE) -C pkg/storage docker-build
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
@@ -260,7 +262,8 @@ DOCKER_PUBLIC_TAGNAME ?= master
 DOCKER_PUBLIC_NAMES := \
 	manager \
 	katalog-connector \
-	opa-connector
+	opa-connector \
+	storage-manager
 
 define do-docker-retag-and-push-public
 	for name in ${DOCKER_PUBLIC_NAMES}; do \
@@ -281,7 +284,8 @@ helm-push-public:
 save-images:
 	docker save -o images.tar ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/manager:${DOCKER_TAGNAME} \
 		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/katalog-connector:${DOCKER_TAGNAME} \
-		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME}
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/opa-connector:${DOCKER_TAGNAME} \
+		${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE}/storage-manager:${DOCKER_TAGNAME}
 
 include hack/make-rules/tools.mk
 include hack/make-rules/verify.mk
