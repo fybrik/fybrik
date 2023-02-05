@@ -253,6 +253,7 @@ endif
 .PHONY: docker-minimal-it
 docker-minimal-it:
 	$(MAKE) -C manager docker-build docker-push
+	$(MAKE) -C pkg/storage docker-build docker-push
 	$(MAKE) -C test/services docker-build docker-push
 
 .PHONY: docker-build
@@ -265,7 +266,7 @@ docker-build:
 docker-push:
 	$(MAKE) -C manager docker-push
 	$(MAKE) -C connectors docker-push
-	$(MAKE) -C pkg/storage docker-build
+	$(MAKE) -C pkg/storage docker-push
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
