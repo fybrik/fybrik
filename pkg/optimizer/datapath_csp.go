@@ -238,7 +238,7 @@ func (dpc *DataPathCSP) enforceModuleRestrictions(restrictions adminconfig.Restr
 	varToBlock string, valueToBlock, pathLen int) {
 	for modCapIdx := range dpc.modulesCapabilities {
 		if !dpc.modcapSatisfiesRestrictions(&dpc.modulesCapabilities[modCapIdx], restrictions.Modules) {
-			dpc.preventAssignments([]string{varToBlock, modCapVarname}, []int{valueToBlock, modCapIdx + 1}, pathLen)
+			preventAssignments(dpc.fzModel, []string{varToBlock, modCapVarname}, []int{valueToBlock, modCapIdx + 1}, pathLen)
 		}
 	}
 }
@@ -249,7 +249,7 @@ func (dpc *DataPathCSP) enforceClusterRestrictions(restrictions adminconfig.Rest
 	varToBlock string, valueToBlock, pathLen int) {
 	for clusterIdx, cluster := range dpc.env.Clusters {
 		if !dpc.clusterSatisfiesRestrictions(cluster, restrictions.Clusters) {
-			dpc.preventAssignments([]string{varToBlock, clusterVarname}, []int{valueToBlock, clusterIdx + 1}, pathLen)
+			preventAssignments(dpc.fzModel, []string{varToBlock, clusterVarname}, []int{valueToBlock, clusterIdx + 1}, pathLen)
 		}
 	}
 }
@@ -260,14 +260,14 @@ func (dpc *DataPathCSP) enforceStorageRestrictions(restrictions adminconfig.Rest
 	varToBlock string, valueToBlock, pathLen int) {
 	for saIdx, sa := range dpc.env.StorageAccounts {
 		if !dpc.saSatisfiesRestrictions(sa, restrictions.StorageAccounts) {
-			dpc.preventAssignments([]string{varToBlock, saVarname}, []int{valueToBlock, saIdx + 1}, pathLen)
+			preventAssignments(dpc.fzModel, []string{varToBlock, saVarname}, []int{valueToBlock, saIdx + 1}, pathLen)
 		}
 	}
 }
 
 // Adds a constraint to ensure that at least one moduleCapability is chosen from the given set "modCaps"
 func (dpc *DataPathCSP) ensureCapabilityIsDeployed(modCaps []string, pathLength int) {
-	reqCapIndicator := dpc.addSetInIndicator(modCapVarname, modCaps, pathLength)
+	reqCapIndicator := setInIndicator(dpc.fzModel, modCapVarname, modCaps, pathLength)
 	dpc.fzModel.AddConstraint( // the weighted sum of the indicators (with all weights set to -1) should be <= -1
 		BoolLinLeConstraint,
 		[]string{fznCompoundLiteral(arrayOfSameInt(-1, pathLength), false), reqCapIndicator, strconv.Itoa(-1)},
@@ -316,119 +316,6 @@ func (dpc *DataPathCSP) saSatisfiesRestrictions(sa *fappv2.FybrikStorageAccount,
 	return true
 }
 
-// Replicates a constraint to block a specific combination of assignments for each position in the path
-func (dpc *DataPathCSP) preventAssignments(variables []string, values []int, pathLength int) {
-	// Prepare an indicator for each variable which is true iff the variable is NOT assigned its given value
-	indicators := []string{}
-	for idx, variable := range variables {
-		if dpc.fzModel.GetVariableType(variable) == BoolType {
-			if values[idx] == 0 { // if the variable is Boolean, we assume that "false" is 0 and "true" is anything else
-				indicators = append(indicators, variable) // the var is an indicator for itself not being "false"
-			} else {
-				indicators = append(indicators, dpc.addBoolNotIndicator(variable, pathLength))
-			}
-		} else {
-			indicators = append(indicators, dpc.addEqualityIndicator(variable, values[idx], pathLength, false))
-		}
-	}
-
-	for pos := 1; pos <= pathLength; pos++ {
-		indexedIndicators := []string{}
-		for _, v := range indicators {
-			indexedIndicators = append(indexedIndicators, varAtPos(v, pos))
-		}
-		indicatorsArray := fznCompoundLiteral(indexedIndicators, false)
-		dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorsArray, TrueValue})
-	}
-}
-
-// Given a Boolean variable, returns indicator variable array which is true iff the variable is false at each pos
-func (dpc *DataPathCSP) addBoolNotIndicator(variable string, pathLength int) string {
-	indicator := fmt.Sprintf("ind_not_%s", variable)
-	if _, defined := dpc.fzModel.VarMap[indicator]; defined {
-		return indicator
-	}
-	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, true, false)
-	for pathPos := 1; pathPos <= pathLength; pathPos++ {
-		indicatorAtPos := varAtPos(indicator, pathPos)
-		annotation := GetDefinesVarAnnotation(indicatorAtPos)
-		dpc.fzModel.AddConstraint(BoolNotEqConstraint, []string{varAtPos(variable, pathPos), indicatorAtPos}, annotation)
-	}
-
-	return indicator
-}
-
-// Adds an indicator array whose elements are true iff a given integer variable EQUALS a given value in a given pos
-// Setting equality to false will check if the integer DOES NOT EQUAL the given value
-func (dpc *DataPathCSP) addEqualityIndicator(variable string, value, pathLength int, equality bool) string {
-	constraint := IntEqConstraint
-	if !equality {
-		constraint = IntNotEqConstraint
-	}
-	indicator := fmt.Sprintf("ind_%s_%s_%d", variable, constraint, value)
-	if _, defined := dpc.fzModel.VarMap[indicator]; defined {
-		return indicator
-	}
-
-	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, true, false)
-	strVal := strconv.Itoa(value)
-	for pathPos := 1; pathPos <= pathLength; pathPos++ {
-		variableAtPos := varAtPos(variable, pathPos)
-		indicatorAtPos := varAtPos(indicator, pathPos)
-		annotation := GetDefinesVarAnnotation(indicatorAtPos)
-		dpc.fzModel.AddConstraint(constraint, []string{variableAtPos, strVal, indicatorAtPos}, annotation)
-	}
-	return indicator
-}
-
-// Adds an indicator per path location to check if the value of "variable" in this location is in the given set of values
-func (dpc *DataPathCSP) addSetInIndicator(variable string, valueSet []string, pathLength int) string {
-	indicator := fmt.Sprintf("ind_%s_in_%s", variable, strings.Join(valueSet, "_"))
-	if _, defined := dpc.fzModel.VarMap[indicator]; defined {
-		return indicator
-	}
-
-	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLength, true, false)
-	if len(valueSet) > 0 {
-		for pathPos := 1; pathPos <= pathLength; pathPos++ {
-			variableAtPos := varAtPos(variable, pathPos)
-			indicatorAtPos := varAtPos(indicator, pathPos)
-			setLiteral := fznCompoundLiteral(valueSet, true)
-			annotation := GetDefinesVarAnnotation(indicatorAtPos)
-			dpc.fzModel.AddConstraint(SetInConstraint, []string{variableAtPos, setLiteral, indicatorAtPos}, annotation)
-		}
-	} else { // value set is empty - indicators should always be false as variable value is never in the given set
-		dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicator, FalseValue})
-	}
-	return indicator
-}
-
-// Adds a Boolean indicator variable that is implied by either the given var or its negation
-func (dpc *DataPathCSP) addImpliedByIndicator(variable string, pathLen int, impliedByNegatedVar bool) string {
-	notStr := ""
-	if impliedByNegatedVar {
-		notStr = "not_"
-	}
-	indicator := fmt.Sprintf("ind_implied_by_%s%s", notStr, variable)
-	if _, defined := dpc.fzModel.VarMap[indicator]; defined {
-		return indicator
-	}
-	dpc.fzModel.AddVariableArray(indicator, BoolType, pathLen, true, false)
-	for pathPos := 1; pathPos <= pathLen; pathPos++ {
-		variableAtPos := varAtPos(variable, pathPos)
-		indicatorAtPos := varAtPos(indicator, pathPos)
-		annotations := GetDefinesVarAnnotation(indicatorAtPos)
-		if impliedByNegatedVar {
-			arrayToOr := fznCompoundLiteral([]string{variableAtPos, indicatorAtPos}, false)
-			dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{arrayToOr, TrueValue}, annotations)
-		} else {
-			dpc.fzModel.AddConstraint(BoolLeConstraint, []string{variableAtPos, indicatorAtPos}, annotations)
-		}
-	}
-
-	return indicator
-}
-
 // Make sure that every required governance action is implemented exactly one time.
 func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 	allOnesArrayLiteral := arrayOfSameInt(1, pathLength)
@@ -444,7 +331,7 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 		for saIdx, sa := range dpc.env.StorageAccounts {
 			actions, found := dpc.problemData.StorageRequirements[sa.Spec.Geography]
 			if !found { //
-				dpc.preventAssignments([]string{saVarname}, []int{saIdx + 1}, pathLength)
+				preventAssignments(dpc.fzModel, []string{saVarname}, []int{saIdx + 1}, pathLength)
 			} else {
 				for _, action := range actions {
 					actionIndicator := dpc.addActionIndicator(action, pathLength)
@@ -453,23 +340,14 @@ func (dpc *DataPathCSP) addGovernanceActionConstraints(pathLength int) {
 						[]string{fznCompoundLiteral(allOnesArrayLiteral, false), actionIndicator, strconv.Itoa(1)})
 
 					// Ensuring that if sa is chosen, then the required action is also applied
-					saChosenIndicator := dpc.addEqualityIndicator(saVarname, saIdx+1, pathLength, true)
-					saChosenVar := dpc.orOfIndicators(saChosenIndicator)
-					actionChosenVar := dpc.orOfIndicators(actionIndicator)
+					saChosenIndicator := equalityIndicator(dpc.fzModel, saVarname, saIdx+1, pathLength, true)
+					saChosenVar := orOfIndicators(dpc.fzModel, saChosenIndicator)
+					actionChosenVar := orOfIndicators(dpc.fzModel, actionIndicator)
 					dpc.fzModel.AddConstraint(BoolLeConstraint, []string{saChosenVar, actionChosenVar})
 				}
 			}
 		}
 	}
-}
-
-// Returns a variable which holds the OR of all boolean variables in indicatorArray
-func (dpc *DataPathCSP) orOfIndicators(indicatorArray string) string {
-	bigOrVarname := indicatorArray + "_OR"
-	dpc.fzModel.AddVariable(bigOrVarname, BoolType, true, false)
-	annotation := GetDefinesVarAnnotation(bigOrVarname)
-	dpc.fzModel.AddConstraint(ArrBoolOrConstraint, []string{indicatorArray, bigOrVarname}, annotation)
-	return bigOrVarname
 }
 
 // Returns an *output* array of Booleans variable to mark whether the current action is applied at location i
@@ -492,7 +370,7 @@ func (dpc *DataPathCSP) addActionIndicator(action taxonomy.Action, pathLength in
 	}
 
 	// add vars (and constraints) indicating if an action is supported at each path location
-	setInIndicator := dpc.addSetInIndicator(modCapVarname, moduleCapabilitiesStrs, pathLength)
+	setInIndicator := setInIndicator(dpc.fzModel, modCapVarname, moduleCapabilitiesStrs, pathLength)
 	for pathPos := 1; pathPos <= pathLength; pathPos++ {
 		indicatorAtPos := varAtPos(setInIndicator, pathPos)
 		actionVarAtPos := varAtPos(actionVar, pathPos)
@@ -534,8 +412,8 @@ func (dpc *DataPathCSP) addInterfaceConstraints(pathLength int) {
 			noSaRequiredModCaps = append(noSaRequiredModCaps, strconv.Itoa(modCapIdx+1))
 		}
 	}
-	noSaRequiredVarName := dpc.addSetInIndicator(modCapVarname, noSaRequiredModCaps, pathLength)
-	realSA := dpc.addEqualityIndicator(saVarname, dpc.noStorageAccountVal, pathLength, false)
+	noSaRequiredVarName := setInIndicator(dpc.fzModel, modCapVarname, noSaRequiredModCaps, pathLength)
+	realSA := equalityIndicator(dpc.fzModel, saVarname, dpc.noStorageAccountVal, pathLength, false)
 	for pathPos := 1; pathPos <= pathLength; pathPos++ {
 		noSaRequiredAtPos := varAtPos(noSaRequiredVarName, pathPos)
 		realSAAtPos := varAtPos(realSA, pathPos)
@@ -549,8 +427,8 @@ func (dpc *DataPathCSP) setSAIntfc(pathLength int) {
 	for saIdx, sa := range dpc.env.StorageAccounts {
 		saIntfc := taxonomy.Interface{Protocol: sa.Spec.Type, DataFormat: ""}
 		saIntfcIndices := dpc.getMatchingInterfaces(&saIntfc)
-		saIntfcInd := dpc.addSetInIndicator(sinkIntfcVarname, saIntfcIndices, pathLength)
-		saVarNeqSaIdx := dpc.addEqualityIndicator(saVarname, saIdx+1, pathLength, false)
+		saIntfcInd := setInIndicator(dpc.fzModel, sinkIntfcVarname, saIntfcIndices, pathLength)
+		saVarNeqSaIdx := equalityIndicator(dpc.fzModel, saVarname, saIdx+1, pathLength, false)
 		for pathPos := 1; pathPos <= pathLength; pathPos++ {
 			saIntfcIndAtPos := varAtPos(saIntfcInd, pathPos)
 			saVarNeqSaIdxAtPos := varAtPos(saVarNeqSaIdx, pathPos)
@@ -588,10 +466,10 @@ func (dpc *DataPathCSP) modCapSupportsIntfc(pathLength int) {
 				modcapSupportsIntfcSink = modcapSupportsIntfcSink || modCap.virtualSink && interfacesMatch(apiIntfc, &intfc)
 			}
 			if !modcapSupportsIntfcSrc {
-				dpc.preventAssignments([]string{modCapVarname, srcIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
+				preventAssignments(dpc.fzModel, []string{modCapVarname, srcIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
 			}
 			if !modcapSupportsIntfcSink {
-				dpc.preventAssignments([]string{modCapVarname, sinkIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
+				preventAssignments(dpc.fzModel, []string{modCapVarname, sinkIntfcVarname}, []int{modCapIdx + 1, intfcIdx}, pathLength)
 			}
 		}
 	}
@@ -626,7 +504,7 @@ func (dpc *DataPathCSP) addOptimizationGoals(pathLength int) error {
 		dpc.fzModel.SetSolveTarget(Satisfy, "")
 	} else {
 		dpc.fzModel.AddVariable(jointGoalVarname, IntType, true, true)
-		dpc.setVarAsWeightedSum(jointGoalVarname, goalVarnames, weights)
+		setVarAsWeightedSum(dpc.fzModel, jointGoalVarname, goalVarnames, weights)
 		dpc.fzModel.SetSolveTarget(Minimize, jointGoalVarname)
 	}
 	return nil
@@ -660,7 +538,7 @@ func (dpc *DataPathCSP) addAnOptimizationGoal(goal adminconfig.AttributeOptimiza
 
 	goalSumVarname := fmt.Sprintf("goal%sSum", sanitizedAttr)
 	dpc.fzModel.AddVariable(goalSumVarname, IntType, true, false)
-	dpc.setVarAsSimpleSumOfVarArray(goalSumVarname, goalVarname)
+	setVarAsSimpleSumOfVarArray(dpc.fzModel, goalSumVarname, goalVarname)
 	return goalSumVarname, weight, nil
 }
 
@@ -676,7 +554,7 @@ func (dpc *DataPathCSP) setSimpleGoalVarArray(attr string, instanceTypes []taxon
 		if err != nil {
 			return err
 		}
-		dpc.setVarAsSimpleSumOfVarArray(varAtPos(goalVarname, idx+1), instanceTypeGoalVarName)
+		setVarAsSimpleSumOfVarArray(dpc.fzModel, varAtPos(goalVarname, idx+1), instanceTypeGoalVarName)
 	}
 	return nil
 }
@@ -776,7 +654,7 @@ func (dpc *DataPathCSP) setInterRegionGoalVarArray(attr, goalVarname string, pat
 		dpc.fzModel.AddConstraint(ArrIntElemConstraint, []string{c2cSelectorAtPos, c2cParamName, c2cSelectedValueAtPos}, c2cDefinesAnnotation)
 
 		// goalVarname is set to the attr value from cluster i to cluster i+1 if i > maxRealSa, otherwise it is set to 0
-		dpc.assignWithSelector(goalVarname, afterMaxRealSaVarName,
+		assignWithSelector(dpc.fzModel, goalVarname, afterMaxRealSaVarName,
 			arrayOfVarPositions(c2cSelectedValueName, pathLen), arrayOfSameInt(0, pathLen), pathLen)
 	}
 
@@ -802,8 +680,8 @@ func (dpc *DataPathCSP) setInterRegionGoalsCommonVars(pathLen int) {
 	dpc.fzModel.AddVariableArray(storageLocsVarname, IntType, pathLen+1, true, false)
 	storageLocsAssignment := append([]string{zeroStr}, dpc.fzModel.varArrayElements(saVarname)...)
 	dpc.fzModel.SetVariableAssignment(storageLocsVarname, fznCompoundLiteral(storageLocsAssignment, false))
-	realSA := dpc.addEqualityIndicator(storageLocsVarname, dpc.noStorageAccountVal, pathLen+1, false)
-	virtualSA := dpc.addEqualityIndicator(storageLocsVarname, dpc.noStorageAccountVal, pathLen+1, true)
+	realSA := equalityIndicator(dpc.fzModel, storageLocsVarname, dpc.noStorageAccountVal, pathLen+1, false)
+	virtualSA := equalityIndicator(dpc.fzModel, storageLocsVarname, dpc.noStorageAccountVal, pathLen+1, true)
 	realSaLocationsVarType := fznRangeVarType(0, pathLen+1)
 	dpc.fzModel.AddVariableArray(realSaLocationsVarName, realSaLocationsVarType, pathLen+1, true, false)
 	for pos := 1; pos <= pathLen+1; pos++ {
@@ -830,7 +708,7 @@ func (dpc *DataPathCSP) setInterRegionGoalsCommonVars(pathLen int) {
 		clusterAtPos := varAtPos(clusterVarname, pos)
 		clusterAtNextPos := varAtPos(clusterVarname, pos+1)
 		dpc.fzModel.AddConstraint(IntLeConstraint, []string{maxRealSaVarName, strconv.Itoa(pos), afterMaxRealSaAtPos})
-		dpc.setVarAsWeightedSum(c2cSelectorAtPos, []string{clusterAtPos, clusterAtNextPos, numClustersStr}, selectorWeights)
+		setVarAsWeightedSum(dpc.fzModel, c2cSelectorAtPos, []string{clusterAtPos, clusterAtNextPos, numClustersStr}, selectorWeights)
 	}
 
 	lastDataStoreVarType := fznRangeVarType(0, len(dpc.env.StorageAccounts))
@@ -842,7 +720,7 @@ func (dpc *DataPathCSP) setInterRegionGoalsCommonVars(pathLen int) {
 	s2cSelectorType := fznRangeVarType(1, len(dpc.env.Clusters)*(len(dpc.env.StorageAccounts)+1))
 	dpc.fzModel.AddVariable(s2cSelectorVarname, s2cSelectorType, true, false)
 	selectorWeights = []string{numClustersStr, oneStr}
-	dpc.setVarAsWeightedSum(s2cSelectorVarname, []string{lastDataStoreVarname, clusterAfterLastDataStoreVarname}, selectorWeights)
+	setVarAsWeightedSum(dpc.fzModel, s2cSelectorVarname, []string{lastDataStoreVarname, clusterAfterLastDataStoreVarname}, selectorWeights)
 }
 
 // Produces a paramArray containing the attr value for each pair of clusters
@@ -887,45 +765,6 @@ func (dpc *DataPathCSP) getStorageToClusterParamArray(attr string) (string, erro
 	s2cParamName := "sa2cluster" + sanitizeFznIdentifier(attr)
 	dpc.fzModel.AddParamArray(s2cParamName, IntType, len(s2cParamArray), fznCompoundLiteral(s2cParamArray, false))
 	return s2cParamName, nil
-}
-
-// Sets the CSP int variable sumVarname to be the weighted sum of int elements in arrayToSum.
-// The integer weight of each element is given in the array "weights".
-// FlatZinc doesn't give us a "weighted sum" constraint (and not even sum constraint).
-// The trick is to use the dot-product constraint, add the summing var with weight -1 and force the result to be 0
-func (dpc *DataPathCSP) setVarAsWeightedSum(sumVarname string, arrayToSum, weights []string) {
-	arrayToSum = append(arrayToSum, sumVarname)
-	weights = append(weights, minusOneStr)
-	dpc.fzModel.AddConstraint(
-		IntLinEqConstraint,
-		[]string{fznCompoundLiteral(weights, false), fznCompoundLiteral(arrayToSum, false), strconv.Itoa(0)},
-		GetDefinesVarAnnotation(sumVarname),
-	)
-}
-
-// Sets the CSP int variable sumVarname to be the weighted sum of the elements in the variable array varArrayToSum.
-func (dpc *DataPathCSP) setVarAsWeightedSumOfVarArray(sumVarname, varArrayToSum string, weightsArray []string) {
-	arrayToSum := arrayOfVarPositions(varArrayToSum, len(weightsArray))
-	dpc.setVarAsWeightedSum(sumVarname, arrayToSum, weightsArray)
-}
-
-// Sets the CSP int variable sumVarname to be the sum of the elements in the variable array varArrayToSum.
-func (dpc *DataPathCSP) setVarAsSimpleSumOfVarArray(sumVarname, varArrayToSum string) {
-	arrayLen := dpc.fzModel.GetVariableSize(varArrayToSum)
-	dpc.setVarAsWeightedSumOfVarArray(sumVarname, varArrayToSum, arrayOfSameInt(1, arrayLen))
-}
-
-// "varToAssign" gets assigned with "valIfTrue" if "selectorVar" is true, and with "valIfFalse" otherwise
-func (dpc *DataPathCSP) assignWithSelector(varToAssign, selectorVar string, valIfTrue, valIfFalse []string, pathLen int) {
-	impliedBySelector := dpc.addImpliedByIndicator(selectorVar, pathLen, false)
-	impliedByNotSelector := dpc.addImpliedByIndicator(selectorVar, pathLen, true)
-	for pos := 1; pos <= pathLen; pos++ {
-		varToAssignAtPos := varAtPos(varToAssign, pos)
-		impliedBySelectorAtPos := varAtPos(impliedBySelector, pos)
-		impliedByNotSelectorAtPos := varAtPos(impliedByNotSelector, pos)
-		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varToAssignAtPos, valIfTrue[pos-1], impliedBySelectorAtPos})
-		dpc.fzModel.AddConstraint(IntEqConstraint, []string{varToAssignAtPos, valIfFalse[pos-1], impliedByNotSelectorAtPos})
-	}
 }
 
 // Returns which actions should be activated by the module at position pathPos (according to the solver's solution)
@@ -1009,31 +848,11 @@ func getActionVarname(action taxonomy.Action) string {
 	return fmt.Sprintf(actionVarname, action.Name)
 }
 
-func arrayOfSameStr(str string, arrayLen int) []string {
-	array := make([]string, arrayLen)
-	for i := 0; i < arrayLen; i++ {
-		array[i] = str
-	}
-	return array
-}
-
-func arrayOfSameInt(num, arrayLen int) []string {
-	return arrayOfSameStr(strconv.Itoa(num), arrayLen)
-}
-
 func getAssetInterface(connection *datacatalog.GetAssetResponse) taxonomy.Interface {
 	if connection == nil || connection.Details.Connection.Name == "" {
 		return taxonomy.Interface{Protocol: "", DataFormat: ""}
 	}
 	return taxonomy.Interface{Protocol: connection.Details.Connection.Name, DataFormat: connection.Details.DataFormat}
-}
-
-func arrayOfVarPositions(variableArray string, arrayLen int) []string {
-	array := make([]string, arrayLen)
-	for i := 1; i <= arrayLen; i++ {
-		array[i-1] = varAtPos(variableArray, i)
-	}
-	return array
 }
 
 func getWorkloadClusterIndex(wlCluster multicluster.Cluster, clusters []multicluster.Cluster) string {

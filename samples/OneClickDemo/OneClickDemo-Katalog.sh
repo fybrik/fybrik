@@ -2,14 +2,20 @@
 
 set -e
 
-# Tools versions:
+# Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
 KUBE_VERSION=1.22.0
-KIND_VERSION=0.14.0
-CERT_MANAGER_VERSION=1.6.2
-FYBRIK_VERSION=1.1.0
+KIND_VERSION=0.17.0
+CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
+
+FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
+if [[ "$FYBRIK_VERSION" == "master" ]]; then
+  FYBRIK_VERSION=""
+else
+  FYBRIK_VERSION="--version ${FYBRIK_VERSION:1}"
+fi
 
 # Arguments handeling:
 usage() {
@@ -172,7 +178,7 @@ if [[ -f bin/aws && -d bin/aws-source/v2 ]]
 then
     header "  bin/aws v2 already exists"
 else
-    header "Installing bin/aws ${AWSCLI_VERSION}"
+    header "Installing bin/aws ${AWSCLI_VERSION}" 
     # Installed this way due to a known open bug: https://github.com/aws/aws-cli/issues/6852
     mkdir -p awscli-install
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o awscli-install/awscliv2.zip
@@ -205,7 +211,7 @@ bin/helm repo update
 header "\nInstall Cert-manager"
 bin/helm install cert-manager jetstack/cert-manager \
     --namespace cert-manager \
-    --version v${CERT_MANAGER_VERSION} \
+    --version ${CERT_MANAGER_VERSION} \
     --create-namespace \
     --set installCRDs=true \
     --wait --timeout 600s
@@ -214,7 +220,7 @@ header "\nInstall Vault"
 bin/helm install vault fybrik-charts/vault --create-namespace -n fybrik-system \
     --set "vault.injector.enabled=false" \
     --set "vault.server.dev.enabled=true" \
-    --values https://raw.githubusercontent.com/fybrik/fybrik/v${FYBRIK_VERSION}/charts/vault/env/dev/vault-single-cluster-values.yaml
+    --values https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_VERSION_VAULT}/charts/vault/env/dev/vault-single-cluster-values.yaml
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
 # If using openshift:
@@ -227,9 +233,9 @@ bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
 
 header "\nInstall control plane"
-bin/helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system --version ${FYBRIK_VERSION} --wait
+bin/helm install fybrik-crd fybrik-charts/fybrik-crd -n fybrik-system ${FYBRIK_VERSION} --wait
 
-bin/helm install fybrik fybrik-charts/fybrik -n fybrik-system --version ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
+bin/helm install fybrik fybrik-charts/fybrik --set coordinator.catalog=katalog -n fybrik-system ${FYBRIK_VERSION} --wait # --values=../values.yaml --wait
 sleep 5
 
 header "\nInstall module"
