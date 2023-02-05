@@ -68,6 +68,7 @@ spec:
           - containerPort: 8443
             name: https
         {{- end }}
+        {{ if .Values.storageManager.image }}
         - name: storage-manager
           image: {{ include "fybrik.image" ( tuple $ .Values.storageManager ) }}
           imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
@@ -77,6 +78,7 @@ spec:
           env:
           - name: SERVER_PORT
             value: {{ .Values.storageManager.serverPort | quote }}
+        {{- end }}
         - name: manager
           image: {{ include "fybrik.image" ( tuple $ .Values.manager ) }}
           imagePullPolicy: {{ .Values.manager.imagePullPolicy | default .Values.global.imagePullPolicy }}
