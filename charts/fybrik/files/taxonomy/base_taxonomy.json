@@ -211,6 +211,7 @@
       }
     },
     "StorageAccountProperties": {
+      "description": "Properties of a shared storage account, e.g., endpoint",
       "type": "object",
       "additionalProperties": true
     },
