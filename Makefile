@@ -27,7 +27,7 @@ export USE_EXISTING_CLUSTER ?= 0
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
-DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:0.1.0
+DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:$(TAXONOMY_CLI_VERSION)
 
 .PHONY: all
 all: generate manifests generate-docs verify
@@ -60,7 +60,7 @@ reconcile-requirements:
 	perl -i -pe 's/AWSCLI_VERSION=.*/AWSCLI_VERSION=$(AWSCLI_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CERT_MANAGER_VERSION=.*/CERT_MANAGER_VERSION=$(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CertMangerVersion:.*/CertMangerVersion: $(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/site/external.yaml
-
+	perl -i -pe 's/TaxonomyCliVersion:.*/TaxonomyCliVersion: $(TAXONOMY_CLI_VERSION)/' $(ROOT_DIR)/site/external.yaml
 
 
 .PHONY: manifests
