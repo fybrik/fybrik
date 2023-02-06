@@ -28,7 +28,7 @@ import (
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-// NewAssetInfo points to the provisoned storage and hold information about the new asset
+// NewAssetInfo points to the provisioned storage and holds information about the new asset
 type NewAssetInfo struct {
 	StorageAccount *fappv2.FybrikStorageAccountSpec
 	Details        *fappv1.DataStore

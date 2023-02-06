@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
-
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // test getProperty
@@ -19,7 +17,7 @@ func TestGetProperty(t *testing.T) {
 		"endpoint": "xxx",
 		"bucket":   "yyy",
 	}}
-	val, err := GetProperty(properties, taxonomy.ConnectionType("s3"), "endpoint")
+	val, err := GetProperty(properties, "s3", "endpoint")
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(val).To(gomega.Equal("xxx"))
 }

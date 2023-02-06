@@ -20,8 +20,8 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/random"
 	"fybrik.io/fybrik/pkg/serde"
-	registrator "fybrik.io/fybrik/pkg/storage/registrator"
-	agent "fybrik.io/fybrik/pkg/storage/registrator/agent"
+	"fybrik.io/fybrik/pkg/storage/registrator"
+	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 	"fybrik.io/fybrik/pkg/utils"
 )
 
@@ -32,7 +32,7 @@ const (
 	objectKey      = "object_key"
 )
 
-// s3 storage manager implementaton
+// s3 storage manager implementation
 type S3Impl struct {
 	Name taxonomy.ConnectionType
 	Log  zerolog.Logger
@@ -67,7 +67,7 @@ func (impl *S3Impl) AllocateStorage(request *storagemanager.AllocateStorageReque
 		return taxonomy.Connection{}, err
 	}
 	genBucketName := generateBucketName(&request.Opts)
-	genObjectKey := generarateObjectKey(&request.Opts)
+	genObjectKey := generateObjectKey(&request.Opts)
 
 	if err = minioClient.MakeBucket(context.Background(), genBucketName, minio.MakeBucketOptions{}); err != nil {
 		return taxonomy.Connection{}, errors.Wrapf(err, "could not create a bucket %s", genBucketName)
@@ -122,7 +122,7 @@ func generateBucketName(opts *storagemanager.Options) string {
 	return utils.K8sConformName(name)
 }
 
-func generarateObjectKey(opts *storagemanager.Options) string {
+func generateObjectKey(opts *storagemanager.Options) string {
 	return opts.DatasetProperties.Name + utils.Hash(opts.AppDetails.UUID, nameHashLength)
 }
 
