@@ -73,7 +73,7 @@ helm install cert-manager jetstack/cert-manager \
 			--set "vault.injector.enabled=false" \
 			--set "vault.server.dev.enabled=true" \
 			--values charts/vault/env/dev/vault-single-cluster-values.yaml \
-            --values charts/vault/env/dev/vault-openshift-values.yaml
+            --values charts/vault/vault-openshift-values.yaml
 		kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 	    ```
 
@@ -97,7 +97,7 @@ Run the following to install vault and the plugin in development mode:
         --set "vault.injector.enabled=false" \
         --set "vault.server.dev.enabled=true" \
         --values https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/charts/vault/env/dev/vault-single-cluster-values.yaml \
-        --values https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/charts/vault/env/dev/vault-openshift-values.yaml
+        --values https://raw.githubusercontent.com/fybrik/fybrik/{{ currentRelease|default('master') }}/charts/vault/vault-openshift-values.yaml
     kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
     ```
 
