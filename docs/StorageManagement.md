@@ -62,7 +62,7 @@ type Connection struct {
 }
 ```
 
-- Fybrik defines **connection taxonomy layer** with schema definition for supported connections (in pkg/taxonomy/layers). Quickstart deploys Fybrik using this layer. Users can modify the connection layer when deploying Fybrik.
+- Fybrik defines **connection taxonomy layer** with schema definition for supported connections (in pkg/storage/layers). Quickstart deploys Fybrik using this layer. Users can modify the connection layer when deploying Fybrik.
 
 In **Phase1** we define a connection taxonomy layer for all connection types that are supported today by open-source modules, such as `s3`, `db2`, `kafka`, `arrow-flight`. (Revisit taxonomy definition used by Airbyte module.)
 

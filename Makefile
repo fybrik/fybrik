@@ -25,6 +25,10 @@ export USE_OPENMETADATA_CATALOG ?= 1
 # If true, avoid creating a new cluster.
 export USE_EXISTING_CLUSTER ?= 0
 
+DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
+DOCKER_PUBLIC_NAMESPACE ?= fybrik
+DOCKER_TAXONOMY_NAME_TAG ?= taxonomy-cli:$(TAXONOMY_CLI_VERSION)
+
 .PHONY: all
 all: generate manifests generate-docs verify
 
@@ -37,7 +41,9 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 	$(TOOLBIN)/json-schema-generator -r ./manager/apis/app/v1beta1/ -r ./pkg/model/... -o charts/fybrik/files/taxonomy/
 	$(TOOLBIN)/controller-gen object:headerFile=./hack/boilerplate.go.txt,year=$(shell date +%Y) paths="./..."
 	cp charts/fybrik/files/taxonomy/taxonomy.json charts/fybrik/files/taxonomy/base_taxonomy.json
-	go run main.go taxonomy compile -o charts/fybrik/files/taxonomy/taxonomy.json \
+	docker run --rm -u "$(id -u):$(id -g)" -v ${PWD}:/local -w /local/ \
+    	$(DOCKER_PUBLIC_HOSTNAME)/$(DOCKER_PUBLIC_NAMESPACE)/$(DOCKER_TAXONOMY_NAME_TAG) compile \
+		-o charts/fybrik/files/taxonomy/taxonomy.json \
 		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
 
@@ -54,7 +60,7 @@ reconcile-requirements:
 	perl -i -pe 's/AWSCLI_VERSION=.*/AWSCLI_VERSION=$(AWSCLI_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CERT_MANAGER_VERSION=.*/CERT_MANAGER_VERSION=$(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CertMangerVersion:.*/CertMangerVersion: $(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/site/external.yaml
-
+	perl -i -pe 's/TaxonomyCliVersion:.*/TaxonomyCliVersion: $(TAXONOMY_CLI_VERSION)/' $(ROOT_DIR)/site/external.yaml
 
 
 .PHONY: manifests
@@ -115,9 +121,11 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 	mkdir -p manager/testdata/unittests/sampletaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/basetaxonomy
 	cp charts/fybrik/files/taxonomy/*.json manager/testdata/unittests/sampletaxonomy
-	go run main.go taxonomy compile -o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
-	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
-		$(shell find samples/taxonomy/example -type f -name '*.yaml')
+	docker run --rm -u "$(id -u):$(id -g)" -v ${PWD}:/local -w /local/ \
+    	$(DOCKER_PUBLIC_HOSTNAME)/$(DOCKER_PUBLIC_NAMESPACE)/$(DOCKER_TAXONOMY_NAME_TAG) compile \
+    	-o manager/testdata/unittests/sampletaxonomy/taxonomy.json \
+    	-b charts/fybrik/files/taxonomy/base_taxonomy.json \
+    	$(shell find samples/taxonomy/example -type f -name '*.yaml')
 	cp manager/testdata/unittests/sampletaxonomy/taxonomy.json $(DATA_DIR)/taxonomy/taxonomy.json
 
 .PHONY: test
@@ -268,8 +276,6 @@ docker-push:
 	$(MAKE) -C connectors docker-push
 	$(MAKE) -C pkg/storage docker-push
 
-DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
-DOCKER_PUBLIC_NAMESPACE ?= fybrik
 DOCKER_PUBLIC_TAGNAME ?= master
 
 DOCKER_PUBLIC_NAMES := \
