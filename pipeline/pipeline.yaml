@@ -881,7 +881,7 @@ spec:
       - "true"
     taskRef:
       kind: Task
-      name: make
+      name: make-dind
     workspaces:
     - name: source
       workspace: shared-workspace

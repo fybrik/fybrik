@@ -20,7 +20,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
 

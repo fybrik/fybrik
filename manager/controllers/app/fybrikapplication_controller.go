@@ -44,7 +44,7 @@ import (
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/storage/registrator/agent"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
 

@@ -107,7 +107,7 @@ spec:
     resources: {}
     script: echo -n $(params.docker-hostname) > /tekton/results/docker-hostname
   sidecars:
-  - image: docker:18.05-dind
+  - image: docker:20-dind
     name: server
     securityContext:
       privileged: true
