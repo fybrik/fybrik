@@ -21,7 +21,6 @@ require (
 	github.com/hashicorp/vault/api v1.8.2
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
-	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.1
 	github.com/open-policy-agent/opa v0.48.0
@@ -38,7 +37,6 @@ require (
 	gotest.tools v2.2.0+incompatible
 	helm.sh/helm/v3 v3.10.3
 	k8s.io/api v0.25.2
-	k8s.io/apiextensions-apiserver v0.25.2
 	k8s.io/apimachinery v0.25.2
 	k8s.io/cli-runtime v0.25.2
 	k8s.io/client-go v0.25.2
@@ -223,6 +221,7 @@ require (
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	k8s.io/apiextensions-apiserver v0.25.2 // indirect
 	k8s.io/apiserver v0.25.2 // indirect
 	k8s.io/component-base v0.25.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect

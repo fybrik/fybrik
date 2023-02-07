@@ -8,7 +8,7 @@ set -o pipefail
 
 ROOT_DIR=../..
 
-source ${ROOT_DIR}/hack/tools/requirements.sh
+source ${ROOT_DIR}/hack/tools/requirements.env
 
 arch=amd64
 os="unknown"
