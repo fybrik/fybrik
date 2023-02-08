@@ -23,7 +23,7 @@ func Register(worker agent.AgentInterface) error {
 	agentsMu.Lock()
 	defer agentsMu.Unlock()
 	if worker == nil {
-		return errors.New("attemting to register a nil object")
+		return errors.New("attempting to register a nil object")
 	}
 	key := worker.GetConnectionType()
 	if _, dup := agents[key]; dup {

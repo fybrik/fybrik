@@ -28,11 +28,11 @@ import (
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
-	"fybrik.io/fybrik/pkg/storage"
 )
 
 // Read utility
@@ -78,7 +78,7 @@ func createTestFybrikApplicationController(cl client.Client, s *runtime.Scheme) 
 			Client: cl,
 		},
 		ClusterManager:  &mockup.ClusterLister{},
-		StorageManager:  storage.NewFakeStorageManager(),
+		StorageManager:  storage.NewMockupStorageManager(),
 		ConfigEvaluator: evaluator,
 		Infrastructure:  infrastructureManager,
 	}
@@ -1132,7 +1132,11 @@ func TestSyncWithPlotter(t *testing.T) {
 	application.Finalizers = []string{"TestReconciler.finalizer"}
 	controllerNamespace := environment.GetControllerNamespace()
 	fmt.Printf("FybrikApplication unit test: controller namespace " + controllerNamespace)
-	application.Status.Generated = &fappv1.ResourceReference{Name: "plotter", Namespace: controllerNamespace, Kind: "Plotter", AppVersion: 1}
+	application.Status.Generated = &fappv1.ResourceReference{
+		Name:       "plotter",
+		Namespace:  controllerNamespace,
+		Kind:       "Plotter",
+		AppVersion: 1}
 	application.Status.Ready = true
 	application.Status.ObservedGeneration = 1
 

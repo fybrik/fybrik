@@ -1361,14 +1361,14 @@ Generated resource identifier
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the resource<br/>
+          Resource name<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>namespace</b></td>
         <td>string</td>
         <td>
-          Namespace of the resource<br/>
+          Resource namespace<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1655,14 +1655,14 @@ Reference to a secret where the credentials are stored
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Secret name<br/>
+          Name<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>namespace</b></td>
         <td>string</td>
         <td>
-          Secret Namespace<br/>
+          Namespace<br/>
         </td>
         <td>true</td>
       </tr></tbody>

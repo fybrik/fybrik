@@ -17,6 +17,7 @@ import (
 // Attributes that are defined in a config map or the runtime environment
 const (
 	CatalogConnectorServiceAddressKey string = "CATALOG_CONNECTOR_URL"
+	StorageManagerAddressKey          string = "STORAGE_MANAGER_URL"
 	VaultEnabledKey                   string = "VAULT_ENABLED"
 	VaultAddressKey                   string = "VAULT_ADDRESS"
 	VaultModulesRoleKey               string = "VAULT_MODULES_ROLE"
@@ -57,11 +58,6 @@ const DefaultControllerNamespace = "fybrik-system"
 // defaultPollingInterval defines the default time interval to check the status of the resources
 // deployed by the manager. The interval is specified in milliseconds.
 const defaultPollingInterval = 2000 * time.Millisecond
-
-// defaultHelmWaitTimeout defines the default time to wait for helm operation
-// on the resources deployed by the manager to complete.
-// The timeout is specified in seconds.
-const defaultHelmWaitTimeout = 300 * time.Second
 
 func GetLocalClusterName() string {
 	return os.Getenv(LocalClusterName)
@@ -240,6 +236,11 @@ func GetDataCatalogServiceAddress() string {
 	return os.Getenv(CatalogConnectorServiceAddressKey)
 }
 
+// GetStorageManagerAddress returns the address of storage manager
+func GetStorageManagerAddress() string {
+	return os.Getenv(StorageManagerAddressKey)
+}
+
 func logEnvVariable(log *zerolog.Logger, key string) {
 	value, found := os.LookupEnv(key)
 	if found {
@@ -261,10 +262,10 @@ func logEnvVarUpdatedValue(log *zerolog.Logger, envVar, value string, err error)
 }
 
 func LogEnvVariables(log *zerolog.Logger) {
-	envVarArray := [...]string{CatalogConnectorServiceAddressKey, VaultAddressKey, VaultModulesRoleKey,
+	envVarArray := [...]string{CatalogConnectorServiceAddressKey, StorageManagerAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
-		CatalogConnectorServiceAddressKey, DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
+		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
