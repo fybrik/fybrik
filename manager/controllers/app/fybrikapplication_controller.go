@@ -574,7 +574,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	// propagate messages from the catalog and policy manager
-	return strings.Join([]string{catalogMsg, governanceMsg}, ";"), nil
+	return catalogMsg + " ; " + governanceMsg, nil
 }
 
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
