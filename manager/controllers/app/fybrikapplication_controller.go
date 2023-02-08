@@ -575,10 +575,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	// propagate messages from the catalog and policy manager
-	msg := catalogMsg + Separator + governanceMsg
-	if strings.HasPrefix(msg, Separator) {
-		msg = msg[len(Separator):]
-	}
+	msg := strings.TrimPrefix(catalogMsg+Separator+governanceMsg, Separator)
 	return msg, nil
 }
 
