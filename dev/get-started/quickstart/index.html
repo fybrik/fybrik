@@ -1539,10 +1539,10 @@ kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </sp
 <span class="nb">cd</span><span class="w"> </span>fybrik
 helm<span class="w"> </span>dependency<span class="w"> </span>update<span class="w"> </span>charts/vault
 helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.global.openshift=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--values<span class="w"> </span>charts/vault/env/dev/vault-single-cluster-values.yaml
+<span class="w">    </span>--values<span class="w"> </span>charts/vault/env/dev/vault-single-cluster-values.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>charts/vault/vault-openshift-values.yaml
 kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1562,10 +1562,10 @@ kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </sp
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>fybrik-charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.global.openshift=true&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/env/dev/vault-single-cluster-values.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/master/charts/vault/vault-openshift-values.yaml
 kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
