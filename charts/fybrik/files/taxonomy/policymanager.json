@@ -28,7 +28,12 @@
         "decision_id": {
           "type": "string"
         },
+        "message": {
+          "description": "Additional message to be reported to the user",
+          "type": "string"
+        },
         "result": {
+          "description": "Result of policy evaluation",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ResultItem"

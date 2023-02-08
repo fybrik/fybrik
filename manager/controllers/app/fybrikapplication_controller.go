@@ -387,13 +387,15 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{}, err
 	}
 	var requirements []datapath.DataInfo
+	// messages from the connectors
+	messages := map[string]string{}
 	for _, dataset := range applicationContext.Application.Spec.Data {
 		req := datapath.DataInfo{
 			Context:             dataset.DeepCopy(),
 			DataDetails:         &datacatalog.GetAssetResponse{},
 			StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
 		}
-		if err = r.constructDataInfo(&req, applicationContext, workloadCluster, env); err != nil {
+		if messages[req.Context.DataSetID], err = r.constructDataInfo(&req, applicationContext, workloadCluster, env); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			continue
 		}
@@ -434,6 +436,10 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 	applicationContext.Application.Status.Generated = resourceRef
 	applicationContext.Log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Created %s successfully!", resourceRef.Kind)
+	// propagating connector messages to the status
+	for key, val := range messages {
+		applicationContext.Application.Status.AssetStates[key].Conditions[ReadyConditionIndex].Message = val
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -512,11 +518,12 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 }
 
 func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, appContext ApplicationContext,
-	workloadCluster multicluster.Cluster, env *datapath.Environment) error {
+	workloadCluster multicluster.Cluster, env *datapath.Environment) (string, error) {
 	// Call the DataCatalog service to get info about the dataset
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var err error
+	var catalogMsg, governanceMsg string
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
@@ -532,15 +539,16 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 
 		if response, err = r.DataCatalog.GetAssetInfo(&request, credentialPath); err != nil {
 			log.Error().Err(err).Msg("failed to receive the catalog connector response")
-			return err
+			return "", err
 		}
 
 		err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to validate the catalog connector response")
-			return err
+			return "", err
 		}
 		logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
+		catalogMsg = response.Message
 		response.DeepCopyInto(req.DataDetails)
 	} else if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
 		// Fill req.DataDetails with the metadata from the fybrikapplication
@@ -553,24 +561,26 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
 	// Governance actions
-	err = r.checkGovernanceActions(configEvaluatorInput, req, appContext, env)
+	governanceMsg, err = r.checkGovernanceActions(configEvaluatorInput, req, appContext, env)
 	if err != nil {
-		return err
+		return "", errors.WithMessage(err, governanceMsg)
 	}
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
 	if err != nil {
 		appContext.Log.Error().Err(err).Msg("Error evaluating config policies")
-		return err
+		return "", err
 	}
 	logging.LogStructure("Config Policy Decisions", configDecisions, appContext.Log, zerolog.DebugLevel, false, false)
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
-	return nil
+	// propagate messages from the catalog and policy manager
+	return strings.Join([]string{catalogMsg, governanceMsg}, ";"), nil
 }
 
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
-	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) error {
+	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) (string, error) {
 	var err error
+	var msg string
 	switch configEvaluatorInput.Request.Usage {
 	case taxonomy.WriteFlow:
 		if !req.Context.Requirements.FlowParams.IsNewDataSet {
@@ -581,7 +591,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 				Destination:        req.DataDetails.ResourceMetadata.Geography,
 				ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 			}
-			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+			req.Actions, msg, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
 				r.PolicyManager, appContext, &reqAction)
 		}
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
@@ -590,11 +600,11 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+		req.Actions, msg, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
 			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
-		return err
+		return "", errors.WithMessage(err, msg)
 	}
 	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
@@ -618,24 +628,24 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			ProcessingLocation: geo,
 		}
 
-		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
+		actions, _, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
 			req.StorageRequirements[geo] = actions
 		} else if err.Error() != WriteNotAllowed {
-			return err
+			return "", err
 		}
 	}
 	accountRequired := (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
 		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
 	// no account is defined, return an error for write and copy flows
 	if len(env.StorageAccounts) == 0 && accountRequired {
-		return errors.New(StorageAccountUndefined)
+		return "", errors.New(StorageAccountUndefined)
 	}
 	// write is denied to all accounts, return Deny for write and copy flows
 	if len(req.StorageRequirements) == 0 && accountRequired {
-		return errors.New(WriteNotAllowed)
+		return "", errors.New(WriteNotAllowed)
 	}
-	return nil
+	return msg, nil
 }
 
 // GetWorkloadCluster returns a workload cluster
@@ -726,7 +736,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	switch err.Error() {
+	switch errors.Cause(err).Error() {
 	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:

@@ -66,7 +66,7 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
 func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.ResourceMetadata,
 	policyManager connectors.PolicyManager, appContext ApplicationContext,
-	op *policymanager.RequestAction) ([]taxonomy.Action, error) {
+	op *policymanager.RequestAction) ([]taxonomy.Action, string, error) {
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, resourceMetadata, appContext.Application, op)
 	output := render.AsCode(openapiReq)
@@ -83,13 +83,13 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	var actions []taxonomy.Action
 	if err != nil {
-		return actions, err
+		return actions, "", err
 	}
 
 	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
 		appContext.Log.Error().Err(err).Str(logging.DATASETID, datasetID).Msg("error while validating policy manager response")
-		return actions, errors.New("Validation error: " + err.Error())
+		return actions, "", errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
@@ -105,9 +105,9 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			case taxonomy.WriteFlow:
 				message = WriteNotAllowed
 			}
-			return actions, errors.New(message)
+			return actions, openapiResp.Message, errors.New(message)
 		}
 		actions = append(actions, result[i].Action)
 	}
-	return actions, nil
+	return actions, openapiResp.Message, nil
 }
