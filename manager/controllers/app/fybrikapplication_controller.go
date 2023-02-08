@@ -75,6 +75,7 @@ var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json
 const (
 	FybrikApplicationKind = "FybrikApplication"
 	PlotterUpdatePrefix   = "plotter_"
+	Separator             = " ; "
 )
 
 // ErrorMessages that are reported to the user
@@ -318,7 +319,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 		delete(applicationContext.Application.Status.ProvisionedStorage, datasetID)
 	}
 	if len(errMsgs) != 0 {
-		return errors.New(strings.Join(errMsgs, ";"))
+		return errors.New(strings.Join(errMsgs, Separator))
 	}
 	// delete the generated resource
 	if applicationContext.Application.Status.Generated == nil {
@@ -574,7 +575,11 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
 	// propagate messages from the catalog and policy manager
-	return catalogMsg + " ; " + governanceMsg, nil
+	msg := catalogMsg + Separator + governanceMsg
+	if strings.HasPrefix(msg, Separator) {
+		msg = msg[len(Separator):]
+	}
+	return msg, nil
 }
 
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
