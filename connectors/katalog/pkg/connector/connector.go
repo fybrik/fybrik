@@ -14,11 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -118,7 +120,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	assetPrefix := FybrikAssetPrefix
 	if request.DestinationAssetID != "" {
-		assetPrefix = request.DestinationAssetID + "-"
+		assetPrefix = utils.K8sConformName(request.DestinationAssetID, &r.Log) + "-"
 	}
 
 	asset := &v1alpha1.Asset{
