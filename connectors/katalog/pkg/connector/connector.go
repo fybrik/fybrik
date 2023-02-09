@@ -6,7 +6,6 @@ package connector
 import (
 	"context"
 	"fmt"
-	"math"
 	"net/http"
 	"strings"
 
@@ -15,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/validation"
+
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
@@ -40,15 +39,6 @@ func NewHandler(client kclient.Client) *Handler {
 		Log:    logging.LogInit(logging.CONNECTOR, "katalog-connector"),
 	}
 	return handler
-}
-
-func (r *Handler) conformName(name string) string {
-	if errs := validation.IsDNS1123Subdomain(name); len(errs) > 0 || len(name) > utils.K8sInputNameBound {
-		r.Log.Info().Msg("Not according to k8s requirements or too long: " + name + ", Hashing")
-		hashLength := int(math.Min(utils.K8sInputNameBound, float64(len(name))))
-		return utils.Hash(name, hashLength)
-	}
-	return name
 }
 
 func (r *Handler) getAssetInfo(c *gin.Context) {
@@ -130,7 +120,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	assetPrefix := FybrikAssetPrefix
 	if request.DestinationAssetID != "" {
-		assetPrefix = r.conformName(request.DestinationAssetID) + "-"
+		assetPrefix = utils.K8sConformName(request.DestinationAssetID, &r.Log) + "-"
 	}
 
 	asset := &v1alpha1.Asset{

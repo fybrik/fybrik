@@ -29,7 +29,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
-	utils "fybrik.io/fybrik/pkg/utils"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 func TestGetAssetInfo(t *testing.T) {
@@ -145,6 +145,12 @@ func TestCreateAsset(t *testing.T) {
 			destAssetName:   "new-foo//bar-json",
 			destCatalogID:   "fybrik-system",
 		},
+		{
+			format:          "csv",
+			sourceAssetName: "0123456789-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789",
+			destAssetName:   "new-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789",
+			destCatalogID:   "fybrik-system",
+		},
 	}
 
 	gin.SetMode(gin.TestMode)
@@ -208,8 +214,8 @@ func TestCreateAsset(t *testing.T) {
 			g.Expect(strings.Contains(assetName, "$")).To(BeFalse())
 
 			// If destAssetName is valid and short enough it should be the prefix
-
-			if errs := validation.IsDNS1123Subdomain(tt.destAssetName); len(tt.destAssetName) <= utils.K8sInputNameBound && len(errs) == 0 {
+			errs := validation.IsDNS1123Subdomain(tt.destAssetName)
+			if len(tt.destAssetName) <= utils.K8sMaxNameLength && len(errs) == 0 {
 				g.Expect(strings.HasPrefix(assetName, tt.destAssetName)).To(BeTrue())
 			}
 			asset := &v1alpha1.Asset{}

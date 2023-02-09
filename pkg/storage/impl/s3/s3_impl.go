@@ -119,7 +119,7 @@ func (impl *S3Impl) DeleteStorage(request *storagemanager.DeleteStorageRequest, 
 func generateBucketName(opts *storagemanager.Options) string {
 	suffix, _ := random.Hex(nameHashLength)
 	name := opts.AppDetails.Name + "-" + opts.AppDetails.Namespace + suffix
-	return utils.K8sConformName(name)
+	return utils.S3ConformName(name)
 }
 
 func generateObjectKey(opts *storagemanager.Options) string {
