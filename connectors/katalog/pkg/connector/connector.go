@@ -43,13 +43,12 @@ func NewHandler(client kclient.Client) *Handler {
 }
 
 func (r *Handler) conformName(name string) string {
-	if errs := validation.IsDNS1123Subdomain(name); len(errs) > 0 && len(name) > utils.K8sMaxConformNameLength-utils.K8sUniqueNameLeftover {
-		r.Log.Info().Msg("Not according to k8s requirements: " + name + ", Hashing")
-		hashLength := int(math.Min(utils.K8sMaxConformNameLength-utils.K8sUniqueNameLeftover, float64(len(name))))
+	if errs := validation.IsDNS1123Subdomain(name); len(errs) > 0 || len(name) > utils.K8sInputNameBound {
+		r.Log.Info().Msg("Not according to k8s requirements or too long: " + name + ", Hashing")
+		hashLength := int(math.Min(utils.K8sInputNameBound, float64(len(name))))
 		return utils.Hash(name, hashLength)
 	}
-	// Will hash it if too long
-	return utils.K8sConformName(name)
+	return name
 }
 
 func (r *Handler) getAssetInfo(c *gin.Context) {

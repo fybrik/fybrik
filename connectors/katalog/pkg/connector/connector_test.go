@@ -208,8 +208,8 @@ func TestCreateAsset(t *testing.T) {
 			g.Expect(strings.Contains(assetName, "$")).To(BeFalse())
 
 			// If destAssetName is valid and short enough it should be the prefix
-			actualLengthBound := utils.K8sMaxConformNameLength - utils.K8sUniqueNameLeftover
-			if errs := validation.IsDNS1123Subdomain(tt.destAssetName); len(tt.destAssetName) <= actualLengthBound && len(errs) == 0 {
+
+			if errs := validation.IsDNS1123Subdomain(tt.destAssetName); len(tt.destAssetName) <= utils.K8sInputNameBound && len(errs) == 0 {
 				g.Expect(strings.HasPrefix(assetName, tt.destAssetName)).To(BeTrue())
 			}
 			asset := &v1alpha1.Asset{}

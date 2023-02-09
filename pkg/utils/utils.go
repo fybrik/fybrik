@@ -17,6 +17,7 @@ const (
 	hashPostfixLength        = 5
 	K8sUniqueNameLeftover    = 10
 	K8sMaxConformNameLength  = 63
+	K8sInputNameBound        = K8sMaxConformNameLength - K8sUniqueNameLeftover
 	helmMaxConformNameLength = 53
 )
 
