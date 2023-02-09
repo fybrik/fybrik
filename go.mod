@@ -48,6 +48,7 @@ require (
 )
 
 require (
+   	cloud.google.com/go v0.99.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/IBM/go-sdk-core/v5 v5.7.2 // indirect
@@ -227,4 +228,11 @@ require (
 	sigs.k8s.io/kustomize/api v0.12.1 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.13.9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
+)
+
+replace (
+       k8s.io/api => k8s.io/api v0.25.2
+       k8s.io/apimachinery => k8s.io/apimachinery v0.25.2
+       k8s.io/cli-runtime => k8s.io/cli-runtime v0.25.2
+       k8s.io/client-go => k8s.io/client-go v0.25.2
 )
