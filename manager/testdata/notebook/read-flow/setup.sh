@@ -56,5 +56,22 @@ if ! [[ -z "$PATCH_FYBRIK_MODULE" ]]; then
   kubectl patch fybrikmodules.app.fybrik.io arrow-flight-module -n fybrik-system -p "{\"spec\": {\"chart\":{\"values\":{\"tls.certs.certSecretName\":\"test-tls-arrow-flight-certs\"}}}}" --type="merge"
 fi
 
+# check that a webhook validation error is raised when trying to patch Fybrikmodule with invalid values.
+FYBRIKMODULE_ERROR=$(kubectl patch fybrikmodules.app.fybrik.io arrow-flight-module -n fybrik-system --type='json' -p='[{"op": "replace", "path": "/spec/capabilities/0/api/connection/fybrik-arrow-flight/port", "value":"80"}])' 2>&1 >/dev/null)
+if [[ "${FYBRIKMODULE_ERROR}" != *'Invalid value'* ]]; then
+  exit 1
+fi
+
+temp_file=$(mktemp)
+# check that a webhook validation error is raised when trying to patch Fybrikapplication with invalid values.
+cat fybrikapplication.yaml | yq e '.spec.data[0].dataSetID=0' > $temp_file
+
+FYBRIKAPP_ERROR=$(kubectl apply -f $temp_file 2>&1 >/dev/null)
+if [[ "${FYBRIKAPP_ERROR}" != *'Invalid value'* ]]; then
+  exit 1
+fi
+
+rm -f ${temp_file}
+
 # Forward port of test S3 instance
 kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
