@@ -64,6 +64,16 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
+// Input:
+// - asset ID
+// - asset metadata
+// - policy manager facade
+// - application info
+// - data flow and locations
+// Output:
+// - a list of governance actions (upon a successful response)
+// - a message from the connector (upon a successful response)
+// - an error from the connector or an error formulated by Fybrik in case of Deny
 func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.ResourceMetadata,
 	policyManager connectors.PolicyManager, appContext ApplicationContext,
 	op *policymanager.RequestAction) ([]taxonomy.Action, string, error) {
@@ -105,9 +115,11 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			case taxonomy.WriteFlow:
 				message = WriteNotAllowed
 			}
+			// access is denied - return the connector message that may help to understand the reason
 			return actions, openapiResp.Message, errors.New(message)
 		}
 		actions = append(actions, result[i].Action)
 	}
+	// return the action list and the connector message with additional information
 	return actions, openapiResp.Message, nil
 }
