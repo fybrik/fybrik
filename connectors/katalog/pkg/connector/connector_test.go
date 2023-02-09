@@ -20,6 +20,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -28,6 +29,7 @@ import (
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 func TestGetAssetInfo(t *testing.T) {
@@ -119,86 +121,126 @@ func TestCreateAsset(t *testing.T) {
 			},
 		},
 	}
-	var csvFormat taxonomy.DataFormat = "csv"
-	sourceAssetName := "paysim-csv"
-	destAssetName := "new-paysim-csv"
-	destCatalogID := "fybrik-system"
-
-	// Create a fake request to Katalog connector
-	createAssetReq := &datacatalog.CreateAssetRequest{
-		DestinationCatalogID: destCatalogID,
-		DestinationAssetID:   destAssetName,
-		ResourceMetadata: datacatalog.ResourceMetadata{
-			Name: sourceAssetName,
-			Columns: []datacatalog.ResourceColumn{
-				{
-					Name: "nameDest",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"PII": true,
-					}}},
-				},
-				{
-					Name: "nameOrig",
-					Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
-						"SPI": true,
-					}}},
-				},
-			},
+	var tests = []struct {
+		format          taxonomy.DataFormat
+		sourceAssetName string
+		destAssetName   string
+		destCatalogID   string
+	}{
+		{
+			format:          "csv",
+			sourceAssetName: "paysim-csv",
+			destAssetName:   "new-paysim-csv",
+			destCatalogID:   "fybrik-system",
 		},
-		Details: datacatalog.ResourceDetails{
-			Connection: s3Connection,
-			DataFormat: csvFormat,
+		{
+			format:          "xml",
+			sourceAssetName: "foo/bar12-xml",
+			destAssetName:   "new-foo/bar$~/f=12-xml",
+			destCatalogID:   "fybrik-system",
 		},
-		Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
+		{
+			format:          "json",
+			sourceAssetName: "foo//bar-json",
+			destAssetName:   "new-foo//bar-json",
+			destCatalogID:   "fybrik-system",
+		},
+		{
+			format:          "csv",
+			sourceAssetName: "0123456789-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789",
+			destAssetName:   "new-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789-0123456789",
+			destCatalogID:   "fybrik-system",
+		},
 	}
 
-	// Create a fake client to mock API calls.
-	schema := runtime.NewScheme()
-	_ = v1alpha1.AddToScheme(schema)
-	client := fake.NewClientBuilder().WithScheme(schema).Build()
-	handler := NewHandler(client)
-
-	w := httptest.NewRecorder()
 	gin.SetMode(gin.TestMode)
-	c, _ := gin.CreateTestContext(w)
-	requestBytes, err := json.Marshal(createAssetReq)
-	g.Expect(err).To(BeNil())
-	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
 
-	// Call createAsset with the fake request
-	handler.createAsset(c)
+	for _, tt := range tests {
+		testName := fmt.Sprintf("CreateAsset: %s", tt.destAssetName)
+		t.Run(testName, func(t *testing.T) {
+			// Create a fake request to Katalog connector
+			createAssetReq := &datacatalog.CreateAssetRequest{
+				DestinationCatalogID: tt.destCatalogID,
+				DestinationAssetID:   tt.destAssetName,
+				ResourceMetadata: datacatalog.ResourceMetadata{
+					Name: tt.sourceAssetName,
+					Columns: []datacatalog.ResourceColumn{
+						{
+							Name: "nameDest",
+							Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+								"PII": true,
+							}}},
+						},
+						{
+							Name: "nameOrig",
+							Tags: &taxonomy.Tags{Properties: serde.Properties{Items: map[string]interface{}{
+								"SPI": true,
+							}}},
+						},
+					},
+				},
+				Details: datacatalog.ResourceDetails{
+					Connection: s3Connection,
+					DataFormat: tt.format,
+				},
+				Credentials: "/v1/kubernetes-secrets/dummy-creds?namespace=dummy-namespace2",
+			}
 
-	t.Run("createAsset", func(t *testing.T) {
-		assert.Equal(t, 201, w.Code)
+			// Create a fake client to mock API calls.
+			schema := runtime.NewScheme()
+			_ = v1alpha1.AddToScheme(schema)
+			client := fake.NewClientBuilder().WithScheme(schema).Build()
+			handler := NewHandler(client)
 
-		response := &datacatalog.CreateAssetResponse{}
-		err = json.Unmarshal(w.Body.Bytes(), response)
-		g.Expect(err).To(BeNil())
-		assetName := response.AssetID
-		g.Expect(strings.HasPrefix(assetName, destAssetName)).To(BeTrue())
+			w := httptest.NewRecorder()
 
-		asset := &v1alpha1.Asset{}
-		if err := handler.client.Get(context.Background(),
-			types.NamespacedName{Namespace: destCatalogID, Name: assetName}, asset); err != nil {
-			t.Log(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		g.Expect(&createAssetReq.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
+			c, _ := gin.CreateTestContext(w)
+			requestBytes, err := json.Marshal(createAssetReq)
+			g.Expect(err).To(BeNil())
+			c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", bytes.NewBuffer(requestBytes))
 
-		// just for logging - start
-		b, err := json.Marshal(asset)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		t.Log("Created Asset in TestCreateAsset : JSON format: ", string(b))
-		t.Log("Created Asset in TestCreateAsset : ", asset)
-		output := render.AsCode(asset)
-		t.Log("Created AssetID in TestCreateAsset - render as code output: ", output)
-		t.Log("Completed TestCreateAsset")
-		// just for logging - end
-	})
+			// Call createAsset with the fake request
+			handler.createAsset(c)
+			assert.Equal(t, 201, w.Code)
+
+			response := &datacatalog.CreateAssetResponse{}
+			err = json.Unmarshal(w.Body.Bytes(), response)
+			g.Expect(err).To(BeNil())
+			assetName := response.AssetID
+
+			// Check the existance of illegal chars in the asset name
+			g.Expect(strings.Contains(assetName, "~")).To(BeFalse())
+			g.Expect(strings.Contains(assetName, "/")).To(BeFalse())
+			g.Expect(strings.Contains(assetName, "$")).To(BeFalse())
+
+			// If destAssetName is valid and short enough it should be the prefix
+			errs := validation.IsDNS1123Subdomain(tt.destAssetName)
+			if len(tt.destAssetName) <= utils.K8sMaxNameLength && len(errs) == 0 {
+				g.Expect(strings.HasPrefix(assetName, tt.destAssetName)).To(BeTrue())
+			}
+			asset := &v1alpha1.Asset{}
+			if err = handler.client.Get(context.Background(),
+				types.NamespacedName{Namespace: tt.destCatalogID, Name: assetName}, asset); err != nil {
+				t.Log(err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			g.Expect(&createAssetReq.ResourceMetadata).To(BeEquivalentTo(&asset.Spec.Metadata))
+
+			// just for logging - start
+			b, err := json.Marshal(asset)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			t.Log("Created Asset in TestCreateAsset : JSON format: ", string(b))
+			t.Log("Created Asset in TestCreateAsset : ", asset)
+			output := render.AsCode(asset)
+			t.Log("Created AssetID in TestCreateAsset - render as code output: ", output)
+			t.Log("Completed TestCreateAsset with name: ", tt.destAssetName)
+		})
+	}
+	t.Log("Completed TestCreateAsset")
 }
 
 func TestCreateAssetWthNoDestinationAssetID(t *testing.T) {
