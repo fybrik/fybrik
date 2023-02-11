@@ -532,6 +532,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var err error
+	// retrieve and propagate messages from catalog and policy manager
+	// if there are no errors to construct the data plane
 	var catalogMsg, governanceMsg string
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
