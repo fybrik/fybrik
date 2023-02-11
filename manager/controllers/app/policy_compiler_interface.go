@@ -84,7 +84,7 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		// creds is constructed even if vault is not used for credential managment
+		// creds field is constructed even if vault is not used for credential management
 		// in order to enable the connector to get the credentials directly from the secret
 		// using the secret information extracted from the creds string.
 		creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
