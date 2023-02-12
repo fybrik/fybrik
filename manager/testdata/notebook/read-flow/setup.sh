@@ -68,6 +68,7 @@ cat fybrikapplication.yaml | yq e '.spec.data[0].dataSetID=0' > $temp_file
 
 FYBRIKAPP_ERROR=$(kubectl apply -f $temp_file 2>&1 >/dev/null)
 if [[ "${FYBRIKAPP_ERROR}" != *'Invalid value'* ]]; then
+  rm -f ${temp_file}
   exit 1
 fi
 
