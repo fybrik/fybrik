@@ -4,7 +4,7 @@ set -e
 
 # Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
-YQ_VERSION=4.6.0
+YQ_VERSION=4.30.8
 KUBE_VERSION=1.22.0
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
