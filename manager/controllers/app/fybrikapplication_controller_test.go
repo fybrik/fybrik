@@ -158,8 +158,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return application.Status.Ready
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
+			By("Connector messages should be propagated to the status")
+			Expect(len(application.Status.AssetStates)).To(Equal(3))
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Conditions[ReadyConditionIndex].Message).To(BeEmpty())
+			Expect(application.Status.AssetStates["s3-incomplete/allow-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
+			Expect(application.Status.AssetStates["s3-external/new-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			By("Status should contain the details of the endpoint")
-			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
 			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
 			Expect(connection).ToNot(BeNil())

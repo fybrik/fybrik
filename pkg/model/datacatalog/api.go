@@ -21,6 +21,8 @@ type GetAssetResponse struct {
 	// Vault plugin path where the data credentials will be stored as kubernetes secrets
 	// This value is assumed to be known to the catalog connector.
 	Credentials string `json:"credentials"`
+	// Additional message to be reported to the user
+	Message string `json:"message,omitempty"`
 }
 
 type CreateAssetRequest struct {

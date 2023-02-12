@@ -99,6 +99,10 @@
           "$ref": "#/definitions/ResourceDetails",
           "description": "Source asset details like connection and data format"
         },
+        "message": {
+          "description": "Additional message to be reported to the user",
+          "type": "string"
+        },
         "resourceMetadata": {
           "$ref": "#/definitions/ResourceMetadata",
           "description": "Source asset metadata like asset name, owner, geography, etc"
