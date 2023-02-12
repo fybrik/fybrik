@@ -64,9 +64,19 @@ func ValidatePolicyDecisionsResponse(response *policymanager.GetPolicyDecisionsR
 }
 
 // LookupPolicyDecisions provides a list of governance actions for the given dataset and the given operation
+// Input:
+// - asset ID
+// - asset metadata
+// - policy manager facade
+// - application info
+// - data flow and locations
+// Output:
+// - a list of governance actions (upon a successful response)
+// - a message from the connector (upon a successful response)
+// - an error from the connector or an error formulated by Fybrik in case of Deny
 func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.ResourceMetadata,
 	policyManager connectors.PolicyManager, appContext ApplicationContext,
-	op *policymanager.RequestAction) ([]taxonomy.Action, error) {
+	op *policymanager.RequestAction) ([]taxonomy.Action, string, error) {
 	// call external policy manager to get governance instructions for this operation
 	openapiReq := ConstructOpenAPIReq(datasetID, resourceMetadata, appContext.Application, op)
 	output := render.AsCode(openapiReq)
@@ -74,7 +84,7 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 
 	var creds string
 	if appContext.Application.Spec.SecretRef != "" {
-		// creds is constructed even if vault is not used for credential managment
+		// creds field is constructed even if vault is not used for credential management
 		// in order to enable the connector to get the credentials directly from the secret
 		// using the secret information extracted from the creds string.
 		creds = vault.PathForReadingKubeSecret(appContext.Application.Namespace, appContext.Application.Spec.SecretRef)
@@ -83,13 +93,13 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 	openapiResp, err := policyManager.GetPoliciesDecisions(openapiReq, creds)
 	var actions []taxonomy.Action
 	if err != nil {
-		return actions, err
+		return actions, "", err
 	}
 
 	err = ValidatePolicyDecisionsResponse(openapiResp, PolicyManagerTaxonomy)
 	if err != nil {
 		appContext.Log.Error().Err(err).Str(logging.DATASETID, datasetID).Msg("error while validating policy manager response")
-		return actions, errors.New("Validation error: " + err.Error())
+		return actions, "", errors.New("Validation error: " + err.Error())
 	}
 
 	output = render.AsCode(openapiResp)
@@ -105,9 +115,11 @@ func LookupPolicyDecisions(datasetID string, resourceMetadata *datacatalog.Resou
 			case taxonomy.WriteFlow:
 				message = WriteNotAllowed
 			}
-			return actions, errors.New(message)
+			// access is denied - return the connector message that may help to understand the reason
+			return actions, openapiResp.Message, errors.New(message)
 		}
 		actions = append(actions, result[i].Action)
 	}
-	return actions, nil
+	// return the action list and the connector message with additional information
+	return actions, openapiResp.Message, nil
 }

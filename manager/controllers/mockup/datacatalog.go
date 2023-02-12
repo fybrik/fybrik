@@ -172,6 +172,20 @@ func NewTestCatalog() *DataCatalogDummy {
 		},
 	}
 
+	dummyCatalog.dataDetails["s3-incomplete"] = datacatalog.GetAssetResponse{
+		ResourceMetadata: datacatalog.ResourceMetadata{
+			Name:      dummyResourceName,
+			Geography: geo,
+			Tags:      &tags,
+		},
+		Credentials: dummyCredentials,
+		Details: datacatalog.ResourceDetails{
+			Connection: s3Connection,
+			DataFormat: csvFormat,
+		},
+		Message: "{\"level\": \"WARNING\", \"message\": \"incomplete data\"}",
+	}
+
 	dummyCatalog.dataDetails[string(JdbcDB2)] = datacatalog.GetAssetResponse{
 		ResourceMetadata: datacatalog.ResourceMetadata{
 			Name:      dummyResourceName,
