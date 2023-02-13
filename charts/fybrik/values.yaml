@@ -455,6 +455,13 @@ opaServer:
   # Bootstrap policies to load upon startup
   bootstrapPolicies: {}
 
+  # Controls if to allow by default or not.
+  # Set DefaultDecision: {} for deny by default.
+  defaultDecision:
+     allowByDefault: |-
+      package dataapi.authz
+      rule[{}] { true }
+
 # Katalog connector component
 katalogConnector:
   # Set to true to deploy the katalog connector or false to skip its deployment.

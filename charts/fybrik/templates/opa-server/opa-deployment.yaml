@@ -72,6 +72,13 @@ spec:
             EOF
             {{ end }}
             {{ end }}
+            {{- if .Values.opaServer.defaultDecision}}
+            {{- range $policyName, $policy := .Values.opaServer.defaultDecision }} 
+            {{- printf "\ncat > /bootstrap/%s.rego <<EOF" $policyName  | indent 12 }}
+            {{ $policy | indent 12 }}
+            EOF
+            {{ end }}
+            {{ end }}
           volumeMounts:
             - name: bootstrap
               mountPath: /bootstrap
