@@ -3,12 +3,19 @@ data:
   forbid-write.rego: |+
     package dataapi.authz
 
-    rule[{"policy": description}] {
-    description := "Forbid writing sensitive data to theshire and neverland object-stores in datasets tagged with `finance`"
+    rule[{"action": {"name":"Deny"}, "policy": description}] {
+    description := "Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`"
       input.action.actionType == "write"
       input.resource.metadata.tags.finance
-      input.action.destination != "theshire"
-      input.action.destination != "neverland"
+      input.action.destination == "theshire"
+      input.resource.metadata.columns[i].tags.sensitive
+
+    }
+    rule[{"action": {"name":"Deny"}, "policy": description}] {
+    description := "Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`"
+      input.action.actionType == "write"
+      input.resource.metadata.tags.finance
+      input.action.destination == "neverland"
       input.resource.metadata.columns[i].tags.sensitive
     }
 
