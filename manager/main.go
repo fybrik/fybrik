@@ -29,6 +29,7 @@ import (
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/infrastructure"
@@ -37,7 +38,6 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
-	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/utils"
 )
 
@@ -168,6 +168,17 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			return 1
 		}
 
+		storageManager, err := storage.NewStorageManager()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create storage manager facade")
+			return 1
+		}
+		defer func() {
+			if err = storageManager.Close(); err != nil {
+				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close storage manager facade")
+			}
+		}()
+
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -175,7 +186,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			policyManager,
 			catalog,
 			clusterManager,
-			storage.NewStorageManager(),
+			storageManager,
 			evaluator,
 			infrastructureManager,
 		)

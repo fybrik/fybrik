@@ -14,6 +14,9 @@ type GetPolicyDecisionsRequest struct {
 }
 
 type GetPolicyDecisionsResponse struct {
-	DecisionID string       `json:"decision_id,omitempty"`
-	Result     []ResultItem `json:"result"`
+	DecisionID string `json:"decision_id,omitempty"`
+	// Additional message to be reported to the user
+	Message string `json:"message,omitempty"`
+	// Result of policy evaluation
+	Result []ResultItem `json:"result"`
 }

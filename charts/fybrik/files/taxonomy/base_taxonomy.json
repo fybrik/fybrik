@@ -192,6 +192,29 @@
         }
       }
     },
+    "SecretRef": {
+      "description": "Reference to k8s secret holding credentials for storage access",
+      "type": "object",
+      "required": [
+        "namespace",
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "description": "Name",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Namespace",
+          "type": "string"
+        }
+      }
+    },
+    "StorageAccountProperties": {
+      "description": "Properties of a shared storage account, e.g., endpoint",
+      "type": "object",
+      "additionalProperties": true
+    },
     "Tags": {
       "description": "Additional metadata for the asset/field",
       "type": "object",

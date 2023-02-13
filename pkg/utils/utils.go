@@ -8,14 +8,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"runtime"
+
+	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/apiserver/pkg/storage/names"
 )
 
 const (
 	StepNameHashLength       = 10
 	hashPostfixLength        = 5
-	k8sMaxConformNameLength  = 63
+	S3MaxConformNameLength   = 63
+	K8sMaxNameLength         = names.MaxGeneratedNameLength - 1 // We keep extra space for a "-"
 	helmMaxConformNameLength = 53
 )
 
@@ -90,14 +96,26 @@ func ShortenedName(name string, maxLength, hashLength int) string {
 	return name
 }
 
-// Some k8s objects only allow for a length of 63 characters.
-// This method shortens the name keeping a prefix and using the last 5 characters of the
-// new name for the hash of the postfix.
-func K8sConformName(name string) string {
-	return ShortenedName(name, k8sMaxConformNameLength, hashPostfixLength)
+// Conforms a string to be a k8s compatible for an object name.
+// The method first validates the name is a valid DNS subdomain, and hashes otherwise.
+// In case the string is a valid DNS subdmain, the method shortens the name keeping a prefix and adds a hash of the suffix.
+// The final output length is ActualMaxGeneratedNameLength.
+func K8sConformName(name string, logger *zerolog.Logger) string {
+	if errs := validation.IsDNS1123Subdomain(name); len(errs) > 0 {
+		logger.Info().Msg("Not according to k8s requirements: " + name + ", Hashing")
+		hashLength := int(math.Min(K8sMaxNameLength, float64(len(name))))
+		return Hash(name, hashLength)
+	}
+	return ShortenedName(name, K8sMaxNameLength, hashPostfixLength)
 }
 
-// Helm has stricter restrictions than K8s and restricts release names to 53 characters
+// Conforms a string to be a S3-compatible bucket name. Currently only shortens the name.
+func S3ConformName(name string) string {
+	return ShortenedName(name, S3MaxConformNameLength, hashPostfixLength)
+}
+
+// Conforms a string to be a Helm-compatible. Currently only shortens the name.
+// Helm has stricter restrictions than K8s and restricts release names to 53 characters.
 func HelmConformName(name string) string {
 	return ShortenedName(name, helmMaxConformNameLength, hashPostfixLength)
 }

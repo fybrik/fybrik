@@ -66,3 +66,5 @@ pipeline/custom-*
 
 dist/
 pkg/connectors/datacatalog/openapiclient/.openapi-generator/FILES
+pkg/connectors/policymanager/openapiclient/.openapi-generator/FILES
+pkg/connectors/storagemanager/openapiclient/.openapi-generator/FILES

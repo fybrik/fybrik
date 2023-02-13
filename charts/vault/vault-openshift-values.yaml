@@ -1,0 +1,19 @@
+# The OpenShift settings from https://github.com/hashicorp/vault-helm/blob/v0.23.0/values.openshift.yaml
+
+vault:
+  global:
+    openshift: true
+
+  injector:
+    image:
+      repository: "registry.connect.redhat.com/hashicorp/vault-k8s"
+      tag: "1.1.0-ubi"
+
+    agentImage:
+      repository: "registry.connect.redhat.com/hashicorp/vault"
+      tag: "1.12.1-ubi"
+
+  server:
+    image:
+      repository: "registry.connect.redhat.com/hashicorp/vault"
+      tag: "1.12.1-ubi"

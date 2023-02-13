@@ -94,24 +94,14 @@ type FybrikApplicationSpec struct {
 
 // ResourceReference contains resource identifier(name, namespace, kind)
 type ResourceReference struct {
-	// Name of the resource
-	Name string `json:"name"`
-	// Namespace of the resource
+	// Resource namespace
 	Namespace string `json:"namespace"`
+	// Resource name
+	Name string `json:"name"`
 	// Kind of the resource (Blueprint, Plotter)
 	Kind string `json:"kind"`
 	// Version of FybrikApplication that has generated this resource
 	AppVersion int64 `json:"appVersion"`
-}
-
-// SecretRef contains the details of a secret
-type SecretRef struct {
-	// Secret Namespace
-	// +required
-	Namespace string `json:"namespace"`
-	// Secret name
-	// +required
-	Name string `json:"name"`
 }
 
 // DatasetDetails holds details of the provisioned storage
@@ -122,7 +112,7 @@ type DatasetDetails struct {
 
 	// Reference to a secret where the credentials are stored
 	// +optional
-	SecretRef SecretRef `json:"secretRef,omitempty"`
+	SecretRef taxonomy.SecretRef `json:"secretRef,omitempty"`
 
 	// Dataset information
 	// +optional

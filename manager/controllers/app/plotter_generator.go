@@ -16,19 +16,19 @@ import (
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
-	"fybrik.io/fybrik/pkg/storage"
-	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
-// NewAssetInfo points to the provisoned storage and hold information about the new asset
+// NewAssetInfo points to the provisioned storage and holds information about the new asset
 type NewAssetInfo struct {
 	StorageAccount *fappv2.FybrikStorageAccountSpec
 	Details        *fappv1.DataStore
@@ -49,18 +49,23 @@ type PlotterGenerator struct {
 func (p *PlotterGenerator) Provision(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
 	account *fappv2.FybrikStorageAccountSpec) (*fappv1.DataStore, error) {
 	// provisioned storage
-	secret := &fappv1.SecretRef{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()}
-	connection, err := p.StorageManager.AllocateStorage(account, secret, &agent.Options{
-		AppDetails:        agent.ApplicationDetails{Owner: &p.Owner, UUID: p.UUID},
-		DatasetProperties: agent.DatasetDetails{Name: item.Context.DataSetID},
-		ConfigurationOpts: agent.ConfigOptions{},
-	})
+	secretRef := &taxonomy.SecretRef{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()}
+	allocateRequest := &storagemanager.AllocateStorageRequest{
+		AccountType:       account.Type,
+		AccountProperties: taxonomy.StorageAccountProperties{Properties: account.AdditionalProperties},
+		Secret:            *secretRef,
+		Opts: storagemanager.Options{
+			AppDetails:        storagemanager.ApplicationDetails{Name: p.Owner.Name, Namespace: p.Owner.Namespace, UUID: p.UUID},
+			DatasetProperties: storagemanager.DatasetDetails{Name: item.Context.DataSetID},
+			ConfigurationOpts: storagemanager.ConfigOptions{},
+		},
+	}
+	response, err := p.StorageManager.AllocateStorage(allocateRequest)
 	if err != nil {
-		p.Log.Error().Err(err).Msg("Storage allocation failed")
 		return nil, err
 	}
 
-	vaultSecretPath := vault.PathForReadingKubeSecret(secret.Namespace, secret.Name)
+	vaultSecretPath := vault.PathForReadingKubeSecret(secretRef.Namespace, secretRef.Name)
 	vaultMap := make(map[string]fappv1.Vault)
 	if environment.IsVaultEnabled() {
 		vaultMap[string(taxonomy.WriteFlow)] = fappv1.Vault{
@@ -80,7 +85,7 @@ func (p *PlotterGenerator) Provision(item *datapath.DataInfo, destinationInterfa
 	}
 	datastore := &fappv1.DataStore{
 		Vault:      vaultMap,
-		Connection: connection,
+		Connection: *response.Connection,
 		Format:     destinationInterface.DataFormat,
 	}
 	assetInfo := NewAssetInfo{

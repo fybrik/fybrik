@@ -1,0 +1,142 @@
+{
+  "title": "storagemanager.json",
+  "definitions": {
+    "AllocateStorageRequest": {
+      "type": "object",
+      "required": [
+        "accountType",
+        "accountProperties",
+        "options"
+      ],
+      "properties": {
+        "accountProperties": {
+          "$ref": "taxonomy.json#/definitions/StorageAccountProperties",
+          "description": "Account properties, e.g., endpoint"
+        },
+        "accountType": {
+          "$ref": "taxonomy.json#/definitions/ConnectionType",
+          "description": "Type of the storage account, e.g., s3"
+        },
+        "options": {
+          "$ref": "#/definitions/Options",
+          "description": "Configuration options"
+        },
+        "secret": {
+          "$ref": "taxonomy.json#/definitions/SecretRef",
+          "description": "Reference to the secret with credentials"
+        }
+      }
+    },
+    "AllocateStorageResponse": {
+      "type": "object",
+      "properties": {
+        "connection": {
+          "$ref": "taxonomy.json#/definitions/Connection",
+          "description": "Connection object for the allocated storage"
+        }
+      }
+    },
+    "ApplicationDetails": {
+      "description": "Details of the owner application",
+      "type": "object",
+      "required": [
+        "name",
+        "namespace",
+        "uuid"
+      ],
+      "properties": {
+        "name": {
+          "description": "Application name",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Application namespace",
+          "type": "string"
+        },
+        "uuid": {
+          "description": "uuid",
+          "type": "string"
+        }
+      }
+    },
+    "ConfigOptions": {
+      "description": "Configuration options TODO: extend IT config policies to return options for storage management",
+      "type": "object",
+      "properties": {
+        "deleteEmptyFolder": {
+          "description": "Delete an empty folder/bucket when the allocated storage is deleted",
+          "type": "boolean"
+        }
+      }
+    },
+    "DatasetDetails": {
+      "description": "Details of the new asset The current implementation includes only a name provided in the write flow for a new asset",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "DeleteStorageRequest": {
+      "type": "object",
+      "required": [
+        "connection",
+        "secret",
+        "options"
+      ],
+      "properties": {
+        "connection": {
+          "$ref": "taxonomy.json#/definitions/Connection",
+          "description": "Connection object representing storage to free"
+        },
+        "options": {
+          "$ref": "#/definitions/Options",
+          "description": "Configuration options"
+        },
+        "secret": {
+          "$ref": "taxonomy.json#/definitions/SecretRef",
+          "description": "Reference to the secret with credentials"
+        }
+      }
+    },
+    "GetSupportedConnectionsResponse": {
+      "type": "object",
+      "required": [
+        "connectionTypes"
+      ],
+      "properties": {
+        "connectionTypes": {
+          "description": "connection types supported by StorageManager for storage allocation/deletion",
+          "type": "array",
+          "items": {
+            "$ref": "taxonomy.json#/definitions/ConnectionType"
+          }
+        }
+      }
+    },
+    "Options": {
+      "description": "Additional options provided for storage allocation/deletion",
+      "type": "object",
+      "required": [
+        "appDetails",
+        "datasetProperties",
+        "configurationOpts"
+      ],
+      "properties": {
+        "appDetails": {
+          "$ref": "#/definitions/ApplicationDetails"
+        },
+        "configurationOpts": {
+          "$ref": "#/definitions/ConfigOptions"
+        },
+        "datasetProperties": {
+          "$ref": "#/definitions/DatasetDetails"
+        }
+      }
+    }
+  }
+}
