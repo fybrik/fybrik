@@ -4,13 +4,35 @@
 package mysql
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strconv"
+	"time"
+
+	"emperror.dev/errors"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/rs/zerolog"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage/registrator"
+	"fybrik.io/fybrik/pkg/storage/registrator/agent"
+)
+
+const (
+	hostKey     = "host"
+	portKey     = "port"
+	dbKey       = "database"
+	usernameKey = "username"
+	passwordKey = "password"
+	timeout     = time.Second * 5
+	mysqlAgent  = "mysql"
 )
 
 // Storage manager implementation for MySQL
@@ -21,7 +43,7 @@ type MySQLImpl struct {
 
 // implementation of AgentInterface for MySQL
 func NewMySQLImpl() *MySQLImpl {
-	return &MySQLImpl{Name: "mysql", Log: logging.LogInit(logging.CONNECTOR, "StorageManager")}
+	return &MySQLImpl{Name: mysqlAgent, Log: logging.LogInit(logging.CONNECTOR, "StorageManager")}
 }
 
 // register the implementation for MySQL
@@ -37,12 +59,100 @@ func (impl *MySQLImpl) GetConnectionType() taxonomy.ConnectionType {
 	return impl.Name
 }
 
-// storage allocation - placeholder
-func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRequest, client kclient.Client) (taxonomy.Connection, error) {
-	return taxonomy.Connection{Name: impl.Name}, nil
+func dsn(username, password, hostname, port, dbName string) string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, hostname, port, dbName)
 }
 
-// storage deletion - placeholder
+// returns a connection to MySQL
+func NewClient(host, port, dbName string, secretRef taxonomy.SecretRef, client kclient.Client) (*sql.DB, error) {
+	// Get credentials
+	secret := v1.Secret{}
+	if err := client.Get(context.Background(), types.NamespacedName{Name: secretRef.Name,
+		Namespace: secretRef.Namespace}, &secret); err != nil {
+		return nil, errors.Wrapf(err, "could not get a secret %s", secretRef.Name)
+	}
+
+	username, password := string(secret.Data[usernameKey]), string(secret.Data[passwordKey])
+	if username == "" || password == "" {
+		return nil, errors.Errorf("could not retrieve credentials from the secret %s", secretRef.Name)
+	}
+
+	// connect to the server
+	return sql.Open(mysqlAgent, dsn(username, password, host, port, dbName))
+}
+
+// storage allocation
+// host, port are taken from the storage account
+// database is taken from the storage account if defined, otherwise - from the DatasetProperties.Name
+// TODO: allow database specification inside FybrikApplication
+func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRequest, client kclient.Client) (taxonomy.Connection, error) {
+	var host, port string
+	var err error
+	if host, err = agent.GetProperty(request.AccountProperties.Items, impl.Name, hostKey); err != nil {
+		return taxonomy.Connection{}, err
+	}
+	if port, err = agent.GetProperty(request.AccountProperties.Items, impl.Name, portKey); err != nil {
+		return taxonomy.Connection{}, err
+	}
+	portVal, err := strconv.Atoi(port)
+	if err != nil {
+		return taxonomy.Connection{}, err
+	}
+	database, _ := agent.GetProperty(request.AccountProperties.Items, impl.Name, dbKey)
+	if database == "" {
+		database = request.Opts.DatasetProperties.Name
+	}
+	// connect to the server and create the database if empty
+	db, err := NewClient(host, port, "", request.Secret, client)
+	if err != nil {
+		return taxonomy.Connection{}, err
+	}
+	defer db.Close()
+	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
+	defer cancelfunc()
+	query := "CREATE DATABASE IF NOT EXISTS " + database + ";"
+	impl.Log.Info().Msgf("Sending query %s\n", query)
+	if _, err = db.ExecContext(ctx, query); err != nil {
+		return taxonomy.Connection{}, err
+	}
+	connection := taxonomy.Connection{
+		Name: impl.Name,
+		AdditionalProperties: serde.Properties{
+			Items: map[string]interface{}{
+				string(impl.Name): map[string]interface{}{
+					hostKey: host,
+					portKey: portVal,
+					dbKey:   database,
+				},
+			},
+		},
+	}
+	return connection, nil
+}
+
+// storage deletion
 func (impl *MySQLImpl) DeleteStorage(request *storagemanager.DeleteStorageRequest, client kclient.Client) error {
+	var host, port, database string
+	var err error
+	if host, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, hostKey); err != nil {
+		return err
+	}
+	if port, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, portKey); err != nil {
+		return err
+	}
+	if database, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, dbKey); err != nil {
+		return err
+	}
+	// connect to the server
+	db, err := NewClient(host, port, database, request.Secret, client)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
+	defer cancelfunc()
+	if _, err = db.ExecContext(ctx, "DROP DATABASE IF EXISTS "+database+";"); err != nil {
+		return err
+	}
 	return nil
 }

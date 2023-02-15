@@ -5,6 +5,7 @@ package agent
 
 import (
 	"errors"
+	"fmt"
 
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -30,9 +31,9 @@ func GetProperty(props map[string]interface{}, t taxonomy.ConnectionType, key st
 	}
 	switch propertyMap := propertyMap.(type) {
 	case map[string]interface{}:
-		property := propertyMap[key]
-		if property != nil {
-			return property.(string), nil
+		property, found := propertyMap[key]
+		if found && (property != nil) {
+			return fmt.Sprintf("%v", property), nil
 		}
 	default:
 		return "", errors.New("undefined property " + key)
