@@ -16,32 +16,33 @@ unauthorized data plane access.
 ## Challenge
 
 When we talk about Fybrik data plane isolation, we are talking about connectivity between a user workload, which is out of
-Fybrik scope, and Fybrik modules, which can be developed by third parties. Therefore, in this document (and in its
+Fybrik control, and Fybrik modules, which can be developed by third parties. Therefore, in this document (and in its
 extensions) we provide our recommendations how to protect data plane access and possible solutions. Responsibility of the
 data plane isolation is shared between Fybrik core, Fybrik users, module developers and probably IT teams.
 
-- Fybrik users should provide all relevant information about possible workload locations to Fybrik, correctly 
-configure their workloads. For example, to set labels on the workload and inform Fybrik about the labels and namespace 
+- Fybrik users should provide Fybrik with the information about possible workload locations and configure their workloads.
+For example, to set labels on the workload pods and inform Fybrik about the labels and namespace 
 where the workload runs.
 
-- Depends on the isolation method, Fybrik should propagate all relevant information to the deployed modules, and/or
+- Depending on the isolation method, Fybrik should propagate all the relevant information to the deployed modules, and/or
 correctly configure a chosen protection mechanism, e.g. Network Policies..
 
-- Module developers should allow to protect the module instances. For example, to allow TLS support 
+- Module developers should allow protection of the module instances. For example, to allow TLS support 
  
-- In some complicated cases, IT teams interfere can be required, e.g. to configure external access points, firewalls and so on.
+- In some complicated cases, IT teams intervention can be required, e.g. to configure external access points, firewalls and so on.
 
 ## Requirements
 
 - Only predefined users/workloads should be able to access the data plane.
-- If a data plane consist of a module chain we should prevent authorized access to the intermediate modules too.
+- If a data plane consist of a module chain we should prevent unauthorized access to the intermediate modules too.
 - Modules should not be able to "illegally" communicate with modules outside of the defined data plane(s) and should 
 connect to only predefined data sets.
-- Currently, Fybrik assumes co-location of client workloads with data plane entry point modules. Future implementations
-might support deployment workloads on different clusters or run them out of Kubernetes as a standalone applications.
+- Currently, Fybrik assumes co-location of client workloads with data plane entry point modules in the same cluster. 
+Future implementations might support deployment of workloads on different clusters or run them out of Kubernetes as 
+standalone applications.
   - We check the co-location of a Fybrik module and a relevant workload in the same cluster as a specific use case.
-- We should allow workload client connections isolation based on IP addresses. It can be useful if a workload is not 
-co-locate with a Fybrik data plane.  
+- We should allow workload-client isolation based on IP addresses. It can be useful if a workload is not 
+co-located with a Fybrik data plane in the same cluster  
 
 ## Network Policies
 
@@ -49,18 +50,18 @@ Fybrik is a Kubernetes application, therefore, the simplest isolation method can
 [Kubernetes Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) (NP).
 NP allow to control traffic flow at the IP address or port level (OSI layer 3 or 4). NP can restrict incoming (ingress) 
 and/or outgoing (egress) communications. 
-The restrictions are based on combinations of Pod labels, Namespaces labels and IP blocks.
+The restrictions are based on combinations of Pods and Namespaces labels and IP blocks.
 
 ### Advantages:
-- does not require any changes in modules implementations, can be implemented in the Fybrik control plane only.
-- can be combined with other isolation methods
+- does not require any changes in module implementations, can be implemented in the Fybrik control plane only.
+- can be combined with other isolation methods (future work).
 
 ### Disadvantages:
 - a single Kubernetes cluster oriented, cross clusters restrictions can be based on IP blocks only, which significantly 
 complicates the configuration. Therefore, later we will provide other isolation methods as an extension to NP.
 - NP are implemented by the network plugin. Creating a NetworkPolicy resource without a controller - a Container Network 
 Interface (CNI) that implements it will have no effect. Kind deployments which by default use "kindnetd" do not
-support NP. Support NP requires installation another CNI, e.g. [Calico](https://github.com/projectcalico/calico). Here is the
+support NP. Support of NP requires installation of another CNI, e.g. [Calico](https://github.com/projectcalico/calico). Here is the
 [instructions](https://alexbrand.dev/post/creating-a-kind-cluster-with-calico-networking/). On the other hand, all K8s 
 clusters in production deployments use CNIs which support NP.
 
@@ -77,7 +78,7 @@ Current `FybrikApplicationSpec` has the “[selector](https://fybrik.io/v1.2/ref
 element, which is a combination of `clusterName` and `workloadSelector`. Unfortunately, based on this information we can 
 implement only one label-based `podSelector`, which will allow incoming connections from pods in the namespace where the NP 
 instance is deployed and have the defined label. In order to restrict incoming connections to Fybrik modules, the NP
-instances should be deployed in teh same namespace where the modules are running. However, Fybrik separates user's 
+instances should be deployed in the same namespace where the modules are running. However, Fybrik separates user's 
 objects, e.g. workloads and Fybrik objects, e.g. modules. Therefore, the existing mechanism should be extended.
 
 ### Suggestions:
@@ -172,15 +173,11 @@ It was deprecated several Fybrik versions ago.
 
 _Note_:  should be validated with our customers.
 
-- Change the Flow field to be required instead of optional.
-
-_Note_:  should be validated with our customers.
-
 - If a `WorkloadLocation` array and a `workloadSelector` are empty, no Network Policies will be created, which is 
 similar to current implementation. Probably other isolation methods are used.
 
-- Allow to a user by modifying the `FybrikApplication.spec.selector` in the instance of its `FybrikApplication` to modify 
-the NP without modification/redeployment of the data plane.
+- By modifying the `FybrikApplication.spec.selector` allow users to modify the NP without modification/redeployment of 
+the data plane.
 
 _Note_: we have to check if it is possible.    
 
