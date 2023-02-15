@@ -22,7 +22,7 @@ data plane isolation is shared between Fybrik core, Fybrik users, module develop
 
 - Fybrik users should provide Fybrik with the information about possible workload locations and configure their workloads.
 For example, to set labels on the workload pods and inform Fybrik about the labels and namespace 
-where the workload runs.
+where the workload is deployed.
 
 - Depending on the isolation method, Fybrik should propagate all the relevant information to the deployed modules, and/or
 correctly configure a chosen protection mechanism, e.g. Network Policies..
@@ -50,7 +50,7 @@ Fybrik is a Kubernetes application, therefore, the simplest isolation method can
 [Kubernetes Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) (NP).
 NP allow to control traffic flow at the IP address or port level (OSI layer 3 or 4). NP can restrict incoming (ingress) 
 and/or outgoing (egress) communications. 
-The restrictions are based on combinations of Pods and Namespaces labels and IP blocks.
+The restrictions are based on combinations of Pods, Namespaces labels and IP blocks.
 
 ### Advantages:
 - does not require any changes in module implementations, can be implemented in the Fybrik control plane only.
@@ -181,7 +181,7 @@ the data plane.
 
 _Note_: we have to check if it is possible.    
 
-- Extend blueprint’s module install/uninstall process by installation/removing of relevant NP instances.
+- Extend the BlueprintController’s module install/uninstall process by creation/removing of relevant NP instances.
 
 - Fybrik will not support different network restrictions to different module ports. (NP allow it)
 
