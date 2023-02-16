@@ -20,19 +20,23 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/random"
 	"fybrik.io/fybrik/pkg/serde"
 	"fybrik.io/fybrik/pkg/storage/registrator"
 	"fybrik.io/fybrik/pkg/storage/registrator/agent"
 )
 
 const (
-	hostKey     = "host"
-	portKey     = "port"
-	dbKey       = "database"
-	usernameKey = "username"
-	passwordKey = "password"
-	timeout     = time.Second * 5
-	mysqlAgent  = "mysql"
+	hostKey            = "host"
+	portKey            = "port"
+	dbKey              = "database"
+	tableKey           = "table"
+	usernameKey        = "username"
+	passwordKey        = "password"
+	timeout            = time.Second * 5
+	mysqlAgent         = "mysql"
+	randomSuffixLength = 5
+	endStatement       = ";"
 )
 
 // Storage manager implementation for MySQL
@@ -83,8 +87,8 @@ func NewClient(host, port, dbName string, secretRef taxonomy.SecretRef, client k
 
 // storage allocation
 // host, port are taken from the storage account
-// database is taken from the storage account if defined, otherwise - from the DatasetProperties.Name
-// TODO: allow database specification inside FybrikApplication
+// database name is generated, table is taken from the DatasetProperties.Name
+// TODO: allow database and table specification inside FybrikApplication
 func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRequest, client kclient.Client) (taxonomy.Connection, error) {
 	var host, port string
 	var err error
@@ -98,10 +102,12 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 	if err != nil {
 		return taxonomy.Connection{}, err
 	}
-	database, _ := agent.GetProperty(request.AccountProperties.Items, impl.Name, dbKey)
-	if database == "" {
-		database = request.Opts.DatasetProperties.Name
-	}
+
+	// generate database name
+	suffix, _ := random.Hex(randomSuffixLength)
+	database := request.Opts.AppDetails.Name + "-" + request.Opts.AppDetails.Namespace + suffix
+
+	table := request.Opts.DatasetProperties.Name
 	// connect to the server and create the database if empty
 	db, err := NewClient(host, port, "", request.Secret, client)
 	if err != nil {
@@ -110,7 +116,7 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 	defer db.Close()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
 	defer cancelfunc()
-	query := "CREATE DATABASE IF NOT EXISTS " + database + ";"
+	query := "CREATE DATABASE IF NOT EXISTS " + database + endStatement
 	impl.Log.Info().Msgf("Sending query %s\n", query)
 	if _, err = db.ExecContext(ctx, query); err != nil {
 		return taxonomy.Connection{}, err
@@ -120,9 +126,10 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 		AdditionalProperties: serde.Properties{
 			Items: map[string]interface{}{
 				string(impl.Name): map[string]interface{}{
-					hostKey: host,
-					portKey: portVal,
-					dbKey:   database,
+					hostKey:  host,
+					portKey:  portVal,
+					dbKey:    database,
+					tableKey: table,
 				},
 			},
 		},
@@ -151,7 +158,7 @@ func (impl *MySQLImpl) DeleteStorage(request *storagemanager.DeleteStorageReques
 	defer db.Close()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
 	defer cancelfunc()
-	if _, err = db.ExecContext(ctx, "DROP DATABASE IF EXISTS "+database+";"); err != nil {
+	if _, err = db.ExecContext(ctx, "DROP DATABASE IF EXISTS "+database+endStatement); err != nil {
 		return err
 	}
 	return nil
