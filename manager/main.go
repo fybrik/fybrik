@@ -95,7 +95,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		Namespace:              namespace,
 		MetricsBindAddress:     metricsAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "fybrik-operator-leader-election",
+		LeaderElectionID:       os.Getenv("LEADER_ELECTION_ID"),
 		Port:                   controllers.ManagerPort,
 		HealthProbeBindAddress: healthProbeAddr,
 		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
