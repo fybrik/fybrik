@@ -10,6 +10,7 @@ data:
   DISCOVERY_BURST: {{ .Values.manager.discoveryBurst | quote }}
   DISCOVERY_QPS: {{ .Values.manager.discoveryQPS | quote }}
   MIN_TLS_VERSION:  {{ .Values.manager.tls.minVersion }}
+  LEADER_ELECTION_ID: {{ .Values.manager.leaderElectionID }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   {{- if .Values.manager.solver.image }}
