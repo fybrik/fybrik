@@ -72,7 +72,7 @@ spec:
             EOF
             {{ end }}
             {{ end }}
-            {{- if .Values.opaServer.allowByDefault}}
+            {{- if .Values.opaServer.allowByDefault }}
             {{- $path := "files/opa-server/policy-lib/allow-by-default.rego" }}
             {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
             {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}

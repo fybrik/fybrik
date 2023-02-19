@@ -26,6 +26,7 @@ import (
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -116,6 +117,12 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
+
+	// Starting allow-by-default
+	fmt.Println("Starting allow-by-default read")
+
+	// Module installed by setup script directly from remote arrow-flight-module repository
+	// Installing application
 	application := &fapp.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = catalogedAsset
@@ -124,14 +131,6 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	// Create FybrikApplication and FybrikModule
 	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
-
-	// Ensure getting cleaned up after tests finish
-	defer func() {
-		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
-			Name: applicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
-		_ = k8sClient.Delete(context.Background(), fybrikApplication)
-	}()
 
 	fmt.Println("Expecting application to be created")
 	g.Eventually(func() error {
@@ -163,8 +162,84 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
+	g.Expect(application.Status.AssetStates[catalogedAsset].Conditions[DenyConditionIndex].Status).ToNot(gomega.Equal(v1.ConditionTrue))
+	g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).ToNot(gomega.BeEmpty())
+
+	// cleanup
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), application)
+	}, timeout, interval).Should(gomega.Succeed())
+
+	// Starting read with reduct
+	fmt.Println("Starting read with reduct")
+	piiReadConfigMap := &v1.ConfigMap{}
+
+	// Create reduct PII policy
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/pii-policy-cm.yaml", piiReadConfigMap)).ToNot(gomega.HaveOccurred())
+	piiReadConfigMapKey := client.ObjectKeyFromObject(piiReadConfigMap)
+	g.Expect(k8sClient.Create(context.Background(), piiReadConfigMap)).Should(gomega.Succeed())
+
+	fmt.Println("Expecting configmap to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("Expecting configmap to be constructed")
+	g.Eventually(func() string {
+		_ = k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
+		return piiReadConfigMap.Annotations["openpolicyagent.org/policy-status"]
+	}, timeout, interval).Should(gomega.BeEquivalentTo("{\"status\":\"ok\"}"))
+
+	application = &fapp.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
+	application.Spec.Data[0].DataSetID = catalogedAsset
+	applicationKey = client.ObjectKeyFromObject(application)
+
+	// Create FybrikApplication and FybrikModule
+	fmt.Println("Expecting application creation to succeed")
+	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
+
+	// Ensure getting cleaned up after tests finish
+	defer func() {
+		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+			Name: applicationKey.Name}}
+		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
+		_ = k8sClient.Delete(context.Background(), fybrikApplication)
+	}()
+
+	fmt.Println("Expecting application to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), applicationKey, application)
+	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("Expecting plotter to be constructed")
+	g.Eventually(func() *fapp.ResourceReference {
+		_ = k8sClient.Get(context.Background(), applicationKey, application)
+		return application.Status.Generated
+	}, timeout, interval).ShouldNot(gomega.BeNil())
+
+	// The plotter has to be created
+	plotter = &fapp.Plotter{}
+	plotterObjectKey = client.ObjectKey{Namespace: application.Status.Generated.Namespace,
+		Name: application.Status.Generated.Name}
+	fmt.Println("Expecting plotter to be fetchable")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+	}, timeout, interval).Should(gomega.Succeed())
+
+	fmt.Println("Expecting application to be ready")
+	g.Eventually(func() bool {
+		err = k8sClient.Get(context.Background(), applicationKey, application)
+		if err != nil {
+			return false
+		}
+		return application.Status.Ready
+	}, timeout, interval).Should(gomega.Equal(true))
+
+	modulesNamespace = plotter.Spec.ModulesNamespace
+	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
 
 	g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).ToNot(gomega.BeEmpty())
+	g.Expect(application.Status.AssetStates[catalogedAsset].Conditions[DenyConditionIndex].Status).ToNot(gomega.Equal(v1.ConditionTrue))
+
 	// Forward port of arrow flight service to local port
 	connection := application.Status.AssetStates[catalogedAsset].
 		Endpoint.AdditionalProperties.Items["fybrik-arrow-flight"].(map[string]interface{})
