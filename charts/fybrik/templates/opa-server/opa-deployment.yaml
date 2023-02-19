@@ -59,7 +59,7 @@ spec:
           - -c
           - |
             {{- $files := .Files }}
-            {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/**.rego" }}
+            {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/internals/**.rego" }}
             {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
             {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}
             {{ $files.Get $path | indent 12 }}
@@ -72,12 +72,12 @@ spec:
             EOF
             {{ end }}
             {{ end }}
-            {{- if .Values.opaServer.defaultDecision}}
-            {{- range $policyName, $policy := .Values.opaServer.defaultDecision }} 
-            {{- printf "\ncat > /bootstrap/%s.rego <<EOF" $policyName  | indent 12 }}
-            {{ $policy | indent 12 }}
+            {{- if .Values.opaServer.allowByDefault}}
+            {{- $path := "files/opa-server/policy-lib/allow-by-default.rego" }}
+            {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
+            {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}
+            {{ $files.Get $path | indent 12 }}
             EOF
-            {{ end }}
             {{ end }}
           volumeMounts:
             - name: bootstrap

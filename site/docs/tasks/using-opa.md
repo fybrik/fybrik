@@ -44,10 +44,10 @@ An example of an object that may be returned by the rule above:
 
 ## Fybrik Default Policies
 
-Fybrik ***allows by default*** any request if no rule is triggered. This behavior can be changed to ***deny by default*** by altering altering the value of `opaServer.defaultDecision` to be `{}` during Fybrik's installation (the catalog is ignored for simplification):
+Fybrik ***allows by default*** any request if no rule is triggered. This behavior can be changed to ***deny by default*** by altering the value of `opaServer.allowByDefault` to be `false` during Fybrik's installation:
 
 ```bash
-helm install fybrik fybrik-charts/fybrik --set opaServer.defaultDecision={} --set coordinator.catalog=<Catalog> -n fybrik-system --version master --wait
+helm install fybrik fybrik-charts/fybrik --set opaServer.allowByDefault=false --set coordinator.catalog=<Catalog> -n fybrik-system --version master --wait
 ```
 
 ## Input to policies
