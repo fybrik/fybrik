@@ -1,0 +1,10 @@
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  name: {{ .Values.manager.leaderElectionID }}
+  labels:
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+
+{{- end }}
