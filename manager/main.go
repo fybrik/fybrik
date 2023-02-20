@@ -77,6 +77,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
 		&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
 		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:               {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
