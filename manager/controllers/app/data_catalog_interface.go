@@ -62,6 +62,12 @@ func (r *FybrikApplicationReconciler) RegisterAsset(assetID string, catalogID st
 		log.Error().Err(err).Msg("failed to receive the catalog connector response")
 		return "", err
 	}
+	err = r.ValidateAssetResponse(response, DataCatalogCreateAssetResponseTaxonomy, assetID)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to validate the catalog connector response")
+		// return the error from the schema validator
+		return "", err
+	}
 
 	return response.AssetID, nil
 }
