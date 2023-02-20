@@ -46,6 +46,7 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 		-o charts/fybrik/files/taxonomy/taxonomy.json \
 		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
+	rm -f charts/fybrik/files/taxonomy/external.json
 
 .PHONY: generate-docs
 generate-docs:
