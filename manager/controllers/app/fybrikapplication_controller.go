@@ -70,7 +70,8 @@ type ApplicationContext struct {
 }
 
 var ApplicationTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
-var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogGetAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogCreateAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/CreateAssetResponse"
 
 const (
 	FybrikApplicationKind = "FybrikApplication"
@@ -492,7 +493,7 @@ func CreateDataRequest(application *fappv1.FybrikApplication, dataCtx *fappv1.Da
 	}
 }
 
-func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile, datasetID string) error {
+func (r *FybrikApplicationReconciler) ValidateAssetResponse(response interface{}, taxonomyFile, datasetID string) error {
 	var allErrs []*field.Error
 
 	// Convert GetAssetRequest Go struct to JSON
@@ -554,7 +555,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 			return "", err
 		}
 
-		err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
+		err = r.ValidateAssetResponse(response, DataCatalogGetAssetResponseTaxonomy, req.Context.DataSetID)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to validate the catalog connector response")
 			// return the error from the schema validator
