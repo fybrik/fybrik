@@ -196,7 +196,7 @@ manager:
   discoveryQPS: ""
 
   # Name of leader election ID and the name of the resource lease used for the leader election
-  leaderElectionID: "fybrik-operator-leader-election"
+  leaderElectionID: "fybrik-leader-election"
 
   tls:
     # Relavent if the connection between the manager and one of the connectors
