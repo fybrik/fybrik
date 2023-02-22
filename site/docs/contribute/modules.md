@@ -2,20 +2,47 @@
 
 This page describes what must be provided when contributing a [module](../concepts/modules.md).
 
+A module is packaged as a Helm chart that the control plane can install to a workload's data plane.
+
+To first make a module available to the control plane, it must be registered by applying a FybrikModule custom resource.
+
+After that, a FybrikApplication can be submitted.  
+For each FybrikApplication submitted, Fybrik chooses the best modules to accommodate the data needs (specified in the FybrikApplication) and deploys them.  
+
+Each module is deployed using its Helm chart.
+Fybrik passes the needed configuration parameters to the module using the [Helm mechanism for passing values](https://helm.sh/docs/chart_template_guide/values_files/).
+
 ## Steps for creating a module
 
-1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module Workload](#module-workload) or in an external component.  If the logic is in an external component, then the module workload should act as a client - i.e. receiving paramaters from the control plane and passing them to the external component.
-1. Create and publish the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module workload, update it, and delete it as necessary.
-1. Create the [FybrikModule YAML](#fybrikmodule-yaml) which describes the capabilities of the module workload, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
-1. [Test](#test) the new module
+1. Implement the logic of the module you are contributing. The implementation can either be directly in the [Module logic](#module-logic) or in an external component.  
+If the logic is in an external component, then the module logic should act as a client - i.e. receiving parameters from the control plane and passing them to the external component.
+1. Create and publish the Docker image that contains the module logic.
+1. Create and publish the [Module Helm Chart](#module-helm-chart) that will be used by the control plane to deploy the module, update it, and delete it as necessary.
+1. Create the [FybrikModule YAML](#fybrikmodule-yaml) which describes the capabilities of the module, in which flows it should be considered for inclusion, its supported interfaces, and the link to the module helm chart.
+1. [Test](#test) the new module.
 
-These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  Note that a new module is maintained in its own git repository, separate from the [fybrik](https://github.com/fybrik/fybrik) repository.
+These steps are described in the following sections in more detail, so that you can create your own modules for use by Fybrik.  
+Note that a new module is maintained in its own git repository, separate from the [Fybrik](https://github.com/fybrik/fybrik) repository.
 
-## Module Workload
+Before you start, consider using the [template module](https://github.com/fybrik/template-module) repository.
+with this template, you can easily create a repository for your own module that contains most of the needed templates and files.  
 
-The module workload is associated with a specific user workload and is deployed by the control plane.  It may implement the logic required itself, or it may be a client interface to an external component.  The former will have module type "server" and the latter "config".
+## Module logic
 
-There is also a third type of module workload known as a plugin.  It provides a standard interface by which another module may invoke its capabilities.  For example, you may have a module that reads data but doesn't know how to do data transforms.  Rather than implementing transforms in the module workload code, it can call the plugin to do the transforms.  The control plane deploys the relevant transform plugin as well as the read module.
+A running module is associated with a specific user workload and is deployed by the control plane.  
+It may implement the logic required by itself, or it may be a client interface to an external component.  
+The former will have module type "server" and the latter "config".
+
+### Configuration
+
+Modules receive the parameters that define the configuration needed for the module (such as data asset connection information, required transformations, and so on) as Helm chart values.  
+An example of parameters passed, can be found in the [Helm values passed to the module](#helm-values-passed-to-the-module) section.
+
+To read the parameters, most modules define a conf.yaml file that grabs the relevant Helm values, and is copied to the environment of the module container.
+
+An example of a conf.yaml of the AirByte module can be found [here](https://github.com/fybrik/airbyte-module/blob/v0.2.0/helm/abm/files/conf.yaml). 
+An example of a conif.py file of the AirByte module that reads the parameters can be found [here](https://github.com/fybrik/airbyte-module/blob/v0.2.0/abm/config.py).
+
 
 ### Credential management
 
@@ -37,11 +64,23 @@ $ curl --header "X-Vault-Token: ..." -X GET https://<address>/<secretPath>
 Fybrik repository contains a [Python Vault package](https://github.com/fybrik/fybrik/tree/master/python/vault) that modules can use to
 retrieve the credentials.
 
+An example of the [arrow flight module](https://github.com/fybrik/arrow-flight-module) using Vault to retrieve credentials, in order to login to s3, can be found [here](https://github.com/fybrik/arrow-flight-module/blob/v0.10.0/afm/filesystems/s3.py).
+
+## Docker image
+
+For a module to be installed using a Helm chart, a docker image needs to be published with the logic of the module.
+Follow the docker [packaging guide](https://docs.docker.com/build/building/packaging/) if you are unfamiliar with publishing a Docker image.
+
+To see an example, see the [Dockerfile](https://github.com/fybrik/arrow-flight-module/blob/master/build/Dockerfile) of the Arrow Flight module.
+
 ## Module Helm Chart
 
 For any module chosen by the control plane to be part of the data path, the control plane needs to be able to install/remove/upgrade an instance of the module. Fybrik uses [Helm](https://helm.sh/docs/intro/using_helm/) to provide this functionality. Follow the Helm [getting started](https://helm.sh/docs/chart_template_guide/getting_started/) guide if you are unfamiliar with Helm. Note that Helm 3.7 or above is required.
 
 The names of the Kubernetes resources deployed by the module helm chart must contain the release name to avoid resource conflicts. A Kubernetes `service` resource which is used to access the module must have a name equal to the release name (this service name is also used in the optional [`spec.capabilities.api.endpoint.hostname`](../reference/crds.md#fybrikmodulespeccapabilitiesapiendpoint) field).
+
+
+### Helm values passed to the module
 
 Because the chart is installed by the control plane, the input `values` to the chart will contain the following information:
 
@@ -88,9 +127,12 @@ assets:
       - col2
 ```
 
-If the module workload needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
+If the module logic needs to return information to the user, that information should be written to the `NOTES.txt` of the helm chart.
 
 For a full example see the [Arrow Flight Module chart](https://github.com/fybrik/arrow-flight-module/tree/master/helm/afm).
+
+> **NOTE**: Helm values that are passed from Fybrik to the modules, override the default values defined in the values.yaml file.  
+To add additional parameters to be passed to the module, it is recommended to use the conf.yaml file.
 
 ### Publishing the Helm Chart
 
@@ -164,7 +206,7 @@ dependencies:
 
 The `type` field may be one of the following vaues:
 
-1)service - Indicates that module workload implements the modules logic, and is deployed by the fybrik control plane.
+1) service - Indicates that module implements the modules logic, and is deployed by the fybrik control plane.
 
 2) config - In this case the logic is performed by a component deployed externally, i.e. not by the fybrik control plane.  Such components can be assumed to support multiple workloads.
 
@@ -281,10 +323,12 @@ The following are examples of YAMLs from fully implemented modules:
 
 ## Getting Started
 In order to help module developers get started there are two example "hello world" modules:
+
 * [Hello world module](https://github.com/fybrik/hello-world-module)
+
 * [Hello world read module](https://github.com/fybrik/hello-world-read-module)
 
-An example of a fully functional module is the [arrow flight module][https://github.com/fybrik/arrow-flight-module]
+An example of a fully functional module is the [arrow flight module](https://github.com/fybrik/arrow-flight-module).
 
 ## Test
 
