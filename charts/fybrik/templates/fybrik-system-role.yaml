@@ -9,7 +9,6 @@ rules:
   resources:
   - events
   - secrets
-  - configmaps
   verbs:
   - create
   - delete
