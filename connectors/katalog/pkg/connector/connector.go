@@ -45,15 +45,14 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.GetAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.Log.Info().Msg(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error during ShouldBindJSON in getAssetInfo "})
+		r.reportError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
 	if len(splittedID) != 2 {
 		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError(c, http.StatusBadRequest, errorMessage)
 		return
 	}
 	namespace, name := splittedID[0], splittedID[1]
@@ -61,12 +60,10 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		if errors.IsNotFound(err) {
-			r.Log.Info().Msg(err.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": "Error: Asset Not Found during getAssetInfo"})
+			r.reportError(c, http.StatusNotFound, err.Error())
 			return
 		}
-		r.Log.Info().Msg(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error during getAssetInfo"})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 

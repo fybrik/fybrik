@@ -25,7 +25,9 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 
 	splittedID := strings.SplitN(datasetID, "/", 2)
 	if len(splittedID) != 2 {
-		panic(fmt.Sprintf("Invalid dataset ID for mock: %s", datasetID))
+		errorMessage := fmt.Sprintf("Invalid dataset ID for mock: %s", datasetID)
+		log.Print(errorMessage)
+		return nil, errors.New(errorMessage)
 	}
 
 	catalogID := splittedID[0]

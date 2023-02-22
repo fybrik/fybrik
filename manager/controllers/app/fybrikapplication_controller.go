@@ -629,8 +629,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
-		// extend the error with a message from the policy manager that may help to understand the reason
-		return "", errors.WithMessage(err, msg)
+		return "", err
 	}
 	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed

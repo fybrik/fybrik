@@ -6,6 +6,7 @@ package clients
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"emperror.dev/errors"
 
@@ -49,9 +50,22 @@ func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) 
 
 func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest,
 	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
-	resp, _, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).XRequestCred(creds).GetPolicyDecisionsRequest(*in).Execute()
+	printErr := fmt.Sprintf("get policies decisions from %s failed", m.name)
+	resp, httpResponse, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).XRequestCred(creds).
+		GetPolicyDecisionsRequest(*in).Execute()
+
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr)
+		}
+		return nil, errors.New(printErr)
+	}
+	defer httpResponse.Body.Close()
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
+		if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
+			return nil, errors.New(string(bodyBytes))
+		}
+		return nil, errors.Wrap(err, printErr)
 	}
 	return &resp, nil
 }

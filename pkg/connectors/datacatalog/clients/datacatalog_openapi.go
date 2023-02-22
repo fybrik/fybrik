@@ -6,6 +6,7 @@ package clients
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"emperror.dev/errors"
@@ -55,11 +56,21 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 	}
 }
 
+// getDetailedError extends the original error with the the response body JSON if available,
+// or some default message - otherwise
+func getDetailedError(httpResponse *http.Response, baseError error, defaultMsg string) error {
+	if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
+		return errors.New(string(bodyBytes))
+	}
+	return errors.Wrap(baseError, defaultMsg)
+}
+
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
 	printErr := fmt.Sprintf("get asset info from %s failed", m.name)
 
 	resp, httpResponse, err :=
 		m.client.DefaultApi.GetAssetInfo(context.Background()).XRequestDatacatalogCred(creds).GetAssetRequest(*in).Execute()
+
 	if httpResponse == nil {
 		if err != nil {
 			return nil, errors.Wrap(err, printErr)
@@ -67,6 +78,7 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 		return nil, errors.New(printErr)
 	}
 	defer httpResponse.Body.Close()
+	// special errors equivalent to Deny response
 	if httpResponse.StatusCode == http.StatusForbidden {
 		return nil, errors.New(AccessForbidden)
 	}
@@ -74,7 +86,7 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, printErr)
+		return nil, getDetailedError(httpResponse, err, printErr)
 	}
 	return &resp, nil
 }
@@ -92,7 +104,7 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 	defer httpResponse.Body.Close()
 
 	if err != nil {
-		return nil, errors.Wrap(err, printErr)
+		return nil, getDetailedError(httpResponse, err, printErr)
 	}
 	return &resp, nil
 }
@@ -113,7 +125,7 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, printErr)
+		return nil, getDetailedError(httpResponse, err, printErr)
 	}
 	return &resp, nil
 }
@@ -134,7 +146,7 @@ func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, cre
 		return nil, errors.New(AssetIDNotFound)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, printErr)
+		return nil, getDetailedError(httpResponse, err, printErr)
 	}
 	return &resp, nil
 }
