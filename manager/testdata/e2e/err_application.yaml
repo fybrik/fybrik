@@ -12,7 +12,9 @@ spec:
     workloadSelector:
       matchLabels:
         app: notebook
-  appInfo: {}
+  appInfo:
+    intent: Fraud Detection
+    role: Security
   data:
     - dataSetID: 'invalid-id'
       flow: read
