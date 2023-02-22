@@ -76,7 +76,6 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		&fappv1.Plotter{}:              {Field: systemNamespaceSelector},
 		&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
 		&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:            {Field: systemNamespaceSelector},
 		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
 		&corev1.Secret{}:               {Field: systemNamespaceSelector},
 	}
@@ -95,7 +94,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		Namespace:              namespace,
 		MetricsBindAddress:     metricsAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "fybrik-operator-leader-election",
+		LeaderElectionID:       os.Getenv("LEADER_ELECTION_ID"),
 		Port:                   controllers.ManagerPort,
 		HealthProbeBindAddress: healthProbeAddr,
 		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
