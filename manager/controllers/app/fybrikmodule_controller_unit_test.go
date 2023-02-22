@@ -19,6 +19,7 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
 )
 
@@ -39,15 +40,16 @@ func TestFybrikModuleWithInvalidInterface(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
+	adminNamespace := environment.GetAdminNamespace()
 	namespaced := types.NamespacedName{
 		Name:      "module-with-interface-errors",
-		Namespace: "fybrik-system",
+		Namespace: adminNamespace,
 	}
 	filename := "../../testdata/unittests/fybrikmodule-interfaceErrors.yaml"
 	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
+	fybrikModule.Namespace = adminNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -79,15 +81,16 @@ func TestFybrikModuleWithInvalidActions(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
+	adminNamespace := environment.GetAdminNamespace()
 	namespaced := types.NamespacedName{
 		Name:      "module-with-actions-errors",
-		Namespace: "fybrik-system",
+		Namespace: adminNamespace,
 	}
 	filename := "../../testdata/unittests/fybrikmodule-actionsErrors.yaml"
 	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
+	fybrikModule.Namespace = adminNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{
@@ -119,15 +122,16 @@ func TestFybrikModuleWithValidFields(t *testing.T) {
 
 	// Set the logger to development mode for verbose logs.
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
+	adminNamespace := environment.GetAdminNamespace()
 	namespaced := types.NamespacedName{
 		Name:      "valid-module",
-		Namespace: "fybrik-system",
+		Namespace: adminNamespace,
 	}
 	filename := "../../testdata/unittests/fybrikmodule-validActions.yaml"
 	fybrikModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile(filename, fybrikModule)).NotTo(gomega.HaveOccurred())
 	fybrikModule.SetGeneration(1)
+	fybrikModule.Namespace = adminNamespace
 
 	// Objects to track in the fake client.
 	objs := []runtime.Object{

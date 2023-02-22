@@ -425,7 +425,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	ctx := context.Background()
 
 	var moduleList fapp.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminNamespace())); err != nil {
 		return nil, err
 	}
 	for ind := range moduleList.Items {

@@ -25,6 +25,16 @@ modulesNamespace:
 # The namespace must already exist
 applicationNamespace: ""
 
+# The namespace where Fybrik should allocate and monitor its internal CRs (Blueprints and Plotters)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+systemNamespace: ""
+
+# The namespace where Fybrik should watch admin CRs (FybrikModules and FybrikStorageAccounts)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+adminNamespace: ""
+
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 

@@ -6,7 +6,6 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikModule
 metadata:
   name: valid-module
-  namespace: fybrik-system
   labels:
     name: valid-module
     version: 0.1.0 

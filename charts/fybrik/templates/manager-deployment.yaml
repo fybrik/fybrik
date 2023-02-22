@@ -129,6 +129,15 @@ spec:
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
             {{- end }}
+            {{- if .Values.systemNamespace }}
+            - name: SYSTEM_NAMESPACE
+              value: {{ .Values.systemNamespace }}
+            {{- end }}
+            {{- if .Values.adminNamespace }}
+            - name: ADMIN_NAMESPACE
+              value: {{ .Values.adminNamespace }}
+            {{- end }}
+
             {{- if .Values.manager.extraEnvs }}
             {{- toYaml .Values.manager.extraEnvs | nindent 12 }}
             {{- end }}

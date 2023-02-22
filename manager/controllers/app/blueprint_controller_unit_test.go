@@ -36,6 +36,7 @@ func readBlueprint(f string) (*fapp.Blueprint, error) {
 	if err != nil {
 		return nil, err
 	}
+	blueprint.Namespace = environment.GetSystemNamespace()
 	return blueprint, nil
 }
 

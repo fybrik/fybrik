@@ -132,6 +132,8 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export ADMIN_NAMESPACE?=fybrik-admin
+test: export SYSTEM_NAMESPACE?=fybrik-crd
 test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test
