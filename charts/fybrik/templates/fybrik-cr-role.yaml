@@ -2,8 +2,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ template "fybrik.fullname" . }}-system-role
-  namespace: {{ .Values.systemNamespace }}
+  name: {{ template "fybrik.fullname" . }}-cr-role
+  namespace: {{ .Values.adminNamespace }}
 rules:
 - apiGroups:
   - ""
@@ -20,8 +20,16 @@ rules:
 - apiGroups:
   - app.fybrik.io
   resources:
-  - plotters
-  - blueprints
+  - fybrikmodules/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - fybrikstorageaccounts
+  - fybrikmodules
   verbs:
   - create
   - delete
@@ -30,13 +38,4 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - app.fybrik.io
-  resources:
-  - plotters/status
-  - blueprints/status
-  verbs:
-  - get
-  - patch
-  - update
 {{- end }}
