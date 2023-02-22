@@ -199,6 +199,7 @@ run-notebook-readflow-bc-tests:
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
 run-notebook-writeflow-tests: export HELM_SETTINGS=--set "adminNamespace=fybrik-notebook-sample"
 run-notebook-writeflow-tests: export ADMIN_NAMESPACE=fybrik-notebook-sample
+run-notebook-writeflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-writeflow-tests
 
