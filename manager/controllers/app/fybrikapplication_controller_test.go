@@ -83,7 +83,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test GetAssetInfo error propagation", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
-			if len(connector) > 0 && connector != "true" {
+			if connector == "false" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			application := &fapp.FybrikApplication{}
@@ -109,8 +109,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 		// the new policy requires copy for prod application which will fail the data plane construction
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
-			fmt.Printf("Connector:  %s\n", connector)
-			if len(connector) > 0 && connector != "true" {
+			if connector == "false" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
