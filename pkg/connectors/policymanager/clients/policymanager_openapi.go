@@ -6,10 +6,12 @@ package clients
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 
 	"emperror.dev/errors"
 
-	openapiclient "fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
+	"fybrik.io/fybrik/pkg/connectors/policymanager/openapiclient"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/policymanager"
 	"fybrik.io/fybrik/pkg/tls"
@@ -47,11 +49,30 @@ func NewOpenAPIPolicyManager(name, connectionURL string) (PolicyManager, error) 
 	}, nil
 }
 
+// getDetailedError generates an error from the response body JSON if available,
+// otherwise it extends the base error (e.g., 400 Bad Request) with the given message string
+func getDetailedError(httpResponse *http.Response, baseError error, defaultMsg string) error {
+	if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
+		return errors.New(string(bodyBytes))
+	}
+	return errors.Wrap(baseError, defaultMsg)
+}
+
 func (m *openAPIPolicyManager) GetPoliciesDecisions(in *policymanager.GetPolicyDecisionsRequest,
 	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
-	resp, _, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).XRequestCred(creds).GetPolicyDecisionsRequest(*in).Execute()
+	printErr := func() string { return fmt.Sprintf("get policies decisions from %s failed", m.name) }
+	resp, httpResponse, err := m.client.DefaultApi.GetPoliciesDecisions(context.Background()).XRequestCred(creds).
+		GetPolicyDecisionsRequest(*in).Execute()
+
+	if httpResponse == nil {
+		if err != nil {
+			return nil, errors.Wrap(err, printErr())
+		}
+		return nil, errors.New(printErr())
+	}
+	defer httpResponse.Body.Close()
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("get policies decisions from %s failed", m.name))
+		return nil, getDetailedError(httpResponse, err, printErr())
 	}
 	return &resp, nil
 }

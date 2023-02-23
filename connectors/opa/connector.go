@@ -57,7 +57,7 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	// Parse request
 	var request policymanager.GetPolicyDecisionsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		r.reportError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	logging.LogStructure("GetPoliciesDecisions object received:", request, &r.Log, zerolog.DebugLevel, false, false)
@@ -66,14 +66,14 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	// Marshal request as JSON
 	requestBody, err := json.Marshal(&inputStruct)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	// Send request to OPA
 	endpoint := fmt.Sprintf("%s/%s", strings.TrimRight(r.OpaServerURL, "/"), strings.TrimLeft(policyEndpoint, "/"))
 	responseFromOPA, err := r.OpaClient.Post(endpoint, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -81,25 +81,30 @@ func (r *ConnectorController) GetPoliciesDecisions(c *gin.Context) {
 	defer responseFromOPA.Body.Close()
 	responseFromOPABody, err := io.ReadAll(responseFromOPA.Body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Handle errors from OPA
 	if responseFromOPA.StatusCode != http.StatusOK {
 		// TODO: better error handling for OPA errors
-		c.JSON(responseFromOPA.StatusCode, gin.H{"error": string(responseFromOPABody)})
+		r.reportError(c, responseFromOPA.StatusCode, string(responseFromOPABody))
 		return
 	}
 
 	// Unmarshal as GetPolicyDecisionsResponse for the sake of validation
 	var response policymanager.GetPolicyDecisionsResponse
 	if err := json.Unmarshal(responseFromOPABody, &response); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	r.Log.Info().Msg(
 		"Sending response from opa connector with created asset ID: " + string(request.Resource.ID))
 
 	c.JSON(http.StatusOK, response)
+}
+
+func (r *ConnectorController) reportError(c *gin.Context, httpCode int, errorMessage string) {
+	r.Log.Warn().CallerSkipFrame(1).Msg(errorMessage)
+	c.JSON(httpCode, gin.H{"error": errorMessage})
 }

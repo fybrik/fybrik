@@ -81,13 +81,35 @@ var _ = Describe("FybrikApplication Controller", func() {
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
 		})
+		It("Test GetAssetInfo error propagation", func() {
+			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			if connector == "false" {
+				Skip("Skipping test when not running with mockup connector!")
+			}
+			application := &fapp.FybrikApplication{}
+			Expect(readObjectFromFile("../../testdata/e2e/err_application.yaml", application)).ToNot(HaveOccurred())
+			applicationKey := client.ObjectKeyFromObject(application)
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+			By("Expecting error state")
+			Eventually(func() corev1.ConditionStatus {
+				_ = k8sClient.Get(context.Background(), applicationKey, application)
+				if len(application.Status.AssetStates) == 0 {
+					return corev1.ConditionUnknown
+				}
+				if len(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions) == 0 {
+					return corev1.ConditionUnknown
+				}
+				return application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Status
+			}, timeout, interval).Should(Equal(corev1.ConditionTrue))
+			Expect(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Message).To(
+				ContainSubstring("Invalid dataset ID"), "Should propagate connector message")
+		})
 		// test end to end run
 		// test how policy change affects the data plane construction
 		// the new policy requires copy for prod application which will fail the data plane construction
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
-			fmt.Printf("Connector:  %s\n", connector)
-			if len(connector) > 0 && connector != "true" {
+			if connector == "false" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
