@@ -3,7 +3,9 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ template "fybrik.fullname" . }}-system-role
+{{- if .Values.systemNamespace }}
   namespace: {{ .Values.systemNamespace }}
+{{- end }}
 rules:
 - apiGroups:
   - ""
