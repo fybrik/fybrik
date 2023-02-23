@@ -57,7 +57,7 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 }
 
 // getDetailedError generates an error from the response body JSON if available,
-// otherwise it extend the base error (e.g., 400 Bad Request) with the given message string
+// otherwise it extends the base error (e.g., 400 Bad Request) with the given message string
 func getDetailedError(httpResponse *http.Response, baseError error, defaultMsg string) error {
 	if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
 		return errors.New(string(bodyBytes))
