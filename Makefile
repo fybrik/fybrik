@@ -196,8 +196,7 @@ run-notebook-readflow-bc-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-writeflow-tests
-run-notebook-writeflow-tests: export ADMIN_NAMESPACE=fybrik-admin
-run-notebook-writeflow-tests: $(TOOLBIN)/kubectl create namespace $(ADMIN_NAMESPACE) || true
+run-notebook-writeflow-tests: export ADMIN_NAMESPACE=default
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
 run-notebook-writeflow-tests: export HELM_SETTINGS=--set "adminNamespace=$(ADMIN_NAMESPACE)"
 run-notebook-writeflow-tests:
