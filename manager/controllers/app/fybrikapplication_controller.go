@@ -600,8 +600,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 // - the governance actions to be performed on the asset
 // - the potential governance actions to be performed in case of caching to a specific location
 // The latter is relevant only if caching to the chosen location takes place
-// It returns a message delegated by policy manager to be reported for the assets in the ready state
-// as well as the received error
+// The function returns a message delegated by the policy manager (when no error is received),
+// or the error, in which case the first return value is empty.
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
 	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) (string, error) {
 	var err error

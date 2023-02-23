@@ -82,7 +82,7 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 }
 
 func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string) {
-	r.Log.Error().Msg(errorMessage)
+	r.Log.Warn().CallerSkipFrame(1).Msg(errorMessage)
 	c.JSON(httpCode, gin.H{"error": errorMessage})
 }
 
