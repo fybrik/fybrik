@@ -98,7 +98,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 		name      = "notebook"
 		namespace = "default"
 	)
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).To(gomega.BeNil(),
 		"Cannot read fybrikapplication file for test")
@@ -118,9 +118,9 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	readModule := &fappv1.FybrikModule{}
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 
 	// Create modules in fake K8s agent
 	g.Expect(cl.Create(context.Background(), copyModule)).NotTo(gomega.HaveOccurred())
@@ -129,11 +129,11 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = adminNamespace
+	dummySecret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	r := createTestFybrikApplicationController(cl, s)
@@ -159,7 +159,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	g.Expect(application.Status.Generated).NotTo(gomega.BeNil())
 
 	plotterObjectKey := types.NamespacedName{
-		Namespace: environment.GetSystemNamespace(),
+		Namespace: environment.GetInternalCRsNamespace(),
 		Name:      "notebook-default",
 	}
 	plotter := &fappv1.Plotter{}
@@ -300,7 +300,7 @@ func TestNoReadPath(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -323,7 +323,7 @@ func TestNoReadPath(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -360,7 +360,7 @@ func TestWrongCopyModule(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []fappv1.DataContext{
@@ -389,11 +389,11 @@ func TestWrongCopyModule(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -428,7 +428,7 @@ func TestActionSupport(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -451,11 +451,11 @@ func TestActionSupport(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -494,7 +494,7 @@ func TestMultipleDatasets(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []fappv1.DataContext{
@@ -527,20 +527,20 @@ func TestMultipleDatasets(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = adminNamespace
+	dummySecret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -563,7 +563,7 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(application.Status.ProvisionedStorage).To(gomega.HaveKey("db2/redact-dataset"), "No storage provisioned")
 	// check plotter creation
 	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
-	g.Expect(application.Status.Generated.Namespace).To(gomega.Equal(environment.GetSystemNamespace()))
+	g.Expect(application.Status.Generated.Namespace).To(gomega.Equal(environment.GetInternalCRsNamespace()))
 	plotterObjectKey := types.NamespacedName{
 		Namespace: application.Status.Generated.Namespace,
 		Name:      application.Status.Generated.Name,
@@ -592,7 +592,7 @@ func TestFilterAsset(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []fappv1.DataContext{
@@ -617,7 +617,7 @@ func TestFilterAsset(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet-filter.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -668,7 +668,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data = []fappv1.DataContext{
@@ -701,7 +701,7 @@ func TestReadyAssetAfterUnsupported(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
 	r := createTestFybrikApplicationController(cl, s)
@@ -738,7 +738,7 @@ func TestMultipleRegions(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -761,20 +761,20 @@ func TestMultipleRegions(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-csv-parquet.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = adminNamespace
+	dummySecret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -825,7 +825,7 @@ func TestCopyData(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
@@ -844,24 +844,24 @@ func TestCopyData(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 	// Create storage accounts
 	secret1 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", secret1)).NotTo(gomega.HaveOccurred())
-	secret1.Namespace = adminNamespace
+	secret1.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), secret1)).NotTo(gomega.HaveOccurred())
 	account1 := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
-	account1.Namespace = adminNamespace
+	account1.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account1)).NotTo(gomega.HaveOccurred())
 	secret2 := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret2)).NotTo(gomega.HaveOccurred())
-	secret2.Namespace = adminNamespace
+	secret2.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), secret2)).NotTo(gomega.HaveOccurred())
 	account2 := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
-	account2.Namespace = adminNamespace
+	account2.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account2)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -919,7 +919,7 @@ func TestCopyDataNotAllowed(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
@@ -938,17 +938,17 @@ func TestCopyDataNotAllowed(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = adminNamespace
+	dummySecret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -987,7 +987,7 @@ func TestStorageCost(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
@@ -1005,17 +1005,17 @@ func TestStorageCost(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
 	// Create storage account
 	dummySecret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-neverland.yaml", dummySecret)).NotTo(gomega.HaveOccurred())
-	dummySecret.Namespace = adminNamespace
+	dummySecret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), dummySecret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1048,7 +1048,7 @@ func TestPlotterUpdate(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -1071,7 +1071,7 @@ func TestPlotterUpdate(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1134,7 +1134,7 @@ func TestSyncWithPlotter(t *testing.T) {
 		Name:      "notebook",
 		Namespace: "default",
 	}
-	systemNamespace := environment.GetSystemNamespace()
+	internalCRsNamespace := environment.GetInternalCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikcopyapp-csv.yaml", application)).NotTo(gomega.HaveOccurred())
 	// imitate a ready phase for the earlier generation
@@ -1143,7 +1143,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	application.Finalizers = []string{"TestReconciler.finalizer"}
 	application.Status.Generated = &fappv1.ResourceReference{
 		Name:       "plotter",
-		Namespace:  systemNamespace,
+		Namespace:  internalCRsNamespace,
 		Kind:       "Plotter",
 		AppVersion: 1}
 	application.Status.Ready = true
@@ -1163,7 +1163,7 @@ func TestSyncWithPlotter(t *testing.T) {
 	plotter := &fappv1.Plotter{}
 	g.Expect(readObjectFromFile("../../testdata/plotter.yaml", plotter)).NotTo(gomega.HaveOccurred())
 	plotter.Status.ObservedState.Ready = true
-	plotter.Namespace = systemNamespace
+	plotter.Namespace = internalCRsNamespace
 	g.Expect(cl.Create(context.Background(), plotter)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1332,7 +1332,7 @@ func TestCopyModule(t *testing.T) {
 		Name:      "ingest",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/ingest.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0].DataSetID = assetName
@@ -1350,7 +1350,7 @@ func TestCopyModule(t *testing.T) {
 	cl := fake.NewFakeClientWithScheme(s, objs...)
 	invalidModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", invalidModule)).NotTo(gomega.HaveOccurred())
-	invalidModule.Namespace = adminNamespace
+	invalidModule.Namespace = adminCRsNamespace
 	invalidModule.Name = "copy-module-with-invalid-structure"
 	capability := invalidModule.Spec.Capabilities[0]
 	sink := capability.SupportedInterfaces[0].Sink
@@ -1361,17 +1361,17 @@ func TestCopyModule(t *testing.T) {
 
 	copyModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
-	copyModule.Namespace = adminNamespace
+	copyModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), copyModule)).NotTo(gomega.HaveOccurred(), "the copy module could not be created")
 
 	// Create storage account
 	secret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
-	secret.Namespace = adminNamespace
+	secret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1409,7 +1409,7 @@ func TestReadAndTransform(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -1432,11 +1432,11 @@ func TestReadAndTransform(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
-	transformModule.Namespace = adminNamespace
+	transformModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1485,7 +1485,7 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 		Name:      "read-write-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetNotExist.yaml",
 		application)).NotTo(gomega.HaveOccurred())
@@ -1505,17 +1505,17 @@ func TestWriteUnregisteredAsset(t *testing.T) {
 	// Read module
 	readWriteModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
-	readWriteModule.Namespace = adminNamespace
+	readWriteModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create storage account
 	secret := &corev1.Secret{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/credentials-theshire.yaml", secret)).NotTo(gomega.HaveOccurred())
-	secret.Namespace = adminNamespace
+	secret.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), secret)).NotTo(gomega.HaveOccurred())
 	account := &fappv2.FybrikStorageAccount{}
 	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	account.Namespace = adminNamespace
+	account.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.Background(), account)).NotTo(gomega.HaveOccurred())
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1566,7 +1566,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 		Name:      "read-write-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/fybrikapplication-write-AssetExists.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
@@ -1585,7 +1585,7 @@ func TestWriteRegisteredAsset(t *testing.T) {
 	// Read module
 	readWriteModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", readWriteModule)).NotTo(gomega.HaveOccurred())
-	readWriteModule.Namespace = adminNamespace
+	readWriteModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readWriteModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1641,7 +1641,7 @@ func TestWriteAndTransform(t *testing.T) {
 		Name:      "write-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
@@ -1660,11 +1660,11 @@ func TestWriteAndTransform(t *testing.T) {
 	// Write module
 	writeModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
-	writeModule.Namespace = adminNamespace
+	writeModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
-	transformModule.Namespace = adminNamespace
+	transformModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1715,7 +1715,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 		Name:      "write-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/write_asset.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.SetGeneration(1)
@@ -1740,7 +1740,7 @@ func TestWriteWithoutPermissions(t *testing.T) {
 	// Write module
 	writeModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
-	writeModule.Namespace = adminNamespace
+	writeModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), writeModule)).NotTo(gomega.HaveOccurred(), "the write module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.
@@ -1773,7 +1773,7 @@ func TestReadChain(t *testing.T) {
 		Name:      "read-test",
 		Namespace: "default",
 	}
-	adminNamespace := environment.GetAdminNamespace()
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
 	application := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
 	application.Spec.Data[0] = fappv1.DataContext{
@@ -1796,11 +1796,11 @@ func TestReadChain(t *testing.T) {
 	// Read module
 	readModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
-	readModule.Namespace = adminNamespace
+	readModule.Namespace = adminCRsNamespace
 	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 	transformModule := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-transform.yaml", transformModule)).NotTo(gomega.HaveOccurred())
-	transformModule.Namespace = adminNamespace
+	transformModule.Namespace = adminCRsNamespace
 	transformModule.Spec.Capabilities[0].Capability = "read"
 	transformModule.Spec.Capabilities[0].Scope = "workload"
 	g.Expect(cl.Create(context.TODO(), transformModule)).NotTo(gomega.HaveOccurred(), "the transform module could not be created")
@@ -1863,7 +1863,7 @@ func TestEmptyInterface(t *testing.T) {
 	// module
 	module := &fappv1.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-delete.yaml", module)).NotTo(gomega.HaveOccurred())
-	module.Namespace = environment.GetAdminNamespace()
+	module.Namespace = environment.GetAdminCRsNamespace()
 	g.Expect(cl.Create(context.TODO(), module)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
 
 	// Create a FybrikApplicationReconciler object with the scheme and fake client.

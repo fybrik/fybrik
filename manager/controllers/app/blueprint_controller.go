@@ -141,7 +141,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 		pullSecret := corev1.Secret{}
 		pullSecrets := []corev1.Secret{}
 
-		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
+		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetInternalCRsNamespace(), Name: chartSpec.ChartPullSecret},
 			&pullSecret); err == nil {
 			// if this is not a dockerconfigjson, ignore
 			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
@@ -400,7 +400,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 
-	blueprintNamespace := environment.GetSystemNamespace()
+	blueprintNamespace := environment.GetInternalCRsNamespace()
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return e.Object.GetNamespace() == blueprintNamespace
@@ -425,7 +425,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	ctx := context.Background()
 
 	var moduleList fapp.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return nil, err
 	}
 	for ind := range moduleList.Items {

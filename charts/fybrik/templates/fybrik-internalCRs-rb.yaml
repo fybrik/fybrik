@@ -2,14 +2,14 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ template "fybrik.fullname" . }}-cr-rb
-{{- if .Values.adminNamespace }}
-  namespace: {{ .Values.adminNamespace }}
+  name: {{ template "fybrik.fullname" . }}-internal-crs-rb
+{{- if .Values.internalCRsNamespace }}
+  namespace: {{ .Values.internalCRsNamespace }}
 {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ template "fybrik.fullname" . }}-cr-role
+  name: {{ template "fybrik.fullname" . }}-internal-crs-role
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.manager.serviceAccount.name | default "default" }}

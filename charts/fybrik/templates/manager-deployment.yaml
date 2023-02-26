@@ -129,13 +129,13 @@ spec:
             - name: APPLICATION_NAMESPACE
               value: {{ .Values.applicationNamespace }}
             {{- end }}
-            {{- if .Values.systemNamespace }}
-            - name: SYSTEM_NAMESPACE
-              value: {{ .Values.systemNamespace }}
+            {{- if .Values.internalCRsNamespace }}
+            - name: INTERNAL_CRS_NAMESPACE
+              value: {{ .Values.internalCRsNamespace }}
             {{- end }}
-            {{- if .Values.adminNamespace }}
-            - name: ADMIN_NAMESPACE
-              value: {{ .Values.adminNamespace }}
+            {{- if .Values.adminCRsNamespace }}
+            - name: ADMIN_CRS_NAMESPACE
+              value: {{ .Values.adminCRsNamespace }}
             {{- end }}
 
             {{- if .Values.manager.extraEnvs }}

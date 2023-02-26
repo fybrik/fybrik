@@ -70,16 +70,16 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 	}
 	setupLog.Info().Msg("Application namespace: " + applicationNamespace)
 
-	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
-	adminNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminNamespace()})
+	internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
+	adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
 
 	selectorsByObject := cache.SelectorsByObject{
 		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&fappv1.Plotter{}:              {Field: systemNamespaceSelector},
-		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:               {Field: systemNamespaceSelector}, // pull image secrets for blueprints
-		&fappv1.FybrikModule{}:         {Field: adminNamespaceSelector},
-		&fappv2.FybrikStorageAccount{}: {Field: adminNamespaceSelector},
+		&fappv1.Plotter{}:              {Field: internalCRsNamespaceSelector},
+		&fappv1.Blueprint{}:            {Field: internalCRsNamespaceSelector},
+		&corev1.Secret{}:               {Field: internalCRsNamespaceSelector}, // pull image secrets for blueprints
+		&fappv1.FybrikModule{}:         {Field: adminCRsNamespaceSelector},
+		&fappv2.FybrikStorageAccount{}: {Field: adminCRsNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()

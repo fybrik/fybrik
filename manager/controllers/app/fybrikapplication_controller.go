@@ -784,7 +784,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 	ctx := context.Background()
 	moduleMap := make(map[string]*fappv1.FybrikModule)
 	var moduleList fappv1.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return moduleMap, err
 	}
 	for ind := range moduleList.Items {
@@ -796,7 +796,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 // get all available storage accounts
 func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStorageAccount, error) {
 	var accountList fappv2.FybrikStorageAccountList
-	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetAdminNamespace())); err != nil {
+	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return nil, err
 	}
 	accounts := []*fappv2.FybrikStorageAccount{}
@@ -842,7 +842,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
-			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetAdminNamespace()},
+			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetAdminCRsNamespace()},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Geography)},
 			Persistent:       info.Persistent,

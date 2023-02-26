@@ -108,16 +108,16 @@ var _ = BeforeSuite(func() {
 			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ",
 				controllerNamespace, modulesNamespace)
 
-			adminNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminNamespace()})
-			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
+			adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
+			internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
 			// the testing environment will restrict access to modules and storage accounts
 			mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 				Scheme:             scheme.Scheme,
 				MetricsBindAddress: "localhost:8086",
 				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-					&fappv1.FybrikModule{}:         {Field: adminNamespaceSelector},
-					&fappv2.FybrikStorageAccount{}: {Field: adminNamespaceSelector},
-					&corev1.Secret{}:               {Field: systemNamespaceSelector},
+					&fappv1.FybrikModule{}:         {Field: adminCRsNamespaceSelector},
+					&fappv2.FybrikStorageAccount{}: {Field: adminCRsNamespaceSelector},
+					&corev1.Secret{}:               {Field: internalCRsNamespaceSelector},
 				}}),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -152,8 +152,8 @@ var _ = BeforeSuite(func() {
 			}()
 
 			k8sClient = mgr.GetClient()
-			adminNs := environment.GetAdminNamespace()
-			systemNs := environment.GetSystemNamespace()
+			adminNs := environment.GetAdminCRsNamespace()
+			internalNs := environment.GetInternalCRsNamespace()
 
 			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
@@ -161,15 +161,15 @@ var _ = BeforeSuite(func() {
 				},
 			}))
 
-			if systemNs != controllerNamespace {
+			if internalNs != controllerNamespace {
 				Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: systemNs,
+						Name: internalNs,
 					},
 				}))
 			}
 
-			if adminNs != controllerNamespace && adminNs != systemNs {
+			if adminNs != controllerNamespace && adminNs != internalNs {
 				Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: adminNs,
@@ -217,6 +217,6 @@ func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.LocalClusterName, "thegreendragon", t)
 	SetIfNotSet(environment.LocalRegion, "theshire", t)
 	SetIfNotSet(environment.LocalVaultAuthPath, "kind", t)
-	SetIfNotSet(environment.SystemNamespace, "fybrik-crd", t)
-	SetIfNotSet(environment.AdminNamespace, "fybrik-admin", t)
+	SetIfNotSet(environment.InternalCRsNamespace, "fybrik-crd", t)
+	SetIfNotSet(environment.AdminCRsNamespace, "fybrik-admin", t)
 }

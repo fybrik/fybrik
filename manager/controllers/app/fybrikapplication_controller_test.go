@@ -48,8 +48,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test restricted access to secrets", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
-				// test access restriction: only secrets from system namespace can be accessed
-				// Create secrets in default and system namespaces
+				// test access restriction: only secrets from internal resource namespace can be accessed
+				// Create secrets in default and internal resource namespaces
 				// A secret from the default namespace should not be listed
 				secret1 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret1.Name = "test-secret"
@@ -58,7 +58,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				secret2.Namespace = environment.GetSystemNamespace()
+				secret2.Namespace = environment.GetInternalCRsNamespace()
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())

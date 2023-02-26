@@ -38,7 +38,7 @@ func TestPlotterController(t *testing.T) {
 
 	var (
 		name      = "plotter"
-		namespace = environment.GetSystemNamespace()
+		namespace = environment.GetInternalCRsNamespace()
 	)
 
 	var err error
@@ -149,7 +149,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 
 	var (
 		name      = "plotter"
-		namespace = environment.GetSystemNamespace()
+		namespace = environment.GetInternalCRsNamespace()
 	)
 
 	var err error
