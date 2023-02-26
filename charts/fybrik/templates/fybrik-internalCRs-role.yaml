@@ -1,0 +1,44 @@
+{{- if .Values.manager.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-internal-crs-role
+{{- if .Values.internalCRsNamespace }}
+  namespace: {{ .Values.internalCRsNamespace }}
+{{- end }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters
+  - blueprints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - app.fybrik.io
+  resources:
+  - plotters/status
+  - blueprints/status
+  verbs:
+  - get
+  - patch
+  - update
+{{- end }}

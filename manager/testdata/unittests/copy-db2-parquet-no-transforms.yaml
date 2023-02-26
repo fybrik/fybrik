@@ -6,7 +6,6 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikModule
 metadata:
   name: implicit-copy-batch-db2
-  namespace: fybrik-system
 spec:
   type: service
   capabilities:

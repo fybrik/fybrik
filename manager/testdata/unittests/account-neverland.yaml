@@ -2,7 +2,6 @@ apiVersion: app.fybrik.io/v1beta2
 kind: FybrikStorageAccount
 metadata:
   generateName: account-neverland
-  namespace: fybrik-system
 spec:
   id: neverland-object-store
   type: s3
