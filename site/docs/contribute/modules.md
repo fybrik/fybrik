@@ -159,7 +159,7 @@ metadata:
   labels:
     name: "<module name>" # the name of your new module
     version: "<semantic version>"
-  namespace: <module namespace>  # module namespace, configurable in values.yaml. The default is "fybrik-system". 
+  namespace: <module namespace>  # the namespace should match the adminCRsNamespace entry in values.yaml. The default is "fybrik-system".
 spec:
    ...
 ```
