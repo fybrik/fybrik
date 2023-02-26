@@ -11,7 +11,6 @@ import (
 	"github.com/rs/zerolog"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
@@ -102,7 +101,17 @@ func (p *PathBuilder) validateStorageRequirements(element *datapath.ResolvedEdge
 		// validate restrictions
 		moduleCapability := element.Module.Spec.Capabilities[element.CapabilityIndex]
 		account := p.Env.StorageAccounts[accountInd]
-		if !p.validateRestrictions(
+		matchStorageType := false
+		for _, inter := range moduleCapability.SupportedInterfaces {
+			if inter.Sink == nil {
+				continue
+			}
+			if inter.Sink.Protocol == account.Spec.Type {
+				matchStorageType = true
+			}
+		}
+
+		if !matchStorageType || !p.validateRestrictions(
 			p.Asset.Configuration.ConfigDecisions[moduleCapability.Capability].DeploymentRestrictions.StorageAccounts,
 			&account.Spec, account.Name) {
 			p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msgf("storage account %s does not match the requirements",
@@ -110,16 +119,16 @@ func (p *PathBuilder) validateStorageRequirements(element *datapath.ResolvedEdge
 			continue
 		}
 		// query the policy manager whether WRITE operation is allowed
-		actions, found = p.Asset.StorageRequirements[account.Spec.Region]
+		actions, found = p.Asset.StorageRequirements[account.Spec.Geography]
 		if !found {
 			continue
 		}
 
-		// add the selected storage account region
+		// add the selected storage account geography
 		element.StorageAccount = account.Spec
 		break
 	}
-	if element.StorageAccount.Region == "" {
+	if element.StorageAccount.Geography == "" {
 		p.Log.Debug().Str(logging.DATASETID, p.Asset.Context.DataSetID).Msg("Could not find a storage account, aborting data path construction")
 		return false
 	}
@@ -320,7 +329,9 @@ func match(source, sink *taxonomy.Interface) bool {
 	if source == nil || sink == nil {
 		return false
 	}
-	if source.Protocol != sink.Protocol {
+	// an empty Protocol value is not checked
+	// either a module supports any protocol, or any protocol can be selected (no requirements)
+	if string(source.Protocol) != "" && string(sink.Protocol) != "" && source.Protocol != sink.Protocol {
 		return false
 	}
 	// an empty DataFormat value is not checked
@@ -332,6 +343,7 @@ func match(source, sink *taxonomy.Interface) bool {
 }
 
 // supportsSourceInterface indicates whether the source interface requirements are met.
+//
 //nolint:dupl
 func supportsSourceInterface(edge *datapath.Edge, sourceNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
@@ -361,6 +373,7 @@ func supportsSourceInterface(edge *datapath.Edge, sourceNode *datapath.Node) boo
 }
 
 // supportsSinkInterface indicates whether the sink interface requirements are met.
+//
 //nolint:dupl
 func supportsSinkInterface(edge *datapath.Edge, sinkNode *datapath.Node) bool {
 	capability := edge.Module.Spec.Capabilities[edge.CapabilityIndex]
@@ -391,10 +404,7 @@ func supportsSinkInterface(edge *datapath.Edge, sinkNode *datapath.Node) bool {
 func (p *PathBuilder) getAssetConnectionNode() *datapath.Node {
 	var protocol taxonomy.ConnectionType
 	var dataFormat taxonomy.DataFormat
-	// If the connection name is empty, the default protocol is s3.
-	if p.Asset.DataDetails == nil || p.Asset.DataDetails.Details.Connection.Name == "" {
-		protocol = utils.GetDefaultConnectionType()
-	} else {
+	if p.Asset.DataDetails != nil && p.Asset.DataDetails.Details.Connection.Name != "" {
 		protocol = p.Asset.DataDetails.Details.Connection.Name
 		dataFormat = p.Asset.DataDetails.Details.DataFormat
 	}

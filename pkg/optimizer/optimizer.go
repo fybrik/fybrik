@@ -19,12 +19,14 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"strings"
 
 	"emperror.dev/errors"
 
 	"github.com/rs/zerolog"
 
 	"fybrik.io/fybrik/pkg/datapath"
+	"fybrik.io/fybrik/pkg/environment"
 )
 
 const (
@@ -55,9 +57,14 @@ func (opt *Optimizer) getSolution(pathLength int) (string, error) {
 		return "", errors.Wrap(err, "error building a model")
 	}
 
-	opt.log.Debug().Msgf("Executing %s %s", opt.solverPath, modelFile)
+	solverArgs := []string{modelFile}
+	additionalArgs := environment.GetCSPArgs()
+	if additionalArgs != "" {
+		solverArgs = append(solverArgs, strings.Split(additionalArgs, " ")...)
+	}
+	opt.log.Debug().Msgf("Executing %s %v", opt.solverPath, solverArgs)
 	// #nosec G204 -- Avoid "Subprocess launched with variable" error
-	solverSolution, err := exec.Command(opt.solverPath, modelFile).Output()
+	solverSolution, err := exec.Command(opt.solverPath, solverArgs...).Output()
 	if err != nil {
 		return "", errors.Wrapf(err, "error executing %s %s", opt.solverPath, modelFile)
 	}

@@ -14,3 +14,9 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 		--set installCRDs=true \
 		--namespace cert-manager \
 		--wait --timeout 120s
+
+.PHONY: undeploy
+undeploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
+	@echo "Uinstalling cert-manager ..."
+	$(TOOLBIN)/helm uninstall cert-manager --namespace cert-manager
+	$(TOOLBIN)/kubectl delete namespace cert-manager

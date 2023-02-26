@@ -1,6 +1,6 @@
 include Makefile.env
 
-all: prepare-openmetadata-for-fybrik
+all: deploy-openmetadata prepare-openmetadata-for-fybrik
 
 deploy-openmetadata:
 	helm repo add open-metadata https://helm.open-metadata.org/ || true
@@ -57,11 +57,11 @@ spec:
     spec:
       containers:
       - name: prepare-openmetadata
-        image: 'ghcr.io/fybrik/openmetadata-connector:0.0.0'
+        image: 'ghcr.io/fybrik/openmetadata-connector:0.4.0'
         command: ["/openmetadata-connector", "prepare", "--customization", "/customization.yaml"]
         env:
         - name: OPENMETADATA_ENDPOINT
-          value: http://openmetadata.$(INSTALLATION_NAMESPACE):8585/api
+          value: $(OPENMETADATA_ENDPOINT)
         - name: OPENMETADATA_USER
           value: $(OPENMETADATA_USER)
         - name: OPENMETADATA_PASSWORD
@@ -72,7 +72,7 @@ endef
 
 export JOB_YAML
 
-prepare-openmetadata-for-fybrik: deploy-openmetadata
+prepare-openmetadata-for-fybrik:
 	@echo "$$JOB_YAML" | kubectl apply -f -
 	kubectl wait --for=condition=complete job/prepare-openmetadata -n open-metadata
 	kubectl delete job prepare-openmetadata -n open-metadata

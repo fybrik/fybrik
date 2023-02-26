@@ -14,11 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"fybrik.io/fybrik/connectors/katalog/pkg/apis/katalog/v1alpha1"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
+	"fybrik.io/fybrik/pkg/utils"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -43,15 +45,14 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	// Parse request
 	var request datacatalog.GetAssetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		r.Log.Info().Msg(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error during ShouldBindJSON in getAssetInfo "})
+		r.reportError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	splittedID := strings.SplitN(string(request.AssetID), "/", 2)
 	if len(splittedID) != 2 {
 		errorMessage := fmt.Sprintf("request has an invalid asset ID %s (must be in namespace/name format)", request.AssetID)
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		r.reportError(c, http.StatusBadRequest, errorMessage)
 		return
 	}
 	namespace, name := splittedID[0], splittedID[1]
@@ -59,12 +60,10 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 	asset := &v1alpha1.Asset{}
 	if err := r.client.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: name}, asset); err != nil {
 		if errors.IsNotFound(err) {
-			r.Log.Info().Msg(err.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": "Error: Asset Not Found during getAssetInfo"})
+			r.reportError(c, http.StatusNotFound, err.Error())
 			return
 		}
-		r.Log.Info().Msg(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error during getAssetInfo"})
+		r.reportError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -83,17 +82,14 @@ func (r *Handler) getAssetInfo(c *gin.Context) {
 }
 
 func (r *Handler) reportError(c *gin.Context, httpCode int, errorMessage string) {
-	r.Log.Error().Msg(errorMessage)
+	r.Log.Warn().CallerSkipFrame(1).Msg(errorMessage)
 	c.JSON(httpCode, gin.H{"error": errorMessage})
 }
 
 // Enables writing of assets to katalog. The different flows supported are:
-// (a) When DestinationAssetID is specified:
-//     Then an asset id is created with name : <DestinationAssetID>
-// (b) When DestinationAssetID is specified:
-//     Then an asset is created with name: <DestinationAssetID>-<Kubernetes Generated Random String>
-// (c) When DestinationAssetID is not specified:
-//     Then an asset is created with name: fybrik-<Kubernetes Generated Random String>
+// (a) When DestinationAssetID is specified then an asset id is created with name: <DestinationAssetID>
+// (b) When DestinationAssetID is specified then an asset is created with name: <DestinationAssetID>-<Kubernetes Generated Random String>
+// (c) When DestinationAssetID is not specified then an asset is created with name: fybrik-<Kubernetes Generated Random String>
 func (r *Handler) createAsset(c *gin.Context) {
 	// Parse request
 	var request datacatalog.CreateAssetRequest
@@ -121,7 +117,7 @@ func (r *Handler) createAsset(c *gin.Context) {
 
 	assetPrefix := FybrikAssetPrefix
 	if request.DestinationAssetID != "" {
-		assetPrefix = request.DestinationAssetID + "-"
+		assetPrefix = utils.K8sConformName(request.DestinationAssetID, &r.Log) + "-"
 	}
 
 	asset := &v1alpha1.Asset{

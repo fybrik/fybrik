@@ -9,7 +9,7 @@ on:
         default: 'latest'
 
 env:
-  GO_VERSION: 1.17
+  GO_VERSION: 1.19
 
 jobs:
   build-and-publish:
@@ -19,7 +19,7 @@ jobs:
     env:
       DOCKER_HOSTNAME: "ghcr.io"
       DOCKER_NAMESPACE: ${{ github.actor }}
-      DOCKER_TAG: ${{ github.event.inputs.dockerTag }}
+      DOCKER_TAGNAME: ${{ github.event.inputs.dockerTag }}
       DOCKER_USERNAME: ${{ github.actor }}
       DOCKER_PASSWORD: ${{ github.token }}
     steps:
@@ -34,10 +34,11 @@ jobs:
         path: |
           ~/go/pkg/mod
           ${{ github.workspace }}/hack/tools/bin
+          ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-custom
     - run: echo "Pushing images to ${DOCKER_HOSTNAME}/${DOCKER_NAMESPACE} from branch ${{ github.ref }}"
     - name: Build and push docker images
-      run: make docker
+      run: make docker-build
     - name: Push helm charts
-      run: make -C modules helm-chart-push
+      run: make docker-push

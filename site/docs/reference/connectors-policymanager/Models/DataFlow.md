@@ -1,5 +1,5 @@
 # DataFlow
-
+DataFlow indicates how the data is used by the workload, e.g., it is being read, copied, written or deleted
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------

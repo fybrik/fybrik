@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
@@ -27,23 +26,25 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/infrastructure"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/policymanager"
+	"fybrik.io/fybrik/pkg/model/storagemanager"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/serde"
-	"fybrik.io/fybrik/pkg/storage"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/validate"
 	"fybrik.io/fybrik/pkg/vault"
 )
 
@@ -57,24 +58,25 @@ type FybrikApplicationReconciler struct {
 	DataCatalog       dcclient.DataCatalog
 	ResourceInterface ContextInterface
 	ClusterManager    multicluster.ClusterLister
-	Provision         storage.ProvisionInterface
+	StorageManager    storage.StorageManagerInterface
 	ConfigEvaluator   adminconfig.EvaluatorInterface
 	Infrastructure    *infrastructure.AttributeManager
 }
 
 type ApplicationContext struct {
 	Log         *zerolog.Logger
-	Application *fapp.FybrikApplication
+	Application *fappv1.FybrikApplication
 	UUID        string
 }
 
 var ApplicationTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
-var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogGetAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogCreateAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/CreateAssetResponse"
 
 const (
 	FybrikApplicationKind = "FybrikApplication"
 	PlotterUpdatePrefix   = "plotter_"
-	Interval              = 10
+	Separator             = " ; "
 )
 
 // ErrorMessages that are reported to the user
@@ -91,6 +93,7 @@ const (
 // Reconcile reconciles FybrikApplication CRD
 // It receives FybrikApplication CRD and selects the appropriate modules that will run
 // The outcome is a Plotter containing multiple Blueprints that run on different clusters
+//
 //nolint:gocyclo
 func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	sublog := r.Log.With().Str(FybrikApplicationKind, req.NamespacedName.String()).Logger()
@@ -105,7 +108,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		plotterUpdate = true
 		nsName.Name = nsName.Name[len(PlotterUpdatePrefix):]
 	}
-	application := &fapp.FybrikApplication{}
+	application := &fappv1.FybrikApplication{}
 	if err := r.Get(ctx, nsName, application); err != nil {
 		sublog.Warn().Msg("The reconciled object was not found")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -133,7 +136,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	observedStatus := application.Status.DeepCopy()
 	appVersion := application.GetGeneration()
 
-	// validate fybrik application in case of the create/update resource event
+	// validate fybrik application if the resource has been created or modified
 	if err := r.validateApp(ctx, applicationContext); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -190,11 +193,7 @@ func (r *FybrikApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return ctrl.Result{}, nil
 }
 
-func getBucketResourceRef(name string) *types.NamespacedName {
-	return &types.NamespacedName{Name: name, Namespace: environment.GetSystemNamespace()}
-}
-
-func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fapp.ObservedState) {
+func (r *FybrikApplicationReconciler) checkReadiness(applicationContext ApplicationContext, status fappv1.ObservedState) {
 	if applicationContext.Application.Status.AssetStates == nil {
 		initStatus(applicationContext.Application)
 	}
@@ -215,39 +214,37 @@ func (r *FybrikApplicationReconciler) checkReadiness(applicationContext Applicat
 			continue
 		}
 
-		// register assets if necessary if the ready state has been received
+		// register assets if the ready state has been received
 		if dataCtx.Requirements.FlowParams.Catalog != "" {
 			if applicationContext.Application.Status.AssetStates[assetID].CatalogedAsset != "" {
 				// the asset has been already cataloged
 				continue
 			}
 			// mark the bucket as persistent and register the asset
-			provisionedBucketRef, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
+			provisioned, found := applicationContext.Application.Status.ProvisionedStorage[assetID]
 			if !found {
 				message := "No storage has been allocated for the asset " + assetID + " required to be registered"
 				setErrorCondition(applicationContext, assetID, message)
 				continue
 			}
-			if err := r.Provision.SetPersistent(getBucketResourceRef(provisionedBucketRef.DatasetRef), true); err != nil {
-				setErrorCondition(applicationContext, assetID, err.Error())
-				continue
-			}
+			provisioned.Persistent = true
 			reqResource := dataCtx.Requirements.FlowParams.ResourceMetadata
 			if reqResource != nil {
 				// we assume to have only the geography field set at this point
 				// in the provisionedBucket ResourceMetadata
-				geo := provisionedBucketRef.ResourceMetadata.Geography
+				geo := provisioned.ResourceMetadata.Geography
 				if reqResource.Geography != "" && geo != reqResource.Geography {
 					// log conflict in Geography field
 					applicationContext.Log.Warn().Msg("Geography field from application flow requirements " +
 						"does not match provisioned bucket Geography and thus ignored")
 				}
-				provisionedBucketRef.ResourceMetadata = reqResource.DeepCopy()
-				provisionedBucketRef.ResourceMetadata.Geography = geo
+				provisioned.ResourceMetadata = reqResource.DeepCopy()
+				provisioned.ResourceMetadata.Geography = geo
 			}
+			applicationContext.Application.Status.ProvisionedStorage[assetID] = provisioned
 			// register the asset
 			if newAssetID, err := r.RegisterAsset(assetID, dataCtx.Requirements.FlowParams.Catalog,
-				&provisionedBucketRef, applicationContext.Application); err == nil {
+				&provisioned, applicationContext.Application); err == nil {
 				state := applicationContext.Application.Status.AssetStates[assetID]
 				state.CatalogedAsset = newAssetID
 				applicationContext.Application.Status.AssetStates[assetID] = state
@@ -309,7 +306,11 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 	var deletedKeys []string
 	var errMsgs []string
 	for datasetID, datasetDetails := range applicationContext.Application.Status.ProvisionedStorage {
-		if err := r.Provision.DeleteDataset(getBucketResourceRef(datasetDetails.DatasetRef)); err != nil {
+		var err error
+		if !datasetDetails.Persistent {
+			err = r.deleteTemporaryStorage(datasetDetails)
+		}
+		if err != nil {
 			errMsgs = append(errMsgs, err.Error())
 		} else {
 			deletedKeys = append(deletedKeys, datasetID)
@@ -319,7 +320,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 		delete(applicationContext.Application.Status.ProvisionedStorage, datasetID)
 	}
 	if len(errMsgs) != 0 {
-		return errors.New(strings.Join(errMsgs, ";"))
+		return errors.New(strings.Join(errMsgs, Separator))
 	}
 	// delete the generated resource
 	if applicationContext.Application.Status.Generated == nil {
@@ -336,7 +337,7 @@ func (r *FybrikApplicationReconciler) deleteExternalResources(applicationContext
 }
 
 // setVirtualEndpoints populates the endpoints in the status of the fybrikapplication
-func setVirtualEndpoints(application *fapp.FybrikApplication, flows []fapp.Flow) {
+func setVirtualEndpoints(application *fappv1.FybrikApplication, flows []fappv1.Flow) {
 	endpointMap := make(map[string]taxonomy.Connection)
 	for _, flow := range flows {
 		// sanity check
@@ -371,7 +372,7 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	// clear status
 	initStatus(applicationContext.Application)
 	if applicationContext.Application.Status.ProvisionedStorage == nil {
-		applicationContext.Application.Status.ProvisionedStorage = make(map[string]fapp.DatasetDetails)
+		applicationContext.Application.Status.ProvisionedStorage = make(map[string]fappv1.DatasetDetails)
 	}
 
 	// create a list of requirements for creating a data flow (actions, interface to app, data format) per a single data set
@@ -388,13 +389,15 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 		return ctrl.Result{}, err
 	}
 	var requirements []datapath.DataInfo
+	// messages from the connectors
+	messages := map[string]string{}
 	for _, dataset := range applicationContext.Application.Spec.Data {
 		req := datapath.DataInfo{
 			Context:             dataset.DeepCopy(),
 			DataDetails:         &datacatalog.GetAssetResponse{},
 			StorageRequirements: make(map[taxonomy.ProcessingLocation][]taxonomy.Action),
 		}
-		if err = r.constructDataInfo(&req, applicationContext, workloadCluster, env); err != nil {
+		if messages[req.Context.DataSetID], err = r.constructDataInfo(&req, applicationContext, workloadCluster, env); err != nil {
 			AnalyzeError(applicationContext, req.Context.DataSetID, err)
 			continue
 		}
@@ -413,15 +416,14 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	if err != nil || getErrorMessages(applicationContext.Application) != "" {
 		return ctrl.Result{}, err
 	}
-
-	// clean irrelevant buckets and check that the provisioned storage is ready
-	storageReady, allocationErr := r.updateProvisionedStorageStatus(applicationContext, provisionedStorage)
-	if !storageReady {
-		return ctrl.Result{RequeueAfter: 2 * time.Second}, allocationErr
+	// clean irrelevant buckets and update the application status with the provisioned storage
+	if err := r.updateProvisionedStorageStatus(applicationContext, provisionedStorage); err != nil {
+		return ctrl.Result{}, err
 	}
-
 	setVirtualEndpoints(applicationContext.Application, plotterSpec.Flows)
-	ownerRef := &fapp.ResourceReference{Name: applicationContext.Application.Name, Namespace: applicationContext.Application.Namespace,
+	ownerRef := &fappv1.ResourceReference{
+		Name:       applicationContext.Application.Name,
+		Namespace:  applicationContext.Application.Namespace,
 		AppVersion: applicationContext.Application.GetGeneration()}
 
 	resourceRef := r.ResourceInterface.CreateResourceReference(ownerRef)
@@ -436,6 +438,10 @@ func (r *FybrikApplicationReconciler) reconcile(applicationContext ApplicationCo
 	}
 	applicationContext.Application.Status.Generated = resourceRef
 	applicationContext.Log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Created %s successfully!", resourceRef.Kind)
+	// propagating connector messages to the status
+	for key, val := range messages {
+		applicationContext.Application.Status.AssetStates[key].Conditions[ReadyConditionIndex].Message = val
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -469,7 +475,7 @@ func (r *FybrikApplicationReconciler) Environment() (*datapath.Environment, erro
 }
 
 // CreateDataRequest generates a new DataRequest object for a specific asset based on FybrikApplication and asset metadata
-func CreateDataRequest(application *fapp.FybrikApplication, dataCtx *fapp.DataContext,
+func CreateDataRequest(application *fappv1.FybrikApplication, dataCtx *fappv1.DataContext,
 	assetMetadata *datacatalog.ResourceMetadata) adminconfig.DataRequest {
 	var flow taxonomy.DataFlow
 
@@ -487,7 +493,7 @@ func CreateDataRequest(application *fapp.FybrikApplication, dataCtx *fapp.DataCo
 	}
 }
 
-func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile, datasetID string) error {
+func (r *FybrikApplicationReconciler) ValidateAssetResponse(response interface{}, taxonomyFile, datasetID string) error {
 	var allErrs []*field.Error
 
 	// Convert GetAssetRequest Go struct to JSON
@@ -513,16 +519,27 @@ func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalo
 		datasetID, allErrs)
 }
 
+// constructDataInfo collects the following information about the asset:
+// - asset metadata
+// - governance actions to be performed on the data
+// - potential governance actions in case of caching the asset in a specific location
+// - decisions after evaluating config policies
+// The function returns an error received in the process of communication with connectors or evaluating policies
+// It also returns messages from data catalog and/or policy manager
+// to be propagated to the application status (relevant for the ready state of the asset)
 func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, appContext ApplicationContext,
-	workloadCluster multicluster.Cluster, env *datapath.Environment) error {
+	workloadCluster multicluster.Cluster, env *datapath.Environment) (string, error) {
 	// Call the DataCatalog service to get info about the dataset
 	input := appContext.Application
 	log := appContext.Log.With().Str(logging.DATASETID, req.Context.DataSetID).Logger()
 	var err error
+	// retrieve and propagate messages from catalog and policy manager
+	// if there are no errors to construct the data plane
+	var catalogMsg, governanceMsg string
 	if !req.Context.Requirements.FlowParams.IsNewDataSet {
 		var credentialPath string
 		if input.Spec.SecretRef != "" {
-			// credentialPath is constructed even if vault is not used for credential managment
+			// credentialPath is constructed even if vault is not used for credential management
 			// in order to enable the connector to get the credentials directly from the secret
 			// using the secret information extracted from the credentialPath string.
 			credentialPath = vault.PathForReadingKubeSecret(input.Namespace, input.Spec.SecretRef)
@@ -534,15 +551,18 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 
 		if response, err = r.DataCatalog.GetAssetInfo(&request, credentialPath); err != nil {
 			log.Error().Err(err).Msg("failed to receive the catalog connector response")
-			return err
+			// return the error from the data catalog
+			return "", err
 		}
 
-		err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
+		err = r.ValidateAssetResponse(response, DataCatalogGetAssetResponseTaxonomy, req.Context.DataSetID)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to validate the catalog connector response")
-			return err
+			// return the error from the schema validator
+			return "", err
 		}
 		logging.LogStructure("Catalog connector response", response, &log, zerolog.DebugLevel, false, false)
+		catalogMsg = response.Message
 		response.DeepCopyInto(req.DataDetails)
 	} else if req.Context.Requirements.FlowParams.ResourceMetadata != nil {
 		// Fill req.DataDetails with the metadata from the fybrikapplication
@@ -555,24 +575,37 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 	configEvaluatorInput.Request = CreateDataRequest(input, req.Context, &req.DataDetails.ResourceMetadata)
 
 	// Governance actions
-	err = r.checkGovernanceActions(configEvaluatorInput, req, appContext, env)
+	governanceMsg, err = r.checkGovernanceActions(configEvaluatorInput, req, appContext, env)
 	if err != nil {
-		return err
+		// return the error received from the policy manager, or generated by Fybrik in case of Deny
+		// the error is extended with an additional message from the policy manager
+		// which may help to understand the reason for the denial
+		return "", err
 	}
 	configDecisions, err := r.ConfigEvaluator.Evaluate(configEvaluatorInput)
 	if err != nil {
 		appContext.Log.Error().Err(err).Msg("Error evaluating config policies")
-		return err
+		// return the error from the config policy evaluator
+		return "", err
 	}
 	logging.LogStructure("Config Policy Decisions", configDecisions, appContext.Log, zerolog.DebugLevel, false, false)
 	req.WorkloadCluster = configEvaluatorInput.Workload.Cluster
 	req.Configuration = configDecisions
-	return nil
+	// info has been collected successfully - return messages from the catalog and policy manager
+	msg := strings.TrimPrefix(catalogMsg+Separator+governanceMsg, Separator)
+	return msg, nil
 }
 
+// checkGovernanceActions consults the policy manager to retrieve:
+// - the governance actions to be performed on the asset
+// - the potential governance actions to be performed in case of caching to a specific location
+// The latter is relevant only if caching to the chosen location takes place
+// The function returns a message delegated by the policy manager (when no error is received),
+// or the error, in which case the first return value is empty.
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
-	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) error {
+	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) (string, error) {
 	var err error
+	var msg string
 	switch configEvaluatorInput.Request.Usage {
 	case taxonomy.WriteFlow:
 		if !req.Context.Requirements.FlowParams.IsNewDataSet {
@@ -583,7 +616,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 				Destination:        req.DataDetails.ResourceMetadata.Geography,
 				ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 			}
-			req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+			req.Actions, msg, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
 				r.PolicyManager, appContext, &reqAction)
 		}
 	case taxonomy.ReadFlow, taxonomy.DeleteFlow:
@@ -592,11 +625,11 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			Destination:        configEvaluatorInput.Workload.Cluster.Metadata.Region,
 			ProcessingLocation: taxonomy.ProcessingLocation(configEvaluatorInput.Workload.Cluster.Metadata.Region),
 		}
-		req.Actions, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
+		req.Actions, msg, err = LookupPolicyDecisions(req.Context.DataSetID, &req.DataDetails.ResourceMetadata,
 			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
-		return err
+		return "", err
 	}
 	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
@@ -609,35 +642,38 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			}
 		}
 	} else {
-		// Use the existsing resource metadata if the asset is not new
+		// Use the existing resource metadata if the asset is not new
 		resMetadata = &req.DataDetails.ResourceMetadata
 	}
 	for accountInd := range env.StorageAccounts {
-		region := env.StorageAccounts[accountInd].Spec.Region
+		geo := env.StorageAccounts[accountInd].Spec.Geography
 		reqAction := policymanager.RequestAction{
 			ActionType:         taxonomy.WriteFlow,
-			Destination:        string(region),
-			ProcessingLocation: region,
+			Destination:        string(geo),
+			ProcessingLocation: geo,
 		}
-
-		actions, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
+		// get governance actions to consider only if a copy will be made to this destination
+		// messages from the policy manager are disregarded
+		actions, _, err := LookupPolicyDecisions(req.Context.DataSetID, resMetadata, r.PolicyManager, appContext, &reqAction)
 		if err == nil {
-			req.StorageRequirements[region] = actions
+			req.StorageRequirements[geo] = actions
 		} else if err.Error() != WriteNotAllowed {
-			return err
+			// received an error from the connector
+			return "", err
 		}
 	}
 	accountRequired := (req.Context.Requirements.FlowParams.IsNewDataSet && configEvaluatorInput.Request.Usage == taxonomy.WriteFlow) ||
 		(configEvaluatorInput.Request.Usage == taxonomy.CopyFlow)
 	// no account is defined, return an error for write and copy flows
 	if len(env.StorageAccounts) == 0 && accountRequired {
-		return errors.New(StorageAccountUndefined)
+		return "", errors.New(StorageAccountUndefined)
 	}
 	// write is denied to all accounts, return Deny for write and copy flows
 	if len(req.StorageRequirements) == 0 && accountRequired {
-		return errors.New(WriteNotAllowed)
+		return "", errors.New(WriteNotAllowed)
 	}
-	return nil
+	// no errors - return the message from the policy manager
+	return msg, nil
 }
 
 // GetWorkloadCluster returns a workload cluster
@@ -667,7 +703,7 @@ func (r *FybrikApplicationReconciler) GetWorkloadCluster(appContext ApplicationC
 // NewFybrikApplicationReconciler creates a new reconciler for FybrikApplications
 func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 	policyManager pmclient.PolicyManager, catalog dcclient.DataCatalog, cm multicluster.ClusterLister,
-	provision storage.ProvisionInterface, evaluator adminconfig.EvaluatorInterface,
+	storageManager storage.StorageManagerInterface, evaluator adminconfig.EvaluatorInterface,
 	attributeManager *infrastructure.AttributeManager) *FybrikApplicationReconciler {
 	log := logging.LogInit(logging.CONTROLLER, name)
 	return &FybrikApplicationReconciler{
@@ -678,7 +714,7 @@ func NewFybrikApplicationReconciler(mgr ctrl.Manager, name string,
 		PolicyManager:     policyManager,
 		ResourceInterface: NewPlotterInterface(mgr.GetClient()),
 		ClusterManager:    cm,
-		Provision:         provision,
+		StorageManager:    storageManager,
 		DataCatalog:       catalog,
 		ConfigEvaluator:   evaluator,
 		Infrastructure:    attributeManager,
@@ -714,9 +750,9 @@ func (r *FybrikApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numReconciles}).
-		For(&fapp.FybrikApplication{}).
+		For(&fappv1.FybrikApplication{}).
 		Watches(&source.Kind{
-			Type: &fapp.Plotter{},
+			Type: &fappv1.Plotter{},
 		}, handler.EnqueueRequestsFromMapFunc(mapFn)).Complete(r)
 }
 
@@ -728,7 +764,7 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	switch err.Error() {
+	switch errors.Cause(err).Error() {
 	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
 		setDenyCondition(appContext, assetID, err.Error())
 	default:
@@ -744,10 +780,10 @@ func ownerLabels(id types.NamespacedName) map[string]string {
 }
 
 // GetAllModules returns all CRDs of the kind FybrikModule mapped by their name
-func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikModule, error) {
+func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.FybrikModule, error) {
 	ctx := context.Background()
-	moduleMap := make(map[string]*fapp.FybrikModule)
-	var moduleList fapp.FybrikModuleList
+	moduleMap := make(map[string]*fappv1.FybrikModule)
+	var moduleList fappv1.FybrikModuleList
 	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return moduleMap, err
 	}
@@ -758,77 +794,81 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fapp.FybrikMo
 }
 
 // get all available storage accounts
-func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fapp.FybrikStorageAccount, error) {
-	var accountList fapp.FybrikStorageAccountList
+func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStorageAccount, error) {
+	var accountList fappv2.FybrikStorageAccountList
 	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
 		return nil, err
 	}
-	accounts := []*fapp.FybrikStorageAccount{}
+	accounts := []*fappv2.FybrikStorageAccount{}
 	for i := range accountList.Items {
+		// sanity - storage type should not be empty
+		if accountList.Items[i].Spec.Type == "" {
+			r.Log.Warn().Msgf("storage account %s is defined with an empty type and will be ignored", accountList.Items[i].Name)
+			continue
+		}
 		accounts = append(accounts, accountList.Items[i].DeepCopy())
 	}
 	return accounts, nil
 }
 
+func (r *FybrikApplicationReconciler) deleteTemporaryStorage(datasetDetails fappv1.DatasetDetails) error {
+	req := &storagemanager.DeleteStorageRequest{
+		Connection: datasetDetails.Details.Connection,
+		Secret:     datasetDetails.SecretRef,
+		Opts:       storagemanager.Options{},
+	}
+	return r.StorageManager.DeleteStorage(req)
+}
+
 func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(applicationContext ApplicationContext,
-	provisionedStorage map[string]NewAssetInfo) (bool, error) {
+	provisionedStorage map[string]NewAssetInfo) error {
 	// update allocated storage in the status
 	// clean irrelevant buckets
-	for datasetID, details := range applicationContext.Application.Status.ProvisionedStorage {
+	for datasetID, provisioned := range applicationContext.Application.Status.ProvisionedStorage {
 		if _, found := provisionedStorage[datasetID]; !found {
-			_ = r.Provision.DeleteDataset(getBucketResourceRef(details.DatasetRef))
+			if !provisioned.Persistent {
+				if err := r.deleteTemporaryStorage(provisioned); err != nil {
+					return err
+				}
+			}
 			delete(applicationContext.Application.Status.ProvisionedStorage, datasetID)
 		}
 	}
 	// add or update new buckets
 	for datasetID, info := range provisionedStorage {
-		details := &fapp.DataStore{}
+		details := &fappv1.DataStore{}
 		if info.Details != nil {
 			details = info.Details.DeepCopy()
 		}
 
-		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fapp.DatasetDetails{
-			DatasetRef:       info.Storage.Name,
-			SecretRef:        fapp.SecretRef{Name: info.Storage.SecretRef.Name, Namespace: info.Storage.SecretRef.Namespace},
+		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
+			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
 			Details:          details,
-			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: info.Storage.Region},
+			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Geography)},
+			Persistent:       info.Persistent,
 		}
 	}
-	// check that the buckets have been created successfully using Dataset status
-	for id, details := range applicationContext.Application.Status.ProvisionedStorage {
-		res, err := r.Provision.GetDatasetStatus(getBucketResourceRef(details.DatasetRef))
-		if err != nil {
-			return false, nil
-		}
-		if !res.Provisioned {
-			applicationContext.Log.Warn().Err(errors.New(res.ErrorMsg)).Str(logging.ACTION, logging.CREATE).
-				Str(logging.DATASETID, id).Msg("No bucket has been provisioned")
-			if res.ErrorMsg != "" {
-				return false, errors.New(res.ErrorMsg)
-			}
-			return false, nil
-		}
-	}
-	return true, nil
+	return nil
 }
 
 func (r *FybrikApplicationReconciler) buildSolution(applicationContext ApplicationContext, env *datapath.Environment,
-	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *fapp.PlotterSpec, error) {
+	requirements []datapath.DataInfo) (map[string]NewAssetInfo, *fappv1.PlotterSpec, error) {
 	plotterGen := &PlotterGenerator{
 		Client:             r.Client,
 		Log:                applicationContext.Log,
-		Owner:              client.ObjectKeyFromObject(applicationContext.Application),
-		Provision:          r.Provision,
+		Owner:              types.NamespacedName{Namespace: applicationContext.Application.Namespace, Name: applicationContext.Application.Name},
+		UUID:               applicationContext.UUID,
+		StorageManager:     r.StorageManager,
 		ProvisionedStorage: make(map[string]NewAssetInfo),
 	}
 
-	plotterSpec := &fapp.PlotterSpec{
+	plotterSpec := &fappv1.PlotterSpec{
 		Selector:         applicationContext.Application.Spec.Selector,
 		AppInfo:          applicationContext.Application.Spec.AppInfo,
-		Assets:           map[string]fapp.AssetDetails{},
-		Flows:            []fapp.Flow{},
+		Assets:           map[string]fappv1.AssetDetails{},
+		Flows:            []fappv1.Flow{},
 		ModulesNamespace: environment.GetDefaultModulesNamespace(),
-		Templates:        map[string]fapp.Template{},
+		Templates:        map[string]fappv1.Template{},
 	}
 
 	paths, err := solve(env, requirements, applicationContext.Log)
@@ -874,7 +914,7 @@ func (r *FybrikApplicationReconciler) validateApp(ctx context.Context, applicati
 		// if validation fails
 		if err != nil {
 			// set error message
-			applicationContext.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication valdiation failed")
+			applicationContext.Log.Error().Err(err).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).Msg("FybrikApplication validation failed")
 			applicationContext.Application.Status.ErrorMessage = err.Error()
 			applicationContext.Application.Status.ValidApplication = v1.ConditionFalse
 			return utils.UpdateStatus(ctx, r.Client, applicationContext.Application, observedStatus)

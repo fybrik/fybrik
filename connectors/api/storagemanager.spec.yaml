@@ -1,0 +1,66 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Storage Manager Service
+  license:
+    name: Apache 2.0
+servers:
+  - url: https://localhost:8082
+paths:
+  /allocateStorage:
+    post:
+      summary: This REST API allocates storage based on the storage account selected by Fybrik
+      operationId: allocateStorage
+      requestBody:
+        description: Allocate Storage Request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/AllocateStorageRequest"
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/AllocateStorageResponse"
+        '400':
+          description: Bad request - server cannot process the request due to client error
+        '403':
+          description: Invalid credentials
+        '501':
+          description: the requested storage type is not supported
+  /deleteStorage:
+    delete:
+      summary: This REST API deletes allocated storage
+      operationId: deleteStorage
+      requestBody:
+        description: Delete Storage Request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/DeleteStorageRequest"
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Bad request - server cannot process the request due to client error
+        '403':
+          description: Invalid credentials
+        '501':
+          description: the requested storage type is not supported
+  /getSupportedConnections:
+    post:
+      summary: This REST API returns a list of supported storage types
+      operationId: getSupportedConnections
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/GetSupportedConnectionsResponse"
+        '400':
+          description: Bad request - server cannot process the request due to client error

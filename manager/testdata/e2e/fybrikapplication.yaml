@@ -22,4 +22,11 @@ spec:
       requirements:
         interface:
           protocol: fybrik-arrow-flight
-
+    - dataSetID: 's3-incomplete/allow-dataset'
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight
+    - dataSetID: 's3-external/new-dataset'
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight

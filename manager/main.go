@@ -22,12 +22,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers"
 	"fybrik.io/fybrik/manager/controllers/app"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	dcclient "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	pmclient "fybrik.io/fybrik/pkg/connectors/policymanager/clients"
+	storage "fybrik.io/fybrik/pkg/connectors/storagemanager/clients"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/infrastructure"
@@ -36,7 +38,6 @@ import (
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
-	"fybrik.io/fybrik/pkg/storage"
 	"fybrik.io/fybrik/pkg/utils"
 )
 
@@ -50,7 +51,8 @@ var (
 )
 
 func init() {
-	_ = fapp.AddToScheme(scheme)
+	_ = fappv1.AddToScheme(scheme)
+	_ = fappv2.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
@@ -70,13 +72,12 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 
 	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
 	selectorsByObject := cache.SelectorsByObject{
-		&fapp.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&fapp.Plotter{}:              {Field: systemNamespaceSelector},
-		&fapp.FybrikModule{}:         {Field: systemNamespaceSelector},
-		&fapp.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:          {Field: systemNamespaceSelector},
-		&fapp.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:             {Field: systemNamespaceSelector},
+		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
+		&fappv1.Plotter{}:              {Field: systemNamespaceSelector},
+		&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
+		&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
+		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
+		&corev1.Secret{}:               {Field: systemNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -93,7 +94,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		Namespace:              namespace,
 		MetricsBindAddress:     metricsAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "fybrik-operator-leader-election",
+		LeaderElectionID:       os.Getenv("LEADER_ELECTION_ID"),
 		Port:                   controllers.ManagerPort,
 		HealthProbeBindAddress: healthProbeAddr,
 		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
@@ -166,6 +167,17 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			return 1
 		}
 
+		storageManager, err := storage.NewStorageManager()
+		if err != nil {
+			setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to create storage manager facade")
+			return 1
+		}
+		defer func() {
+			if err = storageManager.Close(); err != nil {
+				setupLog.Error().Err(err).Str(logging.CONTROLLER, "FybrikApplication").Msg("unable to close storage manager facade")
+			}
+		}()
+
 		// Initiate the FybrikApplication Controller
 		applicationController := app.NewFybrikApplicationReconciler(
 			mgr,
@@ -173,7 +185,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			policyManager,
 			catalog,
 			clusterManager,
-			storage.NewProvisionImpl(mgr.GetClient()),
+			storageManager,
 			evaluator,
 			infrastructureManager,
 		)
@@ -182,11 +194,11 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 			return 1
 		}
 		if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-			if err = (&fapp.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fappv1.FybrikApplication{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikApplication").Msg("unable to create webhook")
 				return 1
 			}
-			if err = (&fapp.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
+			if err = (&fappv1.FybrikModule{}).SetupWebhookWithManager(mgr); err != nil {
 				setupLog.Error().Err(err).Str(logging.WEBHOOK, "FybrikModule").Msg("unable to create webhook")
 				return 1
 			}

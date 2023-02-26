@@ -22,7 +22,7 @@ import (
 	infraattributes "fybrik.io/fybrik/pkg/model/attributes"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/monitor"
-	"fybrik.io/fybrik/pkg/taxonomy/validate"
+	"fybrik.io/fybrik/pkg/validate"
 )
 
 // RegoPolicyDirectory is a directory containing rego files that define admin config policies

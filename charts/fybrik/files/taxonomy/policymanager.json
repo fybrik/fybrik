@@ -28,7 +28,12 @@
         "decision_id": {
           "type": "string"
         },
+        "message": {
+          "description": "Additional message to be reported to the user",
+          "type": "string"
+        },
         "result": {
+          "description": "Result of policy evaluation",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ResultItem"
@@ -37,6 +42,7 @@
       }
     },
     "RequestAction": {
+      "description": "RequestAction describes the reason for accessing the data, e.g., read/write/delete, where the data is processed or written to",
       "type": "object",
       "required": [
         "actionType"
@@ -54,6 +60,7 @@
       }
     },
     "Resource": {
+      "description": "Asset metadata",
       "type": "object",
       "required": [
         "id"
@@ -68,6 +75,7 @@
       }
     },
     "ResultItem": {
+      "description": "Result of policy evaluation",
       "type": "object",
       "required": [
         "policy",

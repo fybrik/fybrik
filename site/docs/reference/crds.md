@@ -8,6 +8,7 @@ hide:
 Packages:
 
 - [app.fybrik.io/v1beta1](#appfybrikiov1beta1)
+- [app.fybrik.io/v1beta2](#appfybrikiov1beta2)
 - [katalog.fybrik.io/v1alpha1](#katalogfybrikiov1alpha1)
 
 ## app.fybrik.io/v1beta1
@@ -298,7 +299,7 @@ AssetContext defines the input parameters for modules that access an asset
 
 
 
-DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
 
 <table>
     <thead>
@@ -313,7 +314,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
         <td><b><a href="#blueprintspecmoduleskeyargumentsassetsindexargsindexconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -339,7 +340,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -414,7 +415,7 @@ Holds details for retrieving credentials from Vault store.
 
 
 
-
+Action to be performed on the data, e.g., masking
 
 <table>
     <thead>
@@ -429,7 +430,7 @@ Holds details for retrieving credentials from Vault store.
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Action name<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1000,7 +1001,7 @@ Interface indicates the protocol and format expected by the data user
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1360,14 +1361,14 @@ Generated resource identifier
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Name of the resource<br/>
+          Resource name<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>namespace</b></td>
         <td>string</td>
         <td>
-          Namespace of the resource<br/>
+          Resource namespace<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -1394,7 +1395,7 @@ DatasetDetails holds details of the provisioned storage
         <td><b>datasetRef</b></td>
         <td>string</td>
         <td>
-          Reference to a Dataset resource containing the request to provision storage<br/>
+          deprecated<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1402,6 +1403,13 @@ DatasetDetails holds details of the provisioned storage
         <td>object</td>
         <td>
           Dataset information<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>persistent</b></td>
+        <td>boolean</td>
+        <td>
+          Persistent storage (not to be removed after FybrikApplication is deleted)<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -1442,7 +1450,7 @@ Dataset information
         <td><b><a href="#fybrikapplicationstatusprovisionedstoragekeydetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1468,7 +1476,7 @@ Dataset information
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -1647,14 +1655,14 @@ Reference to a secret where the credentials are stored
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          Secret name<br/>
+          Name<br/>
         </td>
         <td>true</td>
       </tr><tr>
         <td><b>namespace</b></td>
         <td>string</td>
         <td>
-          Secret Namespace<br/>
+          Namespace<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -2023,7 +2031,7 @@ Sink specifies the output data protocol and format
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2057,7 +2065,7 @@ Source specifies the input data protocol and format
         <td><b>protocol</b></td>
         <td>string</td>
         <td>
-          Protocol defines the interface protocol used for data transactions<br/>
+          Connection type, e.g., S3, Kafka, MySQL<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2512,7 +2520,7 @@ AssetDetails is a list of assets used in the fybrikapplication. In addition to a
         <td><b><a href="#plotterspecassetskeyassetdetails">assetDetails</a></b></td>
         <td>object</td>
         <td>
-          DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.<br/>
+          DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2531,7 +2539,7 @@ AssetDetails is a list of assets used in the fybrikapplication. In addition to a
 
 
 
-DataStore contains the details for accesing the data that are sent by catalog connectors Credentials for accesing the data are stored in Vault, in the location represented by Vault property.
+DataStore contains the details for accessing the data that are sent by catalog connectors Credentials for accessing the data are stored in Vault, in the location represented by Vault property.
 
 <table>
     <thead>
@@ -2546,7 +2554,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
         <td><b><a href="#plotterspecassetskeyassetdetailsconnection">connection</a></b></td>
         <td>object</td>
         <td>
-          Connection has the relevant details for accesing the data (url, table, ssl, etc.)<br/>
+          Connection has the relevant details for accessing the data (url, table, ssl, etc.)<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -2572,7 +2580,7 @@ DataStore contains the details for accesing the data that are sent by catalog co
 
 
 
-Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+Connection has the relevant details for accessing the data (url, table, ssl, etc.)
 
 <table>
     <thead>
@@ -2836,7 +2844,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
 
 
 
-
+Action to be performed on the data, e.g., masking
 
 <table>
     <thead>
@@ -2851,7 +2859,7 @@ Step parameters TODO why not flatten the parameters into this data flow step
         <td><b>name</b></td>
         <td>string</td>
         <td>
-          <br/>
+          Action name<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -3706,6 +3714,116 @@ ObservedState includes information to be reported back to the FybrikApplication 
           Ready represents that the modules have been orchestrated successfully and the data is ready for usage<br/>
         </td>
         <td>false</td>
+      </tr></tbody>
+</table>
+
+## app.fybrik.io/v1beta2
+
+Resource Types:
+
+- [FybrikStorageAccount](#fybrikstorageaccount)
+
+
+
+
+### FybrikStorageAccount
+<sup><sup>[↩ Parent](#appfybrikiov1beta2 )</sup></sup>
+
+
+
+
+
+
+FybrikStorageAccount is a storage account Fybrik uses to dynamically allocate space for datasets whose creation or copy it orchestrates.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+      <td><b>apiVersion</b></td>
+      <td>string</td>
+      <td>app.fybrik.io/v1beta2</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b>kind</b></td>
+      <td>string</td>
+      <td>FybrikStorageAccount</td>
+      <td>true</td>
+      </tr>
+      <tr>
+      <td><b><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta">metadata</a></b></td>
+      <td>object</td>
+      <td>Refer to the Kubernetes API documentation for the fields of the `metadata` field.</td>
+      <td>true</td>
+      </tr><tr>
+        <td><b><a href="#fybrikstorageaccountspec-1">spec</a></b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>status</b></td>
+        <td>object</td>
+        <td>
+          FybrikStorageAccountStatus defines the observed state of FybrikStorageAccount<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikStorageAccount.spec
+<sup><sup>[↩ Parent](#fybrikstorageaccount-1)</sup></sup>
+
+
+
+FybrikStorageAccountSpec defines the desired state of FybrikStorageAccount
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>geography</b></td>
+        <td>string</td>
+        <td>
+          Storage geography<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>id</b></td>
+        <td>string</td>
+        <td>
+          Identification of a storage account<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>secretRef</b></td>
+        <td>string</td>
+        <td>
+          A name of k8s secret deployed in the control plane.<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>type</b></td>
+        <td>string</td>
+        <td>
+          Type of the storage, e.g., s3<br/>
+        </td>
+        <td>true</td>
       </tr></tbody>
 </table>
 

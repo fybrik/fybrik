@@ -3,7 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 
 .PHONY: test
 test: *.go
-	go test -v
+	go test $(TEST_OPTIONS)
 
 DEBUG := ./debug.out
 
@@ -12,4 +12,4 @@ debug: $(TOOLBIN)/dlv $(DEBUG)
 	$(ABSTOOLBIN)/dlv exec $(DEBUG)
 
 $(DEBUG): *.go
-	go test -c -o $(DEBUG)
+	go test $(TEST_OPTIONS) -c -o $(DEBUG)

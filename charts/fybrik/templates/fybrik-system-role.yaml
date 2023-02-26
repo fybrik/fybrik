@@ -9,7 +9,6 @@ rules:
   resources:
   - events
   - secrets
-  - configmaps
   verbs:
   - create
   - delete
@@ -59,19 +58,6 @@ rules:
   resources:
   - fybrikstorageaccounts
   - fybrikmodules
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  # to allow access to datashim, see https://github.com/datashim-io/datashim
-  - com.ie.ibm.hpsys
-  resources:
-  - datasets
   verbs:
   - create
   - delete

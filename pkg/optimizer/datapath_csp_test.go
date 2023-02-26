@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	appApi "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/infrastructure"
@@ -61,8 +62,8 @@ func getTestEnv() *datapath.Environment {
 	cluster3Cost := taxonomy.InfrastructureElement{Name: "ClusterCost", Value: "58", MetricName: "cost",
 		Object: taxonomy.Cluster, Instance: "cluster3"}
 	clusters := []multicluster.Cluster{cluster1, cluster2, cluster3}
-	sa1 := appApi.FybrikStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "sa1"}, Spec: appApi.FybrikStorageAccountSpec{Region: "us-south"}}
-	storageAccounts := []*appApi.FybrikStorageAccount{&sa1}
+	sa1 := saApi.FybrikStorageAccount{ObjectMeta: metav1.ObjectMeta{Name: "sa1"}, Spec: saApi.FybrikStorageAccountSpec{Geography: "us-south"}}
+	storageAccounts := []*saApi.FybrikStorageAccount{&sa1}
 	attrManager := infrastructure.AttributeManager{
 		Attributes: []taxonomy.InfrastructureElement{cluster1Cost, cluster2Cost, cluster3Cost},
 		Metrics:    infrastructure.MetricsDictionary{},

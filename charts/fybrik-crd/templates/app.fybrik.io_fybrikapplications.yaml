@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.11.1
   name: fybrikapplications.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -107,7 +107,7 @@ spec:
                                 description: DataFormat defines the data format type
                                 type: string
                               protocol:
-                                description: Protocol defines the interface protocol used for data transactions
+                                description: Connection type, e.g., S3, Kafka, MySQL
                                 type: string
                             required:
                               - protocol
@@ -157,6 +157,7 @@ spec:
                           description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
                           type: object
                       type: object
+                      x-kubernetes-map-type: atomic
                   required:
                     - workloadSelector
                   type: object
@@ -228,10 +229,10 @@ spec:
                       description: Kind of the resource (Blueprint, Plotter)
                       type: string
                     name:
-                      description: Name of the resource
+                      description: Resource name
                       type: string
                     namespace:
-                      description: Namespace of the resource
+                      description: Resource namespace
                       type: string
                   required:
                     - appVersion
@@ -248,13 +249,13 @@ spec:
                     description: DatasetDetails holds details of the provisioned storage
                     properties:
                       datasetRef:
-                        description: Reference to a Dataset resource containing the request to provision storage
+                        description: deprecated
                         type: string
                       details:
                         description: Dataset information
                         properties:
                           connection:
-                            description: Connection has the relevant details for accesing the data (url, table, ssl, etc.)
+                            description: Connection has the relevant details for accessing the data (url, table, ssl, etc.)
                             properties:
                               name:
                                 description: Name of the connection to the data source
@@ -293,6 +294,9 @@ spec:
                         required:
                           - connection
                         type: object
+                      persistent:
+                        description: Persistent storage (not to be removed after FybrikApplication is deleted)
+                        type: boolean
                       resourceMetadata:
                         description: Resource Metadata
                         properties:
@@ -330,10 +334,10 @@ spec:
                         description: Reference to a secret where the credentials are stored
                         properties:
                           name:
-                            description: Secret name
+                            description: Name
                             type: string
                           namespace:
-                            description: Secret Namespace
+                            description: Namespace
                             type: string
                         required:
                           - name
@@ -360,9 +364,3 @@ spec:
       storage: true
       subresources:
         status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

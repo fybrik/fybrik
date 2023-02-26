@@ -18,6 +18,7 @@ nav:
     - samples/delete-sample.md
     - samples/chaining-sample.md
     - samples/cleanup.md
+  - get-started/OneClickDemo.md
 - Concepts:
   - concepts/introduction.md
   - concepts/architecture.md
@@ -37,6 +38,7 @@ nav:
   - tasks/high-availability.md
   - tasks/infrastructure.md
   - tasks/data-plane-optimization.md
+  - tasks/add-vault-plugin.md
   - tasks/omd-discover-s3-asset.md
 - Reference:
   - reference/crds.md

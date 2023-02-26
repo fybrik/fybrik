@@ -64,13 +64,13 @@ helm_image=
 build_image=
 if [[ "${github}" == "github.com" ]]; then
     is_public_repo="true"
-    build_image="docker.io/yakinikku/suede_compile:latest"
+    build_image="ghcr.io/fybrik/suede_compile:0.1.0"
     helm_image="docker.io/lachlanevenson/k8s-helm:latest"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
 else
     is_custom_repo="true"
-    build_image="${dockerhub_hostname}/suede_compile:latest"
+    build_image="ghcr.io/fybrik/suede_compile:0.1.0"
     helm_image="${dockerhub_hostname}/k8s-helm"
     extra_params="${extra_params} -p build_image=${build_image} -p helm_image=${helm_image}"
     cp ${repo_root}/pipeline/statefulset.yaml ${TMP}/
@@ -230,7 +230,7 @@ EOH
     try_command "${TMP}/streams_csv_check_script.sh"  40 false 5
     oc apply -f ${repo_root}/pipeline/knative-eventing.yaml
 else
-    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.32.1/release.yaml
+    kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.41.0/release.yaml
     set +e
     kubectl apply -f https://github.com/knative/operator/releases/download/knative-v1.2.0/operator.yaml
     kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.2.0/eventing-crds.yaml
@@ -277,6 +277,7 @@ helper_text="If this step fails, tekton related pods may be restarting or initia
 set -x
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/shell.yaml" 3 true 60
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make.yaml" 3 true 60
+try_command "kubectl apply -f ${repo_root}/pipeline/tasks/make-dind.yaml" 3 true 60
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/git-clone.yaml" 3 true 60
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/buildah.yaml" 3 true 60
 try_command "kubectl apply -f ${repo_root}/pipeline/tasks/skopeo-copy.yaml" 3 true 60

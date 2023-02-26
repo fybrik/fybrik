@@ -10,15 +10,18 @@ data:
   DISCOVERY_BURST: {{ .Values.manager.discoveryBurst | quote }}
   DISCOVERY_QPS: {{ .Values.manager.discoveryQPS | quote }}
   MIN_TLS_VERSION:  {{ .Values.manager.tls.minVersion }}
+  LEADER_ELECTION_ID: {{ .Values.manager.leaderElectionID }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   {{- if .Values.manager.solver.image }}
   USE_CSP: {{ .Values.manager.solver.enabled | quote }}
+  CSP_ARGS: {{ .Values.manager.solver.args | quote }}
   {{- end }}
   CATALOG_PROVIDER_NAME: {{ .Values.coordinator.catalog | quote }}
   CATALOG_CONNECTOR_URL: {{ .Values.coordinator.catalogConnectorURL | default (printf "http://%s-connector:8080" .Values.coordinator.catalog) | quote }}
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "http://%s-connector:8080" .Values.coordinator.policyManager) | quote }}
+  STORAGE_MANAGER_URL: {{ printf "http://localhost:%s" .Values.storageManager.serverPort | quote }}
   {{- if .Values.coordinator.vault.enabled }}
   VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}

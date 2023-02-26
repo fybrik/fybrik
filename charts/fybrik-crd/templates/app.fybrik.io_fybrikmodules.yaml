@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.11.1
   name: fybrikmodules.app.fybrik.io
 spec:
   group: app.fybrik.io
@@ -101,7 +101,7 @@ spec:
                                   description: DataFormat defines the data format type
                                   type: string
                                 protocol:
-                                  description: Protocol defines the interface protocol used for data transactions
+                                  description: Connection type, e.g., S3, Kafka, MySQL
                                   type: string
                               required:
                                 - protocol
@@ -113,7 +113,7 @@ spec:
                                   description: DataFormat defines the data format type
                                   type: string
                                 protocol:
-                                  description: Protocol defines the interface protocol used for data transactions
+                                  description: Connection type, e.g., S3, Kafka, MySQL
                                   type: string
                               required:
                                 - protocol
@@ -235,9 +235,3 @@ spec:
       storage: true
       subresources:
         status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

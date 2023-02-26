@@ -3,9 +3,11 @@
 
 package taxonomy
 
+// Measurement units
 type Units string
 
 // +kubebuilder:validation:Enum=numeric;string;bool
+// AttributeType enumeration: numeric, string, bool
 type AttributeType string
 
 // List of attribute types
@@ -16,6 +18,7 @@ const (
 )
 
 // +kubebuilder:validation:Enum=fybrikmodule;fybrikstorageaccount;cluster;inter-region
+// InstanceType enumeration: fybrikmodule, cluster, fybrikstorageaccount, inter-region
 type InstanceType string
 
 // List of instance types
@@ -26,11 +29,13 @@ const (
 	InterRegion    InstanceType = "inter-region"
 )
 
+// Range of numeric values
 type RangeType struct {
 	Min int `json:"min,omitempty"`
 	Max int `json:"max,omitempty"`
 }
 
+// Measurement metric defining units and the value scale used for value normalization
 type InfrastructureMetrics struct {
 	Name string `json:"name"`
 	// Attribute type, e.g. numeric or string
@@ -41,10 +46,11 @@ type InfrastructureMetrics struct {
 	Scale *RangeType `json:"scale,omitempty"`
 }
 
+// InfrastructureElement defines an infrastructure attribute - its measurement metric, value and relation to Fybrik resources
 type InfrastructureElement struct {
-	// Attribute name defined in the taxonomy
+	// Attribute name, defined in additional taxonomy layers
 	Name string `json:"attribute"`
-	// Description
+	// Description of the infrastructure attribute
 	Description string `json:"description,omitempty"`
 	// Name of the metric specified in the metrics section
 	MetricName string `json:"metricName,omitempty"`

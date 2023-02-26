@@ -11,6 +11,9 @@ on:
       tls-version:
         required: true
         default: 'do-not-publish'
+      transformation-version:
+        required: true
+        default: 'do-not-publish'
       pypi-repository-url:
         required: true
         default: 'https://upload.pypi.org/legacy/'
@@ -23,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v4.3.0
+      uses: actions/setup-python@v4.5.0
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -53,6 +56,14 @@ jobs:
           echo "do not publish tls library"
         else
           VERSION=${{ github.event.inputs.tls-version }} python -m build ./python/tls --outdir ./dist
+        fi
+    - name: Build transformation package
+      run: |
+        if [ ${{ github.event.inputs.transformation-version }} == "do-not-publish" ]
+        then
+          echo "do not publish transformation library"
+        else
+          VERSION=${{ github.event.inputs.transformation-version }} python -m build ./python/transformation --outdir ./dist
         fi
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1

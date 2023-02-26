@@ -13,7 +13,7 @@ a remote Linux machine, or any other solution such as a virtual machine.
 
 Install the following on your machine:
 
-1. [go](https://golang.org/dl/) 1.17
+1. [go](https://golang.org/dl/) 1.19
 1. [Docker](https://docs.docker.com/get-docker/)
 1. `make`
 1. `jq`
@@ -29,8 +29,7 @@ make install-tools
 
 This installs additional dependencies to `hack/tools/bin`. The `make` targets (e.g., `make test`) are configured to use the binaries from `hack/tools/bin`. However, you may want to add some of these tools to your system PATH for direct usage from your terminal (e.g., for using `kubectl`).
 
-Please note: For fybrik version 0.5.x and lower, Helm version greater than 3.3 but less than 3.7 is required when contributing. 
-On the other side, for fybrik v0.6.x, Helm v3.7 or above is required. 
+> NOTE: If you want to contribute to the documentation on the website, and preview the website locally, you should [install Mkdocs-Material](https://squidfunk.github.io/mkdocs-material/getting-started/) and follow a [few more steps](https://github.com/fybrik/fybrik/blob/master/site/README.md).
 
 ## Editors
 

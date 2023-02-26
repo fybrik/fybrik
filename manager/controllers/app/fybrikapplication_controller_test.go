@@ -81,13 +81,35 @@ var _ = Describe("FybrikApplication Controller", func() {
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
 		})
+		It("Test GetAssetInfo error propagation", func() {
+			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			if connector == "false" {
+				Skip("Skipping test when not running with mockup connector!")
+			}
+			application := &fapp.FybrikApplication{}
+			Expect(readObjectFromFile("../../testdata/e2e/err_application.yaml", application)).ToNot(HaveOccurred())
+			applicationKey := client.ObjectKeyFromObject(application)
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+			By("Expecting error state")
+			Eventually(func() corev1.ConditionStatus {
+				_ = k8sClient.Get(context.Background(), applicationKey, application)
+				if len(application.Status.AssetStates) == 0 {
+					return corev1.ConditionUnknown
+				}
+				if len(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions) == 0 {
+					return corev1.ConditionUnknown
+				}
+				return application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Status
+			}, timeout, interval).Should(Equal(corev1.ConditionTrue))
+			Expect(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Message).To(
+				ContainSubstring("Invalid dataset ID"), "Should propagate connector message")
+		})
 		// test end to end run
 		// test how policy change affects the data plane construction
 		// the new policy requires copy for prod application which will fail the data plane construction
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
-			fmt.Printf("Connector:  %s\n", connector)
-			if len(connector) > 0 && connector != "true" {
+			if connector == "false" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
@@ -158,8 +180,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 				return application.Status.Ready
 			}, timeout, interval).Should(BeTrue(), "FybrikApplication is not ready after timeout!")
 
+			By("Connector messages should be propagated to the status")
+			Expect(len(application.Status.AssetStates)).To(Equal(3))
+			Expect(application.Status.AssetStates["s3/redact-dataset"].Conditions[ReadyConditionIndex].Message).To(BeEmpty())
+			Expect(application.Status.AssetStates["s3-incomplete/allow-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
+			Expect(application.Status.AssetStates["s3-external/new-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			By("Status should contain the details of the endpoint")
-			Expect(len(application.Status.AssetStates)).To(Equal(1))
 			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
 			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
 			Expect(connection).ToNot(BeNil())

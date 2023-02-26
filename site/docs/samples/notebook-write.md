@@ -53,13 +53,6 @@ Make a note of the service endpoint and access credentials. You will need them l
 
 ## Deploy resources for write scenarios
 
-Deploy [Datashim](https://github.com/datashim-io/datashim): 
-```yaml
-kubectl apply -f https://raw.githubusercontent.com/fybrik/fybrik/master/third_party/datashim/dlf.yaml
-```
-
-For more deployment options of Datashim based on your environment please refer to the [datashim site](https://github.com/datashim-io/datashim).
-
 Register the credentials required for accessing the object storage. Replace the values for `access_key` and `secret_key` with the values from the object storage service that you used and run:
 
 ```yaml
@@ -72,38 +65,40 @@ metadata:
 type: Opaque
 stringData:
   access_key: "${ACCESS_KEY}"
-  accessKeyID: "${ACCESS_KEY}"
   secret_key: "${SECRET_KEY}"
-  secretAccessKey: "${SECRET_KEY}"
 EOF
 ```
 Then, register two storage accounts: one in `theshire` and one in `neverland`. Replace the value for `endpoint` with value from the object storage service that you used and run:
 
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: theshire-storage-account
   namespace: fybrik-system
 spec:
   id: theshire-object-store
-  region: theshire
-  endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+  type: s3
+  geography: theshire
+  s3:
+    endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
 EOF
 ```
 ```yaml
 cat << EOF | kubectl apply -f -
-apiVersion:   app.fybrik.io/v1beta1
+apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: neverland-storage-account
   namespace: fybrik-system
 spec:
   id: neverland-object-store
-  region: neverland
-  endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
+  geography: neverland
+  type: s3
+  s3:
+    endpoint: "http://localstack.fybrik-notebook-sample.svc.cluster.local:4566"
   secretRef:  bucket-creds
 EOF
 ```
@@ -114,7 +109,7 @@ Note that for evaluation purposes the same object store is used for different re
 
 ### Define data governance policies for write
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to forbid the writing of sensitive data to regions `neverland` and `theshire` in datasets tagged with `finance`. This policy prevents the writing as the deployed fybrik storage account resources applied are in `neverland` and `theshire`.
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to forbid the writing of personal data to regions `neverland` and `theshire` in datasets tagged with `Purpose.finance`. This policy prevents the writing as the deployed fybrik storage account resources applied are in `neverland` and `theshire`.
 
 Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
@@ -122,12 +117,12 @@ Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/late
 package dataapi.authz
 
 rule[{"policy": description}] {
-  description := "Forbid writing sensitive data in `theshire` and `neverland` storage accounts in datasets tagged with `finance`"
+  description := "Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`"
   input.action.actionType == "write"
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags["Purpose.finance"]
   input.action.destination != "theshire"
   input.action.destination != "neverland"
-  input.resource.metadata.columns[i].tags.sensitive
+  input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 ```
 
@@ -171,14 +166,14 @@ spec:
           catalog: fybrik-notebook-sample
           metadata:
             tags:
-              finance: true
+              Purpose.finance: true
             columns:
               - name: nameOrig
                 tags:
-                  PII: true
+                  PII.Sensitive: true
               - name: oldbalanceOrg
                 tags:
-                  sensitive: true
+                  PersonalData.Personal: true
         interface:
           protocol: fybrik-arrow-flight
 EOF
@@ -200,7 +195,7 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 while [[ $(kubectl get fybrikapplication my-notebook-write -n fybrik-notebook-sample -o 'jsonpath={.status.assetStates.new-data.conditions[?(@.type == "Deny")].status}') != "True" ]]; do echo "waiting for my-notebook-write asset" && sleep 5; done
 ```
 
-We expect the asset's status in FybrikApplication.status to be denied due to the policy defined above. Next, a new policy will be applied which will allow the writing to `theshire` object store.
+We expect the asset's status in `FybrikApplication.status` to be `denied` due to the policy defined above. Next, a new policy will be applied which will allow the writing to `theshire` object store.
 
 ### Cleanup scenario one
 
@@ -218,18 +213,18 @@ To write the new data a new policy should be defined.
 
 ### Define data access policies for writing the data
 
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to return the list of column names tagged as sensitive, whose destination is not neverland, when the actionType is write. The columns are passed to the `FybrikModule` together with RedactAction upon deployment of the module by Fybrik.
+Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to return the list of column names tagged as `PersonalData.Personal`, whose destination is not neverland, when the actionType is write. The columns are passed to the `FybrikModule` together with RedactAction upon deployment of the module by Fybrik.
 Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
 
 ```rego
 package dataapi.authz
 
 rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
-  description := "Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account"
+  description := "Redact written columns tagged as PersonalData.Personal in datasets tagged with Purpose.finance = true. The data should not be stored in `neverland` storage account"
   input.action.actionType == "write"
-  input.resource.metadata.tags.finance
+  input.resource.metadata.tags["Purpose.finance"]
   input.action.destination != "neverland"
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags.sensitive]
+  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PersonalData.Personal"]]
 }
 ```
 
@@ -256,12 +251,26 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.conditions[?(@.type == "Ready")].status}') != "True" ]]; do echo "waiting for new-data asset" && sleep 5; done
 ```
 
-Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in [Scenario 3](#scenario-3-read-the-newly-written-data), where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.
 
-```bash
-CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
-CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
-```
+=== "With OpenMetadata"
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+
+    ```bash
+    CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+    CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+    BUCKET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}')
+    ```
+
+=== "With Katalog"
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+
+    ```bash
+    CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
+    CATALOGED_ASSET=fybrik-notebook-sample/${CATALOGED_ASSET}
+    CATALOGED_ASSET_MODIFIED=${CATALOGED_ASSET}
+    BUCKET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}')
+    ```
 
 ### Write the data from the notebook
 
@@ -333,7 +342,7 @@ writer.close()
 ```
 
 ### View new asset through OpenMetadata UI
-The newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
+If Fybrik is configured to work with the OpenMetadata data catalog, then the newly-created asset is registered in OpenMetadata and can be viewed through the OpenMetadata UI. A tutorial on working with the OpenMetadata UI can be found [here](../../tasks/omd-discover-s3-asset/). It begins with an explanation how to connect to the UI and login. Once you are logged in, choose `Tables` on the menu on the left and you will see all the registered assets.
 
 ### Cleanup scenario two
 
@@ -445,14 +454,13 @@ The next steps use the endpoint to read the data in a python notebook.
   ```
   df_read
   ```
-5. Execute all notebook cells and notice that the `oldbalanceOrg` column does not appear because it was redacted.
+5. Execute all notebook cells and notice that data in the `oldbalanceOrg` column was redacted.
 
 ## Cleanup
 You can use the [AWS CLI](https://aws.amazon.com/cli/) to remove the bucket and objects created in this sample.
 
 To list all the created objects, run:
 ```bash
-BUCKET=$(echo $CATALOGED_ASSET | awk -F"." '{print $3}')
 aws --endpoint-url=http://localhost:4566 s3api  --bucket=${BUCKET} list-objects
 ```
 

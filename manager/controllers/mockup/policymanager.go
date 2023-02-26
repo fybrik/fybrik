@@ -40,6 +40,7 @@ func deserializeToTaxonomyAction(action map[string]interface{}, taxAction *taxon
 }
 
 // GetPoliciesDecisions implements the PolicyCompiler interface
+//
 //nolint:funlen
 func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyDecisionsRequest,
 	creds string) (*policymanager.GetPolicyDecisionsResponse, error) {
@@ -48,7 +49,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	log.Printf("Destination: " + input.Action.Destination)
 	nameKey := "name"
 	theshireLiteral := "theshire"
-
+	msg := ""
 	datasetID := string(input.Resource.ID)
 	log.Printf("   DataSetID: " + datasetID)
 	respResult := []policymanager.ResultItem{}
@@ -60,10 +61,11 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	}
 	assetID := splittedID[1]
 	switch assetID {
-	case "allow-dataset", "new-dataset":
+	case "allow-dataset":
 		// empty result simulates allow
 		// no need to construct any result item
-
+	case "new-dataset":
+		msg = "no checks have been invoked"
 	case "deny-dataset":
 		actionOnDataset := taxonomy.Action{}
 		action := make(map[string]interface{})
@@ -146,7 +148,7 @@ func (m *MockPolicyManager) GetPoliciesDecisions(input *policymanager.GetPolicyD
 	}
 
 	decisionID, _ := random.Hex(20) //nolint:revive,gomnd
-	policyManagerResp := &policymanager.GetPolicyDecisionsResponse{DecisionID: decisionID, Result: respResult}
+	policyManagerResp := &policymanager.GetPolicyDecisionsResponse{DecisionID: decisionID, Result: respResult, Message: msg}
 
 	res, err := json.MarshalIndent(policyManagerResp, "", "\t")
 	if err != nil {

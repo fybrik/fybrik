@@ -48,7 +48,7 @@ func resetAssetState(application *fapp.FybrikApplication, assetID string) {
 
 func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 	errMsg := "An error was received for asset " + assetID
-	errMsg += " . If the error persists, please contact an operator."
+	errMsg += ". If the error persists, please contact an operator. "
 	errMsg += "Error description: " + msg
 	appContext.Application.Status.AssetStates[assetID].Conditions[ErrorConditionIndex] = fapp.Condition{
 		Type:    fapp.ErrorCondition,

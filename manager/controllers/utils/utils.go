@@ -72,7 +72,3 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		return cl.Status().Update(ctx, res)
 	})
 }
-
-func GetDefaultConnectionType() taxonomy.ConnectionType {
-	return utils.S3
-}

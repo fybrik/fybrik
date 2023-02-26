@@ -107,7 +107,7 @@ coordinator:
 
   # Configures the catalog system name to be used by the coordinator manager.
   # Accepted values are "katalog", "openmetadata", "egeria" or any meaningful name if a third party connector is used.
-  catalog: "katalog"
+  catalog: "openmetadata"
 
   # Overrides the catalog connector URL.
   # Defaults to `http://<catalog>-connector:8080`.
@@ -195,6 +195,9 @@ manager:
   # value is float32
   discoveryQPS: ""
 
+  # Name of leader election ID and the name of the resource lease used for the leader election
+  leaderElectionID: "fybrik-leader-election"
+
   tls:
     # Relavent if the connection between the manager and one of the connectors
     # uses tls.
@@ -276,9 +279,11 @@ manager:
   solver:
     # image of the container with solver binary and libs
     # when specified, the solver will be deployed in the manager pod
-    image: "ghcr.io/fybrik/optimizer:0.0.1"
+    image: "ghcr.io/fybrik/optimizer:or-tools-v9.5"
     # Set to true to enable the use of the solver by Fybrik
     enabled: false
+    # additional argments
+    args: "--logtostderr"
     # Set the size limit of the directory which holds the solver image.
     dirSizeLimit: 200Mi
 
@@ -289,6 +294,16 @@ manager:
   # and place helm charts within the charts directory.
   chartsPersistentVolumeClaim: ""
 
+# Storage manager component used to manage storage within shared accounts
+storageManager:
+  # image of the container
+  # the component will be deployed in the manager pod
+  image: "storage-manager"
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: "Always"
+  # server port
+  serverPort: "8082"
+
 # OPA server component
 opaServer:
   # Set to true to deploy OPA service or false to skip its deployment.
@@ -296,7 +311,7 @@ opaServer:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "openpolicyagent/opa:0.36.0"
+  image: "openpolicyagent/opa:0.48.0"
   
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"
@@ -535,7 +550,7 @@ openmetadataConnector:
   enabled: auto
 
   # Image name or a hub/image[:tag]
-  image: "ghcr.io/fybrik/openmetadata-connector:0.1.0"
+  image: "ghcr.io/fybrik/openmetadata-connector:0.4.0"
 
   # Overrides global.imagePullPolicy
   imagePullPolicy: "Always"

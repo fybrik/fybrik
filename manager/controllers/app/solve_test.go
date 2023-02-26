@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	saApi "fybrik.io/fybrik/manager/apis/app/v1beta2"
 	"fybrik.io/fybrik/manager/controllers/mockup"
 	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
@@ -28,7 +29,7 @@ func newEnvironment() *datapath.Environment {
 	return &datapath.Environment{
 		Clusters:        []multicluster.Cluster{},
 		Modules:         map[string]*fapp.FybrikModule{},
-		StorageAccounts: []*fapp.FybrikStorageAccount{},
+		StorageAccounts: []*saApi.FybrikStorageAccount{},
 		AttributeManager: &infrastructure.AttributeManager{
 			Log:        testLog,
 			Metrics:    infrastructure.MetricsDictionary{},
@@ -45,7 +46,7 @@ func addModule(env *datapath.Environment, module *fapp.FybrikModule) {
 	env.Modules[module.Name] = module
 }
 
-func addStorageAccount(env *datapath.Environment, account *fapp.FybrikStorageAccount) {
+func addStorageAccount(env *datapath.Environment, account *saApi.FybrikStorageAccount) {
 	env.StorageAccounts = append(env.StorageAccounts, account)
 }
 
@@ -212,9 +213,9 @@ func TestReadWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
+	account := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
 	asset := createReadRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
 	_, err := solveSingleDataset(env, asset, &testLog)
@@ -222,7 +223,7 @@ func TestReadWithTransforms(t *testing.T) {
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
-	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
@@ -263,15 +264,15 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/copy-db2-parquet-no-transforms.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}})
+	account := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
 	asset := createReadRequest()
 	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
 	asset.DataDetails.Details.DataFormat = ""
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
-	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
@@ -343,11 +344,11 @@ func TestTransformInDataLocation(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-parquet.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addModule(env, copyModule)
-	account := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account)
 	remoteGeo := "remote"
-	cluster1 := multicluster.Cluster{Name: "c1", Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Region)}}
+	cluster1 := multicluster.Cluster{Name: "c1", Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}}
 	cluster2 := multicluster.Cluster{Name: "c2", Metadata: multicluster.ClusterMetadata{Region: remoteGeo}}
 	addCluster(env, cluster1)
 	addCluster(env, cluster2)
@@ -359,14 +360,14 @@ func TestTransformInDataLocation(t *testing.T) {
 	asset.Configuration.ConfigDecisions["read"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			Clusters: []adminconfig.Restriction{{Property: "metadata.region", Values: adminconfig.StringList{string(account.Spec.Region)}}}},
+			Clusters: []adminconfig.Restriction{{Property: "metadata.region", Values: adminconfig.StringList{string(account.Spec.Geography)}}}},
 	}
 	asset.Configuration.ConfigDecisions[Transform] = adminconfig.Decision{
 		Deploy: adminconfig.StatusUnknown,
 		DeploymentRestrictions: adminconfig.Restrictions{
 			Clusters: []adminconfig.Restriction{{Property: "metadata.region", Values: adminconfig.StringList{remoteGeo}}}},
 	}
-	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 	asset.StorageRequirements[taxonomy.ProcessingLocation(remoteGeo)] = []taxonomy.Action{}
 	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
@@ -376,7 +377,7 @@ func TestTransformInDataLocation(t *testing.T) {
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	// copy
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(account.Spec.Region))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account.Spec.Geography))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal(cluster2.Name))
 	// read
 	g.Expect(solution.DataPath[1].Cluster).To(gomega.Equal(cluster1.Name))
@@ -394,24 +395,24 @@ func TestCopyFlow(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-csv.yaml", readModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, readModule)
 	addModule(env, copyModule)
-	account1 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
 
 	asset := createCopyRequest()
 	_, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
-	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// copy
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(account2.Spec.Region))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(copyModule.Name))
 }
 
@@ -423,18 +424,18 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	copyModule := &fapp.FybrikModule{}
 	g.Expect(readObjectFromFile("../../testdata/unittests/implicit-copy-batch-module-csv.yaml", copyModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, copyModule)
-	account1 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
 
 	asset := createCopyRequest()
-	asset.StorageRequirements[account1.Spec.Region] = []taxonomy.Action{}
-	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account1.Spec.Geography] = []taxonomy.Action{}
+	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
@@ -470,7 +471,7 @@ func TestStorageCostRestrictictions(t *testing.T) {
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(account2.Spec.Region))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
 }
 
 // This test checks the write scenario
@@ -485,28 +486,92 @@ func TestWriteNewAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, writeModule)
 	addModule(env, copyModule)
-	account1 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
 	asset := createWriteNewAssetRequest()
-	asset.StorageRequirements[account1.Spec.Region] = []taxonomy.Action{}
-	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account1.Spec.Geography] = []taxonomy.Action{}
+	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
 	asset.Configuration.ConfigDecisions["write"] = adminconfig.Decision{
 		Deploy: adminconfig.StatusTrue,
 		DeploymentRestrictions: adminconfig.Restrictions{
-			StorageAccounts: []adminconfig.Restriction{{Property: "region", Values: adminconfig.StringList{string(account2.Spec.Region)}}}},
+			StorageAccounts: []adminconfig.Restriction{{Property: "geography", Values: adminconfig.StringList{string(account2.Spec.Geography)}}}},
 	}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(account2.Spec.Region))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeModule.Name))
+}
+
+// This test checks the write scenario for a new asset.
+// Storage account is for MySQL, module supports S3 only.
+// Result: failure to create the data path
+func TestStorageAndModuleMismatch(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	writeModule := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeModule)
+	account := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account)).NotTo(gomega.HaveOccurred())
+	account.Spec.Type = "mysql"
+	addStorageAccount(env, account)
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
+	asset := createWriteNewAssetRequest()
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
+	asset.Configuration.ConfigDecisions["write"] = adminconfig.Decision{
+		Deploy: adminconfig.StatusTrue,
+		DeploymentRestrictions: adminconfig.Restrictions{
+			StorageAccounts: []adminconfig.Restriction{{Property: "geography", Values: adminconfig.StringList{string(account.Spec.Geography)}}}},
+	}
+	_, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).To(gomega.HaveOccurred())
+}
+
+// This test checks the write scenario for a new asset.
+// Storage accounts are for MySQL and S3, modules support MySQL and S3.
+// Policy to select MySQL storage
+// Result: the correct module is chosen.
+func TestStorageTypeRestriction(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	env := newEnvironment()
+	writeS3 := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeS3)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeS3)
+	writeMySQL := &fapp.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-write-mysql.yaml", writeMySQL)).NotTo(gomega.HaveOccurred())
+	addModule(env, writeMySQL)
+	accountS3 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", accountS3)).NotTo(gomega.HaveOccurred())
+	addStorageAccount(env, accountS3)
+	accountMySQL := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", accountMySQL)).NotTo(gomega.HaveOccurred())
+	accountMySQL.Spec.Type = "mysql"
+	addStorageAccount(env, accountMySQL)
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(accountS3.Spec.Geography)}})
+	asset := createWriteNewAssetRequest()
+	asset.StorageRequirements[accountS3.Spec.Geography] = []taxonomy.Action{}
+	asset.StorageRequirements[accountMySQL.Spec.Geography] = []taxonomy.Action{}
+	asset.Configuration.ConfigDecisions["write"] = adminconfig.Decision{
+		Deploy: adminconfig.StatusTrue,
+		DeploymentRestrictions: adminconfig.Restrictions{
+			StorageAccounts: []adminconfig.Restriction{{Property: "type", Values: adminconfig.StringList{string(accountMySQL.Spec.Type)}}}},
+	}
+	solution, err := solveSingleDataset(env, asset, &testLog)
+	g.Expect(err).ToNot(gomega.HaveOccurred())
+	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
+	// write
+	g.Expect(solution.DataPath[0].StorageAccount.Type).To(gomega.Equal(accountMySQL.Spec.Type))
+	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeMySQL.Name))
 }
 
 // This test checks the write scenario
@@ -521,22 +586,22 @@ func TestWriteExistingAsset(t *testing.T) {
 	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-write.yaml", writeModule)).NotTo(gomega.HaveOccurred())
 	addModule(env, writeModule)
 	addModule(env, copyModule)
-	account1 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
+	account1 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-neverland.yaml", account1)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account1)
-	account2 := &fapp.FybrikStorageAccount{}
-	g.Expect(readObjectFromFile("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
+	account2 := &saApi.FybrikStorageAccount{}
+	g.Expect(readStorageAccountData("../../testdata/unittests/account-theshire.yaml", account2)).NotTo(gomega.HaveOccurred())
 	addStorageAccount(env, account2)
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Region)}})
-	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Region)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account2.Spec.Geography)}})
+	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
 	asset := createUpdateRequest()
-	asset.StorageRequirements[account1.Spec.Region] = []taxonomy.Action{}
-	asset.StorageRequirements[account2.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account1.Spec.Geography] = []taxonomy.Action{}
+	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.BeEmpty())
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.BeEmpty())
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeModule.Name))
 }
 
@@ -644,19 +709,18 @@ func TestOptimalStorage(t *testing.T) {
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 50
 	for i := 0; i < 5; i++ {
-		account := &fapp.FybrikStorageAccount{
-			Spec: fapp.FybrikStorageAccountSpec{
+		account := &saApi.FybrikStorageAccount{
+			Spec: saApi.FybrikStorageAccountSpec{
 				ID:        genName("account-", i),
 				SecretRef: genName("credentials-", i),
-				Region:    taxonomy.ProcessingLocation(genName("region", i)),
-				Endpoint:  "dummy-endpoint",
+				Geography: taxonomy.ProcessingLocation(genName("region", i)),
 			}}
 		account.Name = account.Spec.ID
 		addStorageAccount(env, account)
 		if i == 1 {
-			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{{Name: "AgeFilterAction"}}
+			asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{{Name: "AgeFilterAction"}}
 		} else if i >= 2 {
-			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+			asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 		}
 		addAttribute(env, &taxonomy.InfrastructureElement{
 			Name:       "storage-cost",
@@ -670,7 +734,7 @@ func TestOptimalStorage(t *testing.T) {
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
 }
 
 // a read scenario
@@ -705,19 +769,18 @@ func TestOptimalStorageAndClusterCost(t *testing.T) {
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "cost", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 200}})
 	cost := 50
 	for i := 0; i < 5; i++ {
-		account := &fapp.FybrikStorageAccount{
-			Spec: fapp.FybrikStorageAccountSpec{
+		account := &saApi.FybrikStorageAccount{
+			Spec: saApi.FybrikStorageAccountSpec{
 				ID:        genName("account-", i),
 				SecretRef: genName("credentials-", i),
-				Region:    taxonomy.ProcessingLocation(genName("region", i)),
-				Endpoint:  "dummy-endpoint",
+				Geography: taxonomy.ProcessingLocation(genName("region", i)),
 			}}
 		account.Name = account.Spec.ID
 		addStorageAccount(env, account)
 		if i == 1 {
-			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{{Name: "AgeFilterAction"}}
+			asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{{Name: "AgeFilterAction"}}
 		} else if i >= 2 {
-			asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+			asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 		}
 		addAttribute(env, &taxonomy.InfrastructureElement{
 			Name:       "cost",
@@ -745,7 +808,7 @@ func TestOptimalStorageAndClusterCost(t *testing.T) {
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("Cheap"))
 	g.Expect(solution.DataPath[1].Cluster).To(gomega.Equal("Cheap"))
 }
@@ -942,16 +1005,15 @@ func TestMinDistance(t *testing.T) {
 		Weight:    "1.0",
 	}}
 	addMetrics(env, &taxonomy.InfrastructureMetrics{Name: "distance", Type: taxonomy.Numeric, Scale: &taxonomy.RangeType{Max: 20000}})
-	account := &fapp.FybrikStorageAccount{
-		Spec: fapp.FybrikStorageAccountSpec{
+	account := &saApi.FybrikStorageAccount{
+		Spec: saApi.FybrikStorageAccountSpec{
 			ID:        "account-theshire",
 			SecretRef: "credentials-theshire",
-			Region:    taxonomy.ProcessingLocation(workloadCluster),
-			Endpoint:  "dummy-endpoint",
+			Geography: taxonomy.ProcessingLocation(workloadCluster),
 		}}
 	account.Name = account.Spec.ID
 	addStorageAccount(env, account)
-	asset.StorageRequirements[account.Spec.Region] = []taxonomy.Action{}
+	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 	asset.WorkloadCluster = multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: workloadCluster}}
 	asset.DataDetails.ResourceMetadata.Geography = remoteCluster
 	addAttribute(env, &taxonomy.InfrastructureElement{
@@ -978,7 +1040,7 @@ func TestMinDistance(t *testing.T) {
 	solution, err := solveSingleDataset(env, asset, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
-	g.Expect(solution.DataPath[0].StorageAccount.Region).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
+	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
 }
 
 // a read scenario
