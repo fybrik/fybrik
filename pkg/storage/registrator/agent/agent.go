@@ -31,8 +31,8 @@ func GetProperty(props map[string]interface{}, t taxonomy.ConnectionType, key st
 	}
 	switch propertyMap := propertyMap.(type) {
 	case map[string]interface{}:
-		property, found := propertyMap[key]
-		if found && (property != nil) {
+		property := propertyMap[key]
+		if property != nil {
 			return fmt.Sprintf("%v", property), nil
 		}
 	default:

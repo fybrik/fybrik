@@ -47,7 +47,7 @@ type MySQLImpl struct {
 
 // implementation of AgentInterface for MySQL
 func NewMySQLImpl() *MySQLImpl {
-	return &MySQLImpl{Name: mysqlAgent, Log: logging.LogInit(logging.CONNECTOR, "StorageManager")}
+	return &MySQLImpl{Name: mysqlAgent, Log: logging.LogInit(logging.CONNECTOR, "MySQLStorageManager")}
 }
 
 // register the implementation for MySQL
@@ -93,14 +93,14 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 	var host, port string
 	var err error
 	if host, err = agent.GetProperty(request.AccountProperties.Items, impl.Name, hostKey); err != nil {
-		return taxonomy.Connection{}, err
+		return taxonomy.Connection{}, errors.Wrapf(err, "could not allocate MySQL storage because %s is missing", hostKey)
 	}
 	if port, err = agent.GetProperty(request.AccountProperties.Items, impl.Name, portKey); err != nil {
-		return taxonomy.Connection{}, err
+		return taxonomy.Connection{}, errors.Wrapf(err, "could not allocate MySQL storage because %s is missing", portKey)
 	}
 	portVal, err := strconv.Atoi(port)
 	if err != nil {
-		return taxonomy.Connection{}, err
+		return taxonomy.Connection{}, errors.Wrapf(err, "could not allocate MySQL storage because %s is not numeric", portKey)
 	}
 
 	// generate database name
@@ -111,7 +111,7 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 	// connect to the server and create the database if empty
 	db, err := NewClient(host, port, "", request.Secret, client)
 	if err != nil {
-		return taxonomy.Connection{}, err
+		return taxonomy.Connection{}, errors.Wrapf(err, "could not connect to MySQL for storage allocation")
 	}
 	defer db.Close()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
@@ -119,7 +119,7 @@ func (impl *MySQLImpl) AllocateStorage(request *storagemanager.AllocateStorageRe
 	query := "CREATE DATABASE IF NOT EXISTS " + database + endStatement
 	impl.Log.Info().Msgf("Sending query %s\n", query)
 	if _, err = db.ExecContext(ctx, query); err != nil {
-		return taxonomy.Connection{}, err
+		return taxonomy.Connection{}, errors.Wrapf(err, "error while allocating MySQL storage")
 	}
 	connection := taxonomy.Connection{
 		Name: impl.Name,
@@ -142,24 +142,24 @@ func (impl *MySQLImpl) DeleteStorage(request *storagemanager.DeleteStorageReques
 	var host, port, database string
 	var err error
 	if host, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, hostKey); err != nil {
-		return err
+		return errors.Wrapf(err, "delete MySQL storage: %s is missing", hostKey)
 	}
 	if port, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, portKey); err != nil {
-		return err
+		return errors.Wrapf(err, "delete MySQL storage: %s is missing", portKey)
 	}
 	if database, err = agent.GetProperty(request.Connection.AdditionalProperties.Items, impl.Name, dbKey); err != nil {
-		return err
+		return errors.Wrapf(err, "delete MySQL storage: %s is missing", dbKey)
 	}
 	// connect to the server
 	db, err := NewClient(host, port, database, request.Secret, client)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "delete MySQL storage: could not connect to MySQL")
 	}
 	defer db.Close()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), timeout)
 	defer cancelfunc()
 	if _, err = db.ExecContext(ctx, "DROP DATABASE IF EXISTS "+database+endStatement); err != nil {
-		return err
+		return errors.Wrapf(err, "error while deleting MySQL storage")
 	}
 	return nil
 }
