@@ -1783,7 +1783,7 @@ helm<span class="w"> </span>push<span class="w"> </span>&lt;local-chart-path&gt;
 <span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;module</span><span class="nv"> </span><span class="s">name&gt;&quot;</span><span class="w"> </span><span class="c1"># the name of your new module</span>
 <span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;semantic</span><span class="nv"> </span><span class="s">version&gt;&quot;</span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fybrik-system</span><span class="w">  </span><span class="c1"># control plane namespace. Always fybrik-system</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;module namespace&gt;</span><span class="w">  </span><span class="c1"># the namespace should match the adminCRsNamespace entry in values.yaml. The default is &quot;fybrik-system&quot;.</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 </code></pre></div></p>
