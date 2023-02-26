@@ -18,8 +18,7 @@ import (
 
 // localClusterManager for local cluster configuration
 type localClusterManager struct {
-	Client    client.Client
-	Namespace string
+	Client client.Client
 }
 
 // GetClusters returns a list of registered clusters
@@ -92,9 +91,8 @@ func (cm *localClusterManager) DeleteBlueprint(cluster, namespace, name string) 
 }
 
 // NewClusterManager creates an instance of ClusterManager for a local cluster configuration
-func NewClusterManager(cl client.Client, namespace string) (multicluster.ClusterManager, error) {
+func NewClusterManager(cl client.Client) (multicluster.ClusterManager, error) {
 	return &localClusterManager{
-		Client:    cl,
-		Namespace: namespace,
+		Client: cl,
 	}, nil
 }

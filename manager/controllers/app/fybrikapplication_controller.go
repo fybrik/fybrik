@@ -70,7 +70,8 @@ type ApplicationContext struct {
 }
 
 var ApplicationTaxonomy = environment.GetDataDir() + "/taxonomy/fybrik_application.json"
-var DataCatalogTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogGetAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/GetAssetResponse"
+var DataCatalogCreateAssetResponseTaxonomy = environment.GetDataDir() + "/taxonomy/datacatalog.json#/definitions/CreateAssetResponse"
 
 const (
 	FybrikApplicationKind = "FybrikApplication"
@@ -492,7 +493,7 @@ func CreateDataRequest(application *fappv1.FybrikApplication, dataCtx *fappv1.Da
 	}
 }
 
-func (r *FybrikApplicationReconciler) ValidateAssetResponse(response *datacatalog.GetAssetResponse, taxonomyFile, datasetID string) error {
+func (r *FybrikApplicationReconciler) ValidateAssetResponse(response interface{}, taxonomyFile, datasetID string) error {
 	var allErrs []*field.Error
 
 	// Convert GetAssetRequest Go struct to JSON
@@ -554,7 +555,7 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 			return "", err
 		}
 
-		err = r.ValidateAssetResponse(response, DataCatalogTaxonomy, req.Context.DataSetID)
+		err = r.ValidateAssetResponse(response, DataCatalogGetAssetResponseTaxonomy, req.Context.DataSetID)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to validate the catalog connector response")
 			// return the error from the schema validator
@@ -599,8 +600,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 // - the governance actions to be performed on the asset
 // - the potential governance actions to be performed in case of caching to a specific location
 // The latter is relevant only if caching to the chosen location takes place
-// It returns a message delegated by policy manager to be reported for the assets in the ready state
-// as well as the received error
+// The function returns a message delegated by the policy manager (when no error is received),
+// or the error, in which case the first return value is empty.
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
 	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) (string, error) {
 	var err error
@@ -628,8 +629,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
-		// extend the error with a message from the policy manager that may help to understand the reason
-		return "", errors.WithMessage(err, msg)
+		return "", err
 	}
 	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
@@ -784,7 +784,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 	ctx := context.Background()
 	moduleMap := make(map[string]*fappv1.FybrikModule)
 	var moduleList fappv1.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return moduleMap, err
 	}
 	for ind := range moduleList.Items {
@@ -796,7 +796,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 // get all available storage accounts
 func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStorageAccount, error) {
 	var accountList fappv2.FybrikStorageAccountList
-	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return nil, err
 	}
 	accounts := []*fappv2.FybrikStorageAccount{}
@@ -842,7 +842,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
-			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
+			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetAdminCRsNamespace()},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Geography)},
 			Persistent:       info.Persistent,

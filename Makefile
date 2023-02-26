@@ -46,6 +46,7 @@ generate: $(TOOLBIN)/controller-gen $(TOOLBIN)/json-schema-generator
 		-o charts/fybrik/files/taxonomy/taxonomy.json \
 		-b charts/fybrik/files/taxonomy/base_taxonomy.json $(shell find pkg/storage/layers -type f -name '*.yaml')
 	go fix ./...
+	rm -f charts/fybrik/files/taxonomy/external.json
 
 .PHONY: generate-docs
 generate-docs:
@@ -131,6 +132,8 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export ADMIN_CRS_NAMESPACE?=fybrik-admin
+test: export INTERNAL_CRS_NAMESPACE?=fybrik-crd
 test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test
@@ -193,7 +196,9 @@ run-notebook-readflow-bc-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export ADMIN_CRS_NAMESPACE=default
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
+run-notebook-writeflow-tests: export HELM_SETTINGS=--set "adminCRsNamespace=$(ADMIN_CRS_NAMESPACE)"
 run-notebook-writeflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-writeflow-tests

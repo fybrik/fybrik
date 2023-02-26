@@ -36,11 +36,12 @@ func readBlueprint(f string) (*fapp.Blueprint, error) {
 	if err != nil {
 		return nil, err
 	}
+	blueprint.Namespace = environment.GetInternalCRsNamespace()
 	return blueprint, nil
 }
 
 func TestBlueprintReconcile(t *testing.T) {
-	blueprintNamespace := environment.GetSystemNamespace()
+	blueprintNamespace := environment.GetInternalCRsNamespace()
 	fmt.Printf("Blueprint controller unit test: Using blueprint namespace: %s\n", blueprintNamespace)
 
 	t.Parallel()

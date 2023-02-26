@@ -48,8 +48,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test restricted access to secrets", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
-				// test access restriction: only secrets from blueprints namespace can be accessed
-				// Create secrets in default and fybrik-blueprints namespaces
+				// test access restriction: only secrets from internal resource namespace can be accessed
+				// Create secrets in default and internal resource namespaces
 				// A secret from the default namespace should not be listed
 				secret1 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret1.Name = "test-secret"
@@ -58,9 +58,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				modulesNamespace := environment.GetDefaultModulesNamespace()
-				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
-				secret2.Namespace = modulesNamespace
+				secret2.Namespace = environment.GetInternalCRsNamespace()
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
@@ -81,13 +79,35 @@ var _ = Describe("FybrikApplication Controller", func() {
 				Expect(k8sClient.Get(context.Background(), moduleKey, fetchedModule)).To(HaveOccurred(), "Should deny access")
 			}
 		})
+		It("Test GetAssetInfo error propagation", func() {
+			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
+			if connector == "false" {
+				Skip("Skipping test when not running with mockup connector!")
+			}
+			application := &fapp.FybrikApplication{}
+			Expect(readObjectFromFile("../../testdata/e2e/err_application.yaml", application)).ToNot(HaveOccurred())
+			applicationKey := client.ObjectKeyFromObject(application)
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+			By("Expecting error state")
+			Eventually(func() corev1.ConditionStatus {
+				_ = k8sClient.Get(context.Background(), applicationKey, application)
+				if len(application.Status.AssetStates) == 0 {
+					return corev1.ConditionUnknown
+				}
+				if len(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions) == 0 {
+					return corev1.ConditionUnknown
+				}
+				return application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Status
+			}, timeout, interval).Should(Equal(corev1.ConditionTrue))
+			Expect(application.Status.AssetStates[application.Spec.Data[0].DataSetID].Conditions[ErrorConditionIndex].Message).To(
+				ContainSubstring("Invalid dataset ID"), "Should propagate connector message")
+		})
 		// test end to end run
 		// test how policy change affects the data plane construction
 		// the new policy requires copy for prod application which will fail the data plane construction
 		It("Test end-to-end for FybrikApplication", func() {
 			connector := os.Getenv("USE_MOCKUP_CONNECTOR")
-			fmt.Printf("Connector:  %s\n", connector)
-			if len(connector) > 0 && connector != "true" {
+			if connector == "false" {
 				Skip("Skipping test when not running with mockup connector!")
 			}
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {

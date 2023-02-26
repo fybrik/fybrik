@@ -6,7 +6,6 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikModule
 metadata:
   name: module-with-interface-errors
-  namespace: fybrik-system
   labels:
     name: module-with-interface-errors
     version: 0.1.0 

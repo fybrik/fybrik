@@ -25,6 +25,16 @@ modulesNamespace:
 # The namespace must already exist
 applicationNamespace: ""
 
+# The namespace where Fybrik should allocate and monitor its internal CRs (Blueprints and Plotters)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+internalCRsNamespace: ""
+
+# The namespace where Fybrik should watch admin CRs (FybrikModules and FybrikStorageAccounts)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+adminCRsNamespace: ""
+
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 
@@ -196,7 +206,7 @@ manager:
   discoveryQPS: ""
 
   # Name of leader election ID and the name of the resource lease used for the leader election
-  leaderElectionID: "fybrik-operator-leader-election"
+  leaderElectionID: "fybrik-leader-election"
 
   tls:
     # Relavent if the connection between the manager and one of the connectors
