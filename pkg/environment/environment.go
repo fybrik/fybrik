@@ -35,6 +35,8 @@ const (
 	ModuleNamespace                   string = "MODULES_NAMESPACE"
 	ControllerNamespace               string = "CONTROLLER_NAMESPACE"
 	ApplicationNamespace              string = "APPLICATION_NAMESPACE"
+	AdminCRsNamespace                 string = "ADMIN_CRS_NAMESPACE"
+	InternalCRsNamespace              string = "INTERNAL_CRS_NAMESPACE"
 	UseTLS                            string = "USE_TLS"
 	UseMTLS                           string = "USE_MTLS"
 	MinTLSVersion                     string = "MIN_TLS_VERSION"
@@ -93,6 +95,22 @@ func GetControllerNamespace() string {
 
 func GetApplicationNamespace() string {
 	return os.Getenv(ApplicationNamespace)
+}
+
+func GetInternalCRsNamespace() string {
+	internalCRsNamespace := os.Getenv(InternalCRsNamespace)
+	if internalCRsNamespace == "" {
+		internalCRsNamespace = GetControllerNamespace()
+	}
+	return internalCRsNamespace
+}
+
+func GetAdminCRsNamespace() string {
+	adminCRsNamespace := os.Getenv(AdminCRsNamespace)
+	if adminCRsNamespace == "" {
+		adminCRsNamespace = GetControllerNamespace()
+	}
+	return adminCRsNamespace
 }
 
 // IsUsingTLS returns true if the connector communication should use tls.

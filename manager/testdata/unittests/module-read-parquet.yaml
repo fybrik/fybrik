@@ -5,7 +5,6 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikModule
 metadata:
   name: read-parquet
-  namespace: fybrik-system
 spec:
   chart:
     name:  ghcr.io/fybrik/fybrik-template:0.1.0
