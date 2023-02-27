@@ -344,7 +344,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fappv1.Capabilit
 		// to create the instance name.
 		instanceName = managerUtils.CreateStepName(moduleName, assetID)
 	}
-	releaseName := managerUtils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+	releaseName := managerUtils.GetReleaseName(appContext.Name, appContext.Namespace, string(appContext.UID), instanceName)
 	releaseNamespace := environment.GetDefaultModulesNamespace()
 
 	type Release struct {

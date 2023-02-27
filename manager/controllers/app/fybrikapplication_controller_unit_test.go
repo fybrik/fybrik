@@ -198,7 +198,7 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	connectionMap := endpoint.AdditionalProperties.Items
 	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
 	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
-	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
+	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook1-default-arrow-flight-module.notebook"))
 	g.Expect(config["scheme"]).To(gomega.Equal("grpc"))
 }
 
