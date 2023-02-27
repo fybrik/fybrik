@@ -124,7 +124,9 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	// Module installed by setup script directly from remote arrow-flight-module repository
 	// Installing application
 	application := &fapp.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).
+		ToNot(gomega.HaveOccurred())
+	application.ObjectMeta.Name += "-1"
 	application.Spec.Data[0].DataSetID = catalogedAsset
 	applicationKey := client.ObjectKeyFromObject(application)
 
@@ -190,7 +192,9 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	}, timeout, interval).Should(gomega.BeEquivalentTo("{\"status\":\"ok\"}"))
 
 	application = &fapp.FybrikApplication{}
-	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).ToNot(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).
+		ToNot(gomega.HaveOccurred())
+	application.ObjectMeta.Name += "-2"
 	application.Spec.Data[0].DataSetID = catalogedAsset
 	applicationKey = client.ObjectKeyFromObject(application)
 
@@ -199,6 +203,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
 	// Ensure getting cleaned up after tests finish
+	// delete application
 	defer func() {
 		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
@@ -300,4 +305,8 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), piiReadConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
 }

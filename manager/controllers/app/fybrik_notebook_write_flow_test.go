@@ -65,6 +65,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	writeApplication := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
+	writeApplication.ObjectMeta.Name += "-1"
 	writeApplicationKey := client.ObjectKeyFromObject(writeApplication)
 
 	// Create FybrikApplication and FybrikModule
@@ -115,6 +116,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	writeApplication = &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
+	writeApplication.ObjectMeta.Name += "-2"
 	writeApplicationKey = client.ObjectKeyFromObject(writeApplication)
 
 	// Create FybrikApplication and FybrikModule
@@ -169,13 +171,24 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	writeApplication = &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-write.yaml", writeApplication)).
 		ToNot(gomega.HaveOccurred())
+	writeApplication.ObjectMeta.Name += "-3"
 	writeApplicationKey = client.ObjectKeyFromObject(writeApplication)
+
 	// Ensure getting cleaned up after tests finish
+	// Delete fybrik application
 	defer func() {
 		application := &fappv1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
 			Name: writeApplicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), writeApplicationKey, application)
 		_ = k8sClient.Delete(context.Background(), application)
+	}()
+
+	// delete configmap
+	defer func() {
+		cm := &v1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: writePolicyConfigMapKey.Namespace,
+			Name: writePolicyConfigMapKey.Name}}
+		_ = k8sClient.Get(context.Background(), writePolicyConfigMapKey, cm)
+		_ = k8sClient.Delete(context.Background(), cm)
 	}()
 
 	// Create FybrikApplication and FybrikModule
