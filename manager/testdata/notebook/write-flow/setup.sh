@@ -7,7 +7,9 @@ kubectl create namespace fybrik-notebook-sample
 kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 FYBRIK_NAMESPACE=fybrik-system
-ADMIN_CRS_NAMESPACE?=fybrik-system
+if [[ -z "${ADMIN_CRS_NAMESPACE}" ]]; then
+  ADMIN_CRS_NAMESPACE=fybrik-system
+fi
 
 # Create the storage-accounts
 kubectl -n ${FYBRIK_NAMESPACE} apply -f bucket-creds.yaml -n ${ADMIN_CRS_NAMESPACE}

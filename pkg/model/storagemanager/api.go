@@ -27,7 +27,7 @@ type DeleteStorageRequest struct {
 	// Connection object representing storage to free
 	Connection taxonomy.Connection `json:"connection"`
 	// Reference to the secret with credentials
-	Secret taxonomy.SecretRef `json:"secret"`
+	Secret taxonomy.SecretRef `json:"secret,omitempty"`
 	// Configuration options
 	Opts Options `json:"options"`
 }
