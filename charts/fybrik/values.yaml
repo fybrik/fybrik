@@ -661,6 +661,83 @@ openmetadataConnector:
 
   affinity: {}
 
+# Egeria connector component
+egeriaConnector:
+  # Set to true to deploy the egeria connector or false to skip its deployment.
+  # Defaults to true if `coordinator.catalog` is set to "egeria"
+  enabled: auto
+
+  # Image name or a hub/image[:tag]
+  image: "ghcr.io/fybrik/egeria-connector:0.0.0"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: "Always"
+
+  # Used if autoscaling is not enabled
+  replicaCount: 1
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: egeria-connector
+
+  podAnnotations: {}
+
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
+  podSecurityContext: {}
+
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+
+  readinessProbe: {}
+  livenessProbe: {}
+
+  service:
+    type: ClusterIP
+    # For tls connection use port 8443
+    port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  dirSizeLimit: 200Mi
+
+  egeria_endpoint: "http://egeria.egeria:1234/api"
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
 # V2 OPA connector component
 opaConnector:
   # Set to true to deploy the opa connector or false to skip its deployment.
