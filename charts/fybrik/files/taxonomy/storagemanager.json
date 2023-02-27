@@ -85,7 +85,6 @@
       "type": "object",
       "required": [
         "connection",
-        "secret",
         "options"
       ],
       "properties": {

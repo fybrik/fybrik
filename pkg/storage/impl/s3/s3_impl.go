@@ -39,7 +39,7 @@ type S3Impl struct {
 }
 
 func NewS3Impl() *S3Impl {
-	return &S3Impl{Name: "s3", Log: logging.LogInit(logging.CONNECTOR, "StorageManager")}
+	return &S3Impl{Name: "s3", Log: logging.LogInit(logging.CONNECTOR, "S3StorageManager")}
 }
 
 // register the implementation for s3
