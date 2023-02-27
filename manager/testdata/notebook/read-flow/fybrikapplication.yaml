@@ -4,7 +4,7 @@
 apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
-  name: my-notebook-1
+  name: my-notebook
   namespace: fybrik-notebook-sample
   labels:
     app: my-notebook

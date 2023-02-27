@@ -156,11 +156,11 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	writePolicyConfigMapKey := client.ObjectKeyFromObject(writePolicyConfigMap)
 	g.Expect(k8sClient.Create(context.Background(), writePolicyConfigMap)).Should(gomega.Succeed())
 
-	fmt.Println("Expecting config-map to be created")
+	fmt.Println("Expecting configmap to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), writePolicyConfigMapKey, writePolicyConfigMap)
 	}, timeout, interval).Should(gomega.Succeed())
-	fmt.Println("Expecting config-map to be constructed")
+	fmt.Println("Expecting policies to be compiled")
 	g.Eventually(func() string {
 		_ = k8sClient.Get(context.Background(), writePolicyConfigMapKey, writePolicyConfigMap)
 		return writePolicyConfigMap.Annotations["openpolicyagent.org/policy-status"]
