@@ -18,20 +18,21 @@ else
   port=8080
   local_port=8081
   prefix=http
-  kubectl get secret test-tls-localhost-certs -n fybrik-system -o json | jq -r '.data."tls.key"' | base64 -d > tls.key
-  kubectl get secret test-tls-localhost-certs -n fybrik-system -o json | jq -r '.data."tls.crt"' | base64 -d > tls.crt
 
   if [[ "${DEPLOY_TLS_TEST_CERTS}" -eq 1 ]]; then
     port=8443
     prefix=https
     local_port=8443
+    kubectl get secret test-tls-localhost-certs -n fybrik-system -o json | jq -r '.data."tls.key"' | base64 -d > tls.key
+    kubectl get secret test-tls-localhost-certs -n fybrik-system -o json | jq -r '.data."tls.crt"' | base64 -d > tls.crt
+    certs=" --cert tls.crt --key tls.key "
   fi
   # Deploy openmetadata asset
   kubectl port-forward svc/openmetadata-connector -n fybrik-system $local_port:$port &
   # Wait until curl command succeed
   c=0
   # -k flag is used to skip server verification to avoid errors regarding target host name 'localhost'
-  while [[ $(curl --cert tls.crt --key tls.key -k -X POST $prefix://localhost:$local_port/createAsset -d @om-asset.json) != *'assetID'* ]]
+  while [[ $(curl $certs -k -X POST $prefix://localhost:$local_port/createAsset -d @om-asset.json) != *'assetID'* ]]
   do
     echo "waiting for curl command to createAsset to succeed"
     ((c++)) && ((c==25)) && break
