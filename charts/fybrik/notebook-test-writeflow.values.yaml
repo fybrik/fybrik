@@ -19,6 +19,10 @@ manager:
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
 
+opaServer:
+   # Controls if the default policy is to allow by default or deny by default.
+  allowByDefault: false
+
 # S3 mock service installed in fybrik namespace
 s3mock:
   enabled: true

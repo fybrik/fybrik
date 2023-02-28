@@ -6,7 +6,7 @@ data:
     rule[{}] {
         description := "allow read datasets"
         input.action.actionType == "read"
-      }
+    }
 
     rule[{"action": {"name":"RedactAction","columns": column_names}, "policy": description}] {
         description := "Redact written columns tagged as sensitive in datasets tagged with finance = true. The data should not be stored in `neverland` storage account"
