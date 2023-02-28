@@ -198,7 +198,10 @@ func TestFybrikApplicationControllerCSVCopyAndRead(t *testing.T) {
 	connectionMap := endpoint.AdditionalProperties.Items
 	g.Expect(connectionMap).To(gomega.HaveKey("fybrik-arrow-flight"))
 	config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
-	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook-default-arrow-flight-module.notebook"))
+	// hostname is defined in the yaml as follows:
+	// read-path.{{ .Release.Name}}.{{ get .Values.labels "app" | default .Release.Namespace }}
+	// expect the release name to be formed as <app-name><uuid>-<module>
+	g.Expect(config["hostname"]).To(gomega.Equal("read-path.notebook1-arrow-flight-module.notebook"))
 	g.Expect(config["scheme"]).To(gomega.Equal("grpc"))
 }
 

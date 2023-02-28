@@ -184,13 +184,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(application.Status.AssetStates["s3-incomplete/allow-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			Expect(application.Status.AssetStates["s3-external/new-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			By("Status should contain the details of the endpoint")
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
 			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
 			Expect(connection).ToNot(BeNil())
 			connectionMap := connection.AdditionalProperties.Items
 			Expect(connectionMap).To(HaveKey("fybrik-arrow-flight"))
 			config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
-			Expect(config["hostname"]).To(Equal(fqdn))
+			Expect(config["hostname"]).NotTo(BeEmpty())
 			Expect(config["scheme"]).To(Equal("grpc"))
 
 			By("Changing a policy for PROD application")

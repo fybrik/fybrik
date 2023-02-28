@@ -21,14 +21,9 @@ func IsDenied(actionName taxonomy.ActionName) bool {
 	return actionName == "Deny" // TODO FIX THIS
 }
 
-// Generating release name based on blueprint module
-func GetReleaseName(applicationName, namespace, instanceName string) string {
-	return GetReleaseNameByStepName(applicationName, namespace, instanceName)
-}
-
-// Generate release name from blueprint module name
-func GetReleaseNameByStepName(applicationName, namespace, moduleInstanceName string) string {
-	fullName := applicationName + "-" + namespace + "-" + moduleInstanceName
+// Generating a release name based on the blueprint module and application name/uuid
+func GetReleaseName(applicationName, uuid, instanceName string) string {
+	fullName := applicationName + uuid + "-" + instanceName
 	return utils.HelmConformName(fullName)
 }
 

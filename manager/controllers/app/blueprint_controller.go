@@ -326,7 +326,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		}
 
 		releaseName := managerUtils.GetReleaseName(managerUtils.GetApplicationNameFromLabels(blueprint.Labels),
-			managerUtils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
+			uuid,
+			instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 
