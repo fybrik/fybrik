@@ -9,8 +9,8 @@ data:
       input.resource.metadata.tags.finance
       input.action.destination == "theshire"
       input.resource.metadata.columns[i].tags.sensitive
-
     }
+    
     rule[{"action": {"name":"Deny"}, "policy": description}] {
     description := "Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`"
       input.action.actionType == "write"

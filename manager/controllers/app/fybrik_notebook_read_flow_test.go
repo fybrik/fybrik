@@ -36,6 +36,12 @@ import (
 	"fybrik.io/fybrik/pkg/test"
 )
 
+const (
+	readFlow      string = "charts/fybrik/notebook-test-readflow.values.yaml"
+	readFlowTLS   string = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
+	readFlowTLSCA string = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+)
+
 type ArrowRequest struct {
 	Asset   string   `json:"asset,omitempty"`
 	Columns []string `json:"columns,omitempty"`
@@ -43,9 +49,7 @@ type ArrowRequest struct {
 
 func TestS3NotebookReadFlow(t *testing.T) {
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
-	if !ok || (valuesYaml != "charts/fybrik/notebook-test-readflow.values.yaml" &&
-		valuesYaml != "charts/fybrik/notebook-test-readflow.tls.values.yaml" &&
-		valuesYaml != "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml") {
+	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
 		t.Skip("Only executed for notebook tests")
 	}
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
@@ -124,7 +128,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	var modulesNamespace string
 
 	// Check allow-by-default in case the values is notebook-test-readflow.values.yaml
-	if valuesYaml == "charts/fybrik/notebook-test-readflow.values.yaml" {
+	if valuesYaml == readFlow {
 		// Starting allow-by-default
 		fmt.Println("Starting allow-by-default read")
 
@@ -137,7 +141,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		application.Spec.Data[0].DataSetID = catalogedAsset
 		applicationKey = client.ObjectKeyFromObject(application)
 
-		// Create FybrikApplication and FybrikModule
+		// Create FybrikApplication
 		fmt.Println("Expecting application creation to succeed")
 		g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
@@ -171,8 +175,10 @@ func TestS3NotebookReadFlow(t *testing.T) {
 
 		modulesNamespace = plotter.Spec.ModulesNamespace
 		fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
-		g.Expect(application.Status.AssetStates[catalogedAsset].Conditions[ReadyConditionIndex].Status).To(gomega.Equal(v1.ConditionTrue))
-		g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).ToNot(gomega.BeEmpty())
+		g.Expect(application.Status.AssetStates[catalogedAsset].
+			Conditions[ReadyConditionIndex].Status).To(gomega.Equal(v1.ConditionTrue))
+		g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).
+			ToNot(gomega.BeEmpty())
 
 		// cleanup of first application
 		g.Eventually(func() error {
@@ -214,7 +220,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	application.Spec.Data[0].DataSetID = catalogedAsset
 	applicationKey = client.ObjectKeyFromObject(application)
 
-	// Create FybrikApplication and FybrikModule
+	// Create FybrikApplication
 	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 

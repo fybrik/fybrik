@@ -35,8 +35,12 @@ import (
 	"fybrik.io/fybrik/pkg/test"
 )
 
+const (
+	writeFlow string = "charts/fybrik/notebook-test-writeflow.values.yaml"
+)
+
 func TestS3NotebookWriteFlow(t *testing.T) {
-	if s, ok := os.LookupEnv("VALUES_FILE"); !ok || s != "charts/fybrik/notebook-test-writeflow.values.yaml" {
+	if valuesYaml, ok := os.LookupEnv("VALUES_FILE"); !ok || valuesYaml != writeFlow {
 		t.Skip("Only executed for notebook tests")
 	}
 	gomega.RegisterFailHandler(Fail)
