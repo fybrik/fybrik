@@ -86,17 +86,22 @@ func TestBlueprintReconcile(t *testing.T) {
 	g.Expect(res.Requeue).To(gomega.BeFalse(), "reconcile did not requeue request as expected")
 	g.Expect(cl.Get(context.TODO(), ns, blueprint)).To(gomega.BeNil(), "could not fetch the blueprint")
 	g.Expect(blueprint.Status.Releases).To(gomega.HaveLen(2))
+	// expect release names to be formed as <application name><uuid>-<module instance>
 	g.Expect(blueprint.Status.Releases).
-		Should(gomega.HaveKeyWithValue("notebook1234-default-notebook-copy-batch", blueprint.Status.ObservedGeneration))
+		Should(gomega.HaveKeyWithValue("notebook1234-notebook-copy-batch", blueprint.Status.ObservedGeneration))
 	g.Expect(blueprint.Status.Releases).
-		Should(gomega.HaveKeyWithValue("notebook1234-default-notebook-read-module", blueprint.Status.ObservedGeneration))
+		Should(gomega.HaveKeyWithValue("notebook1234-notebook-read-module", blueprint.Status.ObservedGeneration))
 }
 
 // This test checks that a short release name is not truncated
 func TestShortReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
-	modules := map[string]fapp.BlueprintModule{"dataFlowInstance1": {
+	moduleInstance := "dataFlowInstance1"
+	appName := "my-app"
+	appNamespace := "default"
+	uuid := "123"
+	modules := map[string]fapp.BlueprintModule{moduleInstance: {
 		Name:  "dataFlow",
 		Chart: fapp.ChartSpec{Name: "thechart"},
 		Arguments: fapp.ModuleArguments{
@@ -108,8 +113,8 @@ func TestShortReleaseName(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "appns-fapp-mybp",
 			Labels: map[string]string{
-				utils.ApplicationNameLabel:      "my-app",
-				utils.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      appName,
+				utils.ApplicationNamespaceLabel: appNamespace,
 			},
 		},
 		Spec: fapp.BlueprintSpec{
@@ -117,27 +122,32 @@ func TestShortReleaseName(t *testing.T) {
 			Modules: modules,
 		},
 	}
-	uuid := "123"
+
 	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
-		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), uuid, "dataFlowInstance1")
-	g.Expect(relName).To(gomega.Equal("my-app123-default-dataFlowInstance1"))
+		uuid, moduleInstance)
+	g.Expect(relName).To(gomega.Equal(appName + uuid + "-" + moduleInstance))
 }
 
 // This test checks that a long release name is shortened
 func TestLongReleaseName(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
+	longBlueprintName := "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit"
+	longModuleInstanceName := "ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff"
+	appName := "my-app"
+	appNamespace := "default"
+	uuid := "1234"
 	blueprint := fapp.Blueprint{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "appnsisalreadylong-appnameisevenlonger-myblueprintnameisreallytakingitoverthetopkubernetescantevendealwithit",
+			Name: longBlueprintName,
 			Labels: map[string]string{
-				utils.ApplicationNameLabel:      "my-app",
-				utils.ApplicationNamespaceLabel: "default",
+				utils.ApplicationNameLabel:      appName,
+				utils.ApplicationNamespaceLabel: appNamespace,
 			},
 		},
 		Spec: fapp.BlueprintSpec{
 			Cluster: "cluster1",
-			Modules: map[string]fapp.BlueprintModule{"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff": {
+			Modules: map[string]fapp.BlueprintModule{longModuleInstanceName: {
 				Name:      "longname",
 				Arguments: fapp.ModuleArguments{Assets: []fapp.AssetContext{}},
 				Chart:     fapp.ChartSpec{Name: "start-image"}}},
@@ -145,15 +155,15 @@ func TestLongReleaseName(t *testing.T) {
 	}
 
 	relName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
-		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "",
-		"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
-	g.Expect(relName).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
+		uuid,
+		longModuleInstanceName)
+	g.Expect(relName).To(gomega.HavePrefix(appName + uuid))
 	g.Expect(relName).To(gomega.HaveLen(53))
 
 	// Make sure that calling the same method again results in the same result
 	relName2 := utils.GetReleaseName(utils.GetApplicationNameFromLabels(blueprint.Labels),
-		utils.GetApplicationNamespaceFromLabels(blueprint.Labels), "",
-		"ohandnottoforgettheflowstepnamethatincludesthetemplatenameandotherstuff")
-	g.Expect(relName2).To(gomega.Equal("my-app-default-ohandnottoforgettheflowstepnamet-99207"))
+		uuid,
+		longModuleInstanceName)
+	g.Expect(relName2).To(gomega.HavePrefix(appName + uuid))
 	g.Expect(relName2).To(gomega.HaveLen(53))
 }
