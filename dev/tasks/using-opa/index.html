@@ -1519,12 +1519,9 @@
   }
 </code></pre></div>
 <h2 id="fybrik-default-policies">Fybrik Default Policies</h2>
-<p>Fybrik <strong><em>denys by default</em></strong> any request if no rule is triggered. This behavior can be changed to <strong><em>allow by default</em></strong> by creating the following rule and upload it to OPA using methods described in this page:</p>
-<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">package dataapi.authz</span>
-
-<span class="l l-Scalar l-Scalar-Plain">rule [{}] { true }</span>
+<p>Fybrik <strong><em>allows by default</em></strong> any request if no rule is triggered. This behavior can be changed to <strong><em>deny by default</em></strong> by altering the value of <code>opaServer.allowByDefault</code> to be <code>false</code> during Fybrik's installation:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>opaServer.allowByDefault<span class="o">=</span><span class="nb">false</span><span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>&lt;Catalog&gt;<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
 </code></pre></div>
-<p>The verdict <code>allow</code> will be reached only if the conditions hold, and no other rule has been triggered, e.g. a rule requiring column redaction.</p>
 <h2 id="input-to-policies">Input to policies</h2>
 <p>The input object includes the application properties and the requested action as well as dataset details (id, metadata).</p>
 <ul>
