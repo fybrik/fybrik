@@ -207,7 +207,7 @@ Fybrik can be deployed with different policy managers, for example, it can be Op
 or some other policy manager. However, usually any deployment contains some default setting which can be allowed by default, 
 or denied by default, or some other default policy settings. How it was set, depends on the used policy manager. 
 When fybrik deployed with OPA, the 
-[default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/default_policy.rego) 
+[default OPA policy rules](https://github.com/fybrik/fybrik/blob/master/charts/fybrik/files/opa-server/policy-lib/internals/lib.rego) 
 are deployed as well and define Fybrik behavior if no other rules are provided by users.
 
 ### Default IT Config Policies 

@@ -455,6 +455,10 @@ opaServer:
   # Bootstrap policies to load upon startup
   bootstrapPolicies: {}
 
+  # Controls if the default policy is to allow by default or deny by default.
+  # Set allowByDefault: false to deny by default.
+  allowByDefault: true 
+
 # Katalog connector component
 katalogConnector:
   # Set to true to deploy the katalog connector or false to skip its deployment.
