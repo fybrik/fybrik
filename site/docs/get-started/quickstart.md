@@ -4,10 +4,10 @@
 {% set fybrikVersionFlag = fybrik_version_flag(FybrikRelease) %}
 {% set CertMangerVersion = CertMangerVersion %}
 
-{% set devCommentStart = fybrik_version_comment_start(FybrikRelease, "false") %}
-{% set devCommentEnd = fybrik_version_comment_end(FybrikRelease, "false" ) %}
-{% set prodCommentStart = fybrik_version_comment_start(FybrikRelease, "true") %}
-{% set prodCommentEnd = fybrik_version_comment_end(FybrikRelease, "true" ) %}
+{% set devCommentStart = fybrik_version_comment_start(FybrikRelease, "true") %}
+{% set devCommentEnd = fybrik_version_comment_end(FybrikRelease, "true" ) %}
+{% set prodCommentStart = fybrik_version_comment_start(FybrikRelease, "false") %}
+{% set prodCommentEnd = fybrik_version_comment_end(FybrikRelease, "false" ) %}
 -->
 # Quick Start Guide
 
@@ -180,7 +180,7 @@ The control plane includes a `manager` service that connects to a data catalog a
     If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` 
     value in the helm installation command.
 
-    The published Helm charts are only available for released versions. To install the `dev` version install the charts from the source code.
+    The published Helm charts are only available for released versions. To install the `dev` version, please install the charts from the source code.
     ```bash
     git clone https://github.com/fybrik/fybrik.git
     cd fybrik
@@ -191,7 +191,7 @@ The control plane includes a `manager` service that connects to a data catalog a
     Install the Fybrik release with [Katalog](https://fybrik.io/dev/reference/katalog/) as the data catalog and with
     [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
 
-    The published Helm charts are only available for released versions. To install the `dev` version install the charts from the source code.
+    The published Helm charts are only available for released versions. To install the `dev` version, please install the charts from the source code.
     ```bash
     git clone https://github.com/fybrik/fybrik.git
     cd fybrik

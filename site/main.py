@@ -23,7 +23,7 @@ def define_env(env):
 
   @env.macro
   def fybrik_version_comment_start(version, inverse):
-    if version == "__Release__" :
+    if re.match('^v[0-9]+\.[0-9]+(\.[0-9]+)*', version):
         if inverse != "true" :
             return "<!-- "
         return ""
@@ -33,7 +33,7 @@ def define_env(env):
 
   @env.macro
   def fybrik_version_comment_end(version, inverse):
-    if version == "__Release__":
+    if re.match('^v[0-9]+\.[0-9]+(\.[0-9]+)*', version):
         if inverse != "true" :
             return " -->"
         return ""
