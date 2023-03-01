@@ -49,11 +49,11 @@ func main() {
 
 		dataCatalog := mockup.NewTestCatalog()
 		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
-		if err.Error() == dc.AssetIDNotFound {
-			c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
-			return
-		}
 		if err != nil {
+			if err.Error() == dc.AssetIDNotFound {
+				c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+				return
+			}
 			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}

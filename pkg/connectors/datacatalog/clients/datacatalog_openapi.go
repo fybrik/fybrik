@@ -58,17 +58,17 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 // getDetailedError generates an error from the response body JSON and the error status code,
 // e.g., "404: asset does not exist"
 func getDetailedError(httpResponse *http.Response, defaultErr error) error {
-	var message string
+	var err error
 	if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
-		message = string(bodyBytes)
+		err = errors.Errorf("%s", bodyBytes)
 	} else if httpResponse.StatusCode == http.StatusForbidden {
-		message = AccessForbidden
+		err = errors.New(AccessForbidden)
 	} else if httpResponse.StatusCode == http.StatusNotFound {
-		message = AssetIDNotFound
+		err = errors.New(AssetIDNotFound)
 	} else {
-		message = defaultErr.Error()
+		err = defaultErr
 	}
-	return errors.Errorf("%d: %s", httpResponse.StatusCode, message)
+	return errors.Wrapf(err, "%d", httpResponse.StatusCode)
 }
 
 //nolint:dupl
