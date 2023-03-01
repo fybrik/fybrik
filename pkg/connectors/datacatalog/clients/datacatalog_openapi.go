@@ -19,9 +19,8 @@ import (
 
 // ErrorMessages that are reported to the user
 const (
-	AssetIDNotFound       string = "the asset does not exist"
-	AccessForbidden       string = "no permissions to access the data"
-	DataStoreNotSupported string = "the asset data store is not supported"
+	AssetIDNotFound string = "the asset does not exist"
+	AccessForbidden string = "no permissions to access the data"
 )
 
 var _ DataCatalog = (*openAPIDataCatalog)(nil)
@@ -56,15 +55,23 @@ func NewOpenAPIDataCatalog(name, connectionURL string) DataCatalog {
 	}
 }
 
-// getDetailedError generates an error from the response body JSON if available,
-// otherwise it extends the base error (e.g., 400 Bad Request) with the given message string
-func getDetailedError(httpResponse *http.Response, baseError error, defaultMsg string) error {
+// getDetailedError generates an error from the response body JSON and the error status code,
+// e.g., "404: asset does not exist"
+func getDetailedError(httpResponse *http.Response, defaultErr error) error {
+	var message string
 	if bodyBytes, errRead := io.ReadAll(httpResponse.Body); errRead == nil && len(bodyBytes) > 0 {
-		return errors.New(string(bodyBytes))
+		message = string(bodyBytes)
+	} else if httpResponse.StatusCode == http.StatusForbidden {
+		message = AccessForbidden
+	} else if httpResponse.StatusCode == http.StatusNotFound {
+		message = AssetIDNotFound
+	} else {
+		message = defaultErr.Error()
 	}
-	return errors.Wrap(baseError, defaultMsg)
+	return errors.Errorf("%d: %s", httpResponse.StatusCode, message)
 }
 
+//nolint:dupl
 func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds string) (*datacatalog.GetAssetResponse, error) {
 	printErr := func() string { return fmt.Sprintf("get asset info from %s failed", m.name) }
 	resp, httpResponse, err :=
@@ -77,19 +84,13 @@ func (m *openAPIDataCatalog) GetAssetInfo(in *datacatalog.GetAssetRequest, creds
 		return nil, errors.New(printErr())
 	}
 	defer httpResponse.Body.Close()
-	// special errors equivalent to Deny response
-	if httpResponse.StatusCode == http.StatusForbidden {
-		return nil, errors.New(AccessForbidden)
-	}
-	if httpResponse.StatusCode == http.StatusNotFound {
-		return nil, errors.New(AssetIDNotFound)
-	}
 	if err != nil {
-		return nil, getDetailedError(httpResponse, err, printErr())
+		return nil, getDetailedError(httpResponse, errors.Wrap(err, printErr()))
 	}
 	return &resp, nil
 }
 
+//nolint:dupl
 func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
 	printErr := func() string { return fmt.Sprintf("create asset info from %s failed", m.name) }
 	resp, httpResponse, err := m.client.DefaultApi.CreateAsset(context.Background()).
@@ -103,7 +104,7 @@ func (m *openAPIDataCatalog) CreateAsset(in *datacatalog.CreateAssetRequest, cre
 	defer httpResponse.Body.Close()
 
 	if err != nil {
-		return nil, getDetailedError(httpResponse, err, printErr())
+		return nil, getDetailedError(httpResponse, errors.Wrap(err, printErr()))
 	}
 	return &resp, nil
 }
@@ -120,16 +121,12 @@ func (m *openAPIDataCatalog) DeleteAsset(in *datacatalog.DeleteAssetRequest, cre
 		return nil, errors.New(printErr())
 	}
 	defer httpResponse.Body.Close()
-	if httpResponse.StatusCode == http.StatusNotFound {
-		return nil, errors.New(AssetIDNotFound)
-	}
 	if err != nil {
-		return nil, getDetailedError(httpResponse, err, printErr())
+		return nil, getDetailedError(httpResponse, errors.Wrap(err, printErr()))
 	}
 	return &resp, nil
 }
 
-//nolint:dupl
 func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, creds string) (*datacatalog.UpdateAssetResponse, error) {
 	resp, httpResponse, err := m.client.DefaultApi.UpdateAsset(
 		context.Background()).XRequestDatacatalogUpdateCred(creds).UpdateAssetRequest(*in).Execute()
@@ -141,11 +138,8 @@ func (m *openAPIDataCatalog) UpdateAsset(in *datacatalog.UpdateAssetRequest, cre
 		return nil, errors.New(printErr())
 	}
 	defer httpResponse.Body.Close()
-	if httpResponse.StatusCode == http.StatusNotFound {
-		return nil, errors.New(AssetIDNotFound)
-	}
 	if err != nil {
-		return nil, getDetailedError(httpResponse, err, printErr())
+		return nil, getDetailedError(httpResponse, errors.Wrap(err, printErr()))
 	}
 	return &resp, nil
 }

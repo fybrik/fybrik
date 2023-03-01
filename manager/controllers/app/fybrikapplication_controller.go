@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -764,11 +765,20 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	switch errors.Cause(err).Error() {
-	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
-		setDenyCondition(appContext, assetID, err.Error())
+	const format string = "%d"
+	denyCodes := []string{fmt.Sprintf(format, http.StatusNotFound), fmt.Sprintf(format, http.StatusForbidden)}
+	cause := errors.Cause(err).Error()
+	for _, code := range denyCodes {
+		if strings.HasPrefix(err.Error(), code) {
+			setDenyCondition(appContext, assetID, cause)
+			return
+		}
+	}
+	switch cause {
+	case dcclient.AssetIDNotFound, dcclient.AccessForbidden, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed:
+		setDenyCondition(appContext, assetID, cause)
 	default:
-		setErrorCondition(appContext, assetID, err.Error())
+		setErrorCondition(appContext, assetID, cause)
 	}
 }
 
