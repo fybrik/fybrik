@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 
+	dc "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/serde"
@@ -34,15 +35,14 @@ func (d *DataCatalogDummy) GetAssetInfo(in *datacatalog.GetAssetRequest, creds s
 
 	dataDetails, found := d.dataDetails[catalogID]
 	if found {
-		log.Printf("GetAssetInfo in DataCatalogDummy returns:")
 		responseBytes, errJSON := json.MarshalIndent(&dataDetails, "", "\t")
 		if errJSON != nil {
 			return nil, fmt.Errorf("error in GetAssetInfo in DataCatalogDummy: %v", errJSON)
 		}
-		log.Print(string(responseBytes))
+		log.Printf("GetAssetInfo in DataCatalogDummy returns: " + string(responseBytes))
 		return &dataDetails, nil
 	}
-	return nil, errors.New("the asset does not exist")
+	return nil, errors.New(dc.AssetIDNotFound)
 }
 
 func (d *DataCatalogDummy) CreateAsset(in *datacatalog.CreateAssetRequest, creds string) (*datacatalog.CreateAssetResponse, error) {
