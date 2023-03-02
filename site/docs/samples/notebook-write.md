@@ -199,7 +199,7 @@ We expect the asset's status in `FybrikApplication.status` to be `denied` due to
 
 ### Cleanup scenario one
 
-Before prceeding to scenario two the OPA policy and fybrikapplications should be deleted:
+Before proceeding to scenario two the OPA policy and fybrikapplications should be deleted:
 
 ```bash
 kubectl delete cm sample-policy-write -n fybrik-system
@@ -254,7 +254,8 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in [Scenario 3](#scenario-3-read-the-newly-written-data), where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.
 
 === "With OpenMetadata"
-    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+    This asset id will be used in the third scenario when we try to read the new asset.
 
     ```bash
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
@@ -263,7 +264,8 @@ Although the dataset has not yet been written to the object storage, a data asse
     ```
 
 === "With Katalog"
-    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+    This asset id will be used in the third scenario when we try to read the new asset.
 
     ```bash
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')

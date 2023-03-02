@@ -308,7 +308,7 @@ Notice that:
 * The `protocol` indicates that the developer wants to consume the data using Apache Arrow Flight. For some protocols a `dataformat` can be specified as well (e.g., `s3` protocol and `parquet` format).
 
 
-Run the following command to wait until the `FybrikApplication` is ready:
+Run the following command to wait until the `FybrikApplication` is ready and set the `CATALOGED_ASSET_MODIFIED` environment variable:
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
