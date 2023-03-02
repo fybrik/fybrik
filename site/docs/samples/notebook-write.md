@@ -116,13 +116,20 @@ Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/late
 ```rego
 package dataapi.authz
 
-rule[{"policy": description}] {
-  description := "Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`"
-  input.action.actionType == "write"
-  input.resource.metadata.tags["Purpose.finance"]
-  input.action.destination != "theshire"
-  input.action.destination != "neverland"
-  input.resource.metadata.columns[i].tags["PersonalData.Personal"]
+rule[{"action": {"name":"Deny"}, "policy": description}] {
+  description := "Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`"
+    input.action.actionType == "write"
+    input.resource.metadata.tags["Purpose.finance"]
+    input.action.destination == "theshire"
+    input.resource.metadata.columns[i].tags["PersonalData.Personal"]
+}
+
+rule[{"action": {"name":"Deny"}, "policy": description}] {
+  description := "Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`"
+    input.action.actionType == "write"
+    input.resource.metadata.tags["Purpose.finance"]
+    input.action.destination == "neverland"
+    input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 ```
 
@@ -471,8 +478,8 @@ The output should look something like:
 {
     "Contents": [
         {
-            "Key": "my-notebook-write5b9b855b5b/",
-            "LastModified": "2022-10-27T12:40:01+00:00",
+            "Key": "new-data22fb16f0c0/",
+            "LastModified": "2023-03-02T10:02:26+00:00",
             "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
             "Size": 0,
             "StorageClass": "STANDARD",
@@ -482,8 +489,8 @@ The output should look something like:
             }
         },
         {
-            "Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0",
-            "LastModified": "2022-10-27T12:40:01+00:00",
+            "Key": "new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet",
+            "LastModified": "2023-03-02T10:02:26+00:00",
             "ETag": "\"a91aefdb4bf09a1a94254a9c8b6ba473-1\"",
             "Size": 8396,
             "StorageClass": "STANDARD",
