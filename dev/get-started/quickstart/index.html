@@ -1621,34 +1621,6 @@ Follow the instructions that appear on screen to change the OpenMetadata locatio
 <p>Running <code>make</code> installs OpenMetadata in the <code>open-metadata</code> namespace. To install OpenMetadata in another namespace, or to change the credentials of the different services used by OpenMetadata, edit the variables in the <code>Makefile.env</code> file.</p>
 <h2 id="install-control-plane">Install control plane</h2>
 <p>The control plane includes a <code>manager</code> service that connects to a data catalog and to a policy manager.</p>
-<!--  
-=== "With OpenMetadata"
-    Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with
-    [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
-
-    > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for 
-    OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
-    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` 
-    value in the helm installation command.
-
-    The published Helm charts are only available for released versions. To install the `dev` version install the charts from the source code.
-    <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
-<span class="nb">cd</span><span class="w"> </span>fybrik
-helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
-</code></pre></div>
-=== "With Katalog"
-    Install the Fybrik release with [Katalog](https://fybrik.io/dev/reference/katalog/) as the data catalog and with
-    [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
-
-    The published Helm charts are only available for released versions. To install the `dev` version install the charts from the source code.
-    <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
-<span class="nb">cd</span><span class="w"> </span>fybrik
-helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
-</code></pre></div>
- -->
-
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">With OpenMetadata</label><label for="__tabbed_4_2">With Katalog</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1660,43 +1632,64 @@ OpenMetadata. The default value for that endpoint is <code>http://openmetadata.o
 If you are using a different OpenMetadata deployment, replace the <code>openmetadataConnector.openmetadata_endpoint</code> 
 value in the helm installation command.</p>
 </blockquote>
-<details class="tip">
-<summary>Install the latest development version from GitHub</summary>
-<div class="highlight"><pre><span></span><code>To apply the latest development version of fybrik:
-
-```bash
-git clone https://github.com/fybrik/fybrik.git
-cd fybrik
-helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=openmetadata --set openmetadataConnector.openmetadata_endpoint=http://openmetadata.open-metadata:8585/api -n fybrik-system --wait
-```
-</code></pre></div>
-</details>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
-</code></pre></div>
+<p>The published Helm charts are only available for released versions. To install the <code>dev</code> version, please install the charts from the source code.
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+</code></pre></div></p>
 </div>
 <div class="tabbed-block">
 <p>Install the Fybrik release with <a href="https://fybrik.io/dev/reference/katalog/">Katalog</a> as the data catalog and with
 <a href="https://www.openpolicyagent.org">Open Policy Agent</a> as the policy manager.</p>
-<details class="tip">
-<summary>Install latest development version from GitHub</summary>
-<div class="highlight"><pre><span></span><code>To apply the latest development version of fybrik:
+<p>The published Helm charts are only available for released versions. To install the <code>dev</code> version, please install the charts from the source code.
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+</code></pre></div></p>
+</div>
+</div>
+</div>
+<!--  
+=== "With OpenMetadata"
+    Install the Fybrik release with [OpenMetadata](https://open-metadata.org/) as the data catalog and with
+    [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
 
-```bash
-git clone https://github.com/fybrik/fybrik.git
-cd fybrik
-helm install fybrik-crd charts/fybrik-crd -n fybrik-system --wait
-helm install fybrik charts/fybrik --set global.tag=master --set coordinator.catalog=katalog -n fybrik-system --wait
-```
+    > **NOTE**: When installing fybrik with OpenMetadata as its data catalog, you need to specify the API endpoint for 
+    OpenMetadata. The default value for that endpoint is `http://openmetadata.open-metadata:8585/api`.
+    If you are using a different OpenMetadata deployment, replace the `openmetadataConnector.openmetadata_endpoint` 
+    value in the helm installation command.
+
+    ??? tip "Install the latest development version from GitHub"
+            To apply the latest development version of fybrik:
+
+            <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
 </code></pre></div>
-</details>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
+    <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
+</code></pre></div>
+=== "With Katalog"
+    Install the Fybrik release with [Katalog](https://fybrik.io/dev/reference/katalog/) as the data catalog and with
+    [Open Policy Agent](https://www.openpolicyagent.org) as the policy manager.
+
+    ??? tip "Install latest development version from GitHub" 
+            To apply the latest development version of fybrik:
+
+            <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/fybrik.git
+<span class="nb">cd</span><span class="w"> </span>fybrik
+helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>charts/fybrik<span class="w"> </span>--set<span class="w"> </span>global.tag<span class="o">=</span>master<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--wait
+</code></pre></div>
+
+    <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
 helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span>master<span class="w"> </span>--wait
 </code></pre></div>
-</div>
-</div>
-</div>
+ -->
+
 <h2 id="install-modules">Install modules</h2>
 <details class="tip">
 <summary>Install the latest development version from GitHub</summary>

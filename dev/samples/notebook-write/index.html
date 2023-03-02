@@ -1840,7 +1840,7 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span clas
 </code></pre></div>
 <p>We expect the asset's status in <code>FybrikApplication.status</code> to be <code>denied</code> due to the policy defined above. Next, a new policy will be applied which will allow the writing to <code>theshire</code> object store.</p>
 <h3 id="cleanup-scenario-one">Cleanup scenario one</h3>
-<p>Before prceeding to scenario two the OPA policy and fybrikapplications should be deleted:</p>
+<p>Before proceeding to scenario two the OPA policy and fybrikapplications should be deleted:</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>delete<span class="w"> </span>cm<span class="w"> </span>sample-policy-write<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 kubectl<span class="w"> </span>delete<span class="w"> </span>fybrikapplications.app.fybrik.io<span class="w"> </span>my-notebook-write<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample
 </code></pre></div>
@@ -1877,14 +1877,16 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span clas
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
+<p>Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+This asset id will be used in the third scenario when we try to read the new asset.</p>
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
 <span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
 <span class="nv">BUCKET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.provisionedStorage.new-data.details.connection.s3.bucket}&#39;</span><span class="k">)</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<p>Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.</p>
+<p>Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+This asset id will be used in the third scenario when we try to read the new asset.</p>
 <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.catalogedAsset}&#39;</span><span class="k">)</span>
 <span class="nv">CATALOGED_ASSET</span><span class="o">=</span>fybrik-notebook-sample/<span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
 <span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
