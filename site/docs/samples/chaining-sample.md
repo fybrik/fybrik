@@ -50,17 +50,11 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
           "destinationCatalogID": "openmetadata",
           "destinationAssetID": "userdata",
           "details": {
-            "dataFormat": "csv",
+            "dataFormat": "parquet",
             "connection": {
-              "name": "file",
-              "file": {
-                "connector": "airbyte/source-file",
-                "dataset_name": "userdata",
-                "format": "parquet",
-                "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet",
-                "provider": {
-                  "storage": "HTTPS"
-                }
+              "name": "https",
+              "https": {
+                "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
               }
             }
           },
@@ -97,12 +91,12 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
 
         The response from the OpenMetadata connector should look like this:
         ```bash
-        {"assetID":"openmetadata-file.default.openmetadata.userdata"}
+        {"assetID":"openmetadata-https.default.openmetadata.userdata"}
         ```
 
         The asset is now registered in the catalog. Store the asset ID in a `CATALOGED_ASSET` variable:
         ```bash
-        CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
+        CATALOGED_ASSET="openmetadata-https.default.openmetadata.userdata"
         ```
 
     === "With Katalog"
@@ -158,8 +152,8 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
    You should see pods with names similar to:
    ```bash
    NAME                                                              READY   STATUS    RESTARTS   AGE
-   my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq   2/2     Running   0          43s
-   my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   1/1     Running   0          43s
+   my-app60cf6ba8-a767-4313-aa39-b78495b625c7-airb-95c0f-airbz4rh8   2/2     Running   0          88s
+   my-app60cf6ba8-a767-4313-aa39-b78495b625c7-arro-6f3f8-arro82dcb   1/1     Running   0          87s
    ```
 
 1. Wait for the FybrikModule pods to be ready by running:
@@ -167,11 +161,17 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
    kubectl wait pod --all --for=condition=ready -n fybrik-blueprints --timeout 10m
    ```
 
+1. Run the following commands to set the `CATALOGED_ASSET_MODIFIED` and the `ENDPOINT_HOSTNAME` environment variables:
+   ```bash
+   CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+   export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app -n fybrik-airbyte-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname}")
+   ```
+
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset ${CATALOGED_ASSET}
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET}
    ```
    You should see the following output:
    ```bash
