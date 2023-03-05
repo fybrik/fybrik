@@ -149,6 +149,14 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+   ---
+   > _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
+   ```bash
+   oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
+   ```
+   > Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
+   ---
+
    You should see pods with names similar to:
    ```bash
    NAME                                                              READY   STATUS    RESTARTS   AGE
