@@ -21,7 +21,7 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
 
 1. Install the Airbyte module:
     ```bash
-    kubectl apply -f $AIRBYTE_MODULE_DIR/module.yaml -n fybrik-system
+    kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/v0.3.0/module.yaml -n fybrik-system
     ```
 
 1. Install the arrow-flight module for transformations:
