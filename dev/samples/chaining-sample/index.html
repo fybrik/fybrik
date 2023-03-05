@@ -1356,13 +1356,13 @@
     <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/tmp
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybrik/airbyte-module.git
 <span class="nb">cd</span><span class="w"> </span>airbyte-module
-git<span class="w"> </span>checkout<span class="w"> </span>v0.2.0
+git<span class="w"> </span>checkout<span class="w"> </span>v0.3.0
 <span class="nb">export</span><span class="w"> </span><span class="nv">AIRBYTE_MODULE_DIR</span><span class="o">=</span><span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>
 </code></pre></div></p>
 </li>
 <li>
 <p>Install the Airbyte module:
-    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
+    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/fybrik/airbyte-module/releases/download/v0.3.0/module.yaml<span class="w"> </span>-n<span class="w"> </span>fybrik-system
 </code></pre></div></p>
 </li>
 <li>
@@ -1388,17 +1388,11 @@ cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost
 <span class="s">  &quot;destinationCatalogID&quot;: &quot;openmetadata&quot;,</span>
 <span class="s">  &quot;destinationAssetID&quot;: &quot;userdata&quot;,</span>
 <span class="s">  &quot;details&quot;: {</span>
-<span class="s">    &quot;dataFormat&quot;: &quot;csv&quot;,</span>
+<span class="s">    &quot;dataFormat&quot;: &quot;parquet&quot;,</span>
 <span class="s">    &quot;connection&quot;: {</span>
-<span class="s">      &quot;name&quot;: &quot;file&quot;,</span>
-<span class="s">      &quot;file&quot;: {</span>
-<span class="s">        &quot;connector&quot;: &quot;airbyte/source-file&quot;,</span>
-<span class="s">        &quot;dataset_name&quot;: &quot;userdata&quot;,</span>
-<span class="s">        &quot;format&quot;: &quot;parquet&quot;,</span>
-<span class="s">        &quot;url&quot;: &quot;https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet&quot;,</span>
-<span class="s">        &quot;provider&quot;: {</span>
-<span class="s">          &quot;storage&quot;: &quot;HTTPS&quot;</span>
-<span class="s">        }</span>
+<span class="s">      &quot;name&quot;: &quot;https&quot;,</span>
+<span class="s">      &quot;https&quot;: {</span>
+<span class="s">        &quot;url&quot;: &quot;https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet&quot;</span>
 <span class="s">      }</span>
 <span class="s">    }</span>
 <span class="s">  },</span>
@@ -1433,10 +1427,10 @@ cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost
 <span class="s">EOF</span>
 </code></pre></div></p>
 <p>The response from the OpenMetadata connector should look like this:
-<div class="highlight"><pre><span></span><code><span class="o">{</span><span class="s2">&quot;assetID&quot;</span>:<span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span><span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span class="o">{</span><span class="s2">&quot;assetID&quot;</span>:<span class="s2">&quot;openmetadata-https.default.openmetadata.userdata&quot;</span><span class="o">}</span>
 </code></pre></div></p>
 <p>The asset is now registered in the catalog. Store the asset ID in a <code>CATALOGED_ASSET</code> variable:
-<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-file.default.openmetadata.userdata&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span><span class="s2">&quot;openmetadata-https.default.openmetadata.userdata&quot;</span>
 </code></pre></div></p>
 </div>
 <div class="tabbed-block">
@@ -1488,23 +1482,39 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span clas
 <li>
 <p>After the FybrikApplication is applied, the Fybrik control plane attempts to create the data path for the application. Fybrik realizes that the Airbyte module can give the application access to the <code>userdata</code> dataset, and that the arrow-flight module could provide the redaction transformation. Fybrik deploys both modules in the <code>fybrik-blueprints</code> namespace. To verify that the Airbyte module and the arrow-flight module were indeed deployed, run:
    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints
-</code></pre></div>
-   You should see pods with names similar to:
-   <div class="highlight"><pre><span></span><code>NAME<span class="w">                                                              </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
-my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq<span class="w">   </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>43s
-my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>43s
 </code></pre></div></p>
 </li>
+</ol>
+<hr />
+<blockquote>
+<p><em>NOTE:</em> If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow <code>privileged: true</code> value in <code>securityContext</code> field by default. Thus, you should add the service account of the module's deployment to the <code>privileged SCC</code> using the following command:
+   <div class="highlight"><pre><span></span><code>oc<span class="w"> </span>adm<span class="w"> </span>policy<span class="w"> </span>add-scc-to-user<span class="w"> </span>privileged<span class="w"> </span>system:serviceaccount:fybrik-blueprints:&lt;SERVICE_ACCOUNT_NAME&gt;
+</code></pre></div>
+Then, the deployment will restart the failed pods and the pods in <code>fybrik-blueprints</code> namespace should start successfully.</p>
+</blockquote>
+<hr />
+<p>You should see pods with names similar to:
+   <div class="highlight"><pre><span></span><code>NAME<span class="w">                                                              </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+my-app60cf6ba8-a767-4313-aa39-b78495b625c7-airb-95c0f-airbz4rh8<span class="w">   </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>88s
+my-app60cf6ba8-a767-4313-aa39-b78495b625c7-arro-6f3f8-arro82dcb<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>87s
+</code></pre></div></p>
+<ol>
 <li>
 <p>Wait for the FybrikModule pods to be ready by running:
    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>pod<span class="w"> </span>--all<span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>-n<span class="w"> </span>fybrik-blueprints<span class="w"> </span>--timeout<span class="w"> </span>10m
 </code></pre></div></p>
 </li>
 <li>
+<p>Run the following commands to set the <code>CATALOGED_ASSET_MODIFIED</code> and the <code>ENDPOINT_HOSTNAME</code> environment variables:
+   <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-n<span class="w"> </span>fybrik-airbyte-sample<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;jsonpath={.status.assetStates.</span><span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span><span class="s2">.endpoint.fybrik-arrow-flight.hostname}&quot;</span><span class="k">)</span>
+</code></pre></div></p>
+</li>
+<li>
 <p>To verify that the Airbyte module gives access to the <code>userdata</code> dataset, run:
    <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/helm/client
 ./deploy_airbyte_module_client_pod.sh
-kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>my-shell<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--<span class="w"> </span>python3<span class="w"> </span>/root/client.py<span class="w"> </span>--host<span class="w"> </span>my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints<span class="w"> </span>--port<span class="w"> </span><span class="m">80</span><span class="w"> </span>--asset<span class="w"> </span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
+kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>my-shell<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--<span class="w"> </span>python3<span class="w"> </span>/root/client.py<span class="w"> </span>--host<span class="w"> </span><span class="si">${</span><span class="nv">ENDPOINT_HOSTNAME</span><span class="si">}</span><span class="w"> </span>--port<span class="w"> </span><span class="m">80</span><span class="w"> </span>--asset<span class="w"> </span><span class="si">${</span><span class="nv">CATALOGED_ASSET</span><span class="si">}</span>
 </code></pre></div>
    You should see the following output:
    <div class="highlight"><pre><span></span><code><span class="w">       </span>registration_dttm<span class="w">      </span>id<span class="w"> </span>first_name<span class="w"> </span>last_name<span class="w">  </span>email<span class="w">  </span>...<span class="w">     </span>country<span class="w"> </span>birthdate<span class="w">     </span>salary<span class="w">                     </span>title<span class="w"> </span>comments

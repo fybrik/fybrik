@@ -1770,13 +1770,20 @@ Then, register two storage accounts: one in <code>theshire</code> and one in <co
 <p>Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
-rule[{&quot;policy&quot;: description}] {
-  description := &quot;Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`&quot;
-  input.action.actionType == &quot;write&quot;
-  input.resource.metadata.tags[&quot;Purpose.finance&quot;]
-  input.action.destination != &quot;theshire&quot;
-  input.action.destination != &quot;neverland&quot;
-  input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
+rule[{&quot;action&quot;: {&quot;name&quot;:&quot;Deny&quot;}, &quot;policy&quot;: description}] {
+  description := &quot;Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`&quot;
+    input.action.actionType == &quot;write&quot;
+    input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+    input.action.destination == &quot;theshire&quot;
+    input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
+}
+
+rule[{&quot;action&quot;: {&quot;name&quot;:&quot;Deny&quot;}, &quot;policy&quot;: description}] {
+  description := &quot;Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`&quot;
+    input.action.actionType == &quot;write&quot;
+    input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+    input.action.destination == &quot;neverland&quot;
+    input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
 }
 </code></pre></div>
 <p>For more details on OPA policies please refer to <a href="https://fybrik.io/dev/tasks/using-opa/">Using OPA for Data Governance</a> task.</p>
@@ -2046,8 +2053,8 @@ df_read:<span class="w"> </span>pd.DataFrame<span class="w"> </span><span class=
 <div class="highlight"><pre><span></span><code><span class="o">{</span>
 <span class="w">    </span><span class="s2">&quot;Contents&quot;</span>:<span class="w"> </span><span class="o">[</span>
 <span class="w">        </span><span class="o">{</span>
-<span class="w">            </span><span class="s2">&quot;Key&quot;</span>:<span class="w"> </span><span class="s2">&quot;my-notebook-write5b9b855b5b/&quot;</span>,
-<span class="w">            </span><span class="s2">&quot;LastModified&quot;</span>:<span class="w"> </span><span class="s2">&quot;2022-10-27T12:40:01+00:00&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;Key&quot;</span>:<span class="w"> </span><span class="s2">&quot;new-data22fb16f0c0/&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;LastModified&quot;</span>:<span class="w"> </span><span class="s2">&quot;2023-03-02T10:02:26+00:00&quot;</span>,
 <span class="w">            </span><span class="s2">&quot;ETag&quot;</span>:<span class="w"> </span><span class="s2">&quot;\&quot;d41d8cd98f00b204e9800998ecf8427e\&quot;&quot;</span>,
 <span class="w">            </span><span class="s2">&quot;Size&quot;</span>:<span class="w"> </span><span class="m">0</span>,
 <span class="w">            </span><span class="s2">&quot;StorageClass&quot;</span>:<span class="w"> </span><span class="s2">&quot;STANDARD&quot;</span>,
@@ -2057,8 +2064,8 @@ df_read:<span class="w"> </span>pd.DataFrame<span class="w"> </span><span class=
 <span class="w">            </span><span class="o">}</span>
 <span class="w">        </span><span class="o">}</span>,
 <span class="w">        </span><span class="o">{</span>
-<span class="w">            </span><span class="s2">&quot;Key&quot;</span>:<span class="w"> </span><span class="s2">&quot;my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0&quot;</span>,
-<span class="w">            </span><span class="s2">&quot;LastModified&quot;</span>:<span class="w"> </span><span class="s2">&quot;2022-10-27T12:40:01+00:00&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;Key&quot;</span>:<span class="w"> </span><span class="s2">&quot;new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet&quot;</span>,
+<span class="w">            </span><span class="s2">&quot;LastModified&quot;</span>:<span class="w"> </span><span class="s2">&quot;2023-03-02T10:02:26+00:00&quot;</span>,
 <span class="w">            </span><span class="s2">&quot;ETag&quot;</span>:<span class="w"> </span><span class="s2">&quot;\&quot;a91aefdb4bf09a1a94254a9c8b6ba473-1\&quot;&quot;</span>,
 <span class="w">            </span><span class="s2">&quot;Size&quot;</span>:<span class="w"> </span><span class="m">8396</span>,
 <span class="w">            </span><span class="s2">&quot;StorageClass&quot;</span>:<span class="w"> </span><span class="s2">&quot;STANDARD&quot;</span>,
@@ -2071,7 +2078,7 @@ df_read:<span class="w"> </span>pd.DataFrame<span class="w"> </span><span class=
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Given the object keys returned by the previous command, run:
-<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>--endpoint-url<span class="o">=</span>http://localhost:4566<span class="w"> </span>s3api<span class="w"> </span>--bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="w"> </span>delete-objects<span class="w"> </span>--delete<span class="o">=</span><span class="s1">&#39;{&quot;Objects&quot;: [{&quot;Key&quot;: &quot;my-notebook-write5b9b855b5b/&quot;}, {&quot;Key&quot;: &quot;my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0&quot;}]}&#39;</span>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>--endpoint-url<span class="o">=</span>http://localhost:4566<span class="w"> </span>s3api<span class="w"> </span>--bucket<span class="o">=</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="w"> </span>delete-objects<span class="w"> </span>--delete<span class="o">=</span><span class="s1">&#39;{&quot;Objects&quot;: [{&quot;Key&quot;: &quot;new-data22fb16f0c0/&quot;}, {&quot;Key&quot;: &quot;new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet&quot;}]}&#39;</span>
 </code></pre></div></p>
 <p>Be sure to replace the keys in the previous command with those returned by the AWS <code>list-objects</code> command above.</p>
 <p>Finally, remove the bucket by running:
