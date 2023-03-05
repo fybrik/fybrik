@@ -15,7 +15,7 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
     cd /tmp
     git clone https://github.com/fybrik/airbyte-module.git
     cd airbyte-module
-    git checkout v0.2.0
+    git checkout v0.3.0
     export AIRBYTE_MODULE_DIR=${PWD}
     ```
 
