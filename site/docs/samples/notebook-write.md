@@ -505,7 +505,7 @@ The output should look something like:
 
 Given the object keys returned by the previous command, run:
 ```bash
-aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "my-notebook-write5b9b855b5b/"}, {"Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0"}]}'
+aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "new-data22fb16f0c0/"}, {"Key": "new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet"}]}'
 ```
 
 Be sure to replace the keys in the previous command with those returned by the AWS `list-objects` command above.
