@@ -1493,14 +1493,34 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
   <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
 </code></pre></div></li>
-<li>Install localstack to the currently active namespace and wait for it to be ready:
-  <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>localstack-charts<span class="w"> </span>https://localstack.github.io/helm-charts
-helm<span class="w"> </span>install<span class="w"> </span>localstack<span class="w"> </span>localstack-charts/localstack<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span><span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span>service.type<span class="o">=</span>ClusterIP<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span>livenessProbe.initialDelaySeconds<span class="o">=</span><span class="m">25</span>
-kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample<span class="w"> </span>--timeout<span class="o">=</span>120s
-</code></pre></div></li>
+<li>Install localstack to the currently active namespace and wait for it to be ready:</li>
+</ol>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack \
+     --set startServices=&quot;s3&quot; \
+     --set service.type=ClusterIP \
+     --set livenessProbe.initialDelaySeconds=25
+kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack \
+     --set startServices=&quot;s3&quot; \
+     --set service.type=ClusterIP \
+     --set livenessProbe.initialDelaySeconds=25 \
+     --set persistence.enabled=true \
+     --set persistence.storageClass=ibmc-file-gold-gid \
+     --set persistence.accessModes[0]=ReadWriteMany
+kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+</code></pre></div>
+</div>
+</div>
+</div>
+<ol>
 <li>Create a port-forward to communicate with localstack server:
   <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/localstack<span class="w"> </span><span class="m">4566</span>:4566<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div></li>
@@ -1519,11 +1539,11 @@ aws<span class="w"> </span>--endpoint-url<span class="o">=</span><span class="si
 </details>
 <h2 id="register-the-dataset-in-a-data-catalog">Register the dataset in a data catalog</h2>
 <p>In this step you are performing the role of the data owner, registering his data in the data catalog and registering the credentials for accessing the data in the credential manager.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">With OpenMetadata</label><label for="__tabbed_2_2">With Katalog</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Datasets can be registered either directly, through the OpenMetadata UI, or indirectly, through the data-catalog connector:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Register an asset through the OpenMetadata UI</label><label for="__tabbed_2_2">Registering Dataset via Connector</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Register an asset through the OpenMetadata UI</label><label for="__tabbed_3_2">Registering Dataset via Connector</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>To register an asset directly through the OpenMetadata UI, follow the instructions <a href="../../tasks/omd-discover-s3-asset/">here</a>. These instructions also explain how to determine the asset ID.</p>
