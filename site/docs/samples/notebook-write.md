@@ -30,14 +30,23 @@ Make a note of the service endpoint and access credentials. You will need them l
       export SECRET_KEY="mysecretkey"
       ```
     2. Install localstack to the currently active namespace and wait for it to be ready:
-      ```bash
-      helm repo add localstack-charts https://localstack.github.io/helm-charts
-      helm install localstack localstack-charts/localstack \
-           --set startServices="s3" \
-           --set service.type=ClusterIP \
-           --set livenessProbe.initialDelaySeconds=25
-      kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
-      ```
+    === "Kubernetes"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+    === "OpenShift"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25 \
+                 --set persistence.enabled=true \
+                 --set persistence.storageClass=ibmc-file-gold-gid \
+                 --set persistence.accessModes[0]=ReadWriteMany
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
       create a port-forward to communicate with localstack server:
       ```bash
       kubectl port-forward svc/localstack 4566:4566 &
