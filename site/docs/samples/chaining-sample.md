@@ -1,7 +1,9 @@
-{% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
+<!--
+{% set arrowFlightRelease = get_module_version(FybrikRelease,arrowFlight) %}
 {% set currentRelease = fybrik_version(FybrikRelease) %}
 {% set currentImageTag = fybrik_image_version(FybrikRelease) %}
-
+{% set airByteRelease = get_module_version(FybrikRelease,airByte) %}
+-->
 # FybrikModule chaining sample
 
 This sample shows how to implement a use case where, based on the data source and governance policies, the Fybrik manager determines that it must deploy two FybrikModules to allow a workload access to a dataset. One FybrikModule handles reading the data and the second does the data transformation. Data is passed between the FybrikModules without writing to intermediate storage.
@@ -15,13 +17,19 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
     cd /tmp
     git clone https://github.com/fybrik/airbyte-module.git
     cd airbyte-module
-    git checkout v0.3.0
+    {% if airByteRelease != 'latest' %}
+    git checkout {{ airByteRelease }}
+    {% endif %}
     export AIRBYTE_MODULE_DIR=${PWD}
     ```
 
 1. Install the Airbyte module:
     ```bash
-    kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/v0.3.0/module.yaml -n fybrik-system
+    {% if airByteRelease != 'latest' %}
+       kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/{{ airByteRelease }}/module.yaml -n fybrik-system
+    {% else %}
+       kubectl apply -f https://github.com/fybrik/airbyte-module/releases/{{ airByteRelease }}/download/module.yaml -n fybrik-system
+    {% endif %}
     ```
 
 1. Install the arrow-flight module for transformations:
