@@ -42,10 +42,10 @@ def define_env(env):
     return ""
 
   @env.macro
-  def arrow_flight_module_version(version, arrow_flight_version):
-    if version in arrow_flight_version:
-        return arrow_flight_version[version]
+  def get_module_version(version, module_version):
+    if version in module_version:
+        return module_version[version]
     major_version = version[:4]
-    if major_version in arrow_flight_version:
-        return arrow_flight_version[major_version]
+    if major_version in module_version:
+        return module_version[major_version]
     return  "latest"

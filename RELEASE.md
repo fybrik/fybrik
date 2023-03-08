@@ -2,13 +2,14 @@
 
 The process of creating a release is described in this document. Replace `X.Y.Z` with the version to be released.
 
-## 1. Optionally update the ArrowFlight releases file
+## 1. Optionally update the ArrowFlight and AirByte releases files
 
 The file `./site/arrowFlightReleases` contains a map between fybrik and the arrow-flight-module releases.
-The quick start uses this file to map to a relevant arrow-flight release.
+The file `./site/airByteReleases` contains a map between fybrik and the airbyte releases.
+The quick start and samples use these files to map to a relevant arrow-flight/airbyte releases.
 * If there is a perfect march for the fybrik release is defined, its value will be used.
 * Otherwise, the major and minor fybrik release will be checked.
-* If there is no matches, the `latest` arrow-flight release will be used.
+* If there is no matches, the `latest` arrow-flight/airbyte release will be used.
 
 For example, if the file content is:
 
@@ -17,8 +18,8 @@ v0.5: v0.5.0
 v0.5.3: v0.5.3
 v0.6: v0.6.0
 ```
-The v0.5.3 fybrik release will use the v0.5.3 release of arrow-flight.
-The v0.6.1 fybrik release will be mapped to the v0.6.0 of arrow-flight.
+The v0.5.3 fybrik release will use the v0.5.3 release of arrow-flight/airbyte.
+The v0.6.1 fybrik release will be mapped to the v0.6.0 of arrow-flight/airbyte.
 
 ## 2. Create a `releases/X.Y.Z` branch
 

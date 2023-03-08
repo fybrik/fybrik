@@ -1,5 +1,5 @@
 <!--
-{% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
+{% set arrowFlightRelease = get_module_version(FybrikRelease,arrowFlight) %}
 {% set currentRelease = fybrik_version(FybrikRelease) %}
 {% set fybrikVersionFlag = fybrik_version_flag(FybrikRelease) %}
 {% set CertMangerVersion = CertMangerVersion %}
