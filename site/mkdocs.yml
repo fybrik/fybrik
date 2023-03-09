@@ -113,3 +113,4 @@ plugins:
       include_yaml:
         - ./external.yaml
         - arrowFlight: "./arrowFlightReleases.yaml"
+        - airByte: "./airByteReleases.yaml"
