@@ -156,7 +156,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	writePolicyConfigMap := &v1.ConfigMap{}
 	g.Expect(
-		readObjectFromFile("../../testdata/notebook/write-flow/write-read-policy-cm.yaml", writePolicyConfigMap)).ToNot(gomega.HaveOccurred())
+		readObjectFromFile("../../testdata/notebook/write-flow/write-policy-cm.yaml", writePolicyConfigMap)).ToNot(gomega.HaveOccurred())
 	writePolicyConfigMapKey := client.ObjectKeyFromObject(writePolicyConfigMap)
 	g.Expect(k8sClient.Create(context.Background(), writePolicyConfigMap)).Should(gomega.Succeed())
 

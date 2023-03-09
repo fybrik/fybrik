@@ -5,6 +5,7 @@ apiVersion:   app.fybrik.io/v1beta2
 kind:         FybrikStorageAccount
 metadata:
   name: theshire-storage-account
+  namespace: fybrik-system
 spec:
   id: theshire-object-store
   geography: theshire
