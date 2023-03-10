@@ -227,6 +227,11 @@ jobs:
       run: make install-tools
     - name: Write flow notebook tests
       run: make run-notebook-writeflow-tests
+    - name: debug
+      if:  success() || failure()
+      run: |
+        kubectl describe fybrikapplication -A
+        kubectl get pods -n fybrik-blueprints
     - name: Update env vars to use existsing cluster
       run: |
         # The step that creates or updates the environment variable does
@@ -241,6 +246,11 @@ jobs:
         killall kubectl || true
     - name: Read flow notebook tests
       run: make run-notebook-readflow-tests
+    - name: debug
+      if:  success() || failure()
+      run: |
+        kubectl describe fybrikapplication -A
+        kubectl get pods -n fybrik-blueprints
     - name: Clean cluster
       run: |
         make undeploy-fybrik
@@ -255,6 +265,11 @@ jobs:
         killall kubectl || true
     - name: Read flow notebook tests with tls using system CA certs
       run: make run-notebook-readflow-tls-system-cacerts-tests
+    - name: debug
+      if:  success() || failure()
+      run: |
+        kubectl describe fybrikapplication -A
+        kubectl get pods -n fybrik-blueprints
     - name: Clean cluster
       if: ${{ ! github.event.pull_request.draft }}
       run: |
@@ -264,6 +279,11 @@ jobs:
     - name: Read flow notebook tests with katalog
       if: ${{ ! github.event.pull_request.draft }}
       run: make run-notebook-readflow-tests-katalog
+    - name: debug
+      if:  success() || failure()
+      run: |
+        kubectl describe fybrikapplication -A
+        kubectl get pods -n fybrik-blueprints
 
 
   tekton-pipelines:
