@@ -1699,24 +1699,42 @@ Make a note of the service endpoint and access credentials. You will need them l
   <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;myaccesskey&quot;</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;mysecretkey&quot;</span>
 </code></pre></div></li>
-<li>Install localstack to the currently active namespace and wait for it to be ready:
-  <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>localstack-charts<span class="w"> </span>https://localstack.github.io/helm-charts
-helm<span class="w"> </span>install<span class="w"> </span>localstack<span class="w"> </span>localstack-charts/localstack<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span><span class="nv">startServices</span><span class="o">=</span><span class="s2">&quot;s3&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span>service.type<span class="o">=</span>ClusterIP<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>--set<span class="w"> </span>livenessProbe.initialDelaySeconds<span class="o">=</span><span class="m">25</span>
-kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample<span class="w"> </span>--timeout<span class="o">=</span>120s
+<li>Install localstack to the currently active namespace and wait for it to be ready:</li>
+</ol>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Kubernetes</label><label for="__tabbed_1_2">OpenShift</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack \
+     --set startServices=&quot;s3&quot; \
+     --set service.type=ClusterIP \
+     --set livenessProbe.initialDelaySeconds=25
+kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
 </code></pre></div>
-  create a port-forward to communicate with localstack server:
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
+helm install localstack localstack-charts/localstack \
+     --set startServices=&quot;s3&quot; \
+     --set service.type=ClusterIP \
+     --set livenessProbe.initialDelaySeconds=25 \
+     --set persistence.enabled=true \
+     --set persistence.storageClass=ibmc-file-gold-gid \
+     --set persistence.accessModes[0]=ReadWriteMany
+kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>create a port-forward to communicate with localstack server:
   <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/localstack<span class="w"> </span><span class="m">4566</span>:4566<span class="w"> </span><span class="p">&amp;</span>
-</code></pre></div></li>
-<li>Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to configure localstack server:
+</code></pre></div>
+3. Use <a href="https://aws.amazon.com/cli/">AWS CLI</a> to configure localstack server:
   <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">REGION</span><span class="o">=</span>theshire
 aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set</span><span class="w"> </span>aws_access_key_id<span class="w"> </span><span class="si">${</span><span class="nv">ACCESS_KEY</span><span class="si">}</span>
 aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set</span><span class="w"> </span>aws_secret_access_key<span class="w"> </span><span class="si">${</span><span class="nv">SECRET_KEY</span><span class="si">}</span>
 aws<span class="w"> </span>configure<span class="w"> </span><span class="nb">set</span><span class="w"> </span>region<span class="w"> </span><span class="si">${</span><span class="nv">REGION</span><span class="si">}</span>
-</code></pre></div></li>
-</ol>
+</code></pre></div></p>
 </details>
 <h2 id="deploy-resources-for-write-scenarios">Deploy resources for write scenarios</h2>
 <p>Register the credentials required for accessing the object storage. Replace the values for <code>access_key</code> and <code>secret_key</code> with the values from the object storage service that you used and run:</p>
@@ -1881,7 +1899,7 @@ kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span clas
 <span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-notebook-write<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.status.assetStates.new-data.conditions[?(@.type == &quot;Ready&quot;)].status}&#39;</span><span class="k">)</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s2">&quot;True&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;waiting for new-data asset&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
 </code></pre></div>
 <p>Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in <a href="#scenario-3-read-the-newly-written-data">Scenario 3</a>, where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">With OpenMetadata</label><label for="__tabbed_2_2">With Katalog</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Run the following command to extract the new cataloged asset id from fybrikapplication status. 

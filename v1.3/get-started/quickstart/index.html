@@ -1556,7 +1556,7 @@ kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </sp
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>fybrik-charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml
 kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1564,8 +1564,8 @@ kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </sp
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>vault<span class="w"> </span>fybrik-charts/vault<span class="w"> </span>--create-namespace<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.injector.enabled=false&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span><span class="s2">&quot;vault.server.dev.enabled=true&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/charts/vault/env/dev/vault-single-cluster-values.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/charts/vault/vault-openshift-values.yaml
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/charts/vault/env/dev/vault-single-cluster-values.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--values<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/charts/vault/vault-openshift-values.yaml
 kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>--all<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </code></pre></div>
 </div>
@@ -1585,25 +1585,25 @@ OpenShift cluster on <a href="https://www.ibm.com/cloud">IBM Cloud</a>. For othe
 <div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">A single node Kind cluster</label><label for="__tabbed_3_2">IBM OpenShift</label><label for="__tabbed_3_3">Existing deployment</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.0
-curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.1
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-
 </code></pre></div>
 <p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
 <p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.0
-curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.1
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run <code>make</code>. 
 Once the installation is over, be sure to remove the temporary directory.</p>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.0
-curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.1
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift
 </code></pre></div>
 <p>The installation of OpenMetadata could take a long time (around 20 minutes on a VM running <a href="https://kind.sigs.k8s.io/">kind</a> Kubernetes).</p>
 <p>Alternatively, if you want to change the OpenMetadata configuration parameters, run:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.0
-curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift<span class="w"> </span>--operation<span class="w"> </span>getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.1
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--k8s-type<span class="w"> </span>ibm-openshift<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 This command downloads the installation files to a temporary directory. Follow the instructions that appear on screen to change the configuration parameters and then run <code>make</code>. 
 Once the installation is over, be sure to remove the temporary directory.</p>
@@ -1611,8 +1611,8 @@ Once the installation is over, be sure to remove the temporary directory.</p>
 <div class="tabbed-block">
 <p>If you want to use an existing OpenMetadata deployment, you have to configure it according to Fybrik requirements:
 Run the following commands to download the configuration files:
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.0
-curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.0/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">FYBRIK_BRANCH</span><span class="o">=</span>v1.3.1
+curl<span class="w"> </span>https://raw.githubusercontent.com/fybrik/fybrik/v1.3.1/third_party/openmetadata/install_OM.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash<span class="w"> </span>-s<span class="w"> </span>--<span class="w"> </span>--operation<span class="w"> </span>getFiles
 </code></pre></div>
 Follow the instructions that appear on screen to change the OpenMetadata location and credentials (<code>OPENMETADATA_ENDPOINT</code>, <code>OPENMETADATA_USER</code> and <code>OPENMETADATA_PASSWORD</code>) and then run <code>make prepare-openmetadata-for-fybrik</code>.</p>
 </div>
@@ -1672,8 +1672,8 @@ helm install fybrik charts/fybrik --set global.tag=master --set coordinator.cata
 ```
 </code></pre></div>
 </details>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.0<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.0<span class="w"> </span>--wait
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.1<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>openmetadata<span class="w"> </span>--set<span class="w"> </span>openmetadataConnector.openmetadata_endpoint<span class="o">=</span>http://openmetadata.open-metadata:8585/api<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.1<span class="w"> </span>--wait
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -1691,8 +1691,8 @@ helm install fybrik charts/fybrik --set global.tag=master --set coordinator.cata
 ```
 </code></pre></div>
 </details>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.0<span class="w"> </span>--wait
-helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.0<span class="w"> </span>--wait
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik-crd<span class="w"> </span>fybrik-charts/fybrik-crd<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.1<span class="w"> </span>--wait
+helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span>--set<span class="w"> </span>coordinator.catalog<span class="o">=</span>katalog<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>--version<span class="w"> </span><span class="m">1</span>.3.1<span class="w"> </span>--wait
 </code></pre></div>
 </div>
 </div>
