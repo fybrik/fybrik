@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"emperror.dev/errors"
+	"os/exec"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
@@ -32,6 +33,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -39,7 +41,6 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 const (
@@ -333,6 +334,12 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		for _, pod := range pods.Items {
 			fmt.Println("pod name: " + pod.Name)
 			fmt.Println(getPodLogs(&pod))
+		}
+		cmd := exec.Command("kubectl get cm -o yaml -n fybrik-blueprints")
+		err = cmd.Run()
+
+		if err != nil {
+			log.Fatal(err)
 		}
 	}()
 
