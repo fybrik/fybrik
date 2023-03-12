@@ -17,7 +17,6 @@ import (
 	"testing"
 
 	"emperror.dev/errors"
-	"os/exec"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
