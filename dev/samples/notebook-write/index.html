@@ -588,13 +588,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#define-data-access-policies-to-read-the-new-data" class="md-nav__link">
-    Define data access policies to read the new data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#create-a-fybrikapplication-resource-to-read-the-data-for-the-notebook" class="md-nav__link">
     Create a FybrikApplication resource to read the data for the notebook
   </a>
@@ -1614,13 +1607,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#define-data-access-policies-to-read-the-new-data" class="md-nav__link">
-    Define data access policies to read the new data
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#create-a-fybrikapplication-resource-to-read-the-data-for-the-notebook" class="md-nav__link">
     Create a FybrikApplication resource to read the data for the notebook
   </a>
@@ -1978,20 +1964,6 @@ writer.close()
 kubectl<span class="w"> </span>delete<span class="w"> </span>fybrikapplications.app.fybrik.io<span class="w"> </span>my-notebook-write<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample
 </code></pre></div>
 <h2 id="scenario-3-read-the-newly-written-data">Scenario 3: Read the newly written data</h2>
-<h3 id="define-data-access-policies-to-read-the-new-data">Define data access policies to read the new data</h3>
-<p>Define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to allow reading the data. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
-<div class="highlight"><pre><span></span><code>package dataapi.authz
-
-rule[{}] {
-  description := &quot;allow read datasets&quot;
-  input.action.actionType == &quot;read&quot;
-}
-</code></pre></div>
-<p>Copy the policy to a file named <code>sample-policy-read.rego</code> and then run:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>sample-policy-read<span class="w"> </span>--from-file<span class="o">=</span>sample-policy-read.rego
-kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>label<span class="w"> </span>configmap<span class="w"> </span>sample-policy-read<span class="w"> </span>openpolicyagent.org/policy<span class="o">=</span>rego
-<span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>cm<span class="w"> </span>sample-policy-read<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>-o<span class="w"> </span><span class="s1">&#39;jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}&#39;</span><span class="k">)</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:&quot;ok&quot;}&#39;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;waiting for policy to be applied&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sleep<span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="k">done</span>
-</code></pre></div>
 <h3 id="create-a-fybrikapplication-resource-to-read-the-data-for-the-notebook">Create a <code>FybrikApplication</code> resource to read the data for the notebook</h3>
 <p>Create a <a href="../../reference/crds/#fybrikapplication"><code>FybrikApplication</code></a> resource to register the notebook workload to the control plane of Fybrik:</p>
 <!-- TODO: role field removed but code still requires it -->
