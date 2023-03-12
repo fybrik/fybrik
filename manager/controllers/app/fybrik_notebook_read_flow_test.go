@@ -6,7 +6,6 @@ package app
 import (
 	"bytes"
 	"context"
-	"emperror.dev/errors"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"emperror.dev/errors"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
@@ -31,6 +32,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,7 +40,6 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
 	"k8s.io/apimachinery/pkg/labels"
-	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -52,7 +53,7 @@ type ArrowRequest struct {
 	Columns []string `json:"columns,omitempty"`
 }
 
-func getPodLogs(pod v1.Pod) string {
+func getPodLogs(pod *v1.Pod) string {
 	podLogOpts := v1.PodLogOptions{}
 	// creates the clientset
 	// can not use controller-runtime client. see https://github.com/kubernetes-sigs/controller-runtime/issues/452
@@ -83,6 +84,10 @@ func getPodsForSvc(svc *v1.Service, namespace string) (*v1.PodList, error) {
 		return nil, errors.New("error in getting access to K8S")
 	}
 	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), listOptions)
+	if err != nil {
+		return nil, errors.New("error getting pods")
+	}
+	//nolint:rangeValCopy
 	for _, pod := range pods.Items {
 		fmt.Fprintf(os.Stdout, "pod name: %v\n", pod.Name)
 	}
@@ -327,7 +332,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		pods, _ := getPodsForSvc(AFMservice, "fybrik-blueprints")
 		for _, pod := range pods.Items {
 			fmt.Println("pod name: " + pod.Name)
-			fmt.Println(getPodLogs(pod))
+			fmt.Println(getPodLogs(&pod))
 		}
 	}()
 
