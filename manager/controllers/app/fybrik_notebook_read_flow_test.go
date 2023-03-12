@@ -4,9 +4,12 @@
 package app
 
 import (
+	"bytes"
 	"context"
+	"emperror.dev/errors"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -34,6 +37,8 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
+	"k8s.io/apimachinery/pkg/labels"
+	kubernetes "k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -45,6 +50,43 @@ const (
 type ArrowRequest struct {
 	Asset   string   `json:"asset,omitempty"`
 	Columns []string `json:"columns,omitempty"`
+}
+
+func getPodLogs(pod v1.Pod) string {
+	podLogOpts := v1.PodLogOptions{}
+	// creates the clientset
+	// can not use controller-runtime client. see https://github.com/kubernetes-sigs/controller-runtime/issues/452
+	clientset, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+	if err != nil {
+		return "error in getting access to K8S"
+	}
+	req := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "error in opening stream"
+	}
+	defer podLogs.Close()
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "error in copy information from podLogs to buf"
+	}
+	str := buf.String()
+	return str
+}
+
+func getPodsForSvc(svc *v1.Service, namespace string) (*v1.PodList, error) {
+	set := labels.Set(svc.Spec.Selector)
+	listOptions := metav1.ListOptions{LabelSelector: set.AsSelector().String()}
+	clientset, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+	if err != nil {
+		return nil, errors.New("error in getting access to K8S")
+	}
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), listOptions)
+	for _, pod := range pods.Items {
+		fmt.Fprintf(os.Stdout, "pod name: %v\n", pod.Name)
+	}
+	return pods, nil
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
@@ -273,6 +315,21 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	hostname := fmt.Sprintf("%v", connection["hostname"])
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
+
+	defer func() {
+		AFMservice := &v1.Service{}
+		AFMserviceObjectKey := client.ObjectKey{Namespace: "fybrik-blueprints",
+			Name: svcName}
+		g.Eventually(func() error {
+			return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
+		}, timeout, interval).Should(gomega.Succeed())
+
+		pods, _ := getPodsForSvc(AFMservice, "fybrik-blueprints")
+		for _, pod := range pods.Items {
+			fmt.Println("pod name: " + pod.Name)
+			fmt.Println(getPodLogs(pod))
+		}
+	}()
 
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
