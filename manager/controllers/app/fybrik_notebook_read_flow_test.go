@@ -335,12 +335,6 @@ func TestS3NotebookReadFlow(t *testing.T) {
 			fmt.Println("pod name: " + pod.Name)
 			fmt.Println(getPodLogs(&pod))
 		}
-		cmd := exec.Command("kubectl get cm -o yaml -n fybrik-blueprints")
-		err = cmd.Run()
-
-		if err != nil {
-			log.Fatal(err)
-		}
 	}()
 
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
