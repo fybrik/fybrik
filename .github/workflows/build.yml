@@ -46,7 +46,9 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Verify
       run: |
         make generate manifests generate-docs reconcile-requirements verify
@@ -74,7 +76,9 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Test
       run: make test
 
@@ -107,7 +111,9 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Namescope integration tests
       if: ${{ matrix.k8s_version == 'new' }}
       env:
@@ -162,7 +168,9 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Read flow notebook tests old
       env:
         K8S_VERSION: ${{ env.OLD_K8S_VERSION }}
@@ -224,14 +232,18 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Write flow notebook tests
       run: make run-notebook-writeflow-tests
     - name: debug
       if:  success() || failure()
       run: |
         kubectl describe fybrikapplication -A
-        kubectl get pods -n fybrik-blueprints
+        kubectl get all -A
+        kubectl get cm -n fybrik-system
+        kubectl get cm -n fybrik-blueprints
     - name: Update env vars to use existsing cluster
       run: |
         # The step that creates or updates the environment variable does
@@ -250,7 +262,9 @@ jobs:
       if:  success() || failure()
       run: |
         kubectl describe fybrikapplication -A
-        kubectl get pods -n fybrik-blueprints
+        kubectl get all -A
+        kubectl get cm -n fybrik-system
+        kubectl get cm -n fybrik-blueprints
     - name: Clean cluster
       run: |
         make undeploy-fybrik
@@ -258,6 +272,13 @@ jobs:
         killall kubectl || true
     - name: Read flow notebook tests with tls
       run: make run-notebook-readflow-tls-tests
+    - name: debug
+      if:  success() || failure()
+      run: |
+        kubectl describe fybrikapplication -A
+        kubectl get all -A
+        kubectl get cm -n fybrik-system
+        kubectl get cm -n fybrik-blueprints
     - name: Clean cluster
       run: |
         make undeploy-fybrik
@@ -269,7 +290,9 @@ jobs:
       if:  success() || failure()
       run: |
         kubectl describe fybrikapplication -A
-        kubectl get pods -n fybrik-blueprints
+        kubectl get all -A
+        kubectl get cm -n fybrik-system
+        kubectl get cm -n fybrik-blueprints
     - name: Clean cluster
       if: ${{ ! github.event.pull_request.draft }}
       run: |
@@ -283,7 +306,9 @@ jobs:
       if:  success() || failure()
       run: |
         kubectl describe fybrikapplication -A
-        kubectl get pods -n fybrik-blueprints
+        kubectl get all -A
+        kubectl get cm -n fybrik-system
+        kubectl get cm -n fybrik-blueprints
 
 
   tekton-pipelines:
@@ -315,7 +340,9 @@ jobs:
           ${{ github.workspace }}/hack/tools/lib
         key: ${{ runner.os }}-c-${{ hashFiles('hack/make-rules/tools.mk') }}-${{ hashFiles('hack/tools/requirements.env') }}-go-${{ hashFiles('**/go.sum') }}
     - name: Install tools
-      run: make install-tools
+      run: |
+        make install-tools
+        ls -l hack/tools/lib
     - name: Integration tests
       env:
         image_source_repo_password: "fake"
