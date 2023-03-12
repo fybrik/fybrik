@@ -283,7 +283,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
 bin/helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
-bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
+bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=150s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
