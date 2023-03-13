@@ -24,7 +24,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -156,7 +155,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 
 	writePolicyConfigMap := &v1.ConfigMap{}
 	g.Expect(
-		readObjectFromFile("../../testdata/notebook/write-flow/write-read-policy-cm.yaml", writePolicyConfigMap)).ToNot(gomega.HaveOccurred())
+		readObjectFromFile("../../testdata/notebook/write-flow/write-policy-cm.yaml", writePolicyConfigMap)).ToNot(gomega.HaveOccurred())
 	writePolicyConfigMapKey := client.ObjectKeyFromObject(writePolicyConfigMap)
 	g.Expect(k8sClient.Create(context.Background(), writePolicyConfigMap)).Should(gomega.Succeed())
 
@@ -177,23 +176,6 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 		ToNot(gomega.HaveOccurred())
 	writeApplication.ObjectMeta.Name += "-3"
 	writeApplicationKey = client.ObjectKeyFromObject(writeApplication)
-
-	// Ensure getting cleaned up after tests finish
-	// Delete fybrik application
-	defer func() {
-		application := &fappv1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: writeApplicationKey.Namespace,
-			Name: writeApplicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), writeApplicationKey, application)
-		_ = k8sClient.Delete(context.Background(), application)
-	}()
-
-	// delete configmap
-	defer func() {
-		cm := &v1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: writePolicyConfigMapKey.Namespace,
-			Name: writePolicyConfigMapKey.Name}}
-		_ = k8sClient.Get(context.Background(), writePolicyConfigMapKey, cm)
-		_ = k8sClient.Delete(context.Background(), cm)
-	}()
 
 	// Create FybrikApplication and FybrikModule
 	fmt.Println("Expecting write application creation to succeed")
@@ -331,7 +313,31 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	err = writeStream.CloseSend()
 	g.Expect(err).To(gomega.BeNil())
 
+	// cleanup
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), writePolicyConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), writeApplication)
+	}, timeout, interval).Should(gomega.Succeed())
+
 	fmt.Println("Starting read scenario")
+	allowReadConfigMap := &v1.ConfigMap{}
+
+	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/read-policy-cm.yaml", allowReadConfigMap)).ToNot(gomega.HaveOccurred())
+	allowReadConfigMapKey := client.ObjectKeyFromObject(allowReadConfigMap)
+	g.Expect(k8sClient.Create(context.Background(), allowReadConfigMap)).Should(gomega.Succeed())
+
+	fmt.Println("Expecting config-map to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), allowReadConfigMapKey, allowReadConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("Expecting config-map to be constructed")
+	g.Eventually(func() string {
+		_ = k8sClient.Get(context.Background(), allowReadConfigMapKey, allowReadConfigMap)
+		return allowReadConfigMap.Annotations["openpolicyagent.org/policy-status"]
+	}, timeout, interval).Should(gomega.BeEquivalentTo("{\"status\":\"ok\"}"))
+
 	// Installing application to read new data
 	readApplication := &fappv1.FybrikApplication{}
 	g.Expect(readObjectFromFile("../../testdata/notebook/write-flow/fybrikapplication-read.yaml", readApplication)).
@@ -348,13 +354,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), readApplicationKey, readApplication)
 	}, timeout, interval).Should(gomega.Succeed())
-	// Ensure getting cleaned up after tests finish
-	defer func() {
-		application := &fappv1.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: readApplicationKey.Namespace,
-			Name: readApplicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), readApplicationKey, application)
-		_ = k8sClient.Delete(context.Background(), application)
-	}()
+
 	fmt.Println("Expecting plotter to be constructed")
 	g.Eventually(func() *fappv1.ResourceReference {
 		_ = k8sClient.Get(context.Background(), readApplicationKey, readApplication)
@@ -441,4 +441,12 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+
+	// cleanup
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), allowReadConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), readApplication)
+	}, timeout, interval).Should(gomega.Succeed())
 }

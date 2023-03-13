@@ -371,28 +371,6 @@ kubectl delete fybrikapplications.app.fybrik.io my-notebook-write -n fybrik-note
 
 ## Scenario 3: Read the newly written data
 
-### Define data access policies to read the new data
-
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to allow reading the data. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
-
-```rego
-package dataapi.authz
-
-rule[{}] {
-  description := "allow read datasets"
-  input.action.actionType == "read"
-}
-```
-
-Copy the policy to a file named `sample-policy-read.rego` and then run:
-
-```bash
-kubectl -n fybrik-system create configmap sample-policy-read --from-file=sample-policy-read.rego
-kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy-read -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-```
-
-
 ### Create a `FybrikApplication` resource to read the data for the notebook
 
 Create a [`FybrikApplication`](../reference/crds.md#fybrikapplication) resource to register the notebook workload to the control plane of Fybrik:
