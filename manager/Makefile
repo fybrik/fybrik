@@ -14,7 +14,6 @@ include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/verify.mk
 include $(ROOT_DIR)/hack/make-rules/version.mk
-include ${ROOT_DIR}/hack/tools/requirements.env
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 .PHONY: run
