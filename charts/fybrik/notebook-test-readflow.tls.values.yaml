@@ -75,15 +75,14 @@ opaServer:
   # Avoid configurating kubelet by setting enabled to false.
   enableReadinessProbe: false
   image: "openpolicyagent/opa:0.36.0-debug"
+  #  the following options configure OPA with TLS
   args:
   - "run"
   - "--server"
   - "--log-level=debug"
   - "--set=decision_logs.console=true"
-  - "--authentication=tls"
   - "--tls-cert-file=/data/tls-cert/tls.crt"
   - "--tls-private-key-file=/data/tls-cert/tls.key"
-  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
   - "--addr=https://0.0.0.0:8443"
 
   service:
