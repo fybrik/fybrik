@@ -30,14 +30,23 @@ Make a note of the service endpoint and access credentials. You will need them l
       export SECRET_KEY="mysecretkey"
       ```
     2. Install localstack to the currently active namespace and wait for it to be ready:
-      ```bash
-      helm repo add localstack-charts https://localstack.github.io/helm-charts
-      helm install localstack localstack-charts/localstack \
-           --set startServices="s3" \
-           --set service.type=ClusterIP \
-           --set livenessProbe.initialDelaySeconds=25
-      kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
-      ```
+    === "Kubernetes"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+    === "OpenShift"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25 \
+                 --set persistence.enabled=true \
+                 --set persistence.storageClass=ibmc-file-gold-gid \
+                 --set persistence.accessModes[0]=ReadWriteMany
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
       create a port-forward to communicate with localstack server:
       ```bash
       kubectl port-forward svc/localstack 4566:4566 &
@@ -361,28 +370,6 @@ kubectl delete fybrikapplications.app.fybrik.io my-notebook-write -n fybrik-note
 ```
 
 ## Scenario 3: Read the newly written data
-
-### Define data access policies to read the new data
-
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to allow reading the data. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
-
-```rego
-package dataapi.authz
-
-rule[{}] {
-  description := "allow read datasets"
-  input.action.actionType == "read"
-}
-```
-
-Copy the policy to a file named `sample-policy-read.rego` and then run:
-
-```bash
-kubectl -n fybrik-system create configmap sample-policy-read --from-file=sample-policy-read.rego
-kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy-read -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-```
-
 
 ### Create a `FybrikApplication` resource to read the data for the notebook
 
