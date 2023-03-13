@@ -5,6 +5,7 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/docker.mk
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 include $(ROOT_DIR)/hack/make-rules/version.mk
+include ${ROOT_DIR}/hack/tools/requirements.env
 
 KUBE_NAMESPACE ?= fybrik-system
 POLICY_FILES ?=
@@ -14,7 +15,7 @@ all: docker-build docker-push
 
 .PHONY: docker-build
 docker-build: source-build
-	docker build . -t ${IMG}
+	docker build . -t ${IMG} -f Dockerfile --build-arg tag=${BASE_IMAGE_TAG}
 	rm opa-connector
 
 .PHONY: source-build
