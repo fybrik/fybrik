@@ -2,8 +2,8 @@
 # This is a YAML-formatted file.
 # It overrides values that are different from the default values.yaml
 # The values used for testing read flow where the manager and connectors
-# uses mutual tls connection. In addition, OPA and Vault servers are configured to use
-# mutual tls. Openmetadata server is not configured with TLS.
+# uses mutual tls connection. In addition, Vault servers is configured to use
+# mutual tls. OPA server is configured to use TLS and Openmetadata server is not configured with TLS.
 
 # Global configuration applies to multiple components installed by this chart
 global:
