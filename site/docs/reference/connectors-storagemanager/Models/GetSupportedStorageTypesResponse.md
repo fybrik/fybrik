@@ -1,4 +1,4 @@
-# GetSupportedConnectionsResponse
+# GetSupportedStorageTypesResponse
 
 ## Properties
 Name | Type | Description | Notes

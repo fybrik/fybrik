@@ -6,7 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**allocateStorage**](DefaultApi.md#allocateStorage) | **POST** /allocateStorage | This REST API allocates storage based on the storage account selected by Fybrik
 [**deleteStorage**](DefaultApi.md#deleteStorage) | **DELETE** /deleteStorage | This REST API deletes allocated storage
-[**getSupportedConnections**](DefaultApi.md#getSupportedConnections) | **POST** /getSupportedConnections | This REST API returns a list of supported storage types
+[**getSupportedStorageTypes**](DefaultApi.md#getSupportedStorageTypes) | **POST** /getSupportedStorageTypes | This REST API returns a list of supported storage types
 
 
 <a name="allocateStorage"></a>
@@ -68,9 +68,9 @@ No authorization required
 
  [[Back to API-Specification]](../README.md) 
 
-<a name="getSupportedConnections"></a>
-## **getSupportedConnections**
-> GetSupportedConnectionsResponse getSupportedConnections()
+<a name="getSupportedStorageTypes"></a>
+## **getSupportedStorageTypes**
+> GetSupportedStorageTypesResponse getSupportedStorageTypes()
 
 This REST API returns a list of supported storage types
 
@@ -81,7 +81,7 @@ This endpoint does not need any parameter.
 ### Return type
 
 
-[**GetSupportedConnectionsResponse**](../Models/GetSupportedConnectionsResponse.md)
+[**GetSupportedStorageTypesResponse**](../Models/GetSupportedStorageTypesResponse.md)
 
 
 

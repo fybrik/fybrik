@@ -7,7 +7,7 @@ Models/ConfigOptions.md
 Models/Connection.md
 Models/DatasetDetails.md
 Models/DeleteStorageRequest.md
-Models/GetSupportedConnectionsResponse.md
+Models/GetSupportedStorageTypesResponse.md
 Models/Options.md
 Models/SecretRef.md
 Models/db2.md

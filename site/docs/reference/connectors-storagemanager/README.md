@@ -9,7 +9,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DefaultApi* | [**allocateStorage**](Apis/DefaultApi.md#allocatestorage) | **POST** /allocateStorage | This REST API allocates storage based on the storage account selected by Fybrik
 *DefaultApi* | [**deleteStorage**](Apis/DefaultApi.md#deletestorage) | **DELETE** /deleteStorage | This REST API deletes allocated storage
-*DefaultApi* | [**getSupportedConnections**](Apis/DefaultApi.md#getsupportedconnections) | **POST** /getSupportedConnections | This REST API returns a list of supported storage types
+*DefaultApi* | [**getSupportedStorageTypes**](Apis/DefaultApi.md#getsupportedstoragetypes) | **POST** /getSupportedStorageTypes | This REST API returns a list of supported storage types
 
 
 <a name="documentation-for-models"></a>
@@ -22,7 +22,7 @@ Class | Method | HTTP request | Description
  - [Connection](Models/Connection.md)
  - [DatasetDetails](Models/DatasetDetails.md)
  - [DeleteStorageRequest](Models/DeleteStorageRequest.md)
- - [GetSupportedConnectionsResponse](Models/GetSupportedConnectionsResponse.md)
+ - [GetSupportedStorageTypesResponse](Models/GetSupportedStorageTypesResponse.md)
  - [Options](Models/Options.md)
  - [SecretRef](Models/SecretRef.md)
  - [db2](Models/db2.md)
