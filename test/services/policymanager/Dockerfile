@@ -1,4 +1,5 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7
+ARG tag=8.7
+FROM registry.access.redhat.com/ubi8/ubi-minimal:$tag
 
 ENV HOME=/tmp
 WORKDIR /tmp
