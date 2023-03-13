@@ -91,9 +91,9 @@ func (m *openAPIStorageManager) DeleteStorage(request *storagemanager.DeleteStor
 }
 
 // request to get supported connections
-func (m *openAPIStorageManager) GetSupportedConnectionTypes() (*storagemanager.GetSupportedConnectionsResponse, error) {
+func (m *openAPIStorageManager) GetSupportedStorageTypes() (*storagemanager.GetSupportedStorageTypesResponse, error) {
 	resp, httpResponse, err :=
-		m.Client.DefaultApi.GetSupportedConnections(context.Background()).Execute()
+		m.Client.DefaultApi.GetSupportedStorageTypes(context.Background()).Execute()
 	if httpResponse == nil {
 		if err != nil {
 			return nil, err
