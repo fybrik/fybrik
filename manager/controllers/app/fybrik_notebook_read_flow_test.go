@@ -87,9 +87,8 @@ func getPodsForSvc(svc *v1.Service, namespace string) (*v1.PodList, error) {
 	if err != nil {
 		return nil, errors.New("error getting pods")
 	}
-	//nolint:rangeValCopy
-	for _, pod := range pods.Items {
-		fmt.Fprintf(os.Stdout, "pod name: %v\n", pod.Name)
+	for i := range pods.Items {
+		fmt.Fprintf(os.Stdout, "pod name: %v\n", pods.Items[i].Name)
 	}
 	return pods, nil
 }
@@ -330,9 +329,9 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}, timeout, interval).Should(gomega.Succeed())
 
 		pods, _ := getPodsForSvc(AFMservice, "fybrik-blueprints")
-		for _, pod := range pods.Items {
-			fmt.Println("pod name: " + pod.Name)
-			fmt.Println(getPodLogs(&pod))
+		for i := range pods.Items {
+			fmt.Fprintf(os.Stdout, "pod name: %v\n", pods.Items[i].Name)
+			fmt.Println(getPodLogs(&pods.Items[i]))
 		}
 	}()
 
