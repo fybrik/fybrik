@@ -93,6 +93,18 @@ func getPodsForSvc(svc *v1.Service, namespace string) (*v1.PodList, error) {
 	return pods, nil
 }
 
+func getConfigMapForNamespace(namespace string) (*v1.ConfigMapList, error) {
+	clientset, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+	if err != nil {
+		return nil, errors.New("error in getting access to K8S")
+	}
+	cms, err := clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.New("error getting configMap")
+	}
+	return cms, nil
+}
+
 func TestS3NotebookReadFlow(t *testing.T) {
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
 	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
@@ -270,15 +282,6 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
-	// Ensure getting cleaned up after tests finish
-	// delete application
-	defer func() {
-		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
-			Name: applicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
-		_ = k8sClient.Delete(context.Background(), fybrikApplication)
-	}()
-
 	fmt.Println("Expecting application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), applicationKey, application)
@@ -333,6 +336,16 @@ func TestS3NotebookReadFlow(t *testing.T) {
 			fmt.Fprintf(os.Stdout, "pod name: %v\n", pods.Items[i].Name)
 			fmt.Println(getPodLogs(&pods.Items[i]))
 		}
+		cms, _ := getConfigMapForNamespace("fybrik-blueprints")
+		for i := range cms.Items {
+			b, _ := json.Marshal(cms.Items[i].Data)
+			fmt.Println(string(b))
+			fmt.Println(AFMservice.Name)
+		}
+		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+			Name: applicationKey.Name}}
+		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
+		_ = k8sClient.Delete(context.Background(), fybrikApplication)
 	}()
 
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
