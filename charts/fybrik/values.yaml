@@ -335,11 +335,7 @@ opaServer:
   # more information can be found in https://www.openpolicyagent.org/docs/latest/security/
   #  - "--tls-cert-file=/data/tls-cert/tls.crt"
   #  - "--tls-private-key-file=/data/tls-cert/tls.key"
-  #  - "--authentication=tls"
-  #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
   #  - "--addr=https://0.0.0.0:8443"
-
-
   tls:
     # Specifies whether the opa-server communication should use tls.
     # For more information please refer to https://www.openpolicyagent.org/docs/latest/security/
@@ -367,7 +363,7 @@ opaServer:
 
 
   kubemgmt:
-    image: openpolicyagent/kube-mgmt:0.11
+    image: openpolicyagent/kube-mgmt:0.12
 
   # Used if autoscaling is not enabled
   replicaCount: 1
