@@ -234,23 +234,23 @@ func (a *DefaultApiService) DeleteStorageExecute(r ApiDeleteStorageRequest) (*_n
 	return localVarHTTPResponse, nil
 }
 
-type ApiGetSupportedConnectionsRequest struct {
+type ApiGetSupportedStorageTypesRequest struct {
 	ctx        _context.Context
 	ApiService *DefaultApiService
 }
 
-func (r ApiGetSupportedConnectionsRequest) Execute() (GetSupportedConnectionsResponse, *_nethttp.Response, error) {
-	return r.ApiService.GetSupportedConnectionsExecute(r)
+func (r ApiGetSupportedStorageTypesRequest) Execute() (GetSupportedStorageTypesResponse, *_nethttp.Response, error) {
+	return r.ApiService.GetSupportedStorageTypesExecute(r)
 }
 
 /*
-GetSupportedConnections This REST API returns a list of supported storage types
+GetSupportedStorageTypes This REST API returns a list of supported storage types
 
 	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGetSupportedConnectionsRequest
+	@return ApiGetSupportedStorageTypesRequest
 */
-func (a *DefaultApiService) GetSupportedConnections(ctx _context.Context) ApiGetSupportedConnectionsRequest {
-	return ApiGetSupportedConnectionsRequest{
+func (a *DefaultApiService) GetSupportedStorageTypes(ctx _context.Context) ApiGetSupportedStorageTypesRequest {
+	return ApiGetSupportedStorageTypesRequest{
 		ApiService: a,
 		ctx:        ctx,
 	}
@@ -258,21 +258,21 @@ func (a *DefaultApiService) GetSupportedConnections(ctx _context.Context) ApiGet
 
 // Execute executes the request
 //
-//	@return GetSupportedConnectionsResponse
-func (a *DefaultApiService) GetSupportedConnectionsExecute(r ApiGetSupportedConnectionsRequest) (GetSupportedConnectionsResponse, *_nethttp.Response, error) {
+//	@return GetSupportedStorageTypesResponse
+func (a *DefaultApiService) GetSupportedStorageTypesExecute(r ApiGetSupportedStorageTypesRequest) (GetSupportedStorageTypesResponse, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue GetSupportedConnectionsResponse
+		localVarReturnValue GetSupportedStorageTypesResponse
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetSupportedConnections")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DefaultApiService.GetSupportedStorageTypes")
 	if err != nil {
 		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/getSupportedConnections"
+	localVarPath := localBasePath + "/getSupportedStorageTypes"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
