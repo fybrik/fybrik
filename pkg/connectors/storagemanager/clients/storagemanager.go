@@ -17,8 +17,8 @@ type StorageManagerInterface interface {
 	AllocateStorage(request *storagemanager.AllocateStorageRequest) (*storagemanager.AllocateStorageResponse, error)
 	// DeleteStorage deletes the allocated storage
 	DeleteStorage(request *storagemanager.DeleteStorageRequest) error
-	// GetSupportedConnectionTypes returns a list of supported connection types
-	GetSupportedConnectionTypes() (*storagemanager.GetSupportedConnectionsResponse, error)
+	// GetSupportedStorageTypes returns a list of supported connection types
+	GetSupportedStorageTypes() (*storagemanager.GetSupportedStorageTypesResponse, error)
 	io.Closer
 }
 

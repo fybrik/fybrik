@@ -32,8 +32,8 @@ func (m *mockupStorageManager) DeleteStorage(request *storagemanager.DeleteStora
 	return nil
 }
 
-func (m *mockupStorageManager) GetSupportedConnectionTypes() (*storagemanager.GetSupportedConnectionsResponse, error) {
-	return &storagemanager.GetSupportedConnectionsResponse{ConnectionTypes: []taxonomy.ConnectionType{"mysql", "db2", "s3"}}, nil
+func (m *mockupStorageManager) GetSupportedStorageTypes() (*storagemanager.GetSupportedStorageTypesResponse, error) {
+	return &storagemanager.GetSupportedStorageTypesResponse{ConnectionTypes: []taxonomy.ConnectionType{"mysql", "db2", "s3"}}, nil
 }
 
 func (m *mockupStorageManager) Close() error {
