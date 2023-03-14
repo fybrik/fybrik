@@ -25,13 +25,13 @@ spec:
           catalog: fybrik-notebook-sample
           metadata:
             tags:
-              finance: true
+              Purpose.finance: true
             columns:
               - name: nameOrig
                 tags:
-                  PII: true
+                  PII.Sensitive: true
               - name: oldbalanceOrg
                 tags:
-                  sensitive: true
+                  PersonalData.Personal: true
         interface:
           protocol: fybrik-arrow-flight

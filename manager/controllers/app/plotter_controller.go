@@ -354,7 +354,6 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
 					remoteBlueprint.Spec = blueprintSpec
-					remoteBlueprint.ObjectMeta.Annotations = map[string]string(nil) // reset annotations
 					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
 					if err != nil {
 						log.Error().Err(err).Msg("Could not update blueprint")

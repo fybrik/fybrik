@@ -51,16 +51,16 @@ paths:
           description: Invalid credentials
         '501':
           description: the requested storage type is not supported
-  /getSupportedConnections:
+  /getSupportedStorageTypes:
     post:
       summary: This REST API returns a list of supported storage types
-      operationId: getSupportedConnections
+      operationId: getSupportedStorageTypes
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/GetSupportedConnectionsResponse"
+                $ref: "../../charts/fybrik/files/taxonomy/storagemanager.json#/definitions/GetSupportedStorageTypesResponse"
         '400':
           description: Bad request - server cannot process the request due to client error

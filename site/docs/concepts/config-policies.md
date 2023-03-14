@@ -58,7 +58,7 @@ config[{"capability": "read", "decision": decision}] {
 Each restriction provides a list or a range of allowed values for a property of module/cluster/storageaccount object. For example, to restrict a module type to either "service" or "plugin", we'll use "type" as a property, and [ "service","plugin ] as a list of allowed values.
 Properties of a module can be found inside [`FybrikModule`](../reference/crds.md#fybrikmodule) Spec.
 
-Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#fybrikstorageaccount).  
+Properties of a storage account are listed inside [`FybrikStorageAccount`](../reference/crds.md#appfybrikiov1beta2).  
 
 Cluster is not a custom resource. It has the following properties:
 
