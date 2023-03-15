@@ -15,7 +15,7 @@ package dataapi.authz
 #
 # - When OPA evaluates policies it binds data provided in the query to a global variable called input.
 #
-# - A policy desicison in rego is the value of variable. Fybrik asks for the value of `verdict` variable
+# - A policy decision in rego is the value of variable. Fybrik asks for the value of `verdict` variable
 #   by calling POST /v1/data/dataapi/authz/verdict { input }
 #
 # - Partial set rule assigns element to a set, for example:
@@ -36,15 +36,14 @@ package dataapi.authz
 #   * `property` is the name of the action property as defined in the [enforcement actions taxonomy](../concepts/taxonomy.md). For example: "columns".1
 # This is actually partial set rule assignment of an object to a set called `rule`.
 
-# If the conditions between the curly braces are true then Fybrik will get an object for the "Deny" action.
-# This rule sets the deny action if variable named `rule` is empty.
+# If the conditions between the curly braces are true then Fybrik will deny the request.
 verdict[output] {
 	count(rule) == 0 # true if a variable named `rule` of type set is empty.
 	output = {"action": {"name":"Deny", "Deny": {}}, "policy": "Deny by default"}
 }
 
-# `outputFormatted` object belongs to the set called verdict if all the conditions between the curly braces are true.
-# In that case Fybrik will get all the actions that belong to set `rule`.
+# If the conditions between the curly braces are true then Fybrik will get all the actions
+# assigned to `rule` set.
 verdict[outputFormatted] {
 	count(rule) > 0 # true if a variable named `rule` of type set is NOT empty of elements
 	output = rule[_]
