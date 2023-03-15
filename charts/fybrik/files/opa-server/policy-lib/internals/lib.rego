@@ -1,6 +1,6 @@
 package dataapi.authz
 
-# This fle contains rego rules that Fybrik uses for its policy decision.
+# This file contains rego rules that Fybrik uses for its policy decision.
 #
 # The following is explanation about rego rules to help understand the rules used in this file.
 # For more information please refer to https://www.openpolicyagent.org/docs/latest/policy-language/
@@ -23,17 +23,17 @@ package dataapi.authz
 #      some_condition     # if some_condition is true
 #   }
 #
-# OPA policies for Fybrik have the following syntax:
-# `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is JSON object
-# with the following form:
-# {
+# - OPA policies for Fybrik have the following syntax:
+#   `rule[{"action": <action>, "policy": <policy>}]` where `policy` is a string describing the action and `action` is JSON object
+#   with the following form:
+#   {
 #        "name": <name>,
 #        <property>: <value>,
 #        <property>: <value>,
 #        ...
-#}
-#   - `name` is the name of the action. For example: "RedactAction"
-#   - `property` is the name of the action property as defined in the [enforcement actions taxonomy](../concepts/taxonomy.md). For example: "columns".1
+#   }
+#   * `name` is the name of the action. For example: "RedactAction"
+#   * `property` is the name of the action property as defined in the [enforcement actions taxonomy](../concepts/taxonomy.md). For example: "columns".1
 # This is actually partial set rule assignment of an object to a set called `rule`.
 
 # If the conditions between the curly braces are true then Fybrik will get an object for the "Deny" action.
@@ -44,7 +44,7 @@ verdict[output] {
 }
 
 # `outputFormatted` object belongs to the set called verdict if all the conditions between the curly braces are true.
-# In that case Fybrik will get all the actions defined.
+# In that case Fybrik will get all the actions that belong to set `rule`.
 verdict[outputFormatted] {
 	count(rule) > 0 # true if a variable named `rule` of type set is NOT empty of elements
 	output = rule[_]
@@ -55,7 +55,7 @@ verdict[outputFormatted] {
 	outputFormatted := object.union({"action": actionFormatted}, outputWithoutAction)
 }
 
-# If the conditions between the curly braces are true then a set called `rule` is assigned with empty object.
+# If the conditions between the curly braces are true then assign an empty object to set `rule`.
 # As the condition is false `rule` set is not assigned. This rule actually used to declare `rule` variable and
 # if no other rule of name `rule` exists then the result is deny by default due to the `verdict` rule
 # defined above.
