@@ -13,7 +13,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -813,7 +812,7 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 // set the protocol value to an empty one (empty values stand for "*" and are not checked)
 func validateModule(module *fappv1.FybrikModule) bool {
 	if len(module.Status.Conditions) > 0 &&
-		module.Status.Conditions[ModuleValidationConditionIndex].Status == corev1.ConditionFalse {
+		module.Status.Conditions[ModuleValidationConditionIndex].Status == v1.ConditionFalse {
 		return false
 	}
 	for capabilityInd := range module.Spec.Capabilities {
