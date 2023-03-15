@@ -125,7 +125,7 @@ The allocated storage is freed after FybrikApplication is deleted or a dataset i
 
 It returns the operation status (success/failure), and a detailed error message, e.g. access is denied, the specified bucket does not exist, etc.
 
-#### GetSupportedConnectionTypes
+#### GetSupportedStorageTypes
 
 Returns a list of supported connection types. Optimizer will use this list to constrain selection of storage accounts. 
 

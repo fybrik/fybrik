@@ -32,10 +32,10 @@ func TestSupportedConnections(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest(http.MethodPost, "http://localhost/", nil)
-	handler.getSupportedConnections(c)
-	t.Run("getSupportedConnections", func(t *testing.T) {
+	handler.getSupportedStorageTypes(c)
+	t.Run("getSupportedStorageTypes", func(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
-		response := &storagemanager.GetSupportedConnectionsResponse{}
+		response := &storagemanager.GetSupportedStorageTypesResponse{}
 		err := json.Unmarshal(w.Body.Bytes(), response)
 		g.Expect(err).To(gomega.BeNil())
 		g.Expect(response.ConnectionTypes).To(gomega.HaveLen(2))
