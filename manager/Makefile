@@ -27,13 +27,8 @@ source-build:
 # Overwrite docker-build from docker.mk
 .PHONY: docker-build
 docker-build: source-build
-ifdef FROM_IMAGE
-	docker build . -t ${IMG} -f Dockerfile --build-arg image=${FROM_IMAGE}
+	docker build . -t ${IMG} -f Dockerfile --build-arg tag=${BASE_IMAGE_TAG}
 	rm manager
-else
-	docker build . -t ${IMG} -f Dockerfile
-	rm manager
-endif
 
 .PHONY: wait_for_manager
 wait_for_manager: $(TOOLBIN)/kubectl

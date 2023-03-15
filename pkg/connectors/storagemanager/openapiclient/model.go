@@ -8,4 +8,4 @@ import "fybrik.io/fybrik/pkg/model/storagemanager"
 type AllocateStorageRequest = storagemanager.AllocateStorageRequest
 type DeleteStorageRequest = storagemanager.DeleteStorageRequest
 type AllocateStorageResponse = storagemanager.AllocateStorageResponse
-type GetSupportedConnectionsResponse = storagemanager.GetSupportedConnectionsResponse
+type GetSupportedStorageTypesResponse = storagemanager.GetSupportedStorageTypesResponse

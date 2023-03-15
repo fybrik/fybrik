@@ -32,7 +32,7 @@ type DeleteStorageRequest struct {
 	Opts Options `json:"options"`
 }
 
-type GetSupportedConnectionsResponse struct {
+type GetSupportedStorageTypesResponse struct {
 	// connection types supported by StorageManager for storage allocation/deletion
 	ConnectionTypes []taxonomy.ConnectionType `json:"connectionTypes"`
 }

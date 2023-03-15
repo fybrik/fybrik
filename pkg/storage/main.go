@@ -20,7 +20,7 @@ func NewRouter(handler *Handler) *gin.Engine {
 	router := gin.Default()
 	router.POST("/allocateStorage", handler.allocateStorage)
 	router.DELETE("/deleteStorage", handler.deleteStorage)
-	router.GET("/getSupportedConnections", handler.getSupportedConnections)
+	router.GET("/getSupportedStorageTypes", handler.getSupportedStorageTypes)
 	return router
 }
 

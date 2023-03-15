@@ -88,8 +88,8 @@ func (r *Handler) deleteStorage(c *gin.Context) {
 }
 
 // return a list of supported connection types
-func (r *Handler) getSupportedConnections(c *gin.Context) {
-	resp := &storagemanager.GetSupportedConnectionsResponse{ConnectionTypes: registrator.GetRegisteredTypes()}
+func (r *Handler) getSupportedStorageTypes(c *gin.Context) {
+	resp := &storagemanager.GetSupportedStorageTypesResponse{ConnectionTypes: registrator.GetRegisteredTypes()}
 	r.Log.Info().Msgf("supported connections: %v", resp)
 	c.JSON(http.StatusOK, resp)
 }
