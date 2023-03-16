@@ -257,7 +257,9 @@ jobs:
         make clean-cluster-prepare
         killall kubectl || true
     - name: Read flow notebook tests
-      run: make run-notebook-readflow-tests
+      run: |
+        kubectl get all -A
+        make run-notebook-readflow-tests
     - name: debug
       if:  success() || failure()
       run: |
@@ -271,7 +273,9 @@ jobs:
         make clean-cluster-prepare
         killall kubectl || true
     - name: Read flow notebook tests with tls
-      run: make run-notebook-readflow-tls-tests
+      run: |
+        kubectl get all -A
+        make run-notebook-readflow-tls-tests
     - name: debug
       if:  success() || failure()
       run: |
@@ -285,7 +289,9 @@ jobs:
         make clean-cluster-prepare
         killall kubectl || true
     - name: Read flow notebook tests with tls using system CA certs
-      run: make run-notebook-readflow-tls-system-cacerts-tests
+      run: |
+        kubectl get all -A
+        make run-notebook-readflow-tls-system-cacerts-tests
     - name: debug
       if:  success() || failure()
       run: |
@@ -301,7 +307,9 @@ jobs:
         killall kubectl || true
     - name: Read flow notebook tests with katalog
       if: ${{ ! github.event.pull_request.draft }}
-      run: make run-notebook-readflow-tests-katalog
+      run: |
+        kubectl get all -A
+        make run-notebook-readflow-tests-katalog
     - name: debug
       if:  success() || failure()
       run: |
