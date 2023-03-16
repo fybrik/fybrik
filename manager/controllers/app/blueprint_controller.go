@@ -18,6 +18,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -222,6 +223,22 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Start creation NetworkPolicy")
+	np := netv1.NetworkPolicy{}
+	np.Name = chartSpec.Name
+	np.Namespace = releaseNamespace
+	np.Spec.PodSelector = v1.LabelSelector{}
+	np.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress, netv1.PolicyTypeIngress}
+	np.Spec.Egress = []netv1.NetworkPolicyEgressRule{}
+	np.Spec.Ingress = []netv1.NetworkPolicyIngressRule{}
+
+	logging.LogStructure("helm config:", cfg, log, zerolog.WarnLevel, false, false)
+
+	if err := r.Client.Create(ctx, &np); err != nil {
+		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create NetworkPolicy")
+	}
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Start creation NetworkPolicy")
+
 	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
 	// TODO should we return err if it is not nil?
 	var rel *release.Release
@@ -371,6 +388,11 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			if err != nil {
 				log.Error().Err(err).Str(logging.ACTION, logging.DELETE).Msg("Error uninstalling release " + release)
 			} else {
+				//np := netv1.NetworkPolicy{}
+				//if err := r.Client.Get(context.Background(), types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}, &np); err != nil {
+				//	log.Error().Err(err).Str(logging.ACTION, logging.GET).Msg("Error uninstalling release " + release)
+				//}
+				//r.Client.Delete(ctx)
 				delete(blueprint.Status.Releases, release)
 			}
 		}

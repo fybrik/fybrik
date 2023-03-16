@@ -50,6 +50,7 @@ const (
 	DELETE string = "delete"
 	CREATE string = "create"
 	UPDATE string = "update"
+	GET    string = "get"
 )
 
 // Log Entry Params - those listed in the constants below and

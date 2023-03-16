@@ -47,6 +47,7 @@ const (
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
+	NPEnabled                         string = "NP_Enabled"
 )
 
 const printValueStr = "%s set to \"%s\""
@@ -148,6 +149,10 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 	}
 	log.Info().Msg("MinTLSVersion is set to " + minVersion)
 	return rv
+}
+
+func isNPEnabled() bool {
+	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
 }
 
 // GetDataDir returns the directory where the data resides.
@@ -287,7 +292,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, StorageManagerAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
-		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
+		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion, NPEnabled}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
