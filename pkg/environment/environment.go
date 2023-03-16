@@ -77,6 +77,10 @@ func GetLocalVaultAuthPath() string {
 	return os.Getenv(LocalVaultAuthPath)
 }
 
+func GetCatalogProvider() string {
+	return os.Getenv(CatalogProviderNameKey)
+}
+
 func GetDefaultModulesNamespace() string {
 	ns := os.Getenv(ModuleNamespace)
 	if ns == "" {
