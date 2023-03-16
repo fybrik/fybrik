@@ -815,16 +815,17 @@ func validateModule(module *fappv1.FybrikModule) bool {
 		module.Status.Conditions[ModuleValidationConditionIndex].Status == v1.ConditionFalse {
 		return false
 	}
+	catalogProviderName := environment.GetCatalogProvider()
 	for capabilityInd := range module.Spec.Capabilities {
 		for interfaceInd := range module.Spec.Capabilities[capabilityInd].SupportedInterfaces {
-			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source != nil &&
-				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol ==
-					taxonomy.ConnectionType(environment.GetCatalogProvider()) {
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol),
+				catalogProviderName) {
 				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol = ""
 			}
-			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink != nil &&
-				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol ==
-					taxonomy.ConnectionType(environment.GetCatalogProvider()) {
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol),
+				catalogProviderName) {
 				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol = ""
 			}
 		}
