@@ -134,6 +134,7 @@ test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: export ADMIN_CRS_NAMESPACE?=fybrik-admin
 test: export INTERNAL_CRS_NAMESPACE?=fybrik-crd
+tests: export CATALOG_PROVIDER_NAME=mockup-catalog
 test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test

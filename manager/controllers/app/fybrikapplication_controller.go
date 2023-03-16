@@ -798,9 +798,36 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 		return moduleMap, err
 	}
 	for ind := range moduleList.Items {
+		module := &moduleList.Items[ind]
+		if len(module.Status.Conditions) > 0 &&
+			module.Status.Conditions[ModuleValidationConditionIndex].Status == v1.ConditionFalse {
+			r.Log.Warn().Msgf("ignoring invalid module %s", module.Name)
+			continue
+		}
+		refineCapabilities(module)
 		moduleMap[moduleList.Items[ind].Name] = &moduleList.Items[ind]
 	}
 	return moduleMap, nil
+}
+
+// special processing for modules that support any connections from a specific catalog provider -
+// set the protocol value to an empty one (empty values stand for "*" and are not checked)
+func refineCapabilities(module *fappv1.FybrikModule) {
+	catalogProviderName := environment.GetCatalogProvider()
+	for capabilityInd := range module.Spec.Capabilities {
+		for interfaceInd := range module.Spec.Capabilities[capabilityInd].SupportedInterfaces {
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol),
+				catalogProviderName) {
+				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol = ""
+			}
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol),
+				catalogProviderName) {
+				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol = ""
+			}
+		}
+	}
 }
 
 // get all available storage accounts
