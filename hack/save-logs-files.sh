@@ -9,11 +9,14 @@ set -eu
 FLAG_DURATION="-d|--duration"
 FLAG_NAMESPACES="-n|--namespaces"
 FLAG_PATH="-p|--path"
+FLAG_APP="-a|--application"
 FLAG_UUID="-u|--uuid"
 LONG_POS=3
+ARGS_SEPARATOR=","
+APP_CONFLICT_MESSAGE="Only one of --application / --uuid may be used"
 
 # define the possible flag options
-VALID_ARGS=$(getopt -o d:n:p:u:h --long duration:,namespaces:,path:,uuid:,help -n $(basename $0) -- "$@")
+VALID_ARGS=$(getopt -o d:n:p:u:a:h --long duration:,namespaces:,path:,application:,uuid:,help -n $(basename $0) -- "$@")
 
 # set the default values of the flags
 duration=1h
@@ -24,6 +27,8 @@ for ns in $(kubectl get ns -o=jsonpath='{.items[*].metadata.name}'); do
     fi
 done
 output_path=$(readlink -f .)/
+fybrik_application_ns=""
+fybrik_application_name=""
 fybrik_application_uuid=""
 
 function print_description {
@@ -31,18 +36,20 @@ function print_description {
 }
 
 function print_usage {
-    echo -e "Usage:\t\t$(basename $0) [$FLAG_DURATION <arg>] [$FLAG_NAMESPACES <ns1,ns2,...>] [$FLAG_PATH <arg>] [$FLAG_UUID <app-uuid>]";
+    echo -e "Usage:\t\t$(basename $0) [$FLAG_DURATION <arg>] [$FLAG_NAMESPACES <ns1,ns2,...>] [$FLAG_PATH <arg>] [$FLAG_APP <ns,name> OR $FLAG_UUID <app-uuid>]";
     echo -e "Default:\t$(basename $0) ${FLAG_DURATION:$LONG_POS} 1h ${FLAG_NAMESPACES:$LONG_POS} <any namespace with the word 'fybrik'> ${FLAG_PATH:$LONG_POS} ./";
 }
 
 function print_flags {
     echo -e "Flags:"
-    echo -e "\t$FLAG_DURATION\t the relative duration of time (e.g. 5s, 2m, 3h), only logs newer than the duration will be saved in the output. Default: 1h"
-    echo -e "\t$FLAG_NAMESPACES\t comma-separated namespaces, only resources from those namespaces will be saved in the output. Default: all the namespaces that contains the word 'fybrik'"
-    echo -e "\t$FLAG_PATH\t a path of an existant directory in which the output directory will be created. Default: current working directory"
-    echo -e "\t$FLAG_UUID\t an app.fybrik.io/app-uuid for saving its yaml if the resource exists in the namespaces, and creating an additional file of the logs containing the uuid. Default: none"
+    echo -e "\t$FLAG_DURATION\t\t the relative duration of time (e.g. 5s, 2m, 3h), only logs newer than the duration will be saved in the output. Default: 1h"
+    echo -e "\t$FLAG_NAMESPACES\t\t comma-separated namespaces, only resources from those namespaces will be saved in the output. Default: all the namespaces that contains the word 'fybrik'"
+    echo -e "\t$FLAG_PATH\t\t a path of an existant directory in which the output directory will be created. Default: current working directory"
+    echo -e "\t$FLAG_APP\t comma-separated namespace and name of fybrikapplication, for saving its yaml if the resource exists, and creating an additional file of the logs containing its uuid. Default: none. $APP_CONFLICT_MESSAGE"
+    echo -e "\t$FLAG_UUID\t\t an app.fybrik.io/app-uuid for saving its yaml if the resource exists in the namespaces, and creating an additional file of the logs containing the uuid. Default: none. $APP_CONFLICT_MESSAGE"
 }
 
+existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
 eval set -- "$VALID_ARGS"
 while [ : ]; do
     case "$1" in
@@ -58,9 +65,8 @@ while [ : ]; do
             shift 2
             ;;
         -n | --namespaces)
-            readarray -d , -t namespaces_list <<< $2
+            readarray -d $ARGS_SEPARATOR -t namespaces_list < <(printf '%s' "$2")
             # check that all the given namespaces exist
-            existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
             for ns in ${namespaces_list[@]}; do
                 if [[ ! " ${existant_ns[@]} " =~ " ${ns} " ]]; then
                     echo "error: given namespace '$ns' doesn't exist"
@@ -74,6 +80,29 @@ while [ : ]; do
             output_path=$(readlink -f $2)/
             if [[ ! -d $output_path ]]; then
                 echo "error: given path '$output_path' doesn't exist"
+                print_usage
+                exit 1
+            fi
+            shift 2
+            ;;
+        -a | --application)
+            application_args_list=()
+            readarray -d $ARGS_SEPARATOR -t application_args_list < <(printf '%s' "$2")
+            if [ ${#application_args_list[@]} -ne 2 ] || [ -z ${application_args_list[0]} ] || [ -z ${application_args_list[1]} ]; then
+                echo "error: given application namespace and name should be separated by a single comma"
+                print_usage
+                exit 1
+            fi
+            fybrik_application_ns=${application_args_list[0]}
+            fybrik_application_name=${application_args_list[1]}
+            if [[ ! " ${existant_ns[@]} " =~ " ${fybrik_application_ns} " ]]; then
+                echo "error: given namespace '$fybrik_application_ns' in flag '$FLAG_APP' doesn't exist"
+                print_usage
+                exit 1
+            fi
+            fybrik_applications_in_ns=$(kubectl get fybrikapplications -n $fybrik_application_ns -o=jsonpath='{.items[*].metadata.name}')
+            if [[ ! " ${fybrik_applications_in_ns[@]} " =~ " ${fybrik_application_name} " ]]; then
+                echo -e "error: given fybrikapplication '$fybrik_application_ns:$fybrik_application_name' doesn't exist"
                 print_usage
                 exit 1
             fi
@@ -105,11 +134,29 @@ mkdir $dirname_logs_by_container
 relevant_configmaps=("cluster-metadata" "fybrik-config")
 is_found_fybrik_application_yaml=0
 
+# update fybrik application variables and check flags usage
+if [[ ! -z $fybrik_application_uuid ]]; then
+    # uuid flag is used
+    if [[ ! -z $fybrik_application_name ]]; then
+        # application flag is also used
+        echo "error: $APP_CONFLICT_MESSAGE"
+        print_usage
+        exit 1
+    fi
+else
+    if [[ ! -z $fybrik_application_name ]]; then
+        # only application flag is used
+        kubectl get fybrikapplication $fybrik_application_name -n $fybrik_application_ns -o=yaml &> $dirname_logs/fybrik_application_$fybrik_application_ns--$fybrik_application_name.yaml
+        is_found_fybrik_application_yaml=1
+        fybrik_application_uuid=$(kubectl get fybrikapplication $fybrik_application_name -n $fybrik_application_ns -o=jsonpath='{.metadata.uid}')
+    fi
+fi
+
 # iterate over the pods in the relevant namespaces
 for ns in ${namespaces_list[@]}; do
     # save the logs of each container separately
     for pod in $(kubectl get pods -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
-        containers=$(kubectl get pods $pod -n $ns -o jsonpath="{.spec.containers[*].name}")
+        containers=$(kubectl get pods $pod -n $ns -o jsonpath='{.spec.containers[*].name}')
         for container_name in $containers; do
             kubectl logs $pod -n $ns -c $container_name --since=$duration --timestamps &> $dirname_logs_by_container/$ns--$pod--$container_name.txt
         done
@@ -130,12 +177,14 @@ for ns in ${namespaces_list[@]}; do
         kubectl get fybrikmodule $fybrik_module -n $ns -o yaml &> $dirname_logs/fybrik_module_$ns--$fybrik_module.yaml
     done
     # if given fybrik application uuid, save its yaml and create another file which only contains logs with the uuid
-    for fybrik_application in $(kubectl get fybrikapplications -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
-        if [[ $(kubectl get fybrikapplication $fybrik_application -n $ns -o=jsonpath='{.metadata.uid}') == $fybrik_application_uuid ]]; then
-            kubectl get fybrikapplication $fybrik_application -n $ns -o=yaml &> $dirname_logs/fybrik_application_$ns--$fybrik_application.yaml
-            is_found_fybrik_application_yaml=1
-        fi
-    done
+    if [[ ! -z fybrik_application_uuid ]] && [[ is_found_fybrik_application_yaml -eq 0 ]]; then
+        for fybrik_application in $(kubectl get fybrikapplications -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
+            if [[ $(kubectl get fybrikapplication $fybrik_application -n $ns -o=jsonpath='{.metadata.uid}') == $fybrik_application_uuid ]]; then
+                kubectl get fybrikapplication $fybrik_application -n $ns -o=yaml &> $dirname_logs/fybrik_application_$ns--$fybrik_application.yaml
+                is_found_fybrik_application_yaml=1
+            fi
+        done
+    fi
 done
 
 # get maximal prefix length for the combined logs file
