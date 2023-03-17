@@ -13,6 +13,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -54,6 +55,7 @@ func init() {
 	_ = fappv1.AddToScheme(scheme)
 	_ = fappv2.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
+	_ = netv1.AddToScheme(scheme)
 	_ = coordinationv1.AddToScheme(scheme)
 }
 
