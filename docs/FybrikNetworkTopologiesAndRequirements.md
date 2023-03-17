@@ -19,9 +19,9 @@ application we can separate 3 different connection types:
 
 In all these connections, the Fybrik entry point is a server, and user applications are clients. Connections `1b` and
 `1c` require external access to the Kubernetes pods, a public entry point or other mechanisms.  
-We will start on isolation of the `1a` connections. Isolation and protection of other connections types will be investigated later.
+We will start with isolation of the `1a` connections. Isolation and protection of other connections types will be investigated later.
 
-In the connections `3`, `4`, and `5` Fybrik modules are clients that connects to services or data sources. From the
+In the connections `3`, `4`, and `5` Fybrik modules are clients that connect to services or data sources. From the
 networking isolation point of view, the main difference between the connections is who defines them.
 - connection `3` is defined by Fybrik and used for helper functionality, e.g. connect to the Vault service
 - connection `4` is used by a specific module and is part of the module definition.
@@ -58,9 +58,9 @@ Responsibility of the data plane isolation is shared between Fybrik core, Fybrik
   For example, to set labels on the workload pods and inform Fybrik about the labels and the namespace where the 
   workload is deployed.
 
-- Modules might support certain protection mechanisms, such as TLS/mTLS, AIM or JWT tokens, and others. These modules 
-  should declare these optional functionality in their manifests. Fybrik users may require that the entire data plain will
-  be build with these features. Fybrik core should support it.
+- Modules might support certain protection mechanisms, such as TLS/mTLS, IAM or JWT tokens, and others. These modules
+  should declare which mechanisms they support in their manifests. Fybrik users may require that the entire data plain will
+  be built with these features. Fybrik core should support it.
 
 - Depending on the isolation method, Fybrik core should propagate all the relevant information to the deployed modules (e.g. 
   information about possible network clients), and/or correctly configure a chosen protection mechanism, e.g. Network Policies,

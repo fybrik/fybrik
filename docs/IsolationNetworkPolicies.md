@@ -36,13 +36,13 @@ The `from`/`to` element of `ingress`/`egress`
 allows to restrict incoming/outgoing network traffic based on `podSelectors` (labels based), and/or 
 `namespaceSelectors` (labels based) and/or `ipBlocks`. The last parameter can be used to restrict cross cluster connections 
 
-We suggest, after deployment a data plane module, to create an instance of a network policy that will restrict the 
+We suggest, before deploying a data plane module, creating an instance of a network policy that will restrict the 
 module connectivity.
 
 ### Backward compatibility and Network Policies isolation
 
 Addition of NP isolation can change the existing Fybrik behavior. In order to support backward compatibility, we suggest
-to add NP as an optional feature. A new entry `global.isNPEnabled` will be added into the Fybrik chart `values.yaml`.
+adding NP as an optional feature. A new entry `global.isNPEnabled` will be added into the Fybrik chart `values.yaml`.
 NP will be evoked only if this value is set to `true`.
 
 ### FybrikApplication extensions
@@ -83,11 +83,14 @@ type Selector struct {
 }
 ```
 The mapping the `Selector` elements into the `from` NP ingress definitions will be done according the following algorithm:
-- if `Namespaces` is not empty, for each entry in the array will be created a 
-   [NetworkPolicyPeer](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#networkpolicypeer-v1-networking-k8s-io)
+- if `Namespaces` is empty, a [NetworkPolicyPeer](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#networkpolicypeer-v1-networking-k8s-io)
+  with `podSelector` equals to `WorkloadSelector` will be created. Which means that only pods with the defined labels from 
+  the module namespace will be able to connect, or be connected.
+- If `Namespaces` is not empty, for each entry in the array will be created a `NetworkPolicyPeer`
    with `podSelector` equals to `WorkloadSelector` and a `namespaceSelector` contains a single `kubernetes.io/metadata.name`
    label equals to the entry from `Namespaces`. [Here](https://kubernetes.io/docs/concepts/services-networking/network-policies/#targeting-a-namespace-by-its-name) 
-   you can read more about targeting a Namespace by its name.
+   you can read more about targeting a Namespace by its name. If `Namespaces` is not empty but `WorkloadSelector` is empty, 
+   then any pod from the selected namespaces will be able to connect.
 
 - If `IPBlocks` is not empty, a separate NetworkPolicyPeer will be created for each IPBlocks entry.
 
@@ -95,7 +98,7 @@ The mapping the `Selector` elements into the `from` NP ingress definitions will 
 
 Some of Fybrik modules need external services for their functionality. For example, a currency exchange module checks 
 the currency rates form an external service.
-We suggest to add an `externalServices` array into the `FybrikModule.Spec`. Each entry will be a DNS name or IP address of 
+We suggest adding an `externalServices` array into the `FybrikModule.Spec`. Each entry will be a DNS name or IP address of 
 the external service. During `egress` NetworkPolicyPeer creations, each service name will be translated to a single IPBlock entry.
 
 ### PlotterController extensions
@@ -108,7 +111,7 @@ have a unique label, in additional to the common, fybrik application defined lab
 
 ### BlueprintController extensions
 
-BlueprintController install and uninstall Fybrik modules. We suggest to extend this functionality by creating an instance
+BlueprintController install and uninstall Fybrik modules. We suggest extending this functionality by creating an instance
 of NP for each installing module, and delete it when the module is uninstalled.
 
 For the data plane entry module, the ingress element will be created based on information from a 
