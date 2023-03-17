@@ -151,7 +151,7 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 	return rv
 }
 
-func isNPEnabled() bool {
+func IsNPEnabled() bool {
 	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
 }
 

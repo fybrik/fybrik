@@ -3,15 +3,21 @@
 
 package utils
 
-import api "fybrik.io/fybrik/manager/apis/app/v1beta1"
+import (
+	api "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	"github.com/rs/zerolog"
+	"strings"
+)
 
 const (
-	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
-	ApplicationNameLabel      = "app.fybrik.io/app-name"
-	BlueprintNamespaceLabel   = "app.fybrik.io/blueprint-namespace"
-	BlueprintNameLabel        = "app.fybrik.io/blueprint-name"
-	FybrikAppUUID             = "app.fybrik.io/app-uuid"
+	FybrikPrefix              = "app.fybrik.io"
+	ApplicationClusterLabel   = FybrikPrefix + "/app-cluster"
+	ApplicationNamespaceLabel = FybrikPrefix + "/app-namespace"
+	ApplicationNameLabel      = FybrikPrefix + "/app-name"
+	BlueprintNamespaceLabel   = FybrikPrefix + "/blueprint-namespace"
+	BlueprintNameLabel        = FybrikPrefix + "/blueprint-name"
+	FybrikAppUUID             = FybrikPrefix + "/app-uuid"
+	KubernetesInstance        = "app.kubernetes.io/instance"
 )
 
 func GetApplicationClusterFromLabels(labels map[string]string) string {
@@ -50,4 +56,18 @@ func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) stri
 		return "UUID missing"
 	}
 	return uuid
+}
+
+func CopyFybrikLabels(m map[string]interface{}, logger *zerolog.Logger) map[string]string {
+	labels := map[string]string{}
+	for k, v := range m {
+		if strings.HasPrefix(k, FybrikPrefix) {
+			if s, ok := v.(string); ok {
+				labels[k] = s
+			} else {
+				logger.Warn().Msgf("cannot convert key: %s, value %v, value type %T to string", k, v, v)
+			}
+		}
+	}
+	return labels
 }
