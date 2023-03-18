@@ -144,6 +144,9 @@ spec:
         - name: kube-mgmt
           image: {{ .Values.opaServer.kubemgmt.image }}
           args:
+          {{- if .Values.opaServer.tls.use_tls }}
+          - --opa-url=https://127.0.0.1:{{ .Values.opaServer.service.port }}/v1
+          {{- end }}
           - --require-policy-label
           - --policies={{ .Release.Namespace }}
           - --enable-data
