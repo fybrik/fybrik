@@ -5,7 +5,7 @@ set -e
 # Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
-KUBE_VERSION=1.22.0
+KUBE_VERSION=1.24.0
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
@@ -264,9 +264,10 @@ export SECRET_KEY=1234
 export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
 export OBJECT_KEY="sample.csv"
-bin/aws configure set aws_access_key_id ${ACCESS_KEY} 
-bin/aws configure set aws_secret_access_key ${SECRET_KEY}
-bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET}
+export REGION=theshire
+bin/aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+bin/aws configure set region ${REGION}
+bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
 bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body sample.csv
 rm sample.csv
 
@@ -363,12 +364,20 @@ do
 done
 
 header "\nRead the dataset from the notebook"
+
+export ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme}")
+export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname}")
+export ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port}")
+export ENDPOINT_CONNECTION=${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}
+
 cat << EOF > test.py
 import json
 import pyarrow.flight as fl
 import pandas as pd
-# Create a Flight client
-client = fl.connect('grpc://my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints:80')
+
+# Create a Flight client 
+client = fl.connect('${ENDPOINT_CONNECTION}')
+
 # Prepare the request
 request = {
     "asset": "fybrik-notebook-sample/paysim-csv",
