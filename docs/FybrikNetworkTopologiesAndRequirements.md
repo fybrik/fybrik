@@ -11,8 +11,8 @@ Fybrik data plane can be spread across several Kubernetes clusters and theoretic
 The following picture demonstrates different Fybrik data plane connection types.
 ![](./images/ConnectionTypes.png)
 
-User applications (workloads) achieve the Fybrik data plane via its entry point. Depends on the location of the
-application we can separate 3 different connection types:
+User applications (workloads) achieve the Fybrik data plane via its entry point. There are 3 different connection types,
+based on the location of the application:
 - `1a` - the application and the data plane entry module are collocated on the same Kubernetes cluster.
 - `1b` - the application is running on a Kubernetes cluster, but Fybrik cannot control the cluster.
 - `1c` - the application is not deployed on a kubernetes cluster.

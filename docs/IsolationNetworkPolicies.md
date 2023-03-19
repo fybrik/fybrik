@@ -111,7 +111,7 @@ have a unique label, in additional to the common, fybrik application defined lab
 
 ### BlueprintController extensions
 
-BlueprintController install and uninstall Fybrik modules. We suggest extending this functionality by creating an instance
+BlueprintController installs and uninstalls Fybrik modules. We suggest extending this functionality by creating an instance
 of NP for each installing module, and delete it when the module is uninstalled.
 
 For the data plane entry module, the ingress element will be created based on information from a 
