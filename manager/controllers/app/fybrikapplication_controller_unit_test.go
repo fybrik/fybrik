@@ -583,6 +583,86 @@ func TestMultipleDatasets(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(2))
 }
 
+// Assumptions on response from connectors:
+// Datasets:
+// Db2 dataset
+// S3 dataset
+// Enforcement actions: Allow
+// Applied read module supporting all connections
+// Result: plotter with a single blueprint is created successfully, a read module is applied once
+
+func TestDataSources(t *testing.T) {
+	t.Parallel()
+	g := gomega.NewGomegaWithT(t)
+	// Set the logger to development mode for verbose logs.
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	namespaced := types.NamespacedName{
+		Name:      "read-test",
+		Namespace: "default",
+	}
+	adminCRsNamespace := environment.GetAdminCRsNamespace()
+	application := &fappv1.FybrikApplication{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/data-usage.yaml", application)).NotTo(gomega.HaveOccurred())
+	application.Spec.Data = []fappv1.DataContext{
+		{
+			DataSetID:    "s3/allow-dataset",
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		},
+		{
+			DataSetID:    "db2/allow-dataset",
+			Requirements: fappv1.DataRequirements{Interface: &taxonomy.Interface{Protocol: mockup.ArrowFlight}},
+		},
+	}
+	application.SetGeneration(1)
+	application.SetUID("6a")
+	// Objects to track in the fake client.
+	objs := []runtime.Object{
+		application,
+	}
+
+	// Register operator types with the runtime scheme.
+	s := utils.NewScheme(g)
+
+	// Create a fake client to mock API calls.
+	cl := fake.NewFakeClientWithScheme(s, objs...)
+
+	// Read module
+	readModule := &fappv1.FybrikModule{}
+	g.Expect(readObjectFromFile("../../testdata/unittests/module-read-any.yaml", readModule)).NotTo(gomega.HaveOccurred())
+	readModule.Namespace = adminCRsNamespace
+	g.Expect(cl.Create(context.TODO(), readModule)).NotTo(gomega.HaveOccurred(), "the read module could not be created")
+
+	// Create a FybrikApplicationReconciler object with the scheme and fake client.
+	r := createTestFybrikApplicationController(cl, s)
+	g.Expect(r).NotTo(gomega.BeNil())
+
+	req := reconcile.Request{
+		NamespacedName: namespaced,
+	}
+
+	_, err := r.Reconcile(context.Background(), req)
+	g.Expect(err).To(gomega.BeNil())
+
+	err = cl.Get(context.TODO(), req.NamespacedName, application)
+	g.Expect(err).To(gomega.BeNil(), "Cannot fetch fybrikapplication")
+	// check plotter creation
+	g.Expect(application.Status.Generated).ToNot(gomega.BeNil())
+	g.Expect(application.Status.Generated.Namespace).To(gomega.Equal(environment.GetInternalCRsNamespace()))
+	plotterObjectKey := types.NamespacedName{
+		Namespace: application.Status.Generated.Namespace,
+		Name:      application.Status.Generated.Name,
+	}
+	plotter := &fappv1.Plotter{}
+	err = cl.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(plotter.Spec.Assets).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Templates).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows).To(gomega.HaveLen(2))
+	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
+	g.Expect(plotter.Spec.Flows[1].SubFlows).To(gomega.HaveLen(1))
+}
+
 // Tests that the taxonomy is properly compiled
 // with the FilterAction transformation
 func TestFilterAsset(t *testing.T) {
