@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -197,7 +196,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, err
 	}
 
-	tmpDir, err := ioutil.TempDir(environment.GetDataDir(), "fybrik-helm-")
+	tmpDir, err := os.MkdirTemp(environment.GetDataDir(), "fybrik-helm-")
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
@@ -319,7 +318,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			Labels:             blueprint.Labels,
 			UUID:               uuid,
 		}
-		var args map[string]interface{}
 		args, err := utils.StructToMap(&helmValues)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")

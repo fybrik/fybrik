@@ -2,7 +2,8 @@
 
 Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of Fybrik.
 
-The `manager` binary includes all of the controllers that this project defines but you need to select which of the controllers to run by passing one or more of the following command line arguments:
+The `manager` binary includes all of the controllers that this project defines but you need to select which of the 
+controllers to run by passing one or more of the following command line arguments:
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
 - `enable-blueprint-controller` to enable the controller for `Blueprint`
@@ -17,7 +18,8 @@ Use one of below methods to prepare the fybrik environment.
 
 1. Install Fybrik using the [Quick Start](https://fybrik.io/dev/get-started/quickstart/) guide.
 
-2. Follow [the instructions](../pipeline/README.md) to use tekton pipeline to deploy the fybrik components to your existing cluster.
+2. Follow [the instructions](../pipeline/README.md) to use tekton pipeline to deploy the fybrik components to your 
+existing cluster.
 
 ### Run required components
 
@@ -26,8 +28,10 @@ This can be done by one of these options:
 1. Running components locally directly (no instructions provided)
 2. Running components in a cluster 
 
-For option 2, the Helm installation allows you to pick which compoenents to install. 
-Follow the [installation guide](https://fybrik.io/dev/get-started/quickstart/) as usual,the fybrik crd needs to be installed before installing fybrik as is, but in the Helm installation for the control plane add `--set manager.enabled=false` to skip the deployment of the manager. For example:
+For option 2, the Helm installation allows you to pick which components to install. 
+Follow the [installation guide](https://fybrik.io/dev/get-started/quickstart/) as usual,the fybrik crd needs to be 
+installed before installing fybrik as is, but in the Helm installation for the control plane 
+add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
 helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false -n fybrik-system --wait
