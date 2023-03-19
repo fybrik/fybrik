@@ -2,7 +2,7 @@
 
 Kubernetes [custom resources and controllers](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) of Fybrik.
 
-The `manager` binary includes all of the controllers that this project defines but you need to select which of the 
+The `manager` binary includes all of the controllers that this project defines, but you need to select which of the 
 controllers to run by passing one or more of the following command line arguments:
 - `enable-all-controllers` to enable all controllers
 - `enable-application-controller` to enable the controller for `FybrikApplication`
@@ -34,13 +34,13 @@ installed before installing fybrik as is, but in the Helm installation for the c
 add `--set manager.enabled=false` to skip the deployment of the manager. For example:
 
 ```bash
-helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=master --set manager.enabled=false --set coordinator.catalog=katalog -n fybrik-system --wait
 ```
 
-If your are using the local development images please use the `0.0.0` tag:
+If you are using the local development images please use the `0.0.0` tag:
 
 ```bash
-helm install fybrik charts/fybrik --set global.tag=0.0.0 --set manager.enabled=false -n fybrik-system --wait
+helm install fybrik charts/fybrik --set global.tag=0.0.0 --set manager.enabled=false --set coordinator.catalog=katalog -n fybrik-system --wait
 ```
 
 ### Expose running components
@@ -50,8 +50,8 @@ If you chose to run these components in a cluster you can use port-forward.
 For example:
 
 ```bash
-kubectl -n fybrik-system port-forward svc/katalog-connector 49152:80 &
-kubectl -n fybrik-system port-forward svc/opa-connector 49153:80 &
+kubectl -n fybrik-system port-forward svc/katalog-connector 49152:8080 &
+kubectl -n fybrik-system port-forward svc/opa-connector 49153:8080 &
 ```
 
 ### Set configuration environment variables
