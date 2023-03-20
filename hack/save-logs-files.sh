@@ -6,26 +6,18 @@
 # error and exit configuration
 set -eu
 
-FLAG_DURATION="-d|--duration"
-FLAG_NAMESPACES="-n|--namespaces"
-FLAG_PATH="-p|--path"
-FLAG_APP="-a|--application"
-FLAG_UUID="-u|--uuid"
-LONG_POS=3
+FLAG_DURATION="d"
+FLAG_NAMESPACES="n"
+FLAG_PATH="p"
+FLAG_APP="a"
+FLAG_UUID="u"
+FLAG_HELP="h"
 ARGS_SEPARATOR=","
-APP_CONFLICT_MESSAGE="Only one of --application / --uuid may be used"
+APP_CONFLICT_MESSAGE="Only one of -$FLAG_APP/-$FLAG_UUID may be used"
 
-# define the possible flag options
-VALID_ARGS=$(getopt -o d:n:p:u:a:h --long duration:,namespaces:,path:,application:,uuid:,help -n $(basename $0) -- "$@")
-
-# set the default values of the flags
+# set initial values of the flags
 duration=1h
 namespaces_list=()
-for ns in $(kubectl get ns -o=jsonpath='{.items[*].metadata.name}'); do
-    if [[ $ns == *"fybrik"* ]]; then
-        namespaces_list+=("$ns")
-    fi
-done
 output_path=$(readlink -f .)/
 fybrik_application_ns=""
 fybrik_application_name=""
@@ -36,37 +28,36 @@ function print_description {
 }
 
 function print_usage {
-    echo -e "Usage:\t\t$(basename $0) [$FLAG_DURATION <arg>] [$FLAG_NAMESPACES <ns1,ns2,...>] [$FLAG_PATH <arg>] [$FLAG_APP <ns,name> OR $FLAG_UUID <app-uuid>]";
-    echo -e "Default:\t$(basename $0) ${FLAG_DURATION:$LONG_POS} 1h ${FLAG_NAMESPACES:$LONG_POS} <any namespace with the word 'fybrik'> ${FLAG_PATH:$LONG_POS} ./";
+    echo -e "Usage:\t\t$(basename $0) [-$FLAG_DURATION <duration>] [-$FLAG_NAMESPACES <ns1,ns2,...>] [-$FLAG_PATH <path>] [-$FLAG_APP <ns,app-name> OR -$FLAG_UUID <app-uuid>]";
+    echo -e "Default:\t$(basename $0) -$FLAG_DURATION 1h -$FLAG_NAMESPACES <any namespace with the word 'fybrik'> -$FLAG_PATH ./";
 }
 
 function print_flags {
     echo -e "Flags:"
-    echo -e "\t$FLAG_DURATION\t\t the relative duration of time (e.g. 5s, 2m, 3h), only logs newer than the duration will be saved in the output. Default: 1h"
-    echo -e "\t$FLAG_NAMESPACES\t\t comma-separated namespaces, only resources from those namespaces will be saved in the output. Default: all the namespaces that contains the word 'fybrik'"
-    echo -e "\t$FLAG_PATH\t\t a path of an existant directory in which the output directory will be created. Default: current working directory"
-    echo -e "\t$FLAG_APP\t comma-separated namespace and name of fybrikapplication, for saving its yaml if the resource exists, and creating an additional file of the logs containing its uuid. Default: none. $APP_CONFLICT_MESSAGE"
-    echo -e "\t$FLAG_UUID\t\t an app.fybrik.io/app-uuid for saving its yaml if the resource exists in the namespaces, and creating an additional file of the logs containing the uuid. Default: none. $APP_CONFLICT_MESSAGE"
+    echo -e "\t-$FLAG_DURATION\t the relative duration of time (e.g. 5s, 2m, 3h), only logs newer than the duration will be saved in the output. Default: 1h"
+    echo -e "\t-$FLAG_NAMESPACES\t comma-separated namespaces, only resources from those namespaces will be saved in the output. Default: all the namespaces that contains the word 'fybrik'"
+    echo -e "\t-$FLAG_PATH\t a path of an existant directory in which the output directory will be created. Default: current working directory"
+    echo -e "\t-$FLAG_APP\t comma-separated namespace and name of fybrikapplication, for saving its yaml if the resource exists, and creating an additional file of the logs containing its uuid. Default: none. $APP_CONFLICT_MESSAGE"
+    echo -e "\t-$FLAG_UUID\t an app.fybrik.io/app-uuid for saving its yaml if the resource exists in the namespaces, and creating an additional file of the logs containing the uuid. Default: none. $APP_CONFLICT_MESSAGE"
+    echo -e "\t-$FLAG_HELP\t print this message and exit"
 }
 
-existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
-eval set -- "$VALID_ARGS"
-while [ : ]; do
-    case "$1" in
-        -d | --duration)
-            duration=$2
+while getopts "$FLAG_DURATION:$FLAG_NAMESPACES:$FLAG_PATH:$FLAG_UUID:$FLAG_APP:$FLAG_HELP" opt; do
+    case "$opt" in
+        $FLAG_DURATION)
+            duration="$OPTARG"
             # check that the argument is valid
             re='^[0-9]+[smh]$'
             if [[ ! $duration =~ $re ]]; then
-                echo "error: invalid argument '$duration' for -d|--duration flag: should contain a number and a time unit (s/m/h), e.g. 1h or 30m"
+                echo "error: invalid argument '$duration' for $FLAG_DURATION flag: should contain a number and a time unit (s/m/h), e.g. 1h or 30m"
                 print_usage
                 exit 1
             fi
-            shift 2
             ;;
-        -n | --namespaces)
-            readarray -d $ARGS_SEPARATOR -t namespaces_list < <(printf '%s' "$2")
+        $FLAG_NAMESPACES)
+            readarray -d $ARGS_SEPARATOR -t namespaces_list < <(printf '%s' "$OPTARG")
             # check that all the given namespaces exist
+            existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
             for ns in ${namespaces_list[@]}; do
                 if [[ ! " ${existant_ns[@]} " =~ " ${ns} " ]]; then
                     echo "error: given namespace '$ns' doesn't exist"
@@ -74,25 +65,24 @@ while [ : ]; do
                     exit 1
                 fi
             done
-            shift 2
             ;;
-        -p | --path)
-            output_path=$(readlink -f $2)/
+        $FLAG_PATH)
+            output_path=$(readlink -f "$OPTARG")/
             if [[ ! -d $output_path ]]; then
                 echo "error: given path '$output_path' doesn't exist"
                 print_usage
                 exit 1
             fi
-            shift 2
             ;;
-        -a | --application)
+        $FLAG_APP)
             application_args_list=()
-            readarray -d $ARGS_SEPARATOR -t application_args_list < <(printf '%s' "$2")
+            readarray -d $ARGS_SEPARATOR -t application_args_list < <(printf '%s' "$OPTARG")
             if [ ${#application_args_list[@]} -ne 2 ] || [ -z ${application_args_list[0]} ] || [ -z ${application_args_list[1]} ]; then
                 echo "error: given application namespace and name should be separated by a single comma"
                 print_usage
                 exit 1
             fi
+            existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
             fybrik_application_ns=${application_args_list[0]}
             fybrik_application_name=${application_args_list[1]}
             if [[ ! " ${existant_ns[@]} " =~ " ${fybrik_application_ns} " ]]; then
@@ -106,23 +96,32 @@ while [ : ]; do
                 print_usage
                 exit 1
             fi
-            shift 2
             ;;
-        -u | --uuid)
-            fybrik_application_uuid=$2
-            shift 2
+        $FLAG_UUID)
+            fybrik_application_uuid="$OPTARG"
             ;;
-        -h | --help)
+        $FLAG_HELP)
             print_description
             print_usage
             print_flags
             exit 0
             ;;
-        --) shift; 
-            break 
+        : | ?)
+            print_usage
+            exit 1
             ;;
     esac
 done
+shift "$(($OPTIND -1))"
+
+# if no namespaces were provided, set value to default namespaces
+if [[ ${#namespaces_list[@]} -eq 0 ]]; then
+    for ns in $(kubectl get ns -o=jsonpath='{.items[*].metadata.name}'); do
+        if [[ $ns == *"fybrik"* ]]; then
+            namespaces_list+=("$ns")
+        fi
+    done
+fi
 
 # create a directory for saving output
 dirname_logs=$output_path"fybrik_logs_$(date +%Y-%m-%d_%H-%M)_last_$duration"
@@ -187,33 +186,37 @@ for ns in ${namespaces_list[@]}; do
     fi
 done
 
-# get maximal prefix length for the combined logs file
-max_len=0
-for f in $dirname_logs_by_container/*.txt; do
-    f_short=$(basename -s .txt $f)
-    if [ ${#f_short} -gt $max_len ]; then
-        max_len=${#f_short}
-    fi
-done
-
 FILENAME_COMBINED=combined_logs
 FILENAME_COMBINED_SORTED=combined_logs_sorted
 
-# combine all the logs, with prefix of their ns--pod--container
-for f in $dirname_logs_by_container/*.txt; do
-    f_short=$(basename -s .txt $f)
-    prefix=$(printf "%-${max_len}s\n" "$f_short")
-    while read line; do
-        echo -e "$prefix || $line" >> $dirname_logs/$FILENAME_COMBINED.txt
-    done < $f
-done
-
-# if any logs are found, sort them by their timestamps and remove combined file
-if [[ -e $dirname_logs/$FILENAME_COMBINED.txt ]]; then
-    sort -k 3 $dirname_logs/$FILENAME_COMBINED.txt > $dirname_logs/$FILENAME_COMBINED_SORTED.txt
-    rm $dirname_logs/$FILENAME_COMBINED.txt
+if [[ $(find $dirname_logs_by_container -type f | wc -l) -eq 0 ]]; then
+    echo "there are no pods in the explored namespaces"
 else
-    echo "no log entries were found in the pods in the explored namespaces"
+    # get maximal prefix length for the combined logs file
+    max_len=0
+    for f in $dirname_logs_by_container/*.txt; do
+        f_short=$(basename -s .txt $f)
+        if [ ${#f_short} -gt $max_len ]; then
+            max_len=${#f_short}
+        fi
+    done
+
+    # combine all the logs, with prefix of their ns--pod--container
+    for f in $dirname_logs_by_container/*.txt; do
+        f_short=$(basename -s .txt $f)
+        prefix=$(printf "%-${max_len}s\n" "$f_short")
+        while read line; do
+            echo -e "$prefix || $line" >> $dirname_logs/$FILENAME_COMBINED.txt
+        done < $f
+    done
+
+    # if any logs are found, sort them by their timestamps and remove combined file
+    if [[ -e $dirname_logs/$FILENAME_COMBINED.txt ]]; then
+        sort -k 3 $dirname_logs/$FILENAME_COMBINED.txt > $dirname_logs/$FILENAME_COMBINED_SORTED.txt
+        rm $dirname_logs/$FILENAME_COMBINED.txt
+    else
+        echo "no log entries were found in the pods in the explored namespaces"
+    fi
 fi
 
 # if given fybrik application uuid, create another file which only contains logs with the uuid
