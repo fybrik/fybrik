@@ -203,8 +203,7 @@ else
       installer -pkg AWSCLIV2.pkg \
               -target CurrentUserHomeDirectory \
               -applyChoiceChangesXML bin/choices.xml
-      rm bin/aws bin/aws_completer
-      ln -s /bin/aws-cli/aws ./bin/aws
+      ln -s ./bin/aws-cli/aws ./bin/aws
       rm AWSCLIV2.pkg
 
     else
