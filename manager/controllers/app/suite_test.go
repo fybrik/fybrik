@@ -208,6 +208,7 @@ func SetIfNotSet(key, value string, t GinkgoTInterface) {
 
 func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
+	SetIfNotSet(environment.CatalogProviderNameKey, "mockup-catalog", t)
 	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
 	SetIfNotSet(environment.MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
