@@ -233,7 +233,7 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
 
    # Prepare the request
    request = {
-       "asset": "openmetadata-file.default.openmetadata.userdata",
+       "asset": "openmetadata-https.default.openmetadata.userdata",
    }
 
    # Send request and fetch result as a pandas DataFrame
