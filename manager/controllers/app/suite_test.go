@@ -108,16 +108,16 @@ var _ = BeforeSuite(func() {
 			fmt.Printf("Suite test: Using controller namespace: %s; using data access module namespace %s\n: ",
 				controllerNamespace, modulesNamespace)
 
-			systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
-			workerNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetDefaultModulesNamespace()})
-			// the testing environment will restrict access to secrets, modules and storage accounts
+			adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
+			internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
+			// the testing environment will restrict access to modules and storage accounts
 			mgr, err = ctrl.NewManager(cfg, ctrl.Options{
 				Scheme:             scheme.Scheme,
 				MetricsBindAddress: "localhost:8086",
 				NewCache: cache.BuilderWithOptions(cache.Options{SelectorsByObject: cache.SelectorsByObject{
-					&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
-					&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-					&corev1.Secret{}:               {Field: workerNamespaceSelector},
+					&fappv1.FybrikModule{}:         {Field: adminCRsNamespaceSelector},
+					&fappv2.FybrikStorageAccount{}: {Field: adminCRsNamespaceSelector},
+					&corev1.Secret{}:               {Field: internalCRsNamespaceSelector},
 				}}),
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -140,7 +140,7 @@ var _ = BeforeSuite(func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			// Setup plotter controller
-			clusterMgr, err := local.NewClusterManager(mgr.GetClient(), controllerNamespace)
+			clusterMgr, err := local.NewClusterManager(mgr.GetClient())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(clusterMgr).NotTo(BeNil())
 			err = NewPlotterReconciler(mgr, "Plotter", clusterMgr).SetupWithManager(mgr)
@@ -152,11 +152,30 @@ var _ = BeforeSuite(func() {
 			}()
 
 			k8sClient = mgr.GetClient()
+			adminNs := environment.GetAdminCRsNamespace()
+			internalNs := environment.GetInternalCRsNamespace()
+
 			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: environment.GetSystemNamespace(),
+					Name: controllerNamespace,
 				},
 			}))
+
+			if internalNs != controllerNamespace {
+				Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: internalNs,
+					},
+				}))
+			}
+
+			if adminNs != controllerNamespace && adminNs != internalNs {
+				Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: adminNs,
+					},
+				}))
+			}
 
 			Expect(k8sClient.Create(context.Background(), &corev1.Namespace{
 				ObjectMeta: metav1.ObjectMeta{
@@ -189,6 +208,7 @@ func SetIfNotSet(key, value string, t GinkgoTInterface) {
 
 func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.CatalogConnectorServiceAddressKey, "http://localhost:50085", t)
+	SetIfNotSet(environment.CatalogProviderNameKey, "mockup-catalog", t)
 	SetIfNotSet(environment.VaultAddressKey, "http://127.0.0.1:8200/", t)
 	SetIfNotSet(environment.EnableWebhooksKey, "false", t)
 	SetIfNotSet(environment.MainPolicyManagerConnectorURLKey, "http://localhost:50090", t)
@@ -198,4 +218,6 @@ func DefaultTestConfiguration(t GinkgoTInterface) {
 	SetIfNotSet(environment.LocalClusterName, "thegreendragon", t)
 	SetIfNotSet(environment.LocalRegion, "theshire", t)
 	SetIfNotSet(environment.LocalVaultAuthPath, "kind", t)
+	SetIfNotSet(environment.InternalCRsNamespace, "fybrik-crd", t)
+	SetIfNotSet(environment.AdminCRsNamespace, "fybrik-admin", t)
 }

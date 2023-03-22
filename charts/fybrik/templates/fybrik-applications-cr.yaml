@@ -3,7 +3,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "fybrik.fullname" . }}-admin-cr
+  name: {{ template "fybrik.fullname" . }}-applications-cr
 rules:
 - apiGroups:
   - app.fybrik.io

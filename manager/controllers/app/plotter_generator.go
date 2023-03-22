@@ -49,7 +49,7 @@ type PlotterGenerator struct {
 func (p *PlotterGenerator) Provision(item *datapath.DataInfo, destinationInterface *taxonomy.Interface,
 	account *fappv2.FybrikStorageAccountSpec) (*fappv1.DataStore, error) {
 	// provisioned storage
-	secretRef := &taxonomy.SecretRef{Name: account.SecretRef, Namespace: environment.GetSystemNamespace()}
+	secretRef := &taxonomy.SecretRef{Name: account.SecretRef, Namespace: environment.GetAdminCRsNamespace()}
 	allocateRequest := &storagemanager.AllocateStorageRequest{
 		AccountType:       account.Type,
 		AccountProperties: taxonomy.StorageAccountProperties{Properties: account.AdditionalProperties},
@@ -249,7 +249,7 @@ func (p *PlotterGenerator) handleNewAsset(item *datapath.DataInfo, selection *da
 	}
 	if environment.IsVaultEnabled() {
 		secretPath :=
-			vault.PathForReadingKubeSecret(environment.GetSystemNamespace(), element.StorageAccount.SecretRef)
+			vault.PathForReadingKubeSecret(environment.GetAdminCRsNamespace(), element.StorageAccount.SecretRef)
 
 		item.DataDetails.Credentials = secretPath
 	}
@@ -344,7 +344,7 @@ func moduleAPIToService(api *datacatalog.ResourceDetails, scope fappv1.Capabilit
 		// to create the instance name.
 		instanceName = managerUtils.CreateStepName(moduleName, assetID)
 	}
-	releaseName := managerUtils.GetReleaseName(appContext.Name, appContext.Namespace, instanceName)
+	releaseName := managerUtils.GetReleaseName(appContext.Name, string(appContext.UID), instanceName)
 	releaseNamespace := environment.GetDefaultModulesNamespace()
 
 	type Release struct {

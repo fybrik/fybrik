@@ -47,7 +47,7 @@ func (c *PlotterInterface) CreateResourceReference(owner *fapp.ResourceReference
 	// Plotter runs in the control plane namespace. Plotter name identifies fybrikapplication (name and namespace)
 	return &fapp.ResourceReference{
 		Name:       owner.Name + "-" + owner.Namespace,
-		Namespace:  environment.GetSystemNamespace(),
+		Namespace:  environment.GetInternalCRsNamespace(),
 		Kind:       "Plotter",
 		AppVersion: owner.AppVersion,
 	}

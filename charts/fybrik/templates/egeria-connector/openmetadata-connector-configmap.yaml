@@ -1,0 +1,16 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fybrik.fullname" . }}-egeria-connector-configmap
+data:
+  conf.yaml: |- 
+{{- if .Values.config_override }}
+{{ .Values.config_override  | indent 4}}
+{{- else }}
+    egeria_endpoint: {{ .Values.egeriaConnector.egeria_endpoint }}
+{{- end -}}
+
+{{- end -}}

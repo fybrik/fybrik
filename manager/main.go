@@ -70,15 +70,16 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 	}
 	setupLog.Info().Msg("Application namespace: " + applicationNamespace)
 
-	systemNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetSystemNamespace()})
+	internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
+	adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
+
 	selectorsByObject := cache.SelectorsByObject{
 		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
-		&fappv1.Plotter{}:              {Field: systemNamespaceSelector},
-		&fappv1.FybrikModule{}:         {Field: systemNamespaceSelector},
-		&fappv2.FybrikStorageAccount{}: {Field: systemNamespaceSelector},
-		&corev1.ConfigMap{}:            {Field: systemNamespaceSelector},
-		&fappv1.Blueprint{}:            {Field: systemNamespaceSelector},
-		&corev1.Secret{}:               {Field: systemNamespaceSelector},
+		&fappv1.Plotter{}:              {Field: internalCRsNamespaceSelector},
+		&fappv1.Blueprint{}:            {Field: internalCRsNamespaceSelector},
+		&corev1.Secret{}:               {Field: internalCRsNamespaceSelector}, // pull image secrets for blueprints
+		&fappv1.FybrikModule{}:         {Field: adminCRsNamespaceSelector},
+		&fappv2.FybrikStorageAccount{}: {Field: adminCRsNamespaceSelector},
 	}
 
 	client := ctrl.GetConfigOrDie()
@@ -356,6 +357,6 @@ func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error)
 		return razee.NewRazeeOAuthClusterManager(strings.TrimSpace(razeeURL), strings.TrimSpace(apiKey), multiClusterGroup)
 	} else {
 		setupLog.Info().Msg("Using local cluster manager")
-		return local.NewClusterManager(mgr.GetClient(), environment.GetSystemNamespace())
+		return local.NewClusterManager(mgr.GetClient())
 	}
 }
