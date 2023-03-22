@@ -130,7 +130,6 @@ mkdir $dirname_logs
 dirname_logs_by_container=$dirname_logs/logs_by_container
 mkdir $dirname_logs_by_container
 
-relevant_configmaps=("cluster-metadata" "fybrik-config")
 is_found_fybrik_application_yaml=0
 
 # update fybrik application variables and check flags usage
@@ -151,7 +150,7 @@ else
     fi
 fi
 
-# iterate over the pods in the relevant namespaces
+# iterate over the relevant namespaces
 for ns in ${namespaces_list[@]}; do
     # save the logs of each container separately
     for pod in $(kubectl get pods -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
@@ -160,9 +159,9 @@ for ns in ${namespaces_list[@]}; do
             kubectl logs $pod -n $ns -c $container_name --since=$duration --timestamps &> $dirname_logs_by_container/$ns--$pod--$container_name.txt
         done
     done
-    # save relevant configmaps from relevant namespaces
+    # save the non-certificates configmaps
     for cm in $(kubectl get cm -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
-        if [[ " ${relevant_configmaps[@]} " =~ " ${cm} " ]]; then
+        if [[ ! "$cm" == *.crt ]]; then
             cm_data=$(kubectl get cm $cm -n $ns -o=jsonpath='{.data}')s
             prefix=$ns--$cm
             echo -e "$prefix:\n$cm_data\n" >> $dirname_logs/configmaps.txt
