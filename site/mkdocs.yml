@@ -25,6 +25,7 @@ nav:
   - concepts/taxonomy.md
   - Plugins:
     - concepts/connectors.md
+    - concepts/storage_manager.md
     - concepts/modules.md
     - concepts/vault_plugins.md
   - concepts/config-policies.md
@@ -45,6 +46,7 @@ nav:
   - Connectors API:
     - Data catalog: reference/connectors-datacatalog/README.md
     - Policy manager: reference/connectors-policymanager/README.md
+  - Storage manager API: reference/connectors-storagemanager/README.md
   - Components:
     - reference/ddc.md
     - reference/katalog.md
@@ -113,3 +115,4 @@ plugins:
       include_yaml:
         - ./external.yaml
         - arrowFlight: "./arrowFlightReleases.yaml"
+        - airByte: "./airByteReleases.yaml"

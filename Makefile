@@ -134,6 +134,7 @@ test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
 test: export ADMIN_CRS_NAMESPACE?=fybrik-admin
 test: export INTERNAL_CRS_NAMESPACE?=fybrik-crd
+tests: export CATALOG_PROVIDER_NAME=mockup-catalog
 test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test
@@ -181,7 +182,6 @@ run-notebook-readflow-tls-tests:
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
-run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.7
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests: export COPY_TEST_CACERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
