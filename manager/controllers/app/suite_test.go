@@ -17,7 +17,6 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -134,7 +133,7 @@ var _ = BeforeSuite(func() {
 				&release.Release{
 					Name: "ra8afad067a6a96084dcb", // Release name is from arrow-flight module
 					Info: &release.Info{Status: release.StatusDeployed},
-				}, []*unstructured.Unstructured{},
+				},
 			)
 			err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
 			Expect(err).ToNot(HaveOccurred())

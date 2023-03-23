@@ -5,6 +5,7 @@ package helm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -211,8 +212,15 @@ func TestHelmRelease(t *testing.T) {
 	Log(t, "status", err)
 
 	var resources []*unstructured.Unstructured
-	resources, err = impl.GetResources(cfg, rel.Manifest)
-	assert.Nil(t, err)
+	for versionKind := range rel.Info.Resources {
+		for _, obj := range rel.Info.Resources[versionKind] {
+			if unstr, ok := obj.(*unstructured.Unstructured); ok {
+				resources = append(resources, unstr)
+			} else {
+				Log(t, "status", errors.New("status: could not obtain resources"))
+			}
+		}
+	}
 	assert.Len(t, resources, 1)
 	computedResult, _ := kstatus.Compute(resources[0])
 	assert.Equal(t, kstatus.CurrentStatus, computedResult.Status)
