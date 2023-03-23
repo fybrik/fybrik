@@ -41,6 +41,13 @@ generate-connectors-docs:
 			-t /workdir/site/templates/openapigenerator \
 			-o  /workdir/site/docs/reference/connectors-policymanager
 
+	docker run --user $(shell id -u):$(shell stat -c %g "${ABS_ROOT_DIR}") --rm -v "${ABS_ROOT_DIR}":/workdir \
+			${OPENAPI_GENERATOR_IMG} generate \
+			-i /workdir/connectors/api/storagemanager.spec.yaml \
+			-g markdown \
+			-t /workdir/site/templates/openapigenerator \
+			-o  /workdir/site/docs/reference/connectors-storagemanager
+
 clean:
 	rm makeenv
 
