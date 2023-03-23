@@ -3,6 +3,11 @@
 # Copyright 2023 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
+if [[ ! "$OSTYPE" == "linux"* ]]; then
+    echo "OS '$OSTYPE' is not supported. Aborting." >&2
+    exit 1
+fi
+
 # error and exit configuration
 set -eu
 
