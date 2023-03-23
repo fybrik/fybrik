@@ -215,7 +215,7 @@ func TestHelmRelease(t *testing.T) {
 	var resources []*unstructured.Unstructured
 	for versionKind := range rel.Info.Resources {
 		for _, obj := range rel.Info.Resources[versionKind] {
-			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+			if unstr, errConvert := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); errConvert == nil {
 				resources = append(resources, &unstructured.Unstructured{Object: unstr})
 			} else {
 				Log(t, "status", errors.New("status: could not obtain resources"))
