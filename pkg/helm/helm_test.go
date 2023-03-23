@@ -20,6 +20,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 
 	"fybrik.io/fybrik/pkg/environment"
@@ -214,8 +215,8 @@ func TestHelmRelease(t *testing.T) {
 	var resources []*unstructured.Unstructured
 	for versionKind := range rel.Info.Resources {
 		for _, obj := range rel.Info.Resources[versionKind] {
-			if unstr, ok := obj.(*unstructured.Unstructured); ok {
-				resources = append(resources, unstr)
+			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+				resources = append(resources, &unstructured.Unstructured{Object: unstr})
 			} else {
 				Log(t, "status", errors.New("status: could not obtain resources"))
 			}

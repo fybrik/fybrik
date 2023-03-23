@@ -510,10 +510,10 @@ func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid stri
 	var resources []*unstructured.Unstructured
 	for versionKind := range rel.Info.Resources {
 		for _, obj := range rel.Info.Resources[versionKind] {
-			if unstr, ok := obj.(*unstructured.Unstructured); ok {
-				resources = append(resources, unstr)
+			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+				resources = append(resources, &unstructured.Unstructured{Object: unstr})
 			} else {
-				log.Warn().Msgf("error getting resources for the release %s", rel.Name)
+				log.Err(err).Msg("error getting resources")
 				return corev1.ConditionUnknown, ""
 			}
 		}
