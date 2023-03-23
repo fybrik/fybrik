@@ -503,7 +503,8 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, rel *release.Release, uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, rel *release.Release,
+	uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
