@@ -343,7 +343,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			}
 		}
 		if rel != nil && rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(cfg, rel, uuid)
+			status, errMsg := r.checkReleaseStatus(rel, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -503,8 +503,7 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, rel *release.Release,
-	uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
