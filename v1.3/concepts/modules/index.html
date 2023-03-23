@@ -634,6 +634,20 @@
               
   
   
+  
+    <li class="md-nav__item">
+      <a href="../storage_manager/" class="md-nav__link">
+        Storage manager
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
     
   
   
@@ -1064,22 +1078,36 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../reference/connectors-storagemanager/" class="md-nav__link">
+        Storage manager API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5_4" type="checkbox" id="__nav_5_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_5_3">
+        <label class="md-nav__link" for="__nav_5_4">
           Components
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Components" data-md-level="2">
-        <label class="md-nav__title" for="__nav_5_3">
+        <label class="md-nav__title" for="__nav_5_4">
           <span class="md-nav__icon md-icon"></span>
           Components
         </label>
@@ -1526,7 +1554,7 @@ Can be a client to the external component(s) or be independent.</li>
 <tbody>
 <tr>
 <td><a href="https://github.com/fybrik/arrow-flight-module">arrow-flight-module</a></td>
-<td>reading and writing datasets while performing data transformations</td>
+<td>reading and writing datasets while performing data transformations using <a href="https://arrow.apache.org/docs/format/Flight.html">Arrow Flight</a></td>
 <td>https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml</td>
 <td></td>
 </tr>
@@ -1546,7 +1574,37 @@ Can be a client to the external component(s) or be independent.</li>
 <td><a href="https://github.com/fybrik/mover">implicit-copy</a></td>
 <td>copies data between any two supported data stores, for example S3 and Kafka, and applies transformations.</td>
 <td>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-batch-module.yaml<br> <br>https://raw.githubusercontent.com/fybrik/data-movement-operator/master/modules/implicit-copy-stream-module.yaml</td>
-<td><a href="../../reference/crds#fybrikstorageaccount"><code>FybrikStorageAccount</code></a> resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data.</td>
+<td><nobr><a href="../../reference/crds#appfybrikiov1beta2"><code>FybrikStorageAccount</code></a></nobr> resource deployed in the control plane namespace to hold the details of the storage which is used by the module for coping the data</td>
+</tr>
+<tr>
+<td><a href="https://github.com/fybrik/dremio-module">dremio-module</a></td>
+<td>configures a <a href="https://docs.dremio.com/software/deployment/">Dremio cluster</a> for data access in Fybrik</td>
+<td>https://raw.githubusercontent.com/fybrik/dremio-module/main/dremio-module.yaml</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/fybrik/trino-module">trino-module</a></td>
+<td>configures a <a href="https://trino.io/docs/current/overview/concepts.html#cluster">Trino cluster</a> for data access in Fybrik</td>
+<td>https://raw.githubusercontent.com/fybrik/trino-module/main/trino-module.yaml</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/fybrik/REST-read-example">REST-read-example-module</a></td>
+<td>an example of Fybrik read module that uses REST protocol to connect to a <a href="https://www.hl7.org/fhir/overview.html">FHIR</a> server to obtain medical records</td>
+<td>https://raw.githubusercontent.com/fybrik/REST-read-example/main/restFHIRmodule.yaml</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/fybrik/hello-world-read-module">hello-world-read-module</a></td>
+<td>an example of a read module for Fybrik</td>
+<td>https://raw.githubusercontent.com/fybrik/hello-world-read-module/main/hello-world-read-module.yaml</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/fybrik/template-module">template-module</a></td>
+<td>a template github repository that helps develop a Fybrik module faster and easier</td>
+<td></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1572,7 +1630,7 @@ Can be a client to the external component(s) or be independent.</li>
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../connectors/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Connectors" rel="prev">
+        <a href="../storage_manager/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Storage manager" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1581,7 +1639,7 @@ Can be a client to the external component(s) or be independent.</li>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Connectors
+              Storage manager
             </div>
           </div>
         </a>
