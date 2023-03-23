@@ -1405,12 +1405,6 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fybri
 </code></pre></div></p>
 </li>
 <li>
-<p>Create a new namespace for the application, and set it as default:
-    <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>fybrik-airbyte-sample
-kubectl<span class="w"> </span>config<span class="w"> </span>set-context<span class="w"> </span>--current<span class="w"> </span>--namespace<span class="o">=</span>fybrik-airbyte-sample
-</code></pre></div></p>
-</li>
-<li>
 <p>Next, register the data asset itself in the data catalog. The way to do it depends on the data catalog with which you are working:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">With OpenMetadata</label><label for="__tabbed_1_2">With Katalog</label></div>
 <div class="tabbed-content">
@@ -1471,7 +1465,7 @@ cat<span class="w"> </span><span class="s">&lt;&lt; EOF | curl -X POST localhost
 <p><div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span><span class="nv">$AIRBYTE_MODULE_DIR</span>/fybrik/read-flow/asset.yaml
 </code></pre></div>
 The asset is now registered in the catalog. Store the asset ID in a CATALOGED_ASSET variable:
-<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span>fybrik-airbyte-sample/userdata
+<div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET</span><span class="o">=</span>fybrik-notebook-sample/userdata
 </code></pre></div></p>
 </div>
 </div>
@@ -1541,7 +1535,7 @@ my-app60cf6ba8-a767-4313-aa39-b78495b625c7-arro-6f3f8-arro82dcb<span class="w"> 
 <li>
 <p>Run the following commands to set the <code>CATALOGED_ASSET_MODIFIED</code> and the <code>ENDPOINT_HOSTNAME</code> environment variables:
    <div class="highlight"><pre><span></span><code><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$CATALOGED_ASSET</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\./\\\./g&#39;</span><span class="k">)</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-n<span class="w"> </span>fybrik-airbyte-sample<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;jsonpath={.status.assetStates.</span><span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span><span class="s2">.endpoint.fybrik-arrow-flight.hostname}&quot;</span><span class="k">)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ENDPOINT_HOSTNAME</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>fybrikapplication<span class="w"> </span>my-app<span class="w"> </span>-n<span class="w"> </span>fybrik-notebook-sample<span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;jsonpath={.status.assetStates.</span><span class="si">${</span><span class="nv">CATALOGED_ASSET_MODIFIED</span><span class="si">}</span><span class="s2">.endpoint.fybrik-arrow-flight.hostname}&quot;</span><span class="k">)</span>
 </code></pre></div></p>
 </li>
 <li>
