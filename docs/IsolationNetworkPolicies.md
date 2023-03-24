@@ -26,8 +26,69 @@ complicates the configuration. Therefore, later we will provide other isolation 
 - NP are implemented by the network plugin. Creating a NetworkPolicy resource without a controller - a Container Network 
 Interface (CNI) that implements it will have no effect. For example, `Kind` deployments which by default use "kindnetd" 
 do not support NP. In order to support NP, installation of another CNI, e.g. [Calico](https://github.com/projectcalico/calico)
-is required. Here is the [instructions](https://alexbrand.dev/post/creating-a-kind-cluster-with-calico-networking/). 
+is required. Below there are instruction how to install kind with calico networking.  [instructions](https://alexbrand.dev/post/creating-a-kind-cluster-with-calico-networking/). 
 On the other hand, all K8s clusters in production deployments use CNIs which support NP.
+
+<details> 
+<summary>Install kind with calico networking</summary>
+    
+The instructions are based on Alexander Brand's [blog](https://alexbrand.dev/post/creating-a-kind-cluster-with-calico-networking/)
+
+Kind has a default Container Networking Interface (CNI) plugin called `kindnet`, which is a minimal implementation of a CNI plugin.
+To use Calico as the CNI plugin in Kind clusters, we need to do the following:
+1. Disable the installation of `kindnet`
+To do so, create a `kind-calico.yaml` file that contains the following:
+```yaml
+kind: Cluster
+apiVersion: kind.sigs.k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true # disable kindnet
+  podSubnet: 192.168.0.0/16 # set to Calico's default subnet
+```
+_Note:_ you can use the file from ./manager/testdata
+
+3. Create your Kind cluster, passing the configuration file using the --config flag:
+```bash
+kind create cluster --config ./manager/testdata/kind-calico.yaml
+```
+
+3. Verify Kind Cluster
+Once the cluster is up, list the pods in the kube-system namespace to verify that `kindnet` is not running:
+```bash
+export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+kubectl get pods -n kube-system
+```
+`kindnet` should be missing from the list of pods:
+```bash 
+NAME                                         READY   STATUS    RESTARTS   AGE
+coredns-5c98db65d4-dgfs9                     0/1     Pending   0          77s
+coredns-5c98db65d4-gg4fh                     0/1     Pending   0          77s
+etcd-kind-control-plane                      1/1     Running   0          16s
+kube-apiserver-kind-control-plane            1/1     Running   0          24s
+kube-controller-manager-kind-control-plane   1/1     Running   0          41s
+kube-proxy-qsxp4                             1/1     Running   0          77s
+kube-scheduler-kind-control-plane            1/1     Running   0          10s
+```
+_Note:_ The coredns pods are in the pending state. This is expected. They will remain in the pending state until a CNI 
+plugin is installed.
+
+4. Install Calico
+Use the following command to install Calico:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+```
+5. Verify Calico Is Up
+To verify that calico-node is running, list the pods in the kube-system namespace:
+```bash
+kubectl -n kube-system get pods | grep calico-node
+```
+You should see the calico-node pod running and ready (1/1 containers ready):
+```bash
+calico-node-v5k5z                            1/1     Running   0          11s
+```
+You should also see the CoreDNS pods running if you get a full listing of pods in the kube-system namespace.
+
+</details>
 
 ## Implementation
 
