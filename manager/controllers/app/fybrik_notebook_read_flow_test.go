@@ -50,6 +50,7 @@ type ArrowRequest struct {
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
+	success := false
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
 	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
 		t.Skip("Only executed for notebook tests")
@@ -281,31 +282,33 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
 	defer func() {
-		// Print information that might be useful for debugging the deployed module
-		// before fybrikapplication is deleted:
-		// - print the logs of the deployed module pod
-		// - print the config-maps in the module namespace
-		AFMservice := &v1.Service{}
-		AFMserviceObjectKey := client.ObjectKey{Namespace: modulesNamespace,
-			Name: svcName}
-		g.Eventually(func() error {
-			return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
-		}, timeout, interval).Should(gomega.Succeed())
+		if !success {
+			// Print information that might be useful for debugging the deployed module
+			// before fybrikapplication is deleted:
+			// - print the logs of the deployed module pod
+			// - print the config-maps in the module namespace
+			AFMservice := &v1.Service{}
+			AFMserviceObjectKey := client.ObjectKey{Namespace: modulesNamespace,
+				Name: svcName}
+			g.Eventually(func() error {
+				return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
+			}, timeout, interval).Should(gomega.Succeed())
 
-		pods, _ := fybrikUtils.GetPodsForSvc(clientset, AFMservice, modulesNamespace)
-		for i := range pods.Items {
-			fmt.Printf("pod name: %s\n", pods.Items[i].Name)
-			fmt.Printf("pod logs:\n")
-			fmt.Println(fybrikUtils.GetPodLogs(clientset, &pods.Items[i]))
-		}
-		cms, _ := fybrikUtils.GetConfigMapForNamespace(clientset, modulesNamespace)
-		for i := range cms.Items {
-			if strings.HasSuffix(cms.Items[i].Name, ".crt") {
-				continue
+			pods, _ := fybrikUtils.GetPodsForSvc(clientset, AFMservice, modulesNamespace)
+			for i := range pods.Items {
+				fmt.Printf("pod name: %s\n", pods.Items[i].Name)
+				fmt.Printf("pod logs:\n")
+				fmt.Println(fybrikUtils.GetPodLogs(clientset, &pods.Items[i]))
 			}
-			fmt.Printf("config-map name: %s\n", cms.Items[i].Name)
-			b, _ := json.Marshal(cms.Items[i].Data)
-			fmt.Println(string(b))
+			cms, _ := fybrikUtils.GetConfigMapForNamespace(clientset, modulesNamespace)
+			for i := range cms.Items {
+				if strings.HasSuffix(cms.Items[i].Name, ".crt") {
+					continue
+				}
+				fmt.Printf("config-map name: %s\n", cms.Items[i].Name)
+				b, _ := json.Marshal(cms.Items[i].Data)
+				fmt.Println(string(b))
+			}
 		}
 		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
@@ -366,4 +369,5 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+	success = true
 }
