@@ -281,8 +281,10 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
 	defer func() {
-		// Print the logs of the deployed modules pods and config-maps before
-		// the application is deleted.
+		// Print information that might be useful for debugging the deployed module
+		// before fybrikapplication is deleted:
+		// - print the logs of the deployed module pod
+		// - print the config-maps in the module namespace
 		AFMservice := &v1.Service{}
 		AFMserviceObjectKey := client.ObjectKey{Namespace: modulesNamespace,
 			Name: svcName}
