@@ -274,11 +274,11 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Println("Starting kubectl port-forward for arrow-flight")
+	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s", svcName, port, modulesNamespace)
 	portNum, err := strconv.Atoi(port)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).To(gomega.BeNil(), "wrong port number %s", port)
 	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).To(gomega.BeNil(), err.Error())
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
