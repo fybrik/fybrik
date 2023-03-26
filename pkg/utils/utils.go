@@ -4,17 +4,26 @@
 package utils
 
 import (
+	"bytes"
+	"context"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"runtime"
 
+	"emperror.dev/errors"
+
 	"github.com/rs/zerolog"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apiserver/pkg/storage/names"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -129,4 +138,42 @@ func IsPathExists(path string) bool {
 		}
 	}
 	return true
+}
+
+// Gven a pod return its log
+func GetPodLogs(clientset *kubernetes.Clientset, pod *v1.Pod) (string, error) {
+	podLogOpts := v1.PodLogOptions{}
+	req := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "", errors.New("error in opening stream")
+	}
+	defer podLogs.Close()
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", errors.New("error in copy information from podLogs to buf")
+	}
+	str := buf.String()
+	return str, nil
+}
+
+// Given a service return all the pods of that service.
+func GetPodsForSvc(clientset *kubernetes.Clientset, svc *v1.Service, namespace string) (*v1.PodList, error) {
+	set := labels.Set(svc.Spec.Selector)
+	listOptions := metav1.ListOptions{LabelSelector: set.AsSelector().String()}
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), listOptions)
+	if err != nil {
+		return nil, errors.New("error getting pods")
+	}
+	return pods, nil
+}
+
+// Return all config maps in a namepspace
+func GetConfigMapForNamespace(clientset *kubernetes.Clientset, namespace string) (*v1.ConfigMapList, error) {
+	cms, err := clientset.CoreV1().ConfigMaps(namespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.New("error getting configMap")
+	}
+	return cms, nil
 }

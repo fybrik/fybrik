@@ -28,12 +28,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/test"
+	fybrikUtils "fybrik.io/fybrik/pkg/utils"
 )
 
 const (
@@ -103,8 +105,12 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		g.Expect(object).ToNot(gomega.BeNil())
 		log.Println("Object already exists in S3!")
 	}
-
 	err = fapp.AddToScheme(scheme.Scheme)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+
+	// creates the clientset
+	// can not use controller-runtime client. see https://github.com/kubernetes-sigs/controller-runtime/issues/452
+	clientset, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: scheme.Scheme}) //nolint:govet
@@ -273,6 +279,37 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	hostname := fmt.Sprintf("%v", connection["hostname"])
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
+
+	defer func() {
+		// Print the logs of the deployed modules pods and config-maps before
+		// the application is deleted.
+		AFMservice := &v1.Service{}
+		AFMserviceObjectKey := client.ObjectKey{Namespace: modulesNamespace,
+			Name: svcName}
+		g.Eventually(func() error {
+			return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
+		}, timeout, interval).Should(gomega.Succeed())
+
+		pods, _ := fybrikUtils.GetPodsForSvc(clientset, AFMservice, modulesNamespace)
+		for i := range pods.Items {
+			fmt.Printf("pod name: %s\n", pods.Items[i].Name)
+			fmt.Printf("pod logs:\n")
+			fmt.Println(fybrikUtils.GetPodLogs(clientset, &pods.Items[i]))
+		}
+		cms, _ := fybrikUtils.GetConfigMapForNamespace(clientset, modulesNamespace)
+		for i := range cms.Items {
+			if strings.HasSuffix(cms.Items[i].Name, ".crt") {
+				continue
+			}
+			fmt.Printf("config-map name: %s\n", cms.Items[i].Name)
+			b, _ := json.Marshal(cms.Items[i].Data)
+			fmt.Println(string(b))
+		}
+		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
+			Name: applicationKey.Name}}
+		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
+		_ = k8sClient.Delete(context.Background(), fybrikApplication)
+	}()
 
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
