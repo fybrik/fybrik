@@ -30,6 +30,6 @@ build: vet
 .PHONY: docker-build
 docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o datauserserver main.go
-	docker build . -t ${IMG} -f Dockerfile
+	docker build . -t ${IMG} -f Dockerfile --build-arg tag=${BASE_IMAGE_TAG}
 	rm datauserserver
 

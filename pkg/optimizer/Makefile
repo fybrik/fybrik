@@ -14,5 +14,5 @@ include $(ROOT_DIR)/hack/make-rules/verify.mk
 docker-build: 	
 	mkdir -p solver-tools
 	cp $(TOOLS_DIR)/install_or_tools.sh $(TOOLS_DIR)/common.sh $(TOOLS_DIR)/requirements.env solver-tools
-	docker build . -t ${IMG} -f Dockerfile
+	docker build . -t ${IMG} -f Dockerfile --build-arg tag=${BASE_IMAGE_TAG}
 	rm -rf solver-tools

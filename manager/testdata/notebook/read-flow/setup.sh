@@ -32,8 +32,12 @@ else
   # Wait until curl command succeed
   c=0
   # -k flag is used to skip server verification to avoid errors regarding target host name 'localhost'
-  while [[ $(curl $certs -k -X POST $prefix://localhost:$local_port/createAsset -d @om-asset.json) != *'assetID'* ]]
+  while true
   do
+    create_asset_result=$(curl $certs -k -X POST $prefix://localhost:$local_port/createAsset -d @om-asset.json)
+    if [[ ${create_asset_result} == *'asset already exists'* ]] || [[ ${create_asset_result} == *'assetID'* ]]; then
+       break
+    fi
     echo "waiting for curl command to createAsset to succeed"
     ((c++)) && ((c==25)) && break
     sleep 1
