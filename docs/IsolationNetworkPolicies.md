@@ -125,12 +125,12 @@ The `Selector` will have the following structure:
 ```go
 type Selector struct {
 	// Cluster name 
-	//+optional 
+	// +optional 
 	ClusterName string `json:"clusterName"`
 	
-	WorkloadSelector enables to connect the resource to the application 
+	// WorkloadSelector enables to connect the resource to the application 
 	// Applications labels should match the labels in the selector. 
-	//+required 
+	// +required 
 	WorkloadSelector metav1.LabelSelector `json:"workloadSelector"`
 	
 	// Namespaces where user application might run
