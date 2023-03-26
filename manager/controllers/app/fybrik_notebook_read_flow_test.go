@@ -231,15 +231,6 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	fmt.Println("Expecting application creation to succeed")
 	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
-	// Ensure getting cleaned up after tests finish
-	// delete application
-	defer func() {
-		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
-			Name: applicationKey.Name}}
-		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
-		_ = k8sClient.Delete(context.Background(), fybrikApplication)
-	}()
-
 	fmt.Println("Expecting application to be created")
 	g.Eventually(func() error {
 		return k8sClient.Get(context.Background(), applicationKey, application)
