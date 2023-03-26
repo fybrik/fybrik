@@ -301,6 +301,8 @@ func TestS3NotebookReadFlow(t *testing.T) {
 				fmt.Println(string(b))
 			}
 		}
+		// Ensure getting cleaned up after tests finish
+		// delete application
 		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
 		_ = k8sClient.Get(context.Background(), applicationKey, fybrikApplication)
