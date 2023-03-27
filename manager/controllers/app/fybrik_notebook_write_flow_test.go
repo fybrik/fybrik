@@ -393,6 +393,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err = strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
+	time.Sleep(10 * time.Second)
 	listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
 	g.Expect(err).To(gomega.BeNil())
 
