@@ -31,7 +31,6 @@ import (
 
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
-	"fybrik.io/fybrik/pkg/test"
 )
 
 const (
@@ -44,7 +43,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}
 	gomega.RegisterFailHandler(Fail)
 
-	g := gomega.NewGomegaWithT(t)
+	g := gomega.NewWithT(t)
 	defer GinkgoRecover()
 
 	err := fappv1.AddToScheme(scheme.Scheme)
@@ -244,8 +243,11 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
-	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
+
+	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
 
 	// Writing data via arrow flight
 	opts := make([]grpc.DialOption, 0)
@@ -391,8 +393,11 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err = strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
-	listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
+
+	listenPort, err = RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
 
 	// Reading data via arrow flight
 	opts = make([]grpc.DialOption, 0)

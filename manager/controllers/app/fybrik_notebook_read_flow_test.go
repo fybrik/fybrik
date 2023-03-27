@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -37,14 +38,31 @@ import (
 )
 
 const (
-	readFlow      string = "charts/fybrik/notebook-test-readflow.values.yaml"
-	readFlowTLS   string = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
-	readFlowTLSCA string = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	readFlow                      string = "charts/fybrik/notebook-test-readflow.values.yaml"
+	readFlowTLS                   string = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
+	readFlowTLSCA                 string = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	PortFowardingMaxRetryAttempts int    = 25
 )
 
 type ArrowRequest struct {
 	Asset   string   `json:"asset,omitempty"`
 	Columns []string `json:"columns,omitempty"`
+}
+
+func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, portNum int) (string, error) {
+	i := 0
+	var listenPort string
+	var err error
+	for {
+		listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
+		if err == nil {
+			return listenPort, nil
+		} else if i > PortFowardingMaxRetryAttempts {
+			break
+		}
+		i++
+	}
+	return "", errors.New("Port Forwarding command failed with error")
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
@@ -59,7 +77,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	}
 	gomega.RegisterFailHandler(Fail)
 
-	g := gomega.NewGomegaWithT(t)
+	g := gomega.NewWithT(t)
 	defer GinkgoRecover()
 
 	// Copy data.csv file to S3
@@ -277,9 +295,11 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
-	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
 
+	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
