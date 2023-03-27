@@ -106,6 +106,7 @@ func getConfigMapForNamespace(namespace string) (*v1.ConfigMapList, error) {
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
+	success := false
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
 	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
 		t.Skip("Only executed for notebook tests")
@@ -324,23 +325,25 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
 	defer func() {
-		AFMservice := &v1.Service{}
-		AFMserviceObjectKey := client.ObjectKey{Namespace: "fybrik-blueprints",
-			Name: svcName}
-		g.Eventually(func() error {
-			return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
-		}, timeout, interval).Should(gomega.Succeed())
+		if !success {
+			AFMservice := &v1.Service{}
+			AFMserviceObjectKey := client.ObjectKey{Namespace: "fybrik-blueprints",
+				Name: svcName}
+			g.Eventually(func() error {
+				return k8sClient.Get(context.Background(), AFMserviceObjectKey, AFMservice)
+			}, timeout, interval).Should(gomega.Succeed())
 
-		pods, _ := getPodsForSvc(AFMservice, "fybrik-blueprints")
-		for i := range pods.Items {
-			fmt.Fprintf(os.Stdout, "pod name: %v\n", pods.Items[i].Name)
-			fmt.Println(getPodLogs(&pods.Items[i]))
-		}
-		cms, _ := getConfigMapForNamespace("fybrik-blueprints")
-		for i := range cms.Items {
-			b, _ := json.Marshal(cms.Items[i].Data)
-			fmt.Println(string(b))
-			fmt.Println(AFMservice.Name)
+			pods, _ := getPodsForSvc(AFMservice, "fybrik-blueprints")
+			for i := range pods.Items {
+				fmt.Fprintf(os.Stdout, "pod name: %v\n", pods.Items[i].Name)
+				fmt.Println(getPodLogs(&pods.Items[i]))
+			}
+			cms, _ := getConfigMapForNamespace("fybrik-blueprints")
+			for i := range cms.Items {
+				b, _ := json.Marshal(cms.Items[i].Data)
+				fmt.Println(string(b))
+				fmt.Println(AFMservice.Name)
+			}
 		}
 		fybrikApplication := &fapp.FybrikApplication{ObjectMeta: metav1.ObjectMeta{Namespace: applicationKey.Namespace,
 			Name: applicationKey.Name}}
@@ -401,4 +404,5 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+	success = true
 }
