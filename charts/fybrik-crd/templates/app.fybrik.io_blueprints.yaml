@@ -43,6 +43,28 @@ spec:
                       description: Application context such as intent, role, etc.
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
+                    ipBlocks:
+                      description: IPBlocks define policy on particular IPBlocks. the structure of the IPBlock is defined at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io It is obtained from FybrikApplication spec.
+                      items:
+                        description: IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
+                        properties:
+                          cidr:
+                            description: CIDR is a string representing the IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64"
+                            type: string
+                          except:
+                            description: Except is a slice of CIDRs that should not be included within an IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64" Except values will be rejected if they are outside the CIDR range
+                            items:
+                              type: string
+                            type: array
+                        required:
+                          - cidr
+                        type: object
+                      type: array
+                    namespaces:
+                      description: Namespaces where user application might run It is obtained from FybrikApplication spec.
+                      items:
+                        type: string
+                      type: array
                     selector:
                       description: Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.
                       properties:

@@ -1,0 +1,13 @@
+{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
+{{- if .Values.global.isNPEnabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "fybrik.fullname" . }}-blueprints-default-deny-all
+  namespace: {{ include "fybrik.getModulesNamespace" .}}
+spec:
+  podSelector: { }
+  policyTypes:
+    - Ingress
+{{- end }}
+{{- end }}

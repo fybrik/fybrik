@@ -74,6 +74,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 
 	internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
 	adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
+	blueprintsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetDefaultModulesNamespace()})
 
 	selectorsByObject := cache.SelectorsByObject{
 		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
@@ -82,6 +83,10 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		&corev1.Secret{}:               {Field: internalCRsNamespaceSelector}, // pull image secrets for blueprints
 		&fappv1.FybrikModule{}:         {Field: adminCRsNamespaceSelector},
 		&fappv2.FybrikStorageAccount{}: {Field: adminCRsNamespaceSelector},
+	}
+
+	if environment.IsNPEnabled() {
+		selectorsByObject[&netv1.NetworkPolicy{}] = cache.ObjectSelector{Field: blueprintsNamespaceSelector}
 	}
 
 	client := ctrl.GetConfigOrDie()

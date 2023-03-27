@@ -59,7 +59,7 @@ global:
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
   # Defines if a networking isolation based on Kubernetes Network Policies enabled.
-  isNPEnabled: true
+  isNPEnabled: false
   # Pod Security Context. This is the default setting for all pods, and can be
   # overwritten by a specific podSecurityContext settings.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context

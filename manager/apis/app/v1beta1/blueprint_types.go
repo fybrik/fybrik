@@ -4,6 +4,7 @@
 package v1beta1
 
 import (
+	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -34,6 +35,18 @@ type ApplicationDetails struct {
 	// It is obtained from FybrikApplication spec.
 	// +optional
 	WorkloadSelector metav1.LabelSelector `json:"selector,omitempty"`
+
+	// Namespaces where user application might run
+	// It is obtained from FybrikApplication spec.
+	// +optional
+	Namespaces []string `json:"namespaces"`
+
+	// IPBlocks define policy on particular IPBlocks.
+	// the structure of the IPBlock is defined at
+	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io
+	// It is obtained from FybrikApplication spec.
+	// +optional
+	IPBlocks []*netv1.IPBlock `json:"ipBlocks,omitempty"`
 
 	// Application context such as intent, role, etc.
 	// +optional

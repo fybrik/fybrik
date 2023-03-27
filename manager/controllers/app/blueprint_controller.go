@@ -18,9 +18,7 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
-	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -111,21 +109,9 @@ func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.
 		}
 	}
 	if environment.IsNPEnabled() {
-		r.cleanupNetworkPolicies(ctx, blueprint)
+		return r.cleanupNetworkPolicies(ctx, blueprint)
 	}
 	return nil
-}
-
-func (r *BlueprintReconciler) cleanupNetworkPolicies(ctx context.Context, blueprint *fapp.Blueprint) {
-	l := client.MatchingLabels{}
-	l[managerUtils.ApplicationNameLabel] = blueprint.Labels[managerUtils.ApplicationNameLabel]
-	l[managerUtils.ApplicationNamespaceLabel] = blueprint.Labels[managerUtils.ApplicationNamespaceLabel]
-	l[managerUtils.BlueprintNameLabel] = blueprint.Name
-	l[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
-
-	if err := r.Client.DeleteAllOf(ctx, &netv1.NetworkPolicy{}, client.InNamespace(environment.GetDefaultModulesNamespace()), l); err != nil {
-		r.Log.Error().Err(err).Msg("Error while deleting Network Policies")
-	}
 }
 
 func (r *BlueprintReconciler) deleteExternalResources(cfg *action.Configuration, blueprint *fapp.Blueprint) error {
@@ -196,7 +182,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 }
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, releaseNamespace, releaseName string, log *zerolog.Logger) (*release.Release, error) {
+	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string, log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 
 	args = CopyMap(args)
@@ -239,11 +225,12 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 	if environment.IsNPEnabled() {
-		if err = r.createNetworkPolicies(ctx, args, releaseNamespace, releaseName, log); err != nil {
+		err = r.createNetworkPolicies(ctx, blueprint, releaseName, log)
+		if err != nil {
 			return nil, err
 		}
 	}
-
+	releaseNamespace := blueprint.Spec.ModulesNamespace
 	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
 	// TODO should we return err if it is not nil?
 	var rel *release.Release
@@ -260,63 +247,6 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	}
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
 	return rel, nil
-}
-
-func (r *BlueprintReconciler) createNetworkPolicies(ctx context.Context, args map[string]interface{},
-	releaseNamespace, releaseName string, log *zerolog.Logger) error {
-	np := netv1.NetworkPolicy{}
-	np.Name = releaseName
-	np.Namespace = releaseNamespace
-	var labels map[string]interface{}
-	if l, ok := args["labels"]; ok {
-		if lab, ok := l.(map[string]interface{}); ok {
-			labels = lab
-		} else {
-			log.Warn().Msgf("Labels entry has a wrong type %T", l)
-			args["labels"] = map[string]string{}
-		}
-	} else {
-		args["labels"] = map[string]string{}
-	}
-	// TODO check that we don't change labels for other modules.
-	np.Labels = managerUtils.CopyFybrikLabels(labels, log)
-	podsSelector := meta.LabelSelector{}
-	podsSelector.MatchLabels = map[string]string{managerUtils.KubernetesInstance: releaseName}
-	np.Spec.PodSelector = podsSelector
-
-	// set Egress
-	if assets, ok := args["assets"]; ok {
-		log.Warn().Msgf("=====> args %v", assets)
-		assets := assets.([]interface{})
-		for _, asset := range assets {
-			asset := asset.(map[string]interface{})
-			log.Warn().Msgf("Asset: %T %v", asset, asset)
-			if ars, ok := asset["args"]; ok {
-				if _, ok := ars.([]interface{}); ok {
-					//if con, ok := ar["connection"]; ok {
-					//	log.Warn().Msgf("=====> Connection %v", con)
-					//}
-					log.Warn().Msgf("=====> Cannot transform %T to map[string]interface{} %v", ars)
-				} else {
-					log.Warn().Msgf("=====> Cannot transform %T to map[string]interface{} %v", ars, ars)
-				}
-
-			}
-
-		}
-
-	}
-
-	np.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress /*, netv1.PolicyTypeIngress*/}
-	np.Spec.Egress = []netv1.NetworkPolicyEgressRule{}
-	//np.Spec.Ingress = []netv1.NetworkPolicyIngressRule{}
-
-	res, err := ctrlutil.CreateOrUpdate(ctx, r.Client, &np, func() error { return nil })
-	if err != nil {
-		return errors.WithMessage(err, releaseName+": failed to create NetworkPolicy")
-	}
-	log.Trace().Msgf("Network Policy %s/%s was createdOrUpdated result: %s", releaseNamespace, releaseName, res)
-	return nil
 }
 
 // CopyMap copies a map
@@ -424,7 +354,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint.Spec.ModulesNamespace, releaseName, log); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {

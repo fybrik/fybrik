@@ -89,6 +89,8 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 		Modules:          map[string]fapp.BlueprintModule{},
 		Application: &fapp.ApplicationDetails{
 			WorkloadSelector: plotter.Spec.Selector.WorkloadSelector,
+			Namespaces:       plotter.Spec.Selector.Namespaces,
+			IPBlocks:         plotter.Spec.Selector.IPBlocks,
 			Context:          plotter.Spec.AppInfo,
 		},
 	}
