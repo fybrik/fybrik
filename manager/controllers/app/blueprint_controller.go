@@ -343,7 +343,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			}
 		}
 		if rel != nil && rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(cfg, rel.Manifest, uuid)
+			status, errMsg := r.checkReleaseStatus(rel, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -503,14 +503,20 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, manifest, uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
-	resources, err := r.Helmer.GetResources(cfg, manifest)
-	if err != nil {
-		log.Error().Err(err).Msg("Error getting resources")
-		return corev1.ConditionUnknown, ""
+	var resources []*unstructured.Unstructured
+	for versionKind := range rel.Info.Resources {
+		for _, obj := range rel.Info.Resources[versionKind] {
+			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+				resources = append(resources, &unstructured.Unstructured{Object: unstr})
+			} else {
+				log.Err(err).Msg("error getting resources")
+				return corev1.ConditionUnknown, ""
+			}
+		}
 	}
 	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
 	numReady := 0

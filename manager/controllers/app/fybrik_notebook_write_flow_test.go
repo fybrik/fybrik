@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
@@ -241,6 +242,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
+	time.Sleep(10 * time.Second)
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
@@ -391,6 +393,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err = strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
+	time.Sleep(10 * time.Second)
 	listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
 	g.Expect(err).To(gomega.BeNil())
 

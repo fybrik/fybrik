@@ -4,14 +4,12 @@
 package helm
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"emperror.dev/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -19,7 +17,6 @@ import (
 	"helm.sh/helm/v3/pkg/registry"
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/storage/driver"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	oras "oras.land/oras-go/pkg/registry"
 
@@ -47,13 +44,11 @@ type Interface interface {
 	RegistryLogout(hostname string) error
 	Load(ref string, chartPath string) (*chart.Chart, error)
 	Package(chartPath string, destinationPath string, version string) error
-	GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error)
 }
 
 // Fake implementation
 type Fake struct {
-	release   *release.Release
-	resources []*unstructured.Unstructured
+	release *release.Release
 }
 
 func (r *Fake) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Configuration, error) {
@@ -116,11 +111,6 @@ func (r *Fake) Load(ref, chartPath string) (*chart.Chart, error) {
 	return nil, nil
 }
 
-// GetResources returns allocated resources for the specified release (their current state)
-func (r *Fake) GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error) {
-	return r.resources, nil
-}
-
 // Package helm chart from repo
 func (r *Fake) Package(chartPath, destinationPath, version string) error {
 	return nil
@@ -128,15 +118,13 @@ func (r *Fake) Package(chartPath, destinationPath, version string) error {
 
 func NewEmptyFake() *Fake {
 	return &Fake{
-		release:   &release.Release{Info: &release.Info{}},
-		resources: make([]*unstructured.Unstructured, 0),
+		release: &release.Release{Info: &release.Info{}},
 	}
 }
 
-func NewFake(rls *release.Release, resources []*unstructured.Unstructured) *Fake {
+func NewFake(rls *release.Release) *Fake {
 	return &Fake{
-		release:   rls,
-		resources: resources,
+		release: rls,
 	}
 }
 
@@ -208,6 +196,7 @@ func (r *Impl) Upgrade(ctx context.Context, cfg *action.Configuration, chrt *cha
 // Status of helm release
 func (r *Impl) Status(cfg *action.Configuration, releaseName string) (*release.Release, error) {
 	status := action.NewStatus(cfg)
+	status.ShowResources = true
 	return status.Run(releaseName)
 }
 
@@ -315,29 +304,6 @@ func (r *Impl) GetConfig(kubeNamespace string, log action.DebugLog) (*action.Con
 	}
 
 	return actionConfig, err
-}
-
-// GetResources returns allocated resources for the specified by its manifest release (their current state)
-func (r *Impl) GetResources(cfg *action.Configuration, manifest string) ([]*unstructured.Unstructured, error) {
-	resources := make([]*unstructured.Unstructured, 0)
-
-	resourceList, err := cfg.KubeClient.Build(bytes.NewBufferString(manifest), false)
-	if err != nil {
-		return resources, err
-	}
-
-	for _, res := range resourceList {
-		if err := res.Get(); err != nil {
-			return resources, err
-		}
-		obj := res.Object
-		if unstr, ok := obj.(*unstructured.Unstructured); ok {
-			resources = append(resources, unstr)
-		} else {
-			return resources, errors.New("invalid runtime object")
-		}
-	}
-	return resources, nil
 }
 
 // parseReference will parse and validate the reference, and clean tags when
