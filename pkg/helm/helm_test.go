@@ -5,6 +5,7 @@ package helm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 
 	"fybrik.io/fybrik/pkg/environment"
@@ -211,8 +213,15 @@ func TestHelmRelease(t *testing.T) {
 	Log(t, "status", err)
 
 	var resources []*unstructured.Unstructured
-	resources, err = impl.GetResources(cfg, rel.Manifest)
-	assert.Nil(t, err)
+	for versionKind := range rel.Info.Resources {
+		for _, obj := range rel.Info.Resources[versionKind] {
+			if unstr, errConvert := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); errConvert == nil {
+				resources = append(resources, &unstructured.Unstructured{Object: unstr})
+			} else {
+				Log(t, "status", errors.New("status: could not obtain resources"))
+			}
+		}
+	}
 	assert.Len(t, resources, 1)
 	computedResult, _ := kstatus.Compute(resources[0])
 	assert.Equal(t, kstatus.CurrentStatus, computedResult.Status)
