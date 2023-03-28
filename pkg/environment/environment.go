@@ -47,7 +47,7 @@ const (
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
-	NPEnabled                         string = "NP_Enabled"
+	NPEnabled                         string = "NP_ENABLED"
 )
 
 const printValueStr = "%s set to \"%s\""

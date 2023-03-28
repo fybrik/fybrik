@@ -74,7 +74,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 
 	internalCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetInternalCRsNamespace()})
 	adminCRsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetAdminCRsNamespace()})
-	blueprintsNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetDefaultModulesNamespace()})
+	modulesNamespaceSelector := fields.SelectorFromSet(fields.Set{"metadata.namespace": environment.GetDefaultModulesNamespace()})
 
 	selectorsByObject := cache.SelectorsByObject{
 		&fappv1.FybrikApplication{}:    {Field: applicationNamespaceSelector},
@@ -86,7 +86,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 	}
 
 	if environment.IsNPEnabled() {
-		selectorsByObject[&netv1.NetworkPolicy{}] = cache.ObjectSelector{Field: blueprintsNamespaceSelector}
+		selectorsByObject[&netv1.NetworkPolicy{}] = cache.ObjectSelector{Field: modulesNamespaceSelector}
 	}
 
 	client := ctrl.GetConfigOrDie()
