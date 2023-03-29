@@ -190,9 +190,9 @@ spec:
                         description: Network specifies the module communication with a workload or other modules
                         properties:
                           egress:
-                            description: Egress
+                            description: Egress (internal modules)
                             items:
-                              description: ModuleDeployment specifies the deployment details of the module
+                              description: ModuleDeployment specifies deployment of a Fybrik module
                               properties:
                                 cluster:
                                   description: Cluster name
@@ -200,24 +200,22 @@ spec:
                                 release:
                                   description: Release name
                                   type: string
-                                urls:
-                                  description: URLs the module needs access to
-                                  items:
-                                    type: string
-                                  type: array
+                                url:
+                                  description: Service URL, usually represented by hostname + port
+                                  type: string
                               required:
                                 - cluster
                                 - release
-                                - urls
+                                - url
                               type: object
                             type: array
                           endpoint:
                             description: Endpoint indicates whether the module service is used as an endpoint by the workload application
                             type: boolean
                           ingress:
-                            description: Ingress
+                            description: Ingress (internal modules)
                             items:
-                              description: ModuleDeployment specifies the deployment details of the module
+                              description: ModuleDeployment specifies deployment of a Fybrik module
                               properties:
                                 cluster:
                                   description: Cluster name
@@ -225,16 +223,19 @@ spec:
                                 release:
                                   description: Release name
                                   type: string
-                                urls:
-                                  description: URLs the module needs access to
-                                  items:
-                                    type: string
-                                  type: array
+                                url:
+                                  description: Service URL, usually represented by hostname + port
+                                  type: string
                               required:
                                 - cluster
                                 - release
-                                - urls
+                                - url
                               type: object
+                            type: array
+                          urls:
+                            description: External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)
+                            items:
+                              type: string
                             type: array
                         type: object
                     required:

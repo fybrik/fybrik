@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/utils"
 )
@@ -29,8 +30,11 @@ func GetReleaseName(applicationName, uuid, instanceName string) string {
 
 // Create a name for a step in a blueprint.
 // Since this is part of the name of a release, this should be done in a central location to make testing easier
-func CreateStepName(moduleName, assetID string) string {
-	return moduleName + "-" + utils.Hash(assetID, utils.StepNameHashLength)
+func CreateStepName(moduleName, assetID string, moduleScope fapp.CapabilityScope) string {
+	if moduleScope == fapp.Asset {
+		return moduleName + "-" + utils.Hash(assetID, utils.StepNameHashLength)
+	}
+	return moduleName
 }
 
 // UpdateStatus updates the resource status

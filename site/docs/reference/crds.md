@@ -464,7 +464,7 @@ Network specifies the module communication with a workload or other modules
         <td><b><a href="#blueprintspecmoduleskeynetworkegressindex">egress</a></b></td>
         <td>[]object</td>
         <td>
-          Egress<br/>
+          Egress (internal modules)<br/>
         </td>
         <td>false</td>
       </tr><tr>
@@ -478,7 +478,14 @@ Network specifies the module communication with a workload or other modules
         <td><b><a href="#blueprintspecmoduleskeynetworkingressindex">ingress</a></b></td>
         <td>[]object</td>
         <td>
-          Ingress<br/>
+          Ingress (internal modules)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -490,7 +497,7 @@ Network specifies the module communication with a workload or other modules
 
 
 
-ModuleDeployment specifies the deployment details of the module
+ModuleDeployment specifies deployment of a Fybrik module
 
 <table>
     <thead>
@@ -516,10 +523,10 @@ ModuleDeployment specifies the deployment details of the module
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>urls</b></td>
-        <td>[]string</td>
+        <td><b>url</b></td>
+        <td>string</td>
         <td>
-          URLs the module needs access to<br/>
+          Service URL, usually represented by hostname + port<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -531,7 +538,7 @@ ModuleDeployment specifies the deployment details of the module
 
 
 
-ModuleDeployment specifies the deployment details of the module
+ModuleDeployment specifies deployment of a Fybrik module
 
 <table>
     <thead>
@@ -557,10 +564,10 @@ ModuleDeployment specifies the deployment details of the module
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>urls</b></td>
-        <td>[]string</td>
+        <td><b>url</b></td>
+        <td>string</td>
         <td>
-          URLs the module needs access to<br/>
+          Service URL, usually represented by hostname + port<br/>
         </td>
         <td>true</td>
       </tr></tbody>

@@ -47,14 +47,14 @@ type ModuleArguments struct {
 	Assets []AssetContext `json:"assets,omitempty"`
 }
 
-// ModuleDeployment specifies the deployment details of the module
+// ModuleDeployment specifies deployment of a Fybrik module
 type ModuleDeployment struct {
 	// Cluster name
 	Cluster string `json:"cluster"`
 	// Release name
 	Release string `json:"release"`
-	// URLs the module needs access to
-	URLs []string `json:"urls"`
+	// Service URL, usually represented by hostname + port
+	URL string `json:"url"`
 }
 
 // ModuleNetwork specifies the module communication with a workload or other modules
@@ -62,12 +62,15 @@ type ModuleNetwork struct {
 	// Endpoint indicates whether the module service is used as an endpoint by the workload application
 	// +optional
 	Endpoint bool `json:"endpoint,omitempty"`
-	// Ingress
+	// Ingress (internal modules)
 	// +optional
 	Ingress []ModuleDeployment `json:"ingress,omitempty"`
-	// Egress
+	// Egress (internal modules)
 	// +optional
 	Egress []ModuleDeployment `json:"egress,omitempty"`
+	// External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)
+	// +optional
+	URLs []string `json:"urls,omitempty"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary

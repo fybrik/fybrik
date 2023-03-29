@@ -29,6 +29,7 @@ import (
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
+	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/multicluster"
 	"fybrik.io/fybrik/pkg/utils"
@@ -122,6 +123,18 @@ type PlotterModulesSpec struct {
 	Scope           fapp.CapabilityScope
 	Capability      taxonomy.Capability
 }
+
+// ServiceInfo stores the service API and indicates whether it is exposed to the workload
+type ServiceInfo struct {
+	API        *datacatalog.ResourceDetails
+	IsEndpoint bool
+}
+
+// service info per release map
+type ServiceInfoPerRelease map[string]ServiceInfo
+
+// service info per release per cluster
+type ServiceInfoPerReleasePerCluster map[string]ServiceInfoPerRelease
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
 func addCredentials(dataStore *fapp.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
@@ -217,13 +230,13 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
-
+	serviceMap := ServiceInfoPerReleasePerCluster{}
 	clusters, _ := r.ClusterManager.GetClusters()
 
 	for _, flow := range plotter.Spec.Flows {
-		for _, subFlow := range flow.SubFlows {
+		for subFlowInd, subFlow := range flow.SubFlows {
 			for _, subFlowStep := range subFlow.Steps {
-				for _, seqStep := range subFlowStep {
+				for seqStepInd, seqStep := range subFlowStep {
 					stepTemplate := plotter.Spec.Templates[seqStep.Template]
 					for _, module := range stepTemplate.Modules {
 						moduleArgs := seqStep.Parameters
@@ -242,6 +255,31 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 							if clusterName == cluster.Name {
 								authPath = vault.GetAuthPath(cluster.Metadata.VaultAuthPath)
 								break
+							}
+						}
+						// release name (for easier matching between release and API)
+						instanceName := managerUtils.CreateStepName(module.Name, flow.AssetID, scope)
+						releaseName := managerUtils.GetReleaseName(managerUtils.GetApplicationNameFromLabels(plotter.Labels),
+							uuid, instanceName)
+
+						// last sequential step of the last sub-flow exposes the endpoint
+						isEndpoint := (subFlowInd == len(flow.SubFlows)-1) && (seqStepInd == len(subFlowStep)-1) &&
+							(seqStep.Parameters.API != nil)
+						// add service details
+						// the service can serve different assets, for some it may serve as virtual endpoint for the workload
+						// thus, serviceMap combines information for all relevant assets
+						if serviceMap[clusterName] == nil {
+							serviceMap[clusterName] = ServiceInfoPerRelease{}
+						}
+						if service, ok := serviceMap[clusterName][releaseName]; !ok {
+							serviceMap[clusterName][releaseName] = ServiceInfo{
+								API:        seqStep.Parameters.API,
+								IsEndpoint: isEndpoint,
+							}
+						} else {
+							serviceMap[clusterName][releaseName] = ServiceInfo{
+								API:        service.API,
+								IsEndpoint: isEndpoint || service.IsEndpoint,
 							}
 						}
 						plotterModule := &PlotterModulesSpec{
@@ -264,8 +302,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 			}
 		}
 	}
-	blueprints := r.GenerateBlueprints(moduleInstances, plotter)
-
+	blueprints := r.GenerateBlueprints(moduleInstances, plotter, &serviceMap)
 	return blueprints
 }
 
@@ -295,8 +332,8 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
 func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]fapp.ObservedState,
 	blueprintSpec *fapp.BlueprintSpec, errMsg string) {
-	for _, module := range blueprintSpec.Modules {
-		for _, assetID := range module.AssetIDs {
+	for moduleInd := range blueprintSpec.Modules {
+		for _, assetID := range blueprintSpec.Modules[moduleInd].AssetIDs {
 			var err = errMsg
 			assetToStatusMap[assetID] = fapp.ObservedState{
 				Ready: false,

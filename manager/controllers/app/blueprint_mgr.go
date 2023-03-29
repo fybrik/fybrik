@@ -48,7 +48,8 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 }
 
 // GenerateBlueprints creates Blueprint specs (one per cluster)
-func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, plotter *fapp.Plotter) map[string]fapp.BlueprintSpec {
+func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec,
+	plotter *fapp.Plotter, services *ServiceInfoPerReleasePerCluster) map[string]fapp.BlueprintSpec {
 	blueprintMap := make(map[string]fapp.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
 	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
@@ -58,7 +59,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
 		instances := r.RefineInstances(instanceList)
-		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter)
+		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter, services)
 	}
 
 	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
@@ -72,8 +73,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec, p
 // the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
 func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
-	clusterName string,
-	plotter *fapp.Plotter) fapp.BlueprintSpec {
+	clusterName string, plotter *fapp.Plotter, services *ServiceInfoPerReleasePerCluster) fapp.BlueprintSpec {
 	spec := fapp.BlueprintSpec{
 		Cluster:          clusterName,
 		ModulesNamespace: plotter.Spec.ModulesNamespace,
@@ -85,12 +85,20 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 	}
 	// Create the map that contains BlueprintModules
 	for ind := range instances {
-		modulename := instances[ind].Module.Name
-		instanceName := modulename
-		if instances[ind].Scope == fapp.Asset {
-			// Need unique name for each module
-			// if the module scope is one per asset then concat the id of the asset to it
-			instanceName = utils.CreateStepName(modulename, instances[ind].Module.AssetIDs[0])
+		var assetID string
+		if len(instances[ind].Module.AssetIDs) > 0 {
+			assetID = instances[ind].Module.AssetIDs[0]
+		}
+		instanceName := utils.CreateStepName(instances[ind].Module.Name, assetID, instances[ind].Scope)
+		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(plotter.Labels),
+			utils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations), instanceName)
+		cluster := instances[ind].ClusterName
+		var isEndpoint bool
+		if (*services)[cluster] != nil {
+			isEndpoint = (*services)[cluster][releaseName].IsEndpoint
+		}
+		instances[ind].Module.Network = fapp.ModuleNetwork{
+			Endpoint: isEndpoint,
 		}
 		spec.Modules[instanceName] = instances[ind].Module
 	}
