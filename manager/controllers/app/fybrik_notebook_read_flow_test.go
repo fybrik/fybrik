@@ -64,7 +64,6 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 			break
 		}
 
-		fmt.Println("xxxx")
 		err = test.StopPortForward(cmd)
 		if err != nil {
 			return "", errors.New("Port Forwarding command failed with error" + err.Error())
@@ -303,9 +302,9 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Println("Starting kubectl port-forward for arrow-flight")
+	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s", svcName, port, modulesNamespace)
 	portNum, err := strconv.Atoi(port)
-	g.Expect(err).To(gomega.BeNil())
+	g.Expect(err).To(gomega.BeNil(), "wrong port number %s", port)
 
 	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
 	if err != nil {
