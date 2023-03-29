@@ -66,7 +66,7 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 
 		err = test.StopPortForward(cmd)
 		if err != nil {
-			return "", errors.New("Port Forwarding command failed with error" + err.Error())
+			return "", errors.New("failed to terminate port-forward " + err.Error())
 		}
 
 		time.Sleep(10 * time.Second)
@@ -310,7 +310,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
-	fmt.Printf("kubectl port-forward succeded")
+	fmt.Printf("kubectl port-forward succeeded")
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)

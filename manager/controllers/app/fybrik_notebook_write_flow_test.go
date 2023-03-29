@@ -43,7 +43,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}
 	gomega.RegisterFailHandler(Fail)
 
-	g := gomega.NewGomegaWithT(t)
+	g := gomega.NewWithT(t)
 	defer GinkgoRecover()
 
 	err := fappv1.AddToScheme(scheme.Scheme)
@@ -247,7 +247,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
-	fmt.Printf("kubectl port-forward command succeded")
+	fmt.Printf("kubectl port-forward command succeeded")
 
 	// Writing data via arrow flight
 	opts := make([]grpc.DialOption, 0)
@@ -397,7 +397,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
-	fmt.Printf("kubectl port-forward command succeded")
+	fmt.Printf("kubectl port-forward command succeeded")
 
 	// Reading data via arrow flight
 	opts = make([]grpc.DialOption, 0)

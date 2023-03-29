@@ -66,7 +66,7 @@ func RunPortForward(ns, svcName string, port int) (string, *exec.Cmd, error) {
 
 	_, err = strconv.Atoi(match[2])
 	if err != nil {
-		return "", nil, err
+		return "", cmd, err
 	}
 
 	return match[2], cmd, nil
