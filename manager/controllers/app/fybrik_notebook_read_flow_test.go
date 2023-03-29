@@ -40,11 +40,11 @@ import (
 )
 
 const (
-	readFlow                           string        = "charts/fybrik/notebook-test-readflow.values.yaml"
-	readFlowTLS                        string        = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
-	readFlowTLSCA                      string        = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
-	PortFowardingMaxRetryAttempts      int           = 25
-	PortFowardingWaitInSecUntilNextTry time.Duration = 5
+	readFlow                      string        = "charts/fybrik/notebook-test-readflow.values.yaml"
+	readFlowTLS                   string        = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
+	readFlowTLSCA                 string        = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	PortFowardingMaxRetryAttempts int           = 25
+	PortForwardingDelay           time.Duration = 5
 )
 
 type ArrowRequest struct {
@@ -70,7 +70,7 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 			return "", errors.New("failed to terminate port-forward " + err.Error())
 		}
 
-		time.Sleep(PortFowardingWaitInSecUntilNextTry * time.Second)
+		time.Sleep(PortForwardingDelay * time.Second)
 		i++
 	}
 	return "", errors.New("Port Forwarding command failed with error")
