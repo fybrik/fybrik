@@ -11,9 +11,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
@@ -53,13 +55,22 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 	i := 0
 	var listenPort string
 	var err error
+	var cmd *exec.Cmd
 	for {
-		listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
+		listenPort, cmd, err = test.RunPortForward(modulesNamespace, svcName, portNum)
 		if err == nil {
 			return listenPort, nil
 		} else if i > PortFowardingMaxRetryAttempts {
 			break
 		}
+
+		fmt.Println("xxxx")
+		err = test.StopPortForward(cmd)
+		if err != nil {
+			return "", errors.New("Port Forwarding command failed with error" + err.Error())
+		}
+
+		time.Sleep(10 * time.Second)
 		i++
 	}
 	return "", errors.New("Port Forwarding command failed with error")
@@ -300,6 +311,8 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
+	fmt.Printf("kubectl port-forward succeded")
+
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock(), grpc.WithTimeout(timeout))
