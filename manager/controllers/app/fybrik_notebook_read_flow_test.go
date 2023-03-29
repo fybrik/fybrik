@@ -44,7 +44,7 @@ const (
 	readFlowTLS                        string        = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
 	readFlowTLSCA                      string        = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
 	PortFowardingMaxRetryAttempts      int           = 25
-	PortFowardingWaitInSecUntilNextTry time.Duration = 10
+	PortFowardingWaitInSecUntilNextTry time.Duration = 5
 )
 
 type ArrowRequest struct {
@@ -303,7 +303,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s", svcName, port, modulesNamespace)
+	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s\n", svcName, port, modulesNamespace)
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil(), "wrong port number %s", port)
 
@@ -311,7 +311,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
-	fmt.Printf("kubectl port-forward succeeded")
+	fmt.Println("kubectl port-forward succeeded")
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
@@ -360,4 +360,5 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+	fmt.Println("read-flow test succeeded")
 }

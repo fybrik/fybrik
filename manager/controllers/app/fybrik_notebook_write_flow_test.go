@@ -397,7 +397,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())
 	}
-	fmt.Printf("kubectl port-forward command succeeded")
+	fmt.Println("kubectl port-forward command succeeded")
 
 	// Reading data via arrow flight
 	opts = make([]grpc.DialOption, 0)
@@ -454,4 +454,5 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Eventually(func() error {
 		return k8sClient.Delete(context.Background(), readApplication)
 	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("write-flow test succeeded")
 }
