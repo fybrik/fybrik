@@ -4,10 +4,12 @@
 package test
 
 import (
+	"errors"
 	"io"
 	"os/exec"
 	"regexp"
 	"strconv"
+	"syscall"
 )
 
 const (
@@ -40,7 +42,7 @@ func StartCmdAndStreamOutput(cmd *exec.Cmd) (stdout, stderr io.ReadCloser, err e
 
 // runPortForward runs port-forward, warning, this may need root functionality on some systems.
 // The function was inspired from kubernetes e2e framework
-func RunPortForward(ns, svcName string, port int) (string, error) {
+func RunPortForward(ns, svcName string, port int) (string, *exec.Cmd, error) {
 	// #nosec G204 -- Avoid "Subprocess launched with variable" error
 	cmd := exec.Command("kubectl", "-n", ns, "port-forward", "svc/"+svcName, ":"+strconv.Itoa(port))
 	// This is somewhat ugly but is the only way to retrieve the port that was picked
@@ -48,24 +50,34 @@ func RunPortForward(ns, svcName string, port int) (string, error) {
 	// way of guaranteeing we can pick one that isn't in use, particularly on Jenkins.
 	portOutput, _, err := StartCmdAndStreamOutput(cmd)
 	if err != nil {
-		return "", err
+		return "", cmd, err
 	}
 
 	buf := make([]byte, bufferInitalSize)
 	var n int
 	if n, err = portOutput.Read(buf); err != nil {
-		return "", err
+		return "", cmd, err
 	}
 	portForwardOutput := string(buf[:n])
 	match := portForwardRegexp.FindStringSubmatch(portForwardOutput)
 	if len(match) != regexpPortMatchLen {
-		return "", err
+		return "", cmd, err
 	}
 
 	_, err = strconv.Atoi(match[2])
 	if err != nil {
-		return "", err
+		return "", cmd, err
 	}
 
-	return match[2], nil
+	return match[2], cmd, nil
+}
+
+// This function stops PortForward command
+func StopPortForward(cmd *exec.Cmd) error {
+	// SIGINT signals that kubectl port-forward should gracefully terminate
+	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
+		return errors.New("error sending SIGINT to kubectl port-forward: " + err.Error())
+	}
+
+	return nil
 }
