@@ -186,7 +186,7 @@ spec:
                       name:
                         description: Name of the FybrikModule on which this is based
                         type: string
-                      netwolrk:
+                      network:
                         description: Network specifies the module communication with a workload or other modules
                         properties:
                           egress:
@@ -236,10 +236,6 @@ spec:
                                 - urls
                               type: object
                             type: array
-                        required:
-                          - egress
-                          - endpoint
-                          - ingress
                         type: object
                     required:
                       - chart

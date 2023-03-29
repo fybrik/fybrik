@@ -175,7 +175,7 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
         </td>
         <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeynetwolrk">netwolrk</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeynetwork">network</a></b></td>
         <td>object</td>
         <td>
           Network specifies the module communication with a workload or other modules<br/>
@@ -444,7 +444,7 @@ Action to be performed on the data, e.g., masking
 </table>
 
 
-#### Blueprint.spec.modules[key].netwolrk
+#### Blueprint.spec.modules[key].network
 <sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
 
 
@@ -461,32 +461,32 @@ Network specifies the module communication with a workload or other modules
         </tr>
     </thead>
     <tbody><tr>
-        <td><b><a href="#blueprintspecmoduleskeynetwolrkegressindex">egress</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeynetworkegressindex">egress</a></b></td>
         <td>[]object</td>
         <td>
           Egress<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
         <td><b>endpoint</b></td>
         <td>boolean</td>
         <td>
           Endpoint indicates whether the module service is used as an endpoint by the workload application<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr><tr>
-        <td><b><a href="#blueprintspecmoduleskeynetwolrkingressindex">ingress</a></b></td>
+        <td><b><a href="#blueprintspecmoduleskeynetworkingressindex">ingress</a></b></td>
         <td>[]object</td>
         <td>
           Ingress<br/>
         </td>
-        <td>true</td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
 
-#### Blueprint.spec.modules[key].netwolrk.egress[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwolrk)</sup></sup>
+#### Blueprint.spec.modules[key].network.egress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
 
 
 
@@ -526,8 +526,8 @@ ModuleDeployment specifies the deployment details of the module
 </table>
 
 
-#### Blueprint.spec.modules[key].netwolrk.ingress[index]
-<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwolrk)</sup></sup>
+#### Blueprint.spec.modules[key].network.ingress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
 
 
 

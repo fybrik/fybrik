@@ -60,11 +60,14 @@ type ModuleDeployment struct {
 // ModuleNetwork specifies the module communication with a workload or other modules
 type ModuleNetwork struct {
 	// Endpoint indicates whether the module service is used as an endpoint by the workload application
-	Endpoint bool `json:"endpoint"`
+	// +optional
+	Endpoint bool `json:"endpoint,omitempty"`
 	// Ingress
-	Ingress []ModuleDeployment `json:"ingress"`
+	// +optional
+	Ingress []ModuleDeployment `json:"ingress,omitempty"`
 	// Egress
-	Egress []ModuleDeployment `json:"egress"`
+	// +optional
+	Egress []ModuleDeployment `json:"egress,omitempty"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
@@ -89,7 +92,7 @@ type BlueprintModule struct {
 
 	// Network specifies the module communication with a workload or other modules
 	// +optional
-	Network ModuleNetwork `json:"netwolrk,omitempty"`
+	Network ModuleNetwork `json:"network,omitempty"`
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path
