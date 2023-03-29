@@ -186,6 +186,61 @@ spec:
                       name:
                         description: Name of the FybrikModule on which this is based
                         type: string
+                      netwolrk:
+                        description: Network specifies the module communication with a workload or other modules
+                        properties:
+                          egress:
+                            description: Egress
+                            items:
+                              description: ModuleDeployment specifies the deployment details of the module
+                              properties:
+                                cluster:
+                                  description: Cluster name
+                                  type: string
+                                release:
+                                  description: Release name
+                                  type: string
+                                urls:
+                                  description: URLs the module needs access to
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                                - cluster
+                                - release
+                                - urls
+                              type: object
+                            type: array
+                          endpoint:
+                            description: Endpoint indicates whether the module service is used as an endpoint by the workload application
+                            type: boolean
+                          ingress:
+                            description: Ingress
+                            items:
+                              description: ModuleDeployment specifies the deployment details of the module
+                              properties:
+                                cluster:
+                                  description: Cluster name
+                                  type: string
+                                release:
+                                  description: Release name
+                                  type: string
+                                urls:
+                                  description: URLs the module needs access to
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                                - cluster
+                                - release
+                                - urls
+                              type: object
+                            type: array
+                        required:
+                          - egress
+                          - endpoint
+                          - ingress
+                        type: object
                     required:
                       - chart
                       - name

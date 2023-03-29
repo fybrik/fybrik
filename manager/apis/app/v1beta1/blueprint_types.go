@@ -47,6 +47,26 @@ type ModuleArguments struct {
 	Assets []AssetContext `json:"assets,omitempty"`
 }
 
+// ModuleDeployment specifies the deployment details of the module
+type ModuleDeployment struct {
+	// Cluster name
+	Cluster string `json:"cluster"`
+	// Release name
+	Release string `json:"release"`
+	// URLs the module needs access to
+	URLs []string `json:"urls"`
+}
+
+// ModuleNetwork specifies the module communication with a workload or other modules
+type ModuleNetwork struct {
+	// Endpoint indicates whether the module service is used as an endpoint by the workload application
+	Endpoint bool `json:"endpoint"`
+	// Ingress
+	Ingress []ModuleDeployment `json:"ingress"`
+	// Egress
+	Egress []ModuleDeployment `json:"egress"`
+}
+
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
 // to instantiate a datapath component, including the parameters relevant for the particular workload.
 type BlueprintModule struct {
@@ -66,6 +86,10 @@ type BlueprintModule struct {
 	// as well as module status in the future.
 	// +optional
 	AssetIDs []string `json:"assetIds,omitempty"`
+
+	// Network specifies the module communication with a workload or other modules
+	// +optional
+	Network ModuleNetwork `json:"netwolrk,omitempty"`
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path
