@@ -5,7 +5,7 @@ set -e
 # Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
-KUBE_VERSION=1.24.0
+KUBE_VERSION=1.24.1
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
@@ -258,7 +258,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+bin/helm install localstack localstack-charts/localstack --version 0.4.3 --set startServices="s3" --set service.type=ClusterIP --set livenessProbe.initialDelaySeconds=25
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
