@@ -76,9 +76,8 @@ func ParseRawURL(rawURL string) (*url.URL, error) {
 	u, err := url.Parse(rawURL)
 	// if schema is not set, the ParseRequestURI
 	if err != nil || (u.Host == "" && u.Scheme != "") {
-		u, repErr := url.ParseRequestURI("https://" + rawURL)
-		if repErr != nil {
-			return nil, repErr
+		if u, err = url.ParseRequestURI("https://" + rawURL); err != nil {
+			return nil, err
 		}
 		return u, nil
 	}

@@ -226,7 +226,8 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 			for _, subFlowStep := range subFlow.Steps {
 				for _, seqStep := range subFlowStep {
 					stepTemplate := plotter.Spec.Templates[seqStep.Template]
-					for _, module := range stepTemplate.Modules {
+					for indx := range stepTemplate.Modules {
+						module := stepTemplate.Modules[indx]
 						moduleArgs := seqStep.Parameters
 
 						// If the module type is "plugin" then it is assumed
@@ -297,7 +298,8 @@ func (r *PlotterReconciler) updatePlotterAssetsState(assetToStatusMap map[string
 // setPlotterAssetsReadyStateToFalse sets to false the status of the assets processed by the blueprint modules.
 func (r *PlotterReconciler) setPlotterAssetsReadyStateToFalse(assetToStatusMap map[string]fapp.ObservedState,
 	blueprintSpec *fapp.BlueprintSpec, errMsg string) {
-	for _, module := range blueprintSpec.Modules {
+	for id := range blueprintSpec.Modules {
+		module := blueprintSpec.Modules[id]
 		for _, assetID := range module.AssetIDs {
 			var err = errMsg
 			assetToStatusMap[assetID] = fapp.ObservedState{

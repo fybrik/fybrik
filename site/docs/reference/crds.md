@@ -174,6 +174,13 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
           assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b>externalServices</b></td>
+        <td>[]string</td>
+        <td>
+          External services that are required for functionality of the module, format of the string should be a valid URL<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -1774,6 +1781,13 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>externalServices</b></td>
+        <td>[]string</td>
+        <td>
+          External services that are required for functionality of the module, format of the strings should be a valid URL<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>pluginType</b></td>
         <td>string</td>
         <td>
@@ -1784,7 +1798,7 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         <td><b><a href="#fybrikmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
         <td>[]object</td>
         <td>
-          StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus<br/>
+          StatusIndicators allow checking status of a non-standard resource that can not be computed by helm/kstatus<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3100,6 +3114,13 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
           May be one of service, config or plugin Service: Means that the control plane deploys the component that performs the capability Config: Another pre-installed service performs the capability and the module deployed configures it for the particular workload or dataset Plugin: Indicates that this module performs a capability as part of another service or module rather than as a stand-alone module<br/>
         </td>
         <td>true</td>
+      </tr><tr>
+        <td><b>externalServices</b></td>
+        <td>[]string</td>
+        <td>
+          External services that are required for functionality of the module.<br/>
+        </td>
+        <td>false</td>
       </tr><tr>
         <td><b>scope</b></td>
         <td>enum</td>

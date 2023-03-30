@@ -4,8 +4,9 @@
 package v1beta1
 
 import (
-	"fybrik.io/fybrik/pkg/model/taxonomy"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"fybrik.io/fybrik/pkg/model/taxonomy"
 )
 
 // AssetContext defines the input parameters for modules that access an asset
