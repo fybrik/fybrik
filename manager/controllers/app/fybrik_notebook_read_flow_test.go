@@ -156,88 +156,86 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	var plotterObjectKey client.ObjectKey
 	var modulesNamespace string
 
-	// Check allow-by-default in case the values is notebook-test-readflow.values.yaml
-	if valuesYaml == readFlow {
-		// Starting allow-by-default
-		fmt.Println("Starting allow-by-default read")
+	// Check allow-by-default
+	// Starting allow-by-default
+	fmt.Println("Starting allow-by-default read")
 
-		// Module installed by setup script directly from remote arrow-flight-module repository
-		// Installing application
+	// Module installed by setup script directly from remote arrow-flight-module repository
+	// Installing application
 
-		g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).
-			ToNot(gomega.HaveOccurred())
-		application.ObjectMeta.Name += "-1"
-		application.Spec.Data[0].DataSetID = catalogedAsset
-		applicationKey = client.ObjectKeyFromObject(application)
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication.yaml", application)).
+		ToNot(gomega.HaveOccurred())
+	application.ObjectMeta.Name += "-1"
+	application.Spec.Data[0].DataSetID = catalogedAsset
+	applicationKey = client.ObjectKeyFromObject(application)
 
-		// Create FybrikApplication
-		fmt.Println("Expecting application creation to succeed")
-		g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
+	// Create FybrikApplication
+	fmt.Println("Expecting application creation to succeed")
+	g.Expect(k8sClient.Create(context.Background(), application)).Should(gomega.Succeed())
 
-		fmt.Println("Expecting application to be created")
-		g.Eventually(func() error {
-			return k8sClient.Get(context.Background(), applicationKey, application)
-		}, timeout, interval).Should(gomega.Succeed())
-		fmt.Println("Expecting plotter to be constructed")
-		g.Eventually(func() *fapp.ResourceReference {
-			_ = k8sClient.Get(context.Background(), applicationKey, application)
-			return application.Status.Generated
-		}, timeout, interval).ShouldNot(gomega.BeNil())
+	fmt.Println("Expecting application to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), applicationKey, application)
+	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("Expecting plotter to be constructed")
+	g.Eventually(func() *fapp.ResourceReference {
+		_ = k8sClient.Get(context.Background(), applicationKey, application)
+		return application.Status.Generated
+	}, timeout, interval).ShouldNot(gomega.BeNil())
 
-		// The plotter has to be created
+	// The plotter has to be created
 
-		plotterObjectKey = client.ObjectKey{Namespace: application.Status.Generated.Namespace,
-			Name: application.Status.Generated.Name}
-		fmt.Println("Expecting plotter to be fetchable")
-		g.Eventually(func() error {
-			return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
-		}, timeout, interval).Should(gomega.Succeed())
+	plotterObjectKey = client.ObjectKey{Namespace: application.Status.Generated.Namespace,
+		Name: application.Status.Generated.Name}
+	fmt.Println("Expecting plotter to be fetchable")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+	}, timeout, interval).Should(gomega.Succeed())
 
-		fmt.Println("Expecting application to be ready")
-		g.Eventually(func() bool {
-			err = k8sClient.Get(context.Background(), applicationKey, application)
-			if err != nil {
-				return false
-			}
-			return application.Status.Ready
-		}, timeout, interval).Should(gomega.Equal(true))
+	fmt.Println("Expecting application to be ready")
+	g.Eventually(func() bool {
+		err = k8sClient.Get(context.Background(), applicationKey, application)
+		if err != nil {
+			return false
+		}
+		return application.Status.Ready
+	}, timeout, interval).Should(gomega.Equal(true))
 
-		modulesNamespace = plotter.Spec.ModulesNamespace
-		fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
-		g.Expect(application.Status.AssetStates[catalogedAsset].
-			Conditions[ReadyConditionIndex].Status).To(gomega.Equal(v1.ConditionTrue))
-		g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).
-			ToNot(gomega.BeEmpty())
+	modulesNamespace = plotter.Spec.ModulesNamespace
+	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
+	g.Expect(application.Status.AssetStates[catalogedAsset].
+		Conditions[ReadyConditionIndex].Status).To(gomega.Equal(v1.ConditionTrue))
+	g.Expect(application.Status.AssetStates[catalogedAsset].Endpoint.Name).
+		ToNot(gomega.BeEmpty())
 
-		// cleanup of first application
-		g.Eventually(func() error {
-			return k8sClient.Delete(context.Background(), application)
-		}, timeout, interval).Should(gomega.Succeed())
+	// cleanup of first application
+	g.Eventually(func() error {
+		return k8sClient.Delete(context.Background(), application)
+	}, timeout, interval).Should(gomega.Succeed())
 
-		// Deploy policy from a configmap
-		piiReadConfigMap := &v1.ConfigMap{}
-		// Create reduct PII policy
-		g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/pii-policy-cm.yaml", piiReadConfigMap)).ToNot(gomega.HaveOccurred())
-		piiReadConfigMapKey := client.ObjectKeyFromObject(piiReadConfigMap)
-		g.Expect(k8sClient.Create(context.Background(), piiReadConfigMap)).Should(gomega.Succeed())
+	// Deploy policy from a configmap
+	piiReadConfigMap := &v1.ConfigMap{}
+	// Create reduct PII policy
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/pii-policy-cm.yaml", piiReadConfigMap)).ToNot(gomega.HaveOccurred())
+	piiReadConfigMapKey := client.ObjectKeyFromObject(piiReadConfigMap)
+	g.Expect(k8sClient.Create(context.Background(), piiReadConfigMap)).Should(gomega.Succeed())
 
-		fmt.Println("Expecting configmap to be created")
-		g.Eventually(func() error {
-			return k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
-		}, timeout, interval).Should(gomega.Succeed())
-		fmt.Println("Expecting policies to be compiled")
-		g.Eventually(func() string {
-			_ = k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
-			return piiReadConfigMap.Annotations["openpolicyagent.org/policy-status"]
-		}, timeout, interval).Should(gomega.BeEquivalentTo("{\"status\":\"ok\"}"))
+	fmt.Println("Expecting configmap to be created")
+	g.Eventually(func() error {
+		return k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
+	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("Expecting policies to be compiled")
+	g.Eventually(func() string {
+		_ = k8sClient.Get(context.Background(), piiReadConfigMapKey, piiReadConfigMap)
+		return piiReadConfigMap.Annotations["openpolicyagent.org/policy-status"]
+	}, timeout, interval).Should(gomega.BeEquivalentTo("{\"status\":\"ok\"}"))
 
-		defer func() {
-			cm := &v1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: piiReadConfigMapKey.Namespace,
-				Name: piiReadConfigMapKey.Name}}
-			_ = k8sClient.Get(context.Background(), piiReadConfigMapKey, cm)
-			_ = k8sClient.Delete(context.Background(), cm)
-		}()
-	}
+	defer func() {
+		cm := &v1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Namespace: piiReadConfigMapKey.Namespace,
+			Name: piiReadConfigMapKey.Name}}
+		_ = k8sClient.Get(context.Background(), piiReadConfigMapKey, cm)
+		_ = k8sClient.Delete(context.Background(), cm)
+	}()
 
 	// Starting read with reduct
 	fmt.Println("Starting read with reduct")
