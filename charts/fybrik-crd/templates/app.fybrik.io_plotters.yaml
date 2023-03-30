@@ -244,6 +244,9 @@ spec:
                                               assetId:
                                                 description: AssetID identifies the source asset of this step
                                                 type: string
+                                              cluster:
+                                                description: Cluster of a module instance to be accessed
+                                                type: string
                                             type: object
                                           type: array
                                       type: object
