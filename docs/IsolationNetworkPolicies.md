@@ -26,7 +26,7 @@ complicates the configuration. Therefore, later we will provide other isolation 
 - NP are implemented by the network plugin. Creating a NetworkPolicy resource without a controller - a Container Network 
 Interface (CNI) that implements it will have no effect. For example, `Kind` deployments which by default use "kindnetd" 
 do not support NP. In order to support NP, installation of another CNI, e.g. [Calico](https://github.com/projectcalico/calico)
-is required. Below there are instruction how to install kind with calico networking.  [instructions](https://alexbrand.dev/post/creating-a-kind-cluster-with-calico-networking/). 
+is required. Below there are instruction how to install kind with calico networking. 
 On the other hand, all K8s clusters in production deployments use CNIs which support NP.
 
 <details> 
