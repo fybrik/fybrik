@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/apache/arrow/go/v7/arrow"
 	"github.com/apache/arrow/go/v7/arrow/array"
@@ -32,7 +31,6 @@ import (
 
 	fappv1 "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	fappv2 "fybrik.io/fybrik/manager/apis/app/v1beta2"
-	"fybrik.io/fybrik/pkg/test"
 )
 
 const (
@@ -45,7 +43,7 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	}
 	gomega.RegisterFailHandler(Fail)
 
-	g := gomega.NewGomegaWithT(t)
+	g := gomega.NewWithT(t)
 	defer GinkgoRecover()
 
 	err := fappv1.AddToScheme(scheme.Scheme)
@@ -242,12 +240,14 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	time.Sleep(10 * time.Second)
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
-	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
+	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
+	fmt.Printf("kubectl port-forward command succeeded")
 
 	// Writing data via arrow flight
 	opts := make([]grpc.DialOption, 0)
@@ -393,9 +393,11 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	fmt.Println("Starting kubectl port-forward for arrow-flight")
 	portNum, err = strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil())
-	time.Sleep(10 * time.Second)
-	listenPort, err = test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil())
+	listenPort, err = RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
+	fmt.Println("kubectl port-forward command succeeded")
 
 	// Reading data via arrow flight
 	opts = make([]grpc.DialOption, 0)
@@ -452,4 +454,5 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 	g.Eventually(func() error {
 		return k8sClient.Delete(context.Background(), readApplication)
 	}, timeout, interval).Should(gomega.Succeed())
+	fmt.Println("write-flow test succeeded")
 }

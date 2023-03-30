@@ -6,10 +6,12 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,14 +40,40 @@ import (
 )
 
 const (
-	readFlow      string = "charts/fybrik/notebook-test-readflow.values.yaml"
-	readFlowTLS   string = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
-	readFlowTLSCA string = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	readFlow                      string        = "charts/fybrik/notebook-test-readflow.values.yaml"
+	readFlowTLS                   string        = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
+	readFlowTLSCA                 string        = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	PortFowardingMaxRetryAttempts int           = 25
+	PortForwardingDelay           time.Duration = 5
 )
 
 type ArrowRequest struct {
 	Asset   string   `json:"asset,omitempty"`
 	Columns []string `json:"columns,omitempty"`
+}
+
+func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, portNum int) (string, error) {
+	i := 0
+	var listenPort string
+	var err error
+	var cmd *exec.Cmd
+	for {
+		listenPort, cmd, err = test.RunPortForward(modulesNamespace, svcName, portNum)
+		if err == nil {
+			return listenPort, nil
+		} else if i > PortFowardingMaxRetryAttempts {
+			break
+		}
+
+		err = test.StopPortForward(cmd)
+		if err != nil {
+			return "", errors.New("failed to terminate port-forward " + err.Error())
+		}
+
+		time.Sleep(PortForwardingDelay * time.Second)
+		i++
+	}
+	return "", errors.New("Port Forwarding command failed with error")
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
@@ -60,7 +88,7 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	}
 	gomega.RegisterFailHandler(Fail)
 
-	g := gomega.NewGomegaWithT(t)
+	g := gomega.NewWithT(t)
 	defer GinkgoRecover()
 
 	// Copy data.csv file to S3
@@ -275,12 +303,15 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 	svcName := strings.Replace(hostname, "."+modulesNamespace, "", 1)
 
-	time.Sleep(10 * time.Second)
-	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s", svcName, port, modulesNamespace)
+	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s\n", svcName, port, modulesNamespace)
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil(), "wrong port number %s", port)
-	listenPort, err := test.RunPortForward(modulesNamespace, svcName, portNum)
-	g.Expect(err).To(gomega.BeNil(), err.Error())
+
+	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
+	if err != nil {
+		g.Fail("Port Forwarding command failed with error " + err.Error())
+	}
+	fmt.Println("kubectl port-forward succeeded")
 
 	// Reading data via arrow flight
 	opts := make([]grpc.DialOption, 0)
@@ -329,4 +360,5 @@ func TestS3NotebookReadFlow(t *testing.T) {
 		}
 	}
 	record.Release()
+	fmt.Println("read-flow test succeeded")
 }
