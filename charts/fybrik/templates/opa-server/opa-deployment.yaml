@@ -147,6 +147,8 @@ spec:
           {{- if .Values.opaServer.tls.use_tls }}
           - --opa-url=https://127.0.0.1:{{ .Values.opaServer.service.port }}/v1
           {{- end }}
+          # taken from https://github.com/open-policy-agent/kube-mgmt/blob/8.1.0/charts/opa-kube-mgmt/templates/deployment.yaml#L184
+          - --opa-allow-insecure
           - --require-policy-label
           - --policies={{ .Release.Namespace }}
           - --enable-data
