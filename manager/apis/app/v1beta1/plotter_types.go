@@ -4,10 +4,9 @@
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // AssetDetails is a list of assets used in the fybrikapplication. In addition to assets declared in
@@ -155,6 +154,10 @@ type ModuleInfo struct {
 	// Module capability
 	// +required
 	Capability taxonomy.Capability `json:"capability"`
+
+	// External services that are required for functionality of the module.
+	// +optional
+	ExternalServices []string `json:"externalServices,omitempty"`
 }
 
 // Template contains basic information about the required modules to serve the fybrikapplication

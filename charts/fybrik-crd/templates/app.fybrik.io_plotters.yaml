@@ -313,6 +313,11 @@ spec:
                               required:
                                 - name
                               type: object
+                            externalServices:
+                              description: External services that are required for functionality of the module.
+                              items:
+                                type: string
+                              type: array
                             name:
                               description: Name of the module
                               type: string

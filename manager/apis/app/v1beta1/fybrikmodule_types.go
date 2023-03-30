@@ -170,9 +170,13 @@ type FybrikModuleSpec struct {
 	// +required
 	Chart ChartSpec `json:"chart"`
 
-	// StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+	// StatusIndicators allow checking status of a non-standard resource that can not be computed by helm/kstatus
 	// +optional
 	StatusIndicators []ResourceStatusIndicator `json:"statusIndicators,omitempty"`
+
+	// External services that are required for functionality of the module, format of the strings should be a valid URL
+	// +optional
+	ExternalServices []string `json:"externalServices,omitempty"`
 }
 
 // ChartSpec specifies chart name and values

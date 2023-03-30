@@ -5,6 +5,7 @@ package utils
 
 import (
 	"context"
+	"net/url"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -66,4 +67,20 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		res.Object[statusKey] = currentStatus
 		return cl.Status().Update(ctx, res)
 	})
+}
+
+// ParseRawURL parses a string to return URl iven if the schema is not set
+// from the url.Parse comments "Trying to parse a hostname and path
+// without a scheme is invalid but may not necessarily return an error, due to parsing ambiguities."
+func ParseRawURL(rawURL string) (*url.URL, error) {
+	u, err := url.Parse(rawURL)
+	// if schema is not set, the ParseRequestURI
+	if err != nil || (u.Host == "" && u.Scheme != "") {
+		u, repErr := url.ParseRequestURI("https://" + rawURL)
+		if repErr != nil {
+			return nil, repErr
+		}
+		return u, nil
+	}
+	return u, nil
 }

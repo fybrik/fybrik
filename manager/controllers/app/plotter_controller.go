@@ -112,15 +112,16 @@ func (r *PlotterReconciler) removeFinalizers(ctx context.Context, plotter *fapp.
 
 // PlotterModulesSpec consists of module details extracted from the Plotter structure
 type PlotterModulesSpec struct {
-	ClusterName     string
-	VaultAuthPath   string
-	AssetID         string
-	ModuleName      string
-	ModuleArguments *fapp.StepParameters
-	FlowType        taxonomy.DataFlow
-	Chart           fapp.ChartSpec
-	Scope           fapp.CapabilityScope
-	Capability      taxonomy.Capability
+	ClusterName      string
+	VaultAuthPath    string
+	AssetID          string
+	ModuleName       string
+	ModuleArguments  *fapp.StepParameters
+	FlowType         taxonomy.DataFlow
+	Chart            fapp.ChartSpec
+	Scope            fapp.CapabilityScope
+	Capability       taxonomy.Capability
+	ExternalServices []string
 }
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
@@ -245,15 +246,16 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 							}
 						}
 						plotterModule := &PlotterModulesSpec{
-							ModuleArguments: moduleArgs,
-							AssetID:         flow.AssetID,
-							FlowType:        subFlow.FlowType,
-							ClusterName:     clusterName,
-							Chart:           module.Chart,
-							ModuleName:      module.Name,
-							Scope:           scope,
-							Capability:      module.Capability,
-							VaultAuthPath:   authPath,
+							ModuleArguments:  moduleArgs,
+							AssetID:          flow.AssetID,
+							FlowType:         subFlow.FlowType,
+							ClusterName:      clusterName,
+							Chart:            module.Chart,
+							ModuleName:       module.Name,
+							Scope:            scope,
+							Capability:       module.Capability,
+							VaultAuthPath:    authPath,
+							ExternalServices: module.ExternalServices,
 						}
 
 						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)
@@ -466,7 +468,7 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 		ready := *plotter.Status.ReadyTimestamp
 		elapsedTime := time.Since(ready.Time)
 		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
-		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
+		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:gomnd
 
 		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).
 			Str(logging.RESPONSETIME, elapsedTime.String()).Msg(plotterReadyMsg)

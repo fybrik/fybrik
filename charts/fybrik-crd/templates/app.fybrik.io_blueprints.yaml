@@ -183,6 +183,11 @@ spec:
                         required:
                           - name
                         type: object
+                      externalServices:
+                        description: External services that are required for functionality of the module, format of the string should be a valid URL
+                        items:
+                          type: string
+                        type: array
                       name:
                         description: Name of the FybrikModule on which this is based
                         type: string

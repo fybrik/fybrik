@@ -13,6 +13,7 @@ import (
 )
 
 func TestBlueprint(t *testing.T) {
+
 	key := types.NamespacedName{
 		Name:      "foo",
 		Namespace: "default",
@@ -34,11 +35,12 @@ func TestBlueprint(t *testing.T) {
 						},
 					},
 				},
-				Chart: ChartSpec{Name: "start-image"}}},
+				ExternalServices: []string{"myservice.com", "grpc://foo.com:4567"},
+				Chart:            ChartSpec{Name: "start-image"}}},
 		},
 	}
-	g := gomega.NewGomegaWithT(t)
 
+	g := gomega.NewGomegaWithT(t)
 	// Test Create
 	fetched := &Blueprint{}
 	g.Expect(c.Create(context.TODO(), created)).NotTo(gomega.HaveOccurred())

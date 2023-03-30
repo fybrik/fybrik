@@ -4,9 +4,8 @@
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // AssetContext defines the input parameters for modules that access an asset
@@ -66,6 +65,10 @@ type BlueprintModule struct {
 	// as well as module status in the future.
 	// +optional
 	AssetIDs []string `json:"assetIds,omitempty"`
+
+	// External services that are required for functionality of the module, format of the string should be a valid URL
+	// +optional
+	ExternalServices []string `json:"externalServices,omitempty"`
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path

@@ -164,11 +164,16 @@ spec:
                 description:
                   description: An explanation of what this module does
                   type: string
+                externalServices:
+                  description: External services that are required for functionality of the module, format of the strings should be a valid URL
+                  items:
+                    type: string
+                  type: array
                 pluginType:
                   description: 'Plugin type indicates the plugin technology used to invoke the capabilities Ex: vault, fybrik-wasm... Should be provided if type is plugin'
                   type: string
                 statusIndicators:
-                  description: StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus
+                  description: StatusIndicators allow checking status of a non-standard resource that can not be computed by helm/kstatus
                   items:
                     description: ResourceStatusIndicator is used to determine the status of an orchestrated resource
                     properties:
