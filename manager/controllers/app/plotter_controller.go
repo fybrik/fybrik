@@ -126,15 +126,15 @@ type PlotterModulesSpec struct {
 
 // ServiceInfo stores the service API and indicates whether it is exposed to the workload
 type ServiceInfo struct {
+	Cluster    string
+	Release    string
 	API        *datacatalog.ResourceDetails
 	IsEndpoint bool
 }
 
-// service info per release map
-type ServiceInfoPerRelease map[string]ServiceInfo
-
-// service info per release per cluster
-type ServiceInfoPerReleasePerCluster map[string]ServiceInfoPerRelease
+// service info of the given release in the given cluster
+// the key is a combination of a release and a cluster
+type Services map[string]ServiceInfo
 
 // addCredentials updates Vault credentials field to hold only credentials related to the flow type
 func addCredentials(dataStore *fapp.DataStore, vaultAuthPath string, flowType taxonomy.DataFlow) {
@@ -150,6 +150,11 @@ func addCredentials(dataStore *fapp.DataStore, vaultAuthPath string, flowType ta
 	}
 
 	dataStore.Vault = vaultMap
+}
+
+// UniqueReleaseName returns the combination of release and the cluster
+func UniqueReleaseName(cluster, release string) string {
+	return cluster + "," + release
 }
 
 // convertPlotterModuleToBlueprintModule converts an object of type PlotterModulesSpec to type ModuleInstanceSpec
@@ -230,7 +235,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 
 	log.Trace().Msg("Constructing Blueprints from Plotter")
 	moduleInstances := make([]ModuleInstanceSpec, 0)
-	serviceMap := ServiceInfoPerReleasePerCluster{}
+	serviceMap := Services{}
 	clusters, _ := r.ClusterManager.GetClusters()
 
 	for _, flow := range plotter.Spec.Flows {
@@ -268,20 +273,17 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 						// add service details
 						// the service can serve different assets, for some it may serve as virtual endpoint for the workload
 						// thus, serviceMap combines information for all relevant assets
-						if serviceMap[clusterName] == nil {
-							serviceMap[clusterName] = ServiceInfoPerRelease{}
+						key := UniqueReleaseName(clusterName, releaseName)
+						if service, ok := serviceMap[key]; ok {
+							isEndpoint = isEndpoint || service.IsEndpoint
 						}
-						if service, ok := serviceMap[clusterName][releaseName]; !ok {
-							serviceMap[clusterName][releaseName] = ServiceInfo{
-								API:        seqStep.Parameters.API,
-								IsEndpoint: isEndpoint,
-							}
-						} else {
-							serviceMap[clusterName][releaseName] = ServiceInfo{
-								API:        service.API,
-								IsEndpoint: isEndpoint || service.IsEndpoint,
-							}
+						serviceMap[key] = ServiceInfo{
+							Cluster:    clusterName,
+							Release:    releaseName,
+							API:        seqStep.Parameters.API,
+							IsEndpoint: isEndpoint,
 						}
+
 						plotterModule := &PlotterModulesSpec{
 							ModuleArguments: moduleArgs,
 							AssetID:         flow.AssetID,
@@ -302,7 +304,7 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 			}
 		}
 	}
-	blueprints := r.GenerateBlueprints(moduleInstances, plotter, &serviceMap)
+	blueprints := r.GenerateBlueprints(moduleInstances, plotter, serviceMap)
 	return blueprints
 }
 
