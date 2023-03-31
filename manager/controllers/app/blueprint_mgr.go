@@ -141,7 +141,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 // get module key (cluster + release) by api connection
 func getServiceUniqueKey(conn taxonomy.Connection, services Services) (string, bool) {
 	for key := range services {
-		if equality.Semantic.DeepEqual(conn, services[key].API.Connection) {
+		if services[key].API != nil && equality.Semantic.DeepEqual(conn, services[key].API.Connection) {
 			return key, true
 		}
 	}
