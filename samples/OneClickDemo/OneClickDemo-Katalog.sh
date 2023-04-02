@@ -251,8 +251,8 @@ bin/kubectl create namespace fybrik-notebook-sample
 bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
-bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --version 0.4.3 --set startServices="s3" --set service.type=ClusterIP  --set livenessProbe.initialDelaySeconds=25
+bin/helm repo add localstack-charts https://localstack.github.io/helm-charts 
+bin/helm install localstack localstack-charts/localstack --version 0.4.3 --set startServices="s3" --set service.type=ClusterIP --set image.tag="1.2.0" --set livenessProbe.initialDelaySeconds=25
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
@@ -265,7 +265,8 @@ export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
 export OBJECT_KEY="sample.csv"
 export REGION=theshire
-bin/aws configure set aws_access_key_id ${ACCESS_KEY} && aws configure set aws_secret_access_key ${SECRET_KEY}
+bin/aws configure set aws_access_key_id ${ACCESS_KEY}
+bin/aws configure set aws_secret_access_key ${SECRET_KEY}
 bin/aws configure set region ${REGION}
 bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
 bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body sample.csv
