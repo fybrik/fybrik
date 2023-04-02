@@ -5,12 +5,14 @@
 export DOCKER_HOSTNAME=localhost:5000
 export DOCKER_NAMESPACE=fybrik-system
 export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+export HELM_SETTINGS="--set "coordinator.catalog=katalog""
+export DEPLOY_OPENMETADATA_SERVER=0
 
 make kind
 kubectl config use-context kind-control
 make cluster-prepare
-make docker-minimal-it
+make docker-build
+make docker-push
 make cluster-prepare-wait
 make deploy-fybrik
 make configure-vault
-make -C modules helm-chart-push

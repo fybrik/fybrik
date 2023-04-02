@@ -34,12 +34,3 @@ manager:
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
 
-# OPA connector component
-opaConnector:
-  # Image name or a hub/image[:tag]
-  image: "serverpolicymanager-mock"
-
-# Katalog connector component
-katalogConnector:
-  # Image name or a hub/image[:tag]
-  image: "data-catalog-mock"
