@@ -1,0 +1,207 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: Plotter
+metadata:
+  annotations:
+    app.fybrik.io/app-uuid: db87c8bf-2411-4f8b-b804-364ef90635ba
+  finalizers:
+  - Plotter.finalizer
+  labels:
+    app: my-app
+    app.fybrik.io/app-name: my-app
+    app.fybrik.io/app-namespace: default
+  name: my-app-default
+  namespace: fybrik-system
+spec:
+  appInfo:
+    intent: Fraud Detection
+  appSelector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: my-app
+  assets:
+    fybrik-airbyte-sample/userdata1:
+      assetDetails:
+        connection:
+          https:
+            url: https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata1.parquet
+          name: https
+        format: parquet
+        vault:
+          read:
+            address: http://vault.fybrik-system:8200
+            authPath: ""
+            role: module
+            secretPath: /v1/kubernetes-secrets/fake-secret?namespace=fybrik-airbyte-sample
+    fybrik-airbyte-sample/userdata2:
+      assetDetails:
+        connection:
+          https:
+            url: https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet
+          name: https
+        format: parquet
+        vault:
+          read:
+            address: http://vault.fybrik-system:8200
+            authPath: ""
+            role: module
+            secretPath: /v1/kubernetes-secrets/fake-secret?namespace=fybrik-airbyte-sample
+    fybrik-airbyte-sample/userdata3:
+      assetDetails:
+        connection:
+          https:
+            url: https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata3.parquet
+          name: https
+        format: parquet
+        vault:
+          read:
+            address: http://vault.fybrik-system:8200
+            authPath: ""
+            role: module
+            secretPath: /v1/kubernetes-secrets/fake-secret?namespace=fybrik-airbyte-sample
+  flows:
+  - assetId: fybrik-airbyte-sample/userdata1
+    flowType: read
+    name: fybrik-airbyte-sample/userdata1-read
+    subFlows:
+    - flowType: read
+      name: ""
+      steps:
+      - - cluster: thegreendragon
+          name: ""
+          parameters:
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints
+                  port: "80"
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: fybrik-airbyte-sample/userdata1
+          template: airbyte-module-read
+        - cluster: thegreendragon
+          name: ""
+          parameters:
+            action:
+            - RedactAction:
+                columns:
+                - first_name
+                - last_name
+                - email
+                - birthdate
+              name: RedactAction
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: my-app-fybrik-blueprints-arrow-flight-module.fybrik-blueprints
+                  port: "80"
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - api:
+                connection:
+                  fybrik-arrow-flight:
+                    hostname: my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints
+                    port: "80"
+                    scheme: grpc
+                  name: fybrik-arrow-flight
+          template: arrow-flight-module-read
+      triggers:
+      - workload
+  - assetId: fybrik-airbyte-sample/userdata2
+    flowType: read
+    name: fybrik-airbyte-sample/userdata2-read
+    subFlows:
+    - flowType: read
+      name: ""
+      steps:
+      - - cluster: thegreendragon
+          name: ""
+          parameters:
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints
+                  port: "80"
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: fybrik-airbyte-sample/userdata2
+          template: airbyte-module-read
+        - cluster: neverland-cluster
+          name: ""
+          parameters:
+            action:
+            - RedactAction:
+                columns:
+                - first_name
+                - last_name
+                - email
+                - birthdate
+              name: RedactAction
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: my-app-fybrik-blueprints-arrow-flight-module.fybrik-blueprints
+                  port: "80"
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - api:
+                connection:
+                  fybrik-arrow-flight:
+                    hostname: my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints
+                    port: "80"
+                    scheme: grpc
+                  name: fybrik-arrow-flight
+              cluster: thegreendragon
+          template: arrow-flight-module-read
+      triggers:
+      - workload
+  - assetId: fybrik-airbyte-sample/userdata3
+    flowType: read
+    name: fybrik-airbyte-sample/userdata3-read
+    subFlows:
+    - flowType: read
+      name: ""
+      steps:
+      - - cluster: thegreendragon
+          name: ""
+          parameters:
+            api:
+              connection:
+                fybrik-arrow-flight:
+                  hostname: my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints
+                  port: "80"
+                  scheme: grpc
+                name: fybrik-arrow-flight
+            args:
+            - assetId: fybrik-airbyte-sample/userdata3
+          template: airbyte-module-read
+      triggers:
+      - workload
+  modulesNamespace: fybrik-blueprints
+  templates:
+    airbyte-module-read:
+      modules:
+      - capability: read
+        chart:
+          name: ghcr.io/fybrik/airbyte-module-chart:0.0.0-main
+          values:
+            image.tag: main
+        name: airbyte-module
+        scope: workload
+        type: service
+      name: airbyte-module-read
+    arrow-flight-module-read:
+      modules:
+      - capability: read
+        chart:
+          name: ghcr.io/fybrik/arrow-flight-module-chart:0.10.0
+          values:
+            image.tag: 0.10.0
+        name: arrow-flight-module
+        scope: asset
+        type: service
+      name: arrow-flight-module-read
