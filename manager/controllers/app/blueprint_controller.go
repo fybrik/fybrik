@@ -310,7 +310,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	blueprint.Labels[managerUtils.BlueprintNameLabel] = blueprint.Name
 	blueprint.Labels[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
 
-	for instanceName, module := range blueprint.Spec.Modules {
+	for instanceName := range blueprint.Spec.Modules {
+		module := blueprint.Spec.Modules[instanceName]
 		// Get arguments by type
 		helmValues := HelmValues{
 			ModuleArguments:    module.Arguments,

@@ -8,9 +8,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
-	"fybrik.io/fybrik/manager/controllers/utils"
+	mngrUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
+	"fybrik.io/fybrik/pkg/utils"
 )
 
 // ModuleInstanceSpec consists of the module spec and arguments
@@ -54,17 +55,18 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec,
 	plotter *fapp.Plotter, services Services) map[string]fapp.BlueprintSpec {
 	blueprintMap := make(map[string]fapp.BlueprintSpec)
 	instanceMap := make(map[string][]ModuleInstanceSpec)
-	uuid := utils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	uuid := mngrUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.GetAnnotations())
+	ingressMap := createIngressMap(plotter, instances, services)
 	for ind := range instances {
 		instanceMap[instances[ind].ClusterName] = append(instanceMap[instances[ind].ClusterName], instances[ind])
 	}
 	for key, instanceList := range instanceMap {
 		// unite several instances of a read/write module
 		instances := r.RefineInstances(instanceList)
-		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter, services)
+		blueprintMap[key] = r.GenerateBlueprint(instances, key, plotter, services, ingressMap)
 	}
 
-	log := r.Log.With().Str(utils.FybrikAppUUID, uuid).Logger()
+	log := r.Log.With().Str(mngrUtils.FybrikAppUUID, uuid).Logger()
 	logging.LogStructure("BlueprintMap", blueprintMap, &log, zerolog.DebugLevel, false, false)
 	return blueprintMap
 }
@@ -75,8 +77,7 @@ func (r *PlotterReconciler) GenerateBlueprints(instances []ModuleInstanceSpec,
 // the paths for accessing them are included in the blueprint.
 // The credentials themselves are not included in the blueprint.
 func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
-	clusterName string, plotter *fapp.Plotter, services Services) fapp.BlueprintSpec {
-	ingressMap := createIngressMap(plotter, instances, services)
+	clusterName string, plotter *fapp.Plotter, services Services, ingressMap map[string][]string) fapp.BlueprintSpec {
 	spec := fapp.BlueprintSpec{
 		Cluster:          clusterName,
 		ModulesNamespace: plotter.Spec.ModulesNamespace,
@@ -92,9 +93,9 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 		if len(instances[ind].Module.AssetIDs) > 0 {
 			assetID = instances[ind].Module.AssetIDs[0]
 		}
-		instanceName := utils.CreateStepName(instances[ind].Module.Name, assetID, instances[ind].Scope)
-		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(plotter.Labels),
-			utils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations), instanceName)
+		instanceName := mngrUtils.CreateStepName(instances[ind].Module.Name, assetID, instances[ind].Scope)
+		releaseName := mngrUtils.GetReleaseName(mngrUtils.GetApplicationNameFromLabels(plotter.Labels),
+			mngrUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations), instanceName)
 		moduleKey := UniqueReleaseName(instances[ind].ClusterName, releaseName)
 		isEndpoint := services[moduleKey].IsEndpoint
 		// connections from the module to its arguments (other modules or data locations)
@@ -164,9 +165,9 @@ func createIngressMap(plotter *fapp.Plotter, moduleInstances []ModuleInstanceSpe
 		if len(inst.Module.AssetIDs) > 0 {
 			assetID = inst.Module.AssetIDs[0]
 		}
-		instanceName := utils.CreateStepName(inst.Module.Name, assetID, inst.Scope)
-		releaseName := utils.GetReleaseName(utils.GetApplicationNameFromLabels(plotter.Labels),
-			utils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations), instanceName)
+		instanceName := mngrUtils.CreateStepName(inst.Module.Name, assetID, inst.Scope)
+		releaseName := mngrUtils.GetReleaseName(mngrUtils.GetApplicationNameFromLabels(plotter.Labels),
+			mngrUtils.GetFybrikApplicationUUIDfromAnnotations(plotter.Annotations), instanceName)
 		moduleKey := UniqueReleaseName(inst.ClusterName, releaseName)
 		for _, asset := range inst.Module.Arguments.Assets {
 			for _, arg := range asset.Arguments {
@@ -175,7 +176,10 @@ func createIngressMap(plotter *fapp.Plotter, moduleInstances []ModuleInstanceSpe
 						if ingressMap[argKey] == nil {
 							ingressMap[argKey] = []string{}
 						}
-						ingressMap[argKey] = append(ingressMap[argKey], moduleKey)
+						moduleKeys := ingressMap[argKey]
+						if !utils.HasString(moduleKey, moduleKeys) {
+							ingressMap[argKey] = append(moduleKeys, moduleKey)
+						}
 					}
 				}
 			}
