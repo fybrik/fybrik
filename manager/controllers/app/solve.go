@@ -45,6 +45,11 @@ func solveSingleDataset(env *datapath.Environment, dataset *datapath.DataInfo, l
 // find a solution for all data paths at once
 func solve(env *datapath.Environment, datasets []datapath.DataInfo, log *zerolog.Logger) ([]datapath.Solution, error) {
 	solutions := []datapath.Solution{}
+	if len(env.Modules) == 0 {
+		msg := "There are no deployed modules in the environment"
+		log.Error().Msg(msg)
+		return solutions, errors.New(msg)
+	}
 	for i := range datasets {
 		solution, err := solveSingleDataset(env, &datasets[i], log)
 		if err != nil {
