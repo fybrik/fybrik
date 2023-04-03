@@ -68,13 +68,11 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - dogsled
     - dupl
     - errcheck
     - exportloopref
     - funlen
-    # - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
@@ -91,17 +89,19 @@ linters:
     - noctx
     - nolintlint
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
     - revive
 
   # don't enable:
+  # - gochecknoinits
+  # - deadcode
+  # - structcheck
+  # - varcheck
   # - asciicheck
   # - depguard
   # - scopelint
