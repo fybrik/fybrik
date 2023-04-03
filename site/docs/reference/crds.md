@@ -523,10 +523,10 @@ ModuleDeployment specifies deployment of a Fybrik module
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>url</b></td>
-        <td>string</td>
+        <td><b>urls</b></td>
+        <td>[]string</td>
         <td>
-          Service URL, usually represented by hostname + port<br/>
+          Service URLs, usually represented by hostname + port<br/>
         </td>
         <td>true</td>
       </tr></tbody>
@@ -564,10 +564,10 @@ ModuleDeployment specifies deployment of a Fybrik module
         </td>
         <td>true</td>
       </tr><tr>
-        <td><b>url</b></td>
-        <td>string</td>
+        <td><b>urls</b></td>
+        <td>[]string</td>
         <td>
-          Service URL, usually represented by hostname + port<br/>
+          Service URLs, usually represented by hostname + port<br/>
         </td>
         <td>true</td>
       </tr></tbody>
