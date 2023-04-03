@@ -169,7 +169,7 @@ func getURLsFromConnection(conn taxonomy.Connection) []string {
 	return urls
 }
 
-// get property containing a substring from the list
+// get property containing a substring from a given list
 func matchProperty(props map[string]interface{}, t taxonomy.ConnectionType, exprList []string) (string, bool) {
 	propertyMap := props[string(t)]
 	if propertyMap == nil {
@@ -191,6 +191,7 @@ func matchProperty(props map[string]interface{}, t taxonomy.ConnectionType, expr
 	return "", false
 }
 
+// ingress map that for each service contains a list of services (represented by release and cluster) that connect to this service
 func createIngressMap(plotter *fapp.Plotter, moduleInstances []ModuleInstanceSpec,
 	services Services) map[string][]string {
 	ingressMap := map[string][]string{}
