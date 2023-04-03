@@ -174,6 +174,13 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
           assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetwork">network</a></b></td>
+        <td>object</td>
+        <td>
+          Network specifies the module communication with a workload or other modules<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -431,6 +438,136 @@ Action to be performed on the data, e.g., masking
         <td>string</td>
         <td>
           Action name<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].network
+<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
+
+
+
+Network specifies the module communication with a workload or other modules
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetworkegressindex">egress</a></b></td>
+        <td>[]object</td>
+        <td>
+          Egress (internal modules)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>endpoint</b></td>
+        <td>boolean</td>
+        <td>
+          Endpoint indicates whether the module service is used as an endpoint by the workload application<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetworkingressindex">ingress</a></b></td>
+        <td>[]object</td>
+        <td>
+          Ingress (internal modules)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].network.egress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
+
+
+
+ModuleDeployment specifies deployment of a Fybrik module
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>release</b></td>
+        <td>string</td>
+        <td>
+          Release name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          Service URLs, usually represented by hostname + port<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].network.ingress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
+
+
+
+ModuleDeployment specifies deployment of a Fybrik module
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>release</b></td>
+        <td>string</td>
+        <td>
+          Release name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          Service URLs, usually represented by hostname + port<br/>
         </td>
         <td>true</td>
       </tr></tbody>

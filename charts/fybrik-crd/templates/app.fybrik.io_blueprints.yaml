@@ -186,6 +186,62 @@ spec:
                       name:
                         description: Name of the FybrikModule on which this is based
                         type: string
+                      network:
+                        description: Network specifies the module communication with a workload or other modules
+                        properties:
+                          egress:
+                            description: Egress (internal modules)
+                            items:
+                              description: ModuleDeployment specifies deployment of a Fybrik module
+                              properties:
+                                cluster:
+                                  description: Cluster name
+                                  type: string
+                                release:
+                                  description: Release name
+                                  type: string
+                                urls:
+                                  description: Service URLs, usually represented by hostname + port
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                                - cluster
+                                - release
+                                - urls
+                              type: object
+                            type: array
+                          endpoint:
+                            description: Endpoint indicates whether the module service is used as an endpoint by the workload application
+                            type: boolean
+                          ingress:
+                            description: Ingress (internal modules)
+                            items:
+                              description: ModuleDeployment specifies deployment of a Fybrik module
+                              properties:
+                                cluster:
+                                  description: Cluster name
+                                  type: string
+                                release:
+                                  description: Release name
+                                  type: string
+                                urls:
+                                  description: Service URLs, usually represented by hostname + port
+                                  items:
+                                    type: string
+                                  type: array
+                              required:
+                                - cluster
+                                - release
+                                - urls
+                              type: object
+                            type: array
+                          urls:
+                            description: External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)
+                            items:
+                              type: string
+                            type: array
+                        type: object
                     required:
                       - chart
                       - name
