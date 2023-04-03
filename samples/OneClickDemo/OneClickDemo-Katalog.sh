@@ -9,7 +9,10 @@ KUBE_VERSION=1.24.1
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
-
+if [[ "$FYBRIK_VERSION" == "" ]]; then
+  # Get Fybrik lateset realease from github
+  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
+fi
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
   FYBRIK_VERSION=""
@@ -88,7 +91,9 @@ os="unknown"
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   os="linux"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  os="darwin"
+  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
+  exit 1
+  #os="darwin"
 fi
 
 if [[ "$os" == "unknown" ]]; then
