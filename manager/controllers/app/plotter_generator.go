@@ -150,10 +150,8 @@ func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datas
 		steps = []fappv1.DataFlowStep{}
 	}
 	var lastStepAPI *datacatalog.ResourceDetails
-	var lastStepCluster string
 	if len(steps) > 0 {
 		lastStepAPI = steps[len(steps)-1].Parameters.API
-		lastStepCluster = steps[len(steps)-1].Cluster
 	}
 	assetID := ""
 	if lastStepAPI == nil {
@@ -166,7 +164,6 @@ func (p *PlotterGenerator) addInMemoryStep(element *datapath.ResolvedEdge, datas
 			Arguments: []*fappv1.StepArgument{{
 				AssetID: assetID,
 				API:     lastStepAPI,
-				Cluster: lastStepCluster,
 			}},
 			API:     api,
 			Actions: element.Actions,

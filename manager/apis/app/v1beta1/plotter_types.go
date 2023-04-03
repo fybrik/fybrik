@@ -32,10 +32,6 @@ type StepArgument struct {
 	// API holds information for accessing a module instance
 	// +optional
 	API *datacatalog.ResourceDetails `json:"api,omitempty"`
-
-	// Cluster of a module instance to be accessed
-	// +optional
-	Cluster string `json:"cluster,omitempty"`
 }
 
 // StepParameters holds the parameters to the module

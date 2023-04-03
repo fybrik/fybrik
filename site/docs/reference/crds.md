@@ -3094,13 +3094,6 @@ StepArgument describes a step: it could be assetID or an endpoint of another ste
           AssetID identifies the source asset of this step<br/>
         </td>
         <td>false</td>
-      </tr><tr>
-        <td><b>cluster</b></td>
-        <td>string</td>
-        <td>
-          Cluster of a module instance to be accessed<br/>
-        </td>
-        <td>false</td>
       </tr></tbody>
 </table>
 

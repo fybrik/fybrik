@@ -1557,7 +1557,6 @@ func TestReadAndTransform(t *testing.T) {
 	g.Expect(plotter.Spec.Flows[0].SubFlows).To(gomega.HaveLen(1))
 	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0]).To(gomega.HaveLen(2))
 	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0][1].Parameters.Arguments).ToNot(gomega.BeEmpty())
-	g.Expect(plotter.Spec.Flows[0].SubFlows[0].Steps[0][1].Parameters.Arguments[0].Cluster).To(gomega.Equal(environment.GetLocalClusterName()))
 }
 
 func TestWriteUnregisteredAsset(t *testing.T) {
