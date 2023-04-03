@@ -53,8 +53,8 @@ type ModuleDeployment struct {
 	Cluster string `json:"cluster"`
 	// Release name
 	Release string `json:"release"`
-	// Service URL, usually represented by hostname + port
-	URL string `json:"url"`
+	// Service URLs, usually represented by hostname + port
+	URLs []string `json:"urls"`
 }
 
 // ModuleNetwork specifies the module communication with a workload or other modules

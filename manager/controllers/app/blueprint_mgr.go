@@ -4,6 +4,9 @@
 package app
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/rs/zerolog"
 	"k8s.io/apimachinery/pkg/api/equality"
 
@@ -13,6 +16,8 @@ import (
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/utils"
 )
+
+const sep string = ","
 
 // ModuleInstanceSpec consists of the module spec and arguments
 type ModuleInstanceSpec struct {
@@ -34,7 +39,7 @@ func (r *PlotterReconciler) RefineInstances(instances []ModuleInstanceSpec) []Mo
 			newInstances = append(newInstances, instances[ind])
 			continue
 		}
-		key := instances[ind].Module.Name + "," + instances[ind].ClusterName
+		key := instances[ind].Module.Name + sep + instances[ind].ClusterName
 		if instance, ok := instanceMap[key]; !ok {
 			instanceMap[key] = instances[ind]
 		} else {
@@ -109,11 +114,9 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 						egress = append(egress, fapp.ModuleDeployment{
 							Cluster: argService.Cluster,
 							Release: argService.Release,
-							URL:     getURLFromConnection(arg.Connection)})
+							URLs:    getURLsFromConnection(arg.Connection)})
 					} else {
-						if url := getURLFromConnection(arg.Connection); url != "" {
-							urls = append(urls, url)
-						}
+						urls = append(urls, getURLsFromConnection(arg.Connection)...)
 					}
 				}
 			}
@@ -126,7 +129,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 			ingress = append(ingress, fapp.ModuleDeployment{
 				Cluster: argService.Cluster,
 				Release: argService.Release,
-				URL:     getURLFromConnection(argService.API.Connection)})
+				URLs:    getURLsFromConnection(argService.API.Connection)})
 		}
 		instances[ind].Module.Network = fapp.ModuleNetwork{
 			Endpoint: isEndpoint,
@@ -150,9 +153,42 @@ func getServiceUniqueKey(conn taxonomy.Connection, services Services) (string, b
 }
 
 // get module service URL or dataset location from the connection structure
-func getURLFromConnection(conn taxonomy.Connection) string {
-	// TBD
-	return ""
+func getURLsFromConnection(conn taxonomy.Connection) []string {
+	urls := []string{}
+	exprList := []string{"endpoint", "url", "host"}
+	if host, found := matchProperty(conn.AdditionalProperties.Items, conn.Name, exprList); found {
+		if port, found := matchProperty(conn.AdditionalProperties.Items, conn.Name, []string{"port"}); found {
+			urls = append(urls, fmt.Sprintf("%s:%s", host, port))
+		} else {
+			urls = append(urls, host)
+		}
+	}
+	if hosts, found := matchProperty(conn.AdditionalProperties.Items, conn.Name, []string{"servers"}); found {
+		urls = append(urls, strings.Split(hosts, sep)...)
+	}
+	return urls
+}
+
+// get property containing a substring from the list
+func matchProperty(props map[string]interface{}, t taxonomy.ConnectionType, exprList []string) (string, bool) {
+	propertyMap := props[string(t)]
+	if propertyMap == nil {
+		return "", false
+	}
+	switch propertyMap := propertyMap.(type) {
+	case map[string]interface{}:
+		for key := range propertyMap {
+			for i := range exprList {
+				expr := strings.ToLower(exprList[i])
+				if strings.Contains(strings.ToLower(key), expr) {
+					return fmt.Sprintf("%v", propertyMap[key]), true
+				}
+			}
+		}
+	default:
+		break
+	}
+	return "", false
 }
 
 func createIngressMap(plotter *fapp.Plotter, moduleInstances []ModuleInstanceSpec,

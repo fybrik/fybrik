@@ -200,13 +200,15 @@ spec:
                                 release:
                                   description: Release name
                                   type: string
-                                url:
-                                  description: Service URL, usually represented by hostname + port
-                                  type: string
+                                urls:
+                                  description: Service URLs, usually represented by hostname + port
+                                  items:
+                                    type: string
+                                  type: array
                               required:
                                 - cluster
                                 - release
-                                - url
+                                - urls
                               type: object
                             type: array
                           endpoint:
@@ -223,13 +225,15 @@ spec:
                                 release:
                                   description: Release name
                                   type: string
-                                url:
-                                  description: Service URL, usually represented by hostname + port
-                                  type: string
+                                urls:
+                                  description: Service URLs, usually represented by hostname + port
+                                  items:
+                                    type: string
+                                  type: array
                               required:
                                 - cluster
                                 - release
-                                - url
+                                - urls
                               type: object
                             type: array
                           urls:

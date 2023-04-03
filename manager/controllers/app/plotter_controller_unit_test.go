@@ -351,11 +351,18 @@ func TestPlotterMultipleAssets(t *testing.T) {
 			g.Expect(module.Network.Egress).To(gomega.HaveLen(0))
 			g.Expect(module.Network.Ingress).To(gomega.HaveLen(2))
 			g.Expect(module.Network.Ingress[0].Cluster).NotTo(gomega.Equal(module.Network.Ingress[1].Cluster))
+			g.Expect(module.Network.URLs).To(gomega.HaveLen(3))
+			g.Expect(module.Network.URLs).To(gomega.ConsistOf(
+				"https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata1.parquet",
+				"https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata3.parquet",
+				"https://myserver.com:3000"))
 			verifiedModules += 1
 		} else if strings.HasPrefix(key, "arrow-flight") {
 			g.Expect(module.Network.Endpoint).To(gomega.BeTrue())
 			g.Expect(module.Network.Egress).To(gomega.HaveLen(1))
 			g.Expect(module.Network.Egress[0].Cluster).To(gomega.Equal("thegreendragon"))
+			g.Expect(module.Network.Egress[0].URLs).To(gomega.HaveLen(1))
+			g.Expect(module.Network.Egress[0].URLs[0]).To(gomega.Equal("my-app-fybrik-blueprints-airbyte-module.fybrik-blueprints:80"))
 			g.Expect(module.Network.Ingress).To(gomega.HaveLen(0))
 			verifiedModules += 1
 		}

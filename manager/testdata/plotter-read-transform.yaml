@@ -36,9 +36,11 @@ spec:
     fybrik-airbyte-sample/userdata2:
       assetDetails:
         connection:
-          https:
-            url: https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet
-          name: https
+          mysql:
+            host: https://myserver.com
+            port: 3000
+            database: userdata2
+          name: mysql
         format: parquet
         vault:
           read:
