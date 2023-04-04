@@ -128,12 +128,16 @@ if [[ ${#namespaces_list[@]} -eq 0 ]]; then
     done
 fi
 
-# create a directory for saving output
+# create a directory and subdirectories for saving output
 dirname_logs=$output_path"fybrik_logs_$(date +%Y-%m-%d_%H-%M)_last_$duration"
 echo "Output will be saved in $dirname_logs"
 mkdir $dirname_logs
 dirname_logs_by_container=$dirname_logs/logs_by_container
 mkdir $dirname_logs_by_container
+dirname_not_ready_pods=$dirname_logs/describe_not_ready_pods
+mkdir $dirname_not_ready_pods
+dirname_modules=$dirname_logs/fybrik_modules
+mkdir $dirname_modules
 
 is_found_fybrik_application_yaml=0
 
@@ -159,10 +163,15 @@ fi
 for ns in ${namespaces_list[@]}; do
     # save the logs of each container separately
     for pod in $(kubectl get pods -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
-        containers=$(kubectl get pods $pod -n $ns -o jsonpath='{.spec.containers[*].name}')
-        for container_name in $containers; do
-            kubectl logs $pod -n $ns -c $container_name --since=$duration --timestamps &> $dirname_logs_by_container/$ns--$pod--$container_name.txt
-        done
+        # if pod is ready then save its logs, otherwise save its describe output
+        if [[ $(kubectl get pod $pod -n $ns -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}') == "True" ]]; then
+            containers=$(kubectl get pods $pod -n $ns -o jsonpath='{.spec.containers[*].name}')
+            for container_name in $containers; do
+                kubectl logs $pod -n $ns -c $container_name --since=$duration --timestamps &> $dirname_logs_by_container/$ns--$pod--$container_name.txt
+            done
+        else
+            kubectl describe pod $pod -n $ns &> $dirname_not_ready_pods/$ns--$pod.txt
+        fi
     done
     # save the non-certificates configmaps
     for cm in $(kubectl get cm -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
@@ -177,7 +186,7 @@ for ns in ${namespaces_list[@]}; do
     echo -e "$ns:\n$get_pods_output\n" >> $dirname_logs/get_pods_output.txt
     # save yamls of deployed modules
     for fybrik_module in $(kubectl get fybrikmodules -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
-        kubectl get fybrikmodule $fybrik_module -n $ns -o yaml &> $dirname_logs/fybrik_module_$ns--$fybrik_module.yaml
+        kubectl get fybrikmodule $fybrik_module -n $ns -o yaml &> $dirname_modules/$ns--$fybrik_module.yaml
     done
     # if given fybrik application uuid, save its yaml and create another file which only contains logs with the uuid
     if [[ ! -z fybrik_application_uuid ]] && [[ is_found_fybrik_application_yaml -eq 0 ]]; then
@@ -191,10 +200,12 @@ for ns in ${namespaces_list[@]}; do
 done
 
 FILENAME_COMBINED=combined_logs
-FILENAME_COMBINED_SORTED=combined_logs_sorted
+FILENAME_COMBINED_SORTED=${FILENAME_COMBINED}_sorted
+filepath_combined_logs=$dirname_logs/$FILENAME_COMBINED.txt
+filepath_sorted_logs=$dirname_logs/$FILENAME_COMBINED_SORTED.txt
 
 if [[ $(find $dirname_logs_by_container -type f | wc -l) -eq 0 ]]; then
-    echo "there are no pods in the explored namespaces"
+    echo "there are no ready pods in the explored namespaces"
 else
     # get maximal prefix length for the combined logs file
     max_len=0
@@ -210,32 +221,44 @@ else
         f_short=$(basename -s .txt $f)
         prefix=$(printf "%-${max_len}s\n" "$f_short")
         while read line; do
-            echo -e "$prefix || $line" >> $dirname_logs/$FILENAME_COMBINED.txt
+            echo -e "$prefix || $line" >> $filepath_combined_logs
         done < $f
     done
 
     # if any logs are found, sort them by their timestamps and remove combined file
-    if [[ -e $dirname_logs/$FILENAME_COMBINED.txt ]]; then
-        sort -k 3 $dirname_logs/$FILENAME_COMBINED.txt > $dirname_logs/$FILENAME_COMBINED_SORTED.txt
-        rm $dirname_logs/$FILENAME_COMBINED.txt
+    if [[ -e $filepath_combined_logs ]]; then
+        sort -k 3 $filepath_combined_logs > $filepath_sorted_logs
+        rm $filepath_combined_logs
     else
         echo "no log entries were found in the pods in the explored namespaces"
     fi
 fi
 
 # if given fybrik application uuid, create another file which only contains logs with the uuid
+filepath_filtered_logs_by_uuid=$dirname_logs/${FILENAME_COMBINED_SORTED}_$fybrik_application_uuid.txt
 if [[ ! -z $fybrik_application_uuid ]]; then
     # check if its yaml file was found
     if [[ $is_found_fybrik_application_yaml -eq 0 ]]; then
         echo "the fybrikapplication '$fybrik_application_uuid' was not found in the namespaces, its yaml file was not retrieved"
     fi
-    if [[ -e $dirname_logs/$FILENAME_COMBINED_SORTED.txt ]]; then
+    if [[ -e $filepath_sorted_logs ]]; then
         # create a file with the logs containing the uuid
-        touch $dirname_logs/${FILENAME_COMBINED_SORTED}_$fybrik_application_uuid.txt
+        touch $filepath_filtered_logs_by_uuid
         while read line; do
             if [[ $line == *\"$fybrik_application_uuid\"* ]]; then
-                echo "$line" >> $dirname_logs/${FILENAME_COMBINED_SORTED}_$fybrik_application_uuid.txt
+                echo "$line" >> $filepath_filtered_logs_by_uuid
             fi
-        done < $dirname_logs/$FILENAME_COMBINED_SORTED.txt
+        done < $filepath_sorted_logs
     fi
+fi
+
+# create another logs file filtered by only warn+error level logs
+filepath_filtered_logs_by_level=$dirname_logs/${FILENAME_COMBINED_SORTED}_warn_and_error.txt
+if [[ -e $filepath_sorted_logs ]]; then
+    touch $filepath_filtered_logs_by_level
+    while read line; do
+        if [[ $line == *"\"level\":\"warn\""* || $line == *"\"level\":\"error\""* ]]; then
+            echo "$line" >> $filepath_filtered_logs_by_level
+        fi
+    done < $filepath_sorted_logs
 fi
