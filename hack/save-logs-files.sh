@@ -136,7 +136,7 @@ dirname_logs_by_container=$dirname_logs/logs_by_container
 mkdir $dirname_logs_by_container
 dirname_not_ready_pods=$dirname_logs/describe_not_ready_pods
 mkdir $dirname_not_ready_pods
-dirname_modules=$dirname_logs/fybrik_modules
+dirname_modules=$dirname_logs/fybrikmodules
 mkdir $dirname_modules
 
 is_found_fybrik_application_yaml=0
@@ -153,7 +153,7 @@ if [[ ! -z $fybrik_application_uuid ]]; then
 else
     if [[ ! -z $fybrik_application_name ]]; then
         # only application flag is used
-        kubectl get fybrikapplication $fybrik_application_name -n $fybrik_application_ns -o=yaml &> $dirname_logs/fybrik_application_$fybrik_application_ns--$fybrik_application_name.yaml
+        kubectl get fybrikapplication $fybrik_application_name -n $fybrik_application_ns -o=yaml &> $dirname_logs/fybrikapplication_$fybrik_application_ns--$fybrik_application_name.yaml
         is_found_fybrik_application_yaml=1
         fybrik_application_uuid=$(kubectl get fybrikapplication $fybrik_application_name -n $fybrik_application_ns -o=jsonpath='{.metadata.uid}')
     fi
@@ -192,7 +192,7 @@ for ns in ${namespaces_list[@]}; do
     if [[ ! -z fybrik_application_uuid ]] && [[ is_found_fybrik_application_yaml -eq 0 ]]; then
         for fybrik_application in $(kubectl get fybrikapplications -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
             if [[ $(kubectl get fybrikapplication $fybrik_application -n $ns -o=jsonpath='{.metadata.uid}') == $fybrik_application_uuid ]]; then
-                kubectl get fybrikapplication $fybrik_application -n $ns -o=yaml &> $dirname_logs/fybrik_application_$ns--$fybrik_application.yaml
+                kubectl get fybrikapplication $fybrik_application -n $ns -o=yaml &> $dirname_logs/fybrikapplication_$ns--$fybrik_application.yaml
                 is_found_fybrik_application_yaml=1
             fi
         done
