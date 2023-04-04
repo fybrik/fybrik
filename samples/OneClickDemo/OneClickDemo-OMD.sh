@@ -91,14 +91,8 @@ os="unknown"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   os="linux"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+else 
   echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
-  exit 1
-  #os="darwin"
-fi
-
-if [[ "$os" == "unknown" ]]; then
-  echo "OS '$OSTYPE' not supported. Aborting." >&2
   exit 1
 fi
 
