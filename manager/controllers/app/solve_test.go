@@ -193,13 +193,15 @@ func createDeleteRequest() *datapath.DataInfo {
 	}
 }
 
-// no clusters/modules - data path can't be constructed
+// no clusters/modules - no deployed modules in the environment
 func TestEmptyEnvironment(t *testing.T) {
 	t.Parallel()
 	g := gomega.NewGomegaWithT(t)
 	env := newEnvironment()
-	_, err := solveSingleDataset(env, createReadRequest(), &testLog)
+	asset := createReadRequest()
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
+	g.Expect(err.Error()).To(gomega.BeIdenticalTo(NoDeployedModules))
 }
 
 // transformations are required but not supported by the read module

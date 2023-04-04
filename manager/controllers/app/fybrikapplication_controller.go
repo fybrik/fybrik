@@ -89,6 +89,7 @@ const (
 	ModuleNotFound              string = "no module has been registered"
 	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	NoDeployedModules           string = "There are no deployed modules in the environment"
 )
 
 // Reconcile reconciles FybrikApplication CRD
