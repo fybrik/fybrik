@@ -88,6 +88,10 @@ install_nginx_ingress() {
         kubectl apply -f ingress-nginx.yaml -n "$KUBE_NAMESPACE"
 }
 
+install_calico() {
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+}
+
 case "$op" in
 cleanup)
   header_text "Uninstalling kind cluster"
@@ -102,6 +106,12 @@ multi)
   wait
   registry_create
   install_nginx_ingress control &
+  ;;
+calico)
+  header_text "Installing kind cluster with calico"
+  kind_create kind kind-calico-config.yaml
+  install_calico
+  registry_create
   ;;
 *)
   header_text "Installing kind cluster"
