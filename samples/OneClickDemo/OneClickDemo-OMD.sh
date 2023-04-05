@@ -10,6 +10,17 @@ KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
 
+# OS Check:
+arch=amd64
+os="unknown"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  os="linux"
+else 
+  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
+  exit 1
+fi
+
 if [[ "$FYBRIK_VERSION" == "" ]]; then
   # Get Fybrik lateset realease from github
   FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
@@ -85,16 +96,6 @@ while getopts ":l:m:c" arg; do
 done
 
 
-# OS Check:
-arch=amd64
-os="unknown"
-
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-  os="linux"
-else 
-  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
-  exit 1
-fi
 
 # Helper functions:
 header_color=$'\e[1;32m'
