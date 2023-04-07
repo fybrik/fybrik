@@ -5,13 +5,28 @@ set -e
 # Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
-KUBE_VERSION=1.22.0
+KUBE_VERSION=1.24.1
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
 LOCALSTACK_VERSION=1.2.0
 LOCALSTACK_CHART_VERSION=0.4.3
 
+# OS Check:
+arch=amd64
+os="unknown"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  os="linux"
+else 
+  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
+  exit 1
+fi
+
+if [[ "$FYBRIK_VERSION" == "" ]]; then
+  # Get Fybrik lateset realease from github
+  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
+fi
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
   FYBRIK_VERSION=""
@@ -82,21 +97,6 @@ while getopts ":l:m:c" arg; do
     esac
 done
 
-
-# OS Check:
-arch=amd64
-os="unknown"
-
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-  os="linux"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  os="darwin"
-fi
-
-if [[ "$os" == "unknown" ]]; then
-  echo "OS '$OSTYPE' not supported. Aborting." >&2
-  exit 1
-fi
 
 # Helper functions:
 header_color=$'\e[1;32m'
@@ -266,9 +266,11 @@ export SECRET_KEY=1234
 export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
 export OBJECT_KEY="sample.csv"
-bin/aws configure set aws_access_key_id ${ACCESS_KEY} 
+export REGION=theshire
+bin/aws configure set aws_access_key_id ${ACCESS_KEY}
 bin/aws configure set aws_secret_access_key ${SECRET_KEY}
-bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET}
+bin/aws configure set region ${REGION}
+bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
 bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body sample.csv
 rm sample.csv
 
@@ -365,12 +367,20 @@ do
 done
 
 header "\nRead the dataset from the notebook"
+
+export ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.scheme}")
+export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.hostname}")
+export ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.fybrik-notebook-sample/paysim-csv.endpoint.fybrik-arrow-flight.port}")
+export ENDPOINT_CONNECTION=${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}
+
 cat << EOF > test.py
 import json
 import pyarrow.flight as fl
 import pandas as pd
-# Create a Flight client
-client = fl.connect('grpc://my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints:80')
+
+# Create a Flight client 
+client = fl.connect('${ENDPOINT_CONNECTION}')
+
 # Prepare the request
 request = {
     "asset": "fybrik-notebook-sample/paysim-csv",
