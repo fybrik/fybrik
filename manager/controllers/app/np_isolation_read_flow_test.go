@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -34,14 +33,14 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
-func ExecCmdExample(client rest.Interface, config *restclient.Config, podName string, namespace string,
+func ExecCmdExample(restClient restclient.Interface, config *restclient.Config, podName string, namespace string,
 	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
 		"-c",
 		command,
 	}
-	req := client.Post().Resource("pods").Name(podName).
+	req := restClient.Post().Resource("pods").Name(podName).
 		Namespace(namespace).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
@@ -202,7 +201,6 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	}, timeout, interval).ShouldNot(gomega.BeNil())
 
 	// The plotter has to be created
-	plotter = &fapp.Plotter{}
 	plotterObjectKey = client.ObjectKey{Namespace: application.Status.Generated.Namespace,
 		Name: application.Status.Generated.Name}
 	fmt.Println("Expecting plotter to be fetchable")
@@ -258,9 +256,10 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	// Changing the label
 	podObj = &v1.Pod{}
 	podObjKey = client.ObjectKey{Namespace: modulesNamespace, Name: "my-shell"}
-	k8sClient.Get(context.Background(), podObjKey, podObj)
+	err = k8sClient.Get(context.Background(), podObjKey, podObj)
 	podObj.ObjectMeta.Labels["app"] = "my-app1"
 	err = k8sClient.Update(context.Background(), podObj)
+	g.Expect(err).To(gomega.BeNil())
 	g.Expect(err).To(gomega.BeNil())
 	fmt.Println("Read command should fail now")
 	err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
@@ -278,7 +277,8 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	// change lables and try to read
 	podObj = &v1.Pod{}
 	podObjKey = client.ObjectKey{Namespace: "default", Name: "my-shell"}
-	k8sClient.Get(context.Background(), podObjKey, podObj)
+	err = k8sClient.Get(context.Background(), podObjKey, podObj)
+	g.Expect(err).To(gomega.BeNil())
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
 	g.Expect(err).To(gomega.BeNil())
@@ -287,5 +287,40 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
+
+	// Check connection to the second module
+	err = k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+	g.Expect(err).To(gomega.BeNil())
+	steps := plotter.Spec.Flows[0].SubFlows[0].Steps
+	g.Expect(len(plotter.Spec.Flows[0].SubFlows[0].Steps)).To(gomega.Equal(1))
+	g.Expect(len(plotter.Spec.Flows[0].SubFlows[0].Steps[0])).To(gomega.Equal(2))
+	var hostnameToCheck string
+	var portToCheck string
+	for _, step := range steps[0] {
+		connectionInterface := step.Parameters.API.Connection.AdditionalProperties.Items["fybrik-arrow-flight"]
+		connectionMap, ok := connectionInterface.(map[string]interface{})
+		g.Expect(ok).To(gomega.Equal(true))
+		hostnameTmp := fmt.Sprintf("%v", connectionMap["hostname"])
+		if hostnameTmp == hostname {
+			continue
+		} else {
+			hostnameToCheck = hostnameTmp
+			portToCheck = fmt.Sprintf("%v", connection["port"])
+			g.Expect(ok).To(gomega.Equal(true))
+		}
+	}
+	readCommand = "python3 /root/client.py --host " + hostnameToCheck + " --port " + portToCheck + " --asset " + catalogedAsset
+	fmt.Println("Expecting reading from the second module to fail")
+	// Add the application label
+	podObjKey = client.ObjectKey{Namespace: modulesNamespace, Name: "my-shell"}
+	err = k8sClient.Get(context.Background(), podObjKey, podObj)
+	g.Expect(err).To(gomega.BeNil())
+	podObj.ObjectMeta.Labels["app"] = "my-app"
+	err = k8sClient.Update(context.Background(), podObj)
+	err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+	g.Expect(err).ToNot(gomega.BeNil())
+	stdout.Reset()
+	stderr.Reset()
+
 	fmt.Println("isolation read flow test succeeded")
 }
