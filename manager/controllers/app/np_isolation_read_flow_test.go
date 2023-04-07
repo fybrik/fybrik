@@ -261,14 +261,14 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	err = k8sClient.Update(context.Background(), podObj)
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(err).To(gomega.BeNil())
-	fmt.Println("Read command should fail now")
+	fmt.Println("Expecting Reading command to fail now")
 	err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
 
 	// Try to read from other namespace
-	fmt.Println("Reading from default namespace should fail")
+	fmt.Println("Expecting Reading from default namespace to fail")
 	err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
@@ -282,7 +282,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
 	g.Expect(err).To(gomega.BeNil())
-	fmt.Println("Reading from default namespace with labels should fail")
+	fmt.Println("Expecting Reading from default namespace with labels to fail")
 	err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
