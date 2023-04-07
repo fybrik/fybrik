@@ -1,3 +1,5 @@
 FybrikRelease:  __Release__
 CertMangerVersion: v1.6.2
 TaxonomyCliVersion: 0.1.0
+LOCALSTACK_VERSION: 1.2.0
+LOCALSTACK_CHART_VERSION: 0.4.3

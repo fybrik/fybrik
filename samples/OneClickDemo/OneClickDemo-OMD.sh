@@ -9,6 +9,8 @@ KUBE_VERSION=1.22.0
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
+LOCALSTACK_VERSION=1.2.0
+LOCALSTACK_CHART_VERSION=0.4.3
 
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
@@ -258,7 +260,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
+bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP  --set livenessProbe.initialDelaySeconds=25 --set image.tag="{LOCALSTACK_VERSION}"
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
