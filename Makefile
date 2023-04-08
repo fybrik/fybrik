@@ -60,8 +60,8 @@ reconcile-requirements:
 	perl -i -pe 's/KIND_VERSION=.*/KIND_VERSION=$(KIND_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/AWSCLI_VERSION=.*/AWSCLI_VERSION=$(AWSCLI_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CERT_MANAGER_VERSION=.*/CERT_MANAGER_VERSION=$(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
-	perl -i -pe 's/LOCALSTACK_VERSION=.*/LOCALSTACK_VERSION=$(LOCALSTACK_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
-	perl -i -pe 's/LOCALSTACK_CHART_VERSION=.*/LOCALSTACK_CHART_VERSION=$(LOCALSTACK_CHART_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/LOCALSTACK_VERSION=.*/LOCALSTACK_VERSION=$(LOCALSTACK_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh $(ROOT_DIR)/samples/multicluster-razee/README.md
+	perl -i -pe 's/LOCALSTACK_CHART_VERSION=.*/LOCALSTACK_CHART_VERSION=$(LOCALSTACK_CHART_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh $(ROOT_DIR)/samples/multicluster-razee/README.md
 	perl -i -pe 's/CertMangerVersion:.*/CertMangerVersion: $(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/site/external.yaml
 	perl -i -pe 's/TaxonomyCliVersion:.*/TaxonomyCliVersion: $(TAXONOMY_CLI_VERSION)/' $(ROOT_DIR)/site/external.yaml
 	perl -i -pe 's/LOCALSTACK_VERSION:.*/LOCALSTACK_VERSION: $(LOCALSTACK_VERSION)/' $(ROOT_DIR)/site/external.yaml
