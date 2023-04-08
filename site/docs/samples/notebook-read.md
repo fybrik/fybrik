@@ -1,6 +1,3 @@
-{% set LOCALSTACK_CHART_VERSION = LOCALSTACK_CHART_VERSION %}
-{% set LOCALSTACK_CHART_VERSION = LOCALSTACK_CHART_VERSION %}
-
 # Notebook sample for the read flow
 
 This sample demonstrates the following:
@@ -40,22 +37,22 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
             helm repo add localstack-charts https://localstack.github.io/helm-charts
             helm install localstack localstack-charts/localstack \
                  --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
                  --set startServices="s3" \
                  --set service.type=ClusterIP \
-                 --set livenessProbe.initialDelaySeconds=25 \
-                 --set image.tag="{{LOCALSTACK_VERSION}}"
+                 --set livenessProbe.initialDelaySeconds=25 
             kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
     === "OpenShift"
             helm repo add localstack-charts https://localstack.github.io/helm-charts
             helm install localstack localstack-charts/localstack \
                  --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
                  --set startServices="s3" \
                  --set service.type=ClusterIP \
                  --set livenessProbe.initialDelaySeconds=25 \
                  --set persistence.enabled=true \
                  --set persistence.storageClass=ibmc-file-gold-gid \
-                 --set persistence.accessModes[0]=ReadWriteMany \
-                 --set image.tag="{{LOCALSTACK_VERSION}}"
+                 --set persistence.accessModes[0]=ReadWriteMany
             kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
     3. Create a port-forward to communicate with localstack server:
       ```bash
