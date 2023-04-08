@@ -27,7 +27,7 @@ if [[ "$FYBRIK_VERSION" == "" ]]; then
   # Get Fybrik lateset realease from github
   FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
 fi
-FYBRIK_BRANCH_MD="$FYBRIK_VERSION"
+FYBRIK_BRANCH_OMD="$FYBRIK_VERSION"
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
   FYBRIK_VERSION=""
@@ -236,7 +236,7 @@ bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 # bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
 header "\nInstall OpenMetaData"
-curl https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_BRANCH_MD}/third_party/openmetadata/install_OM.sh | bash -
+curl https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_BRANCH_OMD}/third_party/openmetadata/install_OM.sh | bash -
 
 
 
@@ -262,7 +262,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
 bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP  --set livenessProbe.initialDelaySeconds=25 --set image.tag="${LOCALSTACK_VERSION}"
-bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
