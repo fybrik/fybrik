@@ -40,7 +40,7 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
                  --set image.tag="{{LOCALSTACK_VERSION}}" \
                  --set startServices="s3" \
                  --set service.type=ClusterIP \
-                 --set livenessProbe.initialDelaySeconds=25 
+                 --set livenessProbe.initialDelaySeconds=25
             kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
     === "OpenShift"
             helm repo add localstack-charts https://localstack.github.io/helm-charts

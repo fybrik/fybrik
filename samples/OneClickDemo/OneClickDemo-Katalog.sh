@@ -254,7 +254,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP  --set livenessProbe.initialDelaySeconds=25 --set image.tag="${LOCALSTACK_VERSION}"
+bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP --set livenessProbe.initialDelaySeconds=25 --set image.tag="${LOCALSTACK_VERSION}"
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
