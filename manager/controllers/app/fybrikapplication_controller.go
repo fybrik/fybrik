@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -88,6 +89,7 @@ const (
 	ModuleNotFound              string = "no module has been registered"
 	InsufficientStorage         string = "no bucket was provisioned for implicit copy"
 	InvalidClusterConfiguration string = "cluster configuration does not support the requirements"
+	NoDeployedModules           string = "There are no deployed modules in the environment"
 )
 
 // Reconcile reconciles FybrikApplication CRD
@@ -600,8 +602,8 @@ func (r *FybrikApplicationReconciler) constructDataInfo(req *datapath.DataInfo, 
 // - the governance actions to be performed on the asset
 // - the potential governance actions to be performed in case of caching to a specific location
 // The latter is relevant only if caching to the chosen location takes place
-// It returns a message delegated by policy manager to be reported for the assets in the ready state
-// as well as the received error
+// The function returns a message delegated by the policy manager (when no error is received),
+// or the error, in which case the first return value is empty.
 func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInput *adminconfig.EvaluatorInput,
 	req *datapath.DataInfo, appContext ApplicationContext, env *datapath.Environment) (string, error) {
 	var err error
@@ -629,8 +631,7 @@ func (r *FybrikApplicationReconciler) checkGovernanceActions(configEvaluatorInpu
 			r.PolicyManager, appContext, &reqAction)
 	}
 	if err != nil {
-		// extend the error with a message from the policy manager that may help to understand the reason
-		return "", errors.WithMessage(err, msg)
+		return "", err
 	}
 	var resMetadata *datacatalog.ResourceMetadata
 	// query the policy manager whether WRITE operation is allowed
@@ -765,11 +766,20 @@ func AnalyzeError(appContext ApplicationContext, assetID string, err error) {
 	if err == nil {
 		return
 	}
-	switch errors.Cause(err).Error() {
-	case dcclient.AssetIDNotFound, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed, dcclient.DataStoreNotSupported:
-		setDenyCondition(appContext, assetID, err.Error())
+	const format string = "%d"
+	denyCodes := []string{fmt.Sprintf(format, http.StatusNotFound), fmt.Sprintf(format, http.StatusForbidden)}
+	cause := errors.Cause(err).Error()
+	for _, code := range denyCodes {
+		if strings.HasPrefix(err.Error(), code) {
+			setDenyCondition(appContext, assetID, cause)
+			return
+		}
+	}
+	switch cause {
+	case dcclient.AssetIDNotFound, dcclient.AccessForbidden, ReadAccessDenied, CopyNotAllowed, WriteNotAllowed:
+		setDenyCondition(appContext, assetID, cause)
 	default:
-		setErrorCondition(appContext, assetID, err.Error())
+		setErrorCondition(appContext, assetID, cause)
 	}
 }
 
@@ -785,19 +795,46 @@ func (r *FybrikApplicationReconciler) GetAllModules() (map[string]*fappv1.Fybrik
 	ctx := context.Background()
 	moduleMap := make(map[string]*fappv1.FybrikModule)
 	var moduleList fappv1.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return moduleMap, err
 	}
 	for ind := range moduleList.Items {
+		module := &moduleList.Items[ind]
+		if len(module.Status.Conditions) > 0 &&
+			module.Status.Conditions[ModuleValidationConditionIndex].Status == v1.ConditionFalse {
+			r.Log.Warn().Msgf("ignoring invalid module %s", module.Name)
+			continue
+		}
+		refineCapabilities(module)
 		moduleMap[moduleList.Items[ind].Name] = &moduleList.Items[ind]
 	}
 	return moduleMap, nil
 }
 
+// special processing for modules that support any connections from a specific catalog provider -
+// set the protocol value to an empty one (empty values stand for "*" and are not checked)
+func refineCapabilities(module *fappv1.FybrikModule) {
+	catalogProviderName := environment.GetCatalogProvider()
+	for capabilityInd := range module.Spec.Capabilities {
+		for interfaceInd := range module.Spec.Capabilities[capabilityInd].SupportedInterfaces {
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol),
+				catalogProviderName) {
+				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Source.Protocol = ""
+			}
+			if module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink != nil && strings.EqualFold(
+				string(module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol),
+				catalogProviderName) {
+				module.Spec.Capabilities[capabilityInd].SupportedInterfaces[interfaceInd].Sink.Protocol = ""
+			}
+		}
+	}
+}
+
 // get all available storage accounts
 func (r *FybrikApplicationReconciler) getStorageAccounts() ([]*fappv2.FybrikStorageAccount, error) {
 	var accountList fappv2.FybrikStorageAccountList
-	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(context.Background(), &accountList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return nil, err
 	}
 	accounts := []*fappv2.FybrikStorageAccount{}
@@ -843,7 +880,7 @@ func (r *FybrikApplicationReconciler) updateProvisionedStorageStatus(application
 		}
 
 		applicationContext.Application.Status.ProvisionedStorage[datasetID] = fappv1.DatasetDetails{
-			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetSystemNamespace()},
+			SecretRef:        taxonomy.SecretRef{Name: info.StorageAccount.SecretRef, Namespace: environment.GetAdminCRsNamespace()},
 			Details:          details,
 			ResourceMetadata: &datacatalog.ResourceMetadata{Geography: string(info.StorageAccount.Geography)},
 			Persistent:       info.Persistent,

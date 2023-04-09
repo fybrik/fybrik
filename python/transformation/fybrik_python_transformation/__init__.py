@@ -112,7 +112,7 @@ class PandasAction(Action):
     def __call__(self, records: pa.RecordBatch) -> pa.RecordBatch:
         df = records.to_pandas()
         df = self.__dftransform__(df)
-        return pa.RecordBatch.from_pandas(df.dropna(), records.schema)
+        return pa.RecordBatch.from_pandas(df.dropna(how='all'), self.schema(records.schema))
 
     def __dftransform__(self, df: pd.DataFrame) -> pd.DataFrame:
         return df

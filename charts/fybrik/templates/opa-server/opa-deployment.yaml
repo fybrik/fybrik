@@ -59,7 +59,7 @@ spec:
           - -c
           - |
             {{- $files := .Files }}
-            {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/**.rego" }}
+            {{- range $path, $_ :=  $files.Glob  "files/opa-server/policy-lib/internals/**.rego" }}
             {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
             {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}
             {{ $files.Get $path | indent 12 }}
@@ -71,6 +71,13 @@ spec:
             {{ $policy | indent 12 }}
             EOF
             {{ end }}
+            {{ end }}
+            {{- if .Values.opaServer.allowByDefault }}
+            {{- $path := "files/opa-server/policy-lib/allow-by-default.rego" }}
+            {{- $fileName := include "fybrik.opaServerPolicyFileName" (tuple $path ) }}
+            {{- printf "\ncat <<EOF > /bootstrap/policy-lib-%s" $fileName | indent 12 }}
+            {{ $files.Get $path | indent 12 }}
+            EOF
             {{ end }}
           volumeMounts:
             - name: bootstrap
@@ -137,6 +144,11 @@ spec:
         - name: kube-mgmt
           image: {{ .Values.opaServer.kubemgmt.image }}
           args:
+          {{- if .Values.opaServer.tls.use_tls }}
+          - --opa-url=https://127.0.0.1:{{ .Values.opaServer.service.port }}/v1
+          {{- end }}
+          # taken from https://github.com/open-policy-agent/kube-mgmt/blob/8.1.0/charts/opa-kube-mgmt/templates/deployment.yaml#L184
+          - --opa-allow-insecure
           - --require-policy-label
           - --policies={{ .Release.Namespace }}
           - --enable-data

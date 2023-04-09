@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"fybrik.io/fybrik/manager/controllers/mockup"
+	dc "fybrik.io/fybrik/pkg/connectors/datacatalog/clients"
 	"fybrik.io/fybrik/pkg/model/datacatalog"
 )
 
@@ -49,6 +50,10 @@ func main() {
 		dataCatalog := mockup.NewTestCatalog()
 		dataCatalogResp, err := dataCatalog.GetAssetInfo(&dataCatalogReq, creds)
 		if err != nil {
+			if err.Error() == dc.AssetIDNotFound {
+				c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+				return
+			}
 			c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 			return
 		}

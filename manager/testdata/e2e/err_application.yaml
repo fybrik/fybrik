@@ -1,0 +1,23 @@
+# Copyright 2023 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: test-connector-error
+  namespace: default
+spec:
+  selector:
+    clusterName: thegreendragon
+    workloadSelector:
+      matchLabels:
+        app: notebook
+  appInfo:
+    intent: Fraud Detection
+    role: Security
+  data:
+    - dataSetID: 'invalid-id'
+      flow: read
+      requirements:
+        interface:
+          protocol: fybrik-arrow-flight

@@ -1,0 +1,17 @@
+{{- if .Values.manager.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "fybrik.fullname" . }}-admin-crs-rb
+{{- if .Values.adminCRsNamespace }}
+  namespace: {{ .Values.adminCRsNamespace }}
+{{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "fybrik.fullname" . }}-admin-crs-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.manager.serviceAccount.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

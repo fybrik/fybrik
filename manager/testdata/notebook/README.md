@@ -10,7 +10,7 @@ are configured to use TLS:
 - Fybrik manager
 - Vault
 
-All servers above except Openmetadata server use mutual TLS.
+All servers above except Openmetadata and OPA server use mutual TLS. OPA server uses TLS. Openmetadata server does not use TLS.
 
 The flow of the tests is as follows:
 

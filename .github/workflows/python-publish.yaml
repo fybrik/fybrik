@@ -39,7 +39,7 @@ jobs:
         then
           echo "do not publish logging library"
         else
-          VERSION=${{ github.event.inputs.logging-version }} python -m build ./python/logging --outdir ./dist
+          FYBRIK_PYTHON_LOGGING_VERSION=${{ github.event.inputs.logging-version }} python -m build ./python/logging --outdir ./dist
         fi
     - name: Build vault package
       run: |
@@ -47,7 +47,7 @@ jobs:
         then
           echo "do not publish vault library"
         else
-          VERSION=${{ github.event.inputs.vault-version }} python -m build ./python/vault --outdir ./dist
+          FYBRIK_PYTHON_VAULT_VERSION=${{ github.event.inputs.vault-version }} python -m build ./python/vault --outdir ./dist
         fi
     - name: Build tls package
       run: |
@@ -55,7 +55,7 @@ jobs:
         then
           echo "do not publish tls library"
         else
-          VERSION=${{ github.event.inputs.tls-version }} python -m build ./python/tls --outdir ./dist
+          FYBRIK_PYTHON_TLS_VERSION=${{ github.event.inputs.tls-version }} python -m build ./python/tls --outdir ./dist
         fi
     - name: Build transformation package
       run: |
@@ -63,7 +63,7 @@ jobs:
         then
           echo "do not publish transformation library"
         else
-          VERSION=${{ github.event.inputs.transformation-version }} python -m build ./python/transformation --outdir ./dist
+          FYBRIK_PYTHON_TRANSFORMATION_VERSION=${{ github.event.inputs.transformation-version }} python -m build ./python/transformation --outdir ./dist
         fi
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1

@@ -47,15 +47,12 @@ func resetAssetState(application *fapp.FybrikApplication, assetID string) {
 }
 
 func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
-	errMsg := "An error was received for asset " + assetID
-	errMsg += " . If the error persists, please contact an operator."
-	errMsg += "Error description: " + msg
 	appContext.Application.Status.AssetStates[assetID].Conditions[ErrorConditionIndex] = fapp.Condition{
 		Type:    fapp.ErrorCondition,
 		Status:  corev1.ConditionTrue,
-		Message: errMsg}
+		Message: msg}
 	appContext.Log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
-		Str(logging.DATASETID, assetID).Msgf("Setting error condition: %s", errMsg)
+		Str(logging.DATASETID, assetID).Msgf("Setting error condition: %s", msg)
 }
 
 func setDenyCondition(appContext ApplicationContext, assetID, msg string) {

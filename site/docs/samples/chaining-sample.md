@@ -1,7 +1,9 @@
-{% set arrowFlightRelease = arrow_flight_module_version(FybrikRelease,arrowFlight) %}
+<!--
+{% set arrowFlightRelease = get_module_version(FybrikRelease,arrowFlight) %}
 {% set currentRelease = fybrik_version(FybrikRelease) %}
 {% set currentImageTag = fybrik_image_version(FybrikRelease) %}
-
+{% set airByteRelease = get_module_version(FybrikRelease,airByte) %}
+-->
 # FybrikModule chaining sample
 
 This sample shows how to implement a use case where, based on the data source and governance policies, the Fybrik manager determines that it must deploy two FybrikModules to allow a workload access to a dataset. One FybrikModule handles reading the data and the second does the data transformation. Data is passed between the FybrikModules without writing to intermediate storage.
@@ -15,13 +17,19 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
     cd /tmp
     git clone https://github.com/fybrik/airbyte-module.git
     cd airbyte-module
-    git checkout v0.2.0
+    {% if airByteRelease != 'latest' %}
+    git checkout {{ airByteRelease }}
+    {% endif %}
     export AIRBYTE_MODULE_DIR=${PWD}
     ```
 
 1. Install the Airbyte module:
     ```bash
-    kubectl apply -f $AIRBYTE_MODULE_DIR/module.yaml -n fybrik-system
+    {% if airByteRelease != 'latest' %}
+       kubectl apply -f https://github.com/fybrik/airbyte-module/releases/download/{{ airByteRelease }}/module.yaml -n fybrik-system
+    {% else %}
+       kubectl apply -f https://github.com/fybrik/airbyte-module/releases/{{ airByteRelease }}/download/module.yaml -n fybrik-system
+    {% endif %}
     ```
 
 1. Install the arrow-flight module for transformations:
@@ -32,12 +40,6 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
   kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/{{ arrowFlightRelease }}/download/module.yaml -n fybrik-system
 {% endif %}
 ```
-
-1. Create a new namespace for the application, and set it as default:
-    ```bash
-    kubectl create namespace fybrik-airbyte-sample
-    kubectl config set-context --current --namespace=fybrik-airbyte-sample
-    ```
 
 1. Next, register the data asset itself in the data catalog. The way to do it depends on the data catalog with which you are working:
 
@@ -50,17 +52,11 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
           "destinationCatalogID": "openmetadata",
           "destinationAssetID": "userdata",
           "details": {
-            "dataFormat": "csv",
+            "dataFormat": "parquet",
             "connection": {
-              "name": "file",
-              "file": {
-                "connector": "airbyte/source-file",
-                "dataset_name": "userdata",
-                "format": "parquet",
-                "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet",
-                "provider": {
-                  "storage": "HTTPS"
-                }
+              "name": "https",
+              "https": {
+                "url": "https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata2.parquet"
               }
             }
           },
@@ -97,12 +93,12 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
 
         The response from the OpenMetadata connector should look like this:
         ```bash
-        {"assetID":"openmetadata-file.default.openmetadata.userdata"}
+        {"assetID":"openmetadata-https.default.openmetadata.userdata"}
         ```
 
         The asset is now registered in the catalog. Store the asset ID in a `CATALOGED_ASSET` variable:
         ```bash
-        CATALOGED_ASSET="openmetadata-file.default.openmetadata.userdata"
+        CATALOGED_ASSET="openmetadata-https.default.openmetadata.userdata"
         ```
 
     === "With Katalog"
@@ -111,7 +107,7 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
         ```
         The asset is now registered in the catalog. Store the asset ID in a CATALOGED_ASSET variable:
         ```bash
-        CATALOGED_ASSET=fybrik-airbyte-sample/userdata
+        CATALOGED_ASSET=fybrik-notebook-sample/userdata
         ```
 
 1. Before creating a policy for accessing the asset, make sure that you clean up previously existing access policies:
@@ -155,11 +151,19 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
    ```bash
    kubectl get pods -n fybrik-blueprints
    ```
+   ---
+   > _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
+   ```bash
+   oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
+   ```
+   > Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
+   ---
+
    You should see pods with names similar to:
    ```bash
    NAME                                                              READY   STATUS    RESTARTS   AGE
-   my-app-fybrik-airbyte-sample-airbyte-module-airbyte-module4kvrq   2/2     Running   0          43s
-   my-app-fybrik-airbyte-sample-arrow-flight-module-arrow-flibxsq2   1/1     Running   0          43s
+   my-app60cf6ba8-a767-4313-aa39-b78495b625c7-airb-95c0f-airbz4rh8   2/2     Running   0          88s
+   my-app60cf6ba8-a767-4313-aa39-b78495b625c7-arro-6f3f8-arro82dcb   1/1     Running   0          87s
    ```
 
 1. Wait for the FybrikModule pods to be ready by running:
@@ -167,11 +171,17 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
    kubectl wait pod --all --for=condition=ready -n fybrik-blueprints --timeout 10m
    ```
 
+1. Run the following commands to set the `CATALOGED_ASSET_MODIFIED` and the `ENDPOINT_HOSTNAME` environment variables:
+   ```bash
+   CATALOGED_ASSET_MODIFIED=$(echo $CATALOGED_ASSET | sed 's/\./\\\./g')
+   export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-app -n fybrik-notebook-sample -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname}")
+   ```
+
 1. To verify that the Airbyte module gives access to the `userdata` dataset, run:
    ```bash
    cd $AIRBYTE_MODULE_DIR/helm/client
    ./deploy_airbyte_module_client_pod.sh
-   kubectl exec -it my-shell -n default -- python3 /root/client.py --host my-app-fybrik-airbyte-sample-arrow-flight-module.fybrik-blueprints --port 80 --asset ${CATALOGED_ASSET}
+   kubectl exec -it my-shell -n default -- python3 /root/client.py --host ${ENDPOINT_HOSTNAME} --port 80 --asset ${CATALOGED_ASSET}
    ```
    You should see the following output:
    ```bash
@@ -217,7 +227,7 @@ To recreate this scenario, you will need a copy of the airbyte-module repository
 
    # Prepare the request
    request = {
-       "asset": "openmetadata-file.default.openmetadata.userdata",
+       "asset": "openmetadata-https.default.openmetadata.userdata",
    }
 
    # Send request and fetch result as a pandas DataFrame

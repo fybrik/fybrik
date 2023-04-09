@@ -7,12 +7,12 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"reflect"
 	"strings"
 	"time"
 
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -348,13 +348,12 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 
 			logging.LogStructure("Remote blueprint", remoteBlueprint, &log, zerolog.DebugLevel, false, true)
 
-			if !reflect.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
+			if !equality.Semantic.DeepEqual(&blueprintSpec, &remoteBlueprint.Spec) {
 				r.Log.Warn().Msg("Blueprint specs differ.  plotter.generation " + fmt.Sprint(plotter.Generation) +
 					" plotter.observedGeneration " + fmt.Sprint(plotter.Status.ObservedGeneration))
 				if plotter.Generation != plotter.Status.ObservedGeneration {
 					log.Trace().Str(logging.ACTION, logging.UPDATE).Msg("Updating blueprint...")
 					remoteBlueprint.Spec = blueprintSpec
-					remoteBlueprint.ObjectMeta.Annotations = map[string]string(nil) // reset annotations
 					err := r.ClusterManager.UpdateBlueprint(cluster, remoteBlueprint)
 					if err != nil {
 						log.Error().Err(err).Msg("Could not update blueprint")
