@@ -81,7 +81,8 @@ type ModuleNetwork struct {
 	// Egress (internal modules)
 	// +optional
 	Egress []ModuleDeployment `json:"egress,omitempty"`
-	// External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)
+	// External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint), or a CIDR
+	// (Classless Inter-Domain Routing) with optional port
 	// +optional
 	URLs []string `json:"urls,omitempty"`
 }

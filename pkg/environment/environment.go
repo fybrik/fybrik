@@ -48,6 +48,7 @@ const (
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
 	NPEnabled                         string = "NP_ENABLED"
+	OpenShiftDeployment               string = "OPENSHIFT_DEPLOYMENT"
 )
 
 const printValueStr = "%s set to \"%s\""
@@ -153,6 +154,10 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 
 func IsNPEnabled() bool {
 	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
+}
+
+func IsOpenShiftDeployment() bool {
+	return strings.ToLower(os.Getenv(OpenShiftDeployment)) == "true"
 }
 
 // GetDataDir returns the directory where the data resides.

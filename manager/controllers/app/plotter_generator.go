@@ -134,11 +134,12 @@ func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSp
 	template := fappv1.Template{
 		Name: templateName,
 		Modules: []fappv1.ModuleInfo{{
-			Name:       element.Module.Name,
-			Type:       element.Module.Spec.Type,
-			Chart:      element.Module.Spec.Chart,
-			Scope:      moduleCapability.Scope,
-			Capability: moduleCapability.Capability,
+			Name:             element.Module.Name,
+			Type:             element.Module.Spec.Type,
+			Chart:            element.Module.Spec.Chart,
+			Scope:            moduleCapability.Scope,
+			Capability:       moduleCapability.Capability,
+			ExternalServices: element.Module.Spec.ExternalServices,
 		}},
 	}
 	plotterSpec.Templates[template.Name] = template

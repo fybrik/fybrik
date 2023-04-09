@@ -19,6 +19,9 @@ const (
 	FybrikAppUUID             = FybrikPrefix + "/app-uuid"
 	KubernetesInstance        = "app.kubernetes.io/instance"
 	KubernetesNamespaceName   = "kubernetes.io/metadata.name"
+	KubernetesAppName         = "app.kubernetes.io/name"
+	KubernetesAppNameOld      = "k8s-app"
+	OpenShiftDNS              = "dns.operator.openshift.io/daemonset-dns"
 )
 
 func GetApplicationClusterFromLabels(labels map[string]string) string {

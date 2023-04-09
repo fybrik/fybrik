@@ -259,7 +259,7 @@ spec:
                               type: object
                             type: array
                           urls:
-                            description: External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint)
+                            description: External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint), or a CIDR (Classless Inter-Domain Routing) with optional port
                             items:
                               type: string
                             type: array

@@ -113,15 +113,16 @@ func (r *PlotterReconciler) removeFinalizers(ctx context.Context, plotter *fapp.
 
 // PlotterModulesSpec consists of module details extracted from the Plotter structure
 type PlotterModulesSpec struct {
-	ClusterName     string
-	VaultAuthPath   string
-	AssetID         string
-	ModuleName      string
-	ModuleArguments *fapp.StepParameters
-	FlowType        taxonomy.DataFlow
-	Chart           fapp.ChartSpec
-	Scope           fapp.CapabilityScope
-	Capability      taxonomy.Capability
+	ClusterName      string
+	VaultAuthPath    string
+	AssetID          string
+	ModuleName       string
+	ModuleArguments  *fapp.StepParameters
+	FlowType         taxonomy.DataFlow
+	Chart            fapp.ChartSpec
+	Scope            fapp.CapabilityScope
+	Capability       taxonomy.Capability
+	ExternalServices []string
 }
 
 // ServiceInfo stores the service API and indicates whether it is exposed to the workload
@@ -168,6 +169,7 @@ func (r *PlotterReconciler) convertPlotterModuleToBlueprintModule(plotter *fapp.
 				Assets: []fapp.AssetContext{},
 			},
 			AssetIDs: []string{plotterModule.AssetID},
+			Network:  fapp.ModuleNetwork{URLs: plotterModule.ExternalServices},
 		},
 		ClusterName: plotterModule.ClusterName,
 		Scope:       plotterModule.Scope,
@@ -285,15 +287,16 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 						}
 
 						plotterModule := &PlotterModulesSpec{
-							ModuleArguments: moduleArgs,
-							AssetID:         flow.AssetID,
-							FlowType:        subFlow.FlowType,
-							ClusterName:     clusterName,
-							Chart:           module.Chart,
-							ModuleName:      module.Name,
-							Scope:           scope,
-							Capability:      module.Capability,
-							VaultAuthPath:   authPath,
+							ModuleArguments:  moduleArgs,
+							AssetID:          flow.AssetID,
+							FlowType:         subFlow.FlowType,
+							ClusterName:      clusterName,
+							Chart:            module.Chart,
+							ModuleName:       module.Name,
+							Scope:            scope,
+							Capability:       module.Capability,
+							VaultAuthPath:    authPath,
+							ExternalServices: module.ExternalServices,
 						}
 
 						blueprintModule := r.convertPlotterModuleToBlueprintModule(plotter, plotterModule)

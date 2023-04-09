@@ -183,7 +183,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 }
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string, log *zerolog.Logger) (*release.Release, error) {
+	network fapp.ModuleNetwork, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string, log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 
 	args = CopyMap(args)
@@ -226,7 +226,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
 	if environment.IsNPEnabled() {
-		err = r.createNetworkPolicies(ctx, blueprint, releaseName, log)
+		err = r.createNetworkPolicies(ctx, releaseName, network, blueprint, log)
 		if err != nil {
 			return nil, err
 		}
@@ -355,7 +355,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint, releaseName, log); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, module.Network, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {

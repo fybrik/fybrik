@@ -120,6 +120,11 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 					} else {
 						urls = append(urls, getURLsFromConnection(arg.Connection)...)
 					}
+					for _, vault := range arg.Vault {
+						urls = append(urls, vault.Address)
+						// we need only Vault address, and don't need different per flow credentials.
+						break
+					}
 				}
 			}
 		}
@@ -137,7 +142,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 			Endpoint: isEndpoint,
 			Egress:   egress,
 			Ingress:  ingress,
-			URLs:     urls,
+			URLs:     append(instances[ind].Module.Network.URLs, urls...),
 		}
 		spec.Modules[instanceName] = instances[ind].Module
 	}
