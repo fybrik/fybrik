@@ -1720,6 +1720,8 @@ Make a note of the service endpoint and access credentials. You will need them l
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
 helm install localstack localstack-charts/localstack \
+     --version 0.4.3 \
+     --set image.tag=&quot;1.2.0&quot; \
      --set startServices=&quot;s3&quot; \
      --set service.type=ClusterIP \
      --set livenessProbe.initialDelaySeconds=25
@@ -1729,6 +1731,8 @@ kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>helm repo add localstack-charts https://localstack.github.io/helm-charts
 helm install localstack localstack-charts/localstack \
+     --version 0.4.3 \
+     --set image.tag=&quot;1.2.0&quot; \
      --set startServices=&quot;s3&quot; \
      --set service.type=ClusterIP \
      --set livenessProbe.initialDelaySeconds=25 \
