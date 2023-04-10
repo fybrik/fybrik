@@ -9,6 +9,8 @@ KUBE_VERSION=1.24.1
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
+LOCALSTACK_VERSION=1.2.0
+LOCALSTACK_CHART_VERSION=0.4.3
 
 # OS Check:
 arch=amd64
@@ -179,10 +181,10 @@ else
     rm -r 7z-install
 fi
 
-header "Checking for aws-cli v2"
-if [[ -f bin/aws && -d bin/aws-source/v2 ]]
+header "Checking for aws-cli"
+if [[ -f bin/aws ]]
 then
-    header "  bin/aws v2 already exists"
+    header "bin/aws already exists"
 else
     header "Installing bin/aws" 
     if [[ "$os" == "darwin" ]]
@@ -206,7 +208,7 @@ else
       installer -pkg AWSCLIV2.pkg \
               -target CurrentUserHomeDirectory \
               -applyChoiceChangesXML bin/choices.xml
-      rm bin/aws
+      rm -f bin/aws 
       ln -s ../bin/aws-cli/aws bin/aws
       rm AWSCLIV2.pkg
 
@@ -290,7 +292,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --version 0.4.3 --set startServices="s3" --set service.type=ClusterIP --set image.tag="1.2.0" --set livenessProbe.initialDelaySeconds=25
+bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP --set livenessProbe.initialDelaySeconds=25 --set image.tag="${LOCALSTACK_VERSION}"
 bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 

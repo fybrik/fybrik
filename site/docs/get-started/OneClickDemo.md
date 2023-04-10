@@ -23,7 +23,7 @@ You can also try to do this, and the next parts of the demo, step by step in the
 
 ## Requirements
 
-1. Linux based OS, using a bash terminal (MacOS support coming soon).
+1. Linux based OS or MacOS with a working bash terminal.
 2. Docker [installed and deployed](https://docs.docker.com/get-docker/). 
 
 The demo will make a bin folder at your current directory with all the other required dependencies for Fybrik.
