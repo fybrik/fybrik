@@ -16,14 +16,18 @@ os="unknown"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   os="linux"
-else 
-  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  os="darwin"
+fi
+
+if [[ "$os" == "unknown" ]]; then
+  echo "OS '$OSTYPE' not supported. Aborting." >&2
   exit 1
 fi
 
 if [[ "$FYBRIK_VERSION" == "" ]]; then
   # Get Fybrik lateset realease from github
-  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
+  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | tail -c 7)
 fi
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
@@ -203,7 +207,8 @@ else
       installer -pkg AWSCLIV2.pkg \
               -target CurrentUserHomeDirectory \
               -applyChoiceChangesXML bin/choices.xml
-      ln -s ./bin/aws-cli/aws ./bin/aws
+      rm bin/aws
+      ln -s ../bin/aws-cli/aws bin/aws
       rm AWSCLIV2.pkg
 
     else
@@ -282,7 +287,7 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts 
 bin/helm install localstack localstack-charts/localstack --version 0.4.3 --set startServices="s3" --set service.type=ClusterIP --set image.tag="1.2.0" --set livenessProbe.initialDelaySeconds=25
-bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=150s
+bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
