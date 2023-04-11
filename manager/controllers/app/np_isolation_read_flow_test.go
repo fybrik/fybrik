@@ -329,7 +329,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		Namespace: "fybrik-blueprints",
 	}
 	err = k8sClient.List(context.Background(), moduleConfigMapList, opts)
-	for _, configMap := range moduleConfigMapList.Items {
+	for i, configMap := range moduleConfigMapList.Items {
 		confYaml, ok := configMap.Data["conf.yaml"]
 		if !ok {
 			continue
@@ -347,7 +347,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		newYaml, err := yaml.Marshal(yamlData)
 		g.Expect(err).To(gomega.BeNil())
 		configMap.Data["conf.yaml"] = string(newYaml)
-		err = k8sClient.Update(context.Background(), &configMap)
+		err = k8sClient.Update(context.Background(), &moduleConfigMapList.Items[i])
 		g.Expect(err).To(gomega.BeNil())
 		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the second s3 storage")
 		readCommand = "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
@@ -355,6 +355,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		g.Expect(err).ToNot(gomega.BeNil())
 		stdout.Reset()
 		stderr.Reset()
+		break
 	}
 
 	fmt.Println("isolation read flow test succeeded")
