@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -321,6 +322,40 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
+
+	// Check egress connection
+	moduleConfigMapList := &v1.ConfigMapList{}
+	opts := &client.ListOptions{
+		Namespace: "fybrik-blueprints",
+	}
+	err = k8sClient.List(context.Background(), moduleConfigMapList, opts)
+	for _, configMap := range moduleConfigMapList.Items {
+		confYaml, ok := configMap.Data["conf.yaml"]
+		if !ok {
+			continue
+		}
+		var yamlData map[string]interface{}
+		err = yaml.Unmarshal([]byte(confYaml), &yamlData)
+		g.Expect(err).To(gomega.BeNil())
+		// Check if this configmap has an s3 connection
+		val, ok := yamlData["data"].([]interface{})[0].(map[interface{}]interface{})["connection"].(map[interface{}]interface{})["s3"]
+		if !ok {
+			continue
+		}
+		// Change the endpoint to the second s3 storage
+		val.(map[interface{}]interface{})["endpoint_url"] = "http://s3-dup.fybrik-system:9393"
+		newYaml, err := yaml.Marshal(yamlData)
+		g.Expect(err).To(gomega.BeNil())
+		configMap.Data["conf.yaml"] = string(newYaml)
+		err = k8sClient.Update(context.Background(), &configMap)
+		g.Expect(err).To(gomega.BeNil())
+		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the second s3 storage")
+		readCommand = "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
+		err = ExecCmdExample(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+		g.Expect(err).ToNot(gomega.BeNil())
+		stdout.Reset()
+		stderr.Reset()
+	}
 
 	fmt.Println("isolation read flow test succeeded")
 }

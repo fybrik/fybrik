@@ -69,3 +69,6 @@ kubectl wait pod --for=condition=ready my-shell -n default --timeout 10m
 
 # Forward port of test S3 instance
 kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
+# Create a new service for the same s3 storage for testing
+kubectl apply -f s3-dup.yaml -n fybrik-system
+kubectl port-forward -n fybrik-system svc/s3-dup 9393:9393 &
