@@ -3,11 +3,6 @@
 # Copyright 2023 IBM Corp.
 # SPDX-License-Identifier: Apache-2.0
 
-if [[ ! "$OSTYPE" == "linux"* ]]; then
-    echo "OS '$OSTYPE' is not supported. Aborting." >&2
-    exit 1
-fi
-
 # error and exit configuration
 set -eu
 
@@ -60,7 +55,7 @@ while getopts "$FLAG_DURATION:$FLAG_NAMESPACES:$FLAG_PATH:$FLAG_UUID:$FLAG_APP:$
             fi
             ;;
         $FLAG_NAMESPACES)
-            readarray -d $ARGS_SEPARATOR -t namespaces_list < <(printf '%s' "$OPTARG")
+            namespaces_list=($(echo "$OPTARG" | awk -v RS="$ARGS_SEPARATOR" '{print}'))
             # check that all the given namespaces exist
             existant_ns=$(kubectl get ns -o=jsonpath='{.items[*].metadata.name}')
             for ns in ${namespaces_list[@]}; do
@@ -72,7 +67,7 @@ while getopts "$FLAG_DURATION:$FLAG_NAMESPACES:$FLAG_PATH:$FLAG_UUID:$FLAG_APP:$
             done
             ;;
         $FLAG_PATH)
-            output_path=$(readlink -f "$OPTARG")/
+            output_path=$(realpath "$OPTARG")/
             if [[ ! -d $output_path ]]; then
                 echo "error: given path '$output_path' doesn't exist"
                 print_usage
@@ -81,7 +76,7 @@ while getopts "$FLAG_DURATION:$FLAG_NAMESPACES:$FLAG_PATH:$FLAG_UUID:$FLAG_APP:$
             ;;
         $FLAG_APP)
             application_args_list=()
-            readarray -d $ARGS_SEPARATOR -t application_args_list < <(printf '%s' "$OPTARG")
+            application_args_list=($(echo "$OPTARG" | awk -v RS="$ARGS_SEPARATOR" '{print}'))
             if [ ${#application_args_list[@]} -ne 2 ] || [ -z ${application_args_list[0]} ] || [ -z ${application_args_list[1]} ]; then
                 echo "error: given application namespace and name should be separated by a single comma"
                 print_usage
@@ -160,7 +155,7 @@ else
 fi
 
 # iterate over the relevant namespaces
-for ns in ${namespaces_list[@]}; do
+for ns in ${namespaces_list[@]+"${namespaces_list[@]}"}; do
     # save the logs of each container separately
     for pod in $(kubectl get pods -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
         # if pod is ready then save its logs, otherwise save its describe output
