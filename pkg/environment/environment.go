@@ -214,7 +214,7 @@ func GetDiscoveryQPS() (float32, error) {
 	if qpsStr == "" {
 		return -1, nil
 	}
-	//nolint:revive,gomnd // ignore magic numbers
+	//nolint:revive // ignore magic numbers
 	qps, err := strconv.ParseFloat(qpsStr, 32)
 	if err != nil {
 		return -1, err

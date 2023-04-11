@@ -5,9 +5,8 @@ package app
 
 import (
 	"context"
-	"fybrik.io/fybrik/pkg/logging"
-	"github.com/rs/zerolog/log"
 	"net"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -24,6 +23,7 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/environment"
+	"fybrik.io/fybrik/pkg/logging"
 )
 
 const (
@@ -34,18 +34,23 @@ const (
 	DNSTCPPortName        = "dns-tcp"
 )
 
+const cannotParseURL = "cannot parse %s as URL"
+
 var dnsEngressRules = createDNSEngressRules()
+
+// meantime we don't support UDP or SCTP based protocols.
+var tcp = corev1.ProtocolTCP
 
 func createDNSEngressRules() netv1.NetworkPolicyEgressRule {
 	// allow DNS access
 	udp := corev1.ProtocolUDP
-	tcp := corev1.ProtocolTCP
 	dnsPort := intstr.FromString(DNSPortName)
 	dnsTCPPort := intstr.FromString(DNSTCPPortName)
 	policyPorts := []netv1.NetworkPolicyPort{{Protocol: &udp, Port: &dnsPort}, {Protocol: &tcp, Port: &dnsTCPPort}}
 	if environment.IsOpenShiftDeployment() {
 		nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: OpenShiftDNSNamespace}}
-		podSelector := meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{Key: managerUtils.OpenShiftDNS, Operator: meta.LabelSelectorOpExists}}}
+		podSelector := meta.LabelSelector{
+			MatchExpressions: []meta.LabelSelectorRequirement{{Key: managerUtils.OpenShiftDNS, Operator: meta.LabelSelectorOpExists}}}
 		npPeer := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &nsSelector}
 		return netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{npPeer}, Ports: policyPorts}
 	}
@@ -65,7 +70,7 @@ func getDefaultNetworkPolicyFrom() []netv1.NetworkPolicyPeer {
 }
 
 func (r *BlueprintReconciler) createNetworkPolicies(ctx context.Context,
-	releaseName string, network fapp.ModuleNetwork, blueprint *fapp.Blueprint, logger *zerolog.Logger) error {
+	releaseName string, network *fapp.ModuleNetwork, blueprint *fapp.Blueprint, logger *zerolog.Logger) error {
 	log := logger.With().Str(managerUtils.KubernetesInstance, releaseName).Logger()
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Creating Network Policies for  " + releaseName)
 
@@ -75,13 +80,14 @@ func (r *BlueprintReconciler) createNetworkPolicies(ctx context.Context,
 	}
 	res, err := ctrlutil.CreateOrUpdate(ctx, r.Client, np, func() error { return nil })
 	if err != nil {
-		return errors.WithMessage(err, releaseName+": failed to create NetworkPolicy")
+		return errors.WithMessagef(err, "failed to create NetworkPolicy: %v", np)
 	}
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Network Policies for %s/%s were createdOrUpdated result: %s", np.Namespace, releaseName, res)
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Network Policies for %s/%s were createdOrUpdated result: %s",
+		np.Namespace, releaseName, res)
 	return nil
 }
 
-func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Context, releaseName string, network fapp.ModuleNetwork,
+func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Context, releaseName string, network *fapp.ModuleNetwork,
 	blueprint *fapp.Blueprint, log *zerolog.Logger) (*netv1.NetworkPolicy, error) {
 	np := netv1.NetworkPolicy{}
 	np.Name = releaseName
@@ -94,142 +100,123 @@ func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Contex
 
 	np.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress, netv1.PolicyTypeIngress}
 
-	ingress, err := r.createNPIngressRules(releaseName, network, blueprint, log)
+	ingress, err := r.createNPIngressRules(network.Endpoint, network.Ingress, blueprint.Spec.Application, blueprint.Spec.Cluster, log)
 	if err != nil {
 		return nil, err
 	}
 	np.Spec.Ingress = ingress
+	egress := r.createNPEgressRules(ctx, network.Egress, network.URLs, blueprint.Spec.Cluster, blueprint.Spec.ModulesNamespace, log)
 
-	egress, err := r.createNPEgressRules(ctx, releaseName, network, blueprint, log)
-	if err != nil {
-		return nil, err
-	}
 	np.Spec.Egress = egress
 	return &np, nil
 }
 
-func (r *BlueprintReconciler) createNPIngressRules(releaseName string, network fapp.ModuleNetwork,
-	blueprint *fapp.Blueprint, log *zerolog.Logger) ([]netv1.NetworkPolicyIngressRule, error) {
-	tcp := corev1.ProtocolTCP
-	npPorts := []netv1.NetworkPolicyPort{{Protocol: &tcp}}
-	var from []netv1.NetworkPolicyPeer
-	ingressRules := []netv1.NetworkPolicyIngressRule{}
+func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fapp.ModuleDeployment,
+	application *fapp.ApplicationDetails, cluster string, log *zerolog.Logger) ([]netv1.NetworkPolicyIngressRule, error) {
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Ingress rules creation from Endpoint: %v and Ingress: %v",
+		endpoint, ingresses)
 
-	if network.Endpoint {
-		workLoadSelector := blueprint.Spec.Application.WorkloadSelector
-		namespaces := blueprint.Spec.Application.Namespaces
-		ipBlocks := blueprint.Spec.Application.IPBlocks
-		// 1. check that something is defined
-		if len(ipBlocks) == 0 && len(namespaces) == 0 && len(workLoadSelector.MatchExpressions) == 0 &&
-			len(workLoadSelector.MatchLabels) == 0 {
-			from = getDefaultNetworkPolicyFrom()
+	var from []netv1.NetworkPolicyPeer
+	// access from user workloads
+	// TODO: we don't check cluster here, because meantime we don't support workloads from other clusters.
+	if endpoint {
+		if application == nil {
+			err := errors.New("Misconfiguration, endpoint with nil application details")
+			log.Err(err)
+			return nil, err
+		}
+		workLoadSelector := application.WorkloadSelector
+		namespaces := application.Namespaces
+		ipBlocks := application.IPBlocks
+		if len(ipBlocks) == 0 && len(namespaces) == 0 && workLoadSelector.Size() == 0 {
+			err := errors.New("Misconfiguration, endpoint with empty application details")
+			log.Err(err)
+			return nil, err
+		}
+		for _, ip := range ipBlocks {
+			npPeer := netv1.NetworkPolicyPeer{IPBlock: ip}
+			from = append(from, npPeer)
+		}
+		if len(namespaces) == 0 {
+			npPeer := netv1.NetworkPolicyPeer{PodSelector: &workLoadSelector}
+			from = append(from, npPeer)
+		}
+		for _, ns := range namespaces {
+			nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: ns}}
+			npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &workLoadSelector}
+			from = append(from, npPeer)
+		}
+	}
+
+	for _, ingress := range ingresses {
+		if ingress.Cluster == "" || ingress.Cluster == cluster {
+			// local cluster
+			if ingress.Release != "" {
+				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: ingress.Release}}
+				npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
+				from = append(from, npPeer)
+			}
 		} else {
-			from = []netv1.NetworkPolicyPeer{}
-			if len(namespaces) == 0 {
-				npPeer := netv1.NetworkPolicyPeer{PodSelector: &workLoadSelector}
-				from = append(from, npPeer)
-			}
-			for _, ns := range namespaces {
-				nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: ns}}
-				npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &workLoadSelector}
-				from = append(from, npPeer)
-			}
-			for _, ip := range ipBlocks {
-				npPeer := netv1.NetworkPolicyPeer{IPBlock: ip}
-				from = append(from, npPeer)
-			}
-		}
-		ingressRules = append(ingressRules, netv1.NetworkPolicyIngressRule{From: from, Ports: npPorts})
-	}
-	if len(network.Ingress) > 0 {
-		from = []netv1.NetworkPolicyPeer{}
-		for _, ingress := range network.Ingress {
-			if ingress.Cluster == "" || ingress.Cluster == blueprint.Spec.Cluster {
-				if ingress.Release != "" {
-					for _, url := range ingress.URLs {
-						if strings.HasPrefix(url, releaseName) {
-							continue
-						} else {
-							// TODO: can we have the URL for ingress, which is not form a module?
-						}
-					}
-					selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: ingress.Release}}
-					npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
-					from = append(from, npPeer)
-				}
-			} else {
-				// TODO: multi-cluster support
-			}
-		}
-		if len(from) > 0 {
-			ingressRules = append(ingressRules, netv1.NetworkPolicyIngressRule{From: from, Ports: npPorts})
+			// TODO: multi-cluster support
+			log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Cross-cluster ingress connectivity, ingress.Cluster %s, blueprint cluster %s",
+				ingress.Cluster, cluster)
 		}
 	}
+	if len(from) == 0 {
+		from = getDefaultNetworkPolicyFrom()
+	}
+	ingressRules := []netv1.NetworkPolicyIngressRule{{From: from, Ports: []netv1.NetworkPolicyPort{{Protocol: &tcp}}}}
 	return ingressRules, nil
 }
 
-func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, releaseName string, network fapp.ModuleNetwork,
-	blueprint *fapp.Blueprint, log *zerolog.Logger) ([]netv1.NetworkPolicyEgressRule, error) {
-	tcp := corev1.ProtocolTCP
-	npPorts := []netv1.NetworkPolicyPort{{Protocol: &tcp}}
-	var to []netv1.NetworkPolicyPeer
+//nolint:funlen
+func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses []fapp.ModuleDeployment, urls []string,
+	cluster string, modulesNamespace string, log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
+	log.Trace().Str(logging.ACTION, logging.CREATE).
+		Msgf("Egress rules creation from network.Egress: %v, network.URLs %v",
+			egresses, urls)
 	egressRules := []netv1.NetworkPolicyEgressRule{}
-	if len(network.Egress) > 0 {
-		to = []netv1.NetworkPolicyPeer{}
-		for _, egress := range network.Egress {
-			if egress.Cluster == "" || egress.Cluster == blueprint.Spec.Cluster {
-				if egress.Release != "" {
-					selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: egress.Release}}
-					npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
-					to = append(to, npPeer)
-				}
-			} else {
-				// TODO: multi-cluster support
-			}
-		}
-		if len(to) > 0 {
-			// TODO: add ports
-			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts})
-		}
+
+	if egressRule := r.createNextModulesEgressRules(egresses, cluster, log); egressRule != nil {
+		egressRules = append(egressRules, *egressRule)
 	}
-	for _, urlString := range network.URLs {
+
+	// The URLs can be a CIDR block with or without an optional port, or urls to the cluster internal or external services.
+
+	for _, urlString := range urls {
 		log.Trace().Msgf("Processing external URL %s", urlString)
 
 		// 1. check if it is a CIDR (Classless Inter-Domain Routing)
-		// in this case be in a form 192.168.1.0/24 and optionally port separated by colon
+		// in this case it be in a form 192.168.1.0/24 and optionally port separated by colon
 		stringsArray := strings.Split(urlString, ":")
 		_, _, err := net.ParseCIDR(stringsArray[0])
 		if err == nil {
 			ipBlock := netv1.IPBlock{CIDR: stringsArray[0]}
-			to = []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
-			if len(stringsArray) > 1 {
-				if port, err := strconv.Atoi(stringsArray[1]); err == nil {
-					pr := intstr.FromInt(port)
-					egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{{Port: &pr}}})
-					continue
-				}
-				log.Debug().Msgf("Cannot parse port %s", stringsArray[1])
-			}
-			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to})
+			to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
+			policyPort := policyPortFromString(stringsArray[1], log)
+			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
 			continue
 		}
 		// 2 parse URL
-		url, err := managerUtils.ParseRawURL(urlString)
+		servURL, err := managerUtils.ParseRawURL(urlString)
 		if err != nil {
-			// TODO
-			log.Err(err).Msgf("cannot parse %s as URL", urlString)
+			log.Err(err).Msgf(cannotParseURL, urlString)
 			continue
 		}
-		hostName := url.Hostname()
+		hostName := servURL.Hostname()
 		if hostName == "" {
-			log.Warn().Msgf("URL without host name: %s", url)
+			log.Warn().Msgf("URL without host name: %s", servURL)
 			continue
 		}
 		// 2.1. check if the hostName is actually an IP address.
 		// NOTE: IP address to a local service will not work
 		ip := net.ParseIP(hostName)
 		if ip != nil {
-			// TODO: deal with IP
+			ipBlock := ipToIPBlock(ip)
+			to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
+			policyPort := policyPortFromURL(servURL, log)
+			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
+			continue
 		}
 		// 2.2. Check if it is a local service
 		hostStrings := strings.Split(hostName, ".")
@@ -238,9 +225,10 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, releaseNa
 		if len(hostStrings) > 1 {
 			key.Namespace = hostStrings[1]
 		} else {
-			// TODO: add namespace
+			key.Namespace = modulesNamespace
 		}
-		if err := r.Get(ctx, key, &service); err == nil {
+		// we assume that the service exists
+		if err = r.Get(ctx, key, &service); err == nil {
 			// TODO: check NodePort and LoadBalancer
 			podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
 			npPeer := netv1.NetworkPolicyPeer{PodSelector: &podSelector}
@@ -248,7 +236,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, releaseNa
 				nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: hostStrings[1]}}
 				npPeer.NamespaceSelector = &nsSelector
 			}
-			to = []netv1.NetworkPolicyPeer{npPeer}
+			to := []netv1.NetworkPolicyPeer{npPeer}
 			npPorts := []netv1.NetworkPolicyPort{}
 			for _, port := range service.Spec.Ports {
 				protocol := port.Protocol
@@ -256,44 +244,61 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, releaseNa
 				npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &protocol, Port: &targetPort})
 			}
 			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts})
-			// we add the service IP too
-			// continue
+			continue
 		}
 		// 3. deal with external service names
 		ips, err := net.LookupIP(hostName)
 		if err != nil {
-			// TODO
 			log.Err(err).Msgf("cannot get IP addresses for %s", hostName)
 			continue
 		}
-		to = []netv1.NetworkPolicyPeer{}
+		to := []netv1.NetworkPolicyPeer{}
 		for _, ip := range ips {
-			var ipBlock netv1.IPBlock
-			if ipv4 := ip.To4(); ipv4 != nil {
-				ipBlock = netv1.IPBlock{CIDR: ip.String() + "/32"}
-			} else {
-				ipBlock = netv1.IPBlock{CIDR: ip.String() + "/64"}
-			}
+			ipBlock := ipToIPBlock(ip)
 			to = append(to, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 		}
-		policyPort := netv1.NetworkPolicyPort{Protocol: &tcp}
-		portString := url.Port()
-		if portString == "" {
-			// TODO: add default ports
-
-		} else {
-			portInt, err := strconv.Atoi(portString)
-			if err != nil {
-				log.Err(err).Msgf("cannot convert port %s", portInt)
-			} else {
-				port := intstr.FromInt(portInt)
-				policyPort.Port = &port
-			}
-		}
+		policyPort := policyPortFromURL(servURL, log)
 		egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
 	}
 	egressRules = append(egressRules, dnsEngressRules)
-	return egressRules, nil
+	return egressRules
+}
+
+func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.ModuleDeployment, cluster string,
+	log *zerolog.Logger) *netv1.NetworkPolicyEgressRule {
+	var npPorts []netv1.NetworkPolicyPort
+	var to []netv1.NetworkPolicyPeer
+	for _, egress := range egresses {
+		if egress.Cluster == "" || egress.Cluster == cluster {
+			if egress.Release != "" {
+				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: egress.Release}}
+				npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
+				to = append(to, npPeer)
+				for _, urlString := range egress.URLs {
+					if strings.HasPrefix(urlString, egress.Release) {
+						u, err := managerUtils.ParseRawURL(urlString)
+						if err != nil {
+							log.Err(err).Msgf(cannotParseURL, urlString)
+							continue
+						}
+						policyPort := policyPortFromURL(u, log)
+						npPorts = append(npPorts, policyPort)
+					}
+					log.Warn().Msgf("Egress URL %s is not part of release %s", urlString, egress.Release)
+				}
+			}
+		} else {
+			// TODO: multi-cluster support
+			log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Cross-cluster egress connectivity, egress.Cluster %s, blueprint cluster %s",
+				egress.Cluster, cluster)
+		}
+	}
+
+	if len(to) > 0 {
+		egressRule := netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts}
+		return &egressRule
+	}
+	return nil
 }
 
 func (r *BlueprintReconciler) cleanupNetworkPolicies(ctx context.Context, blueprint *fapp.Blueprint) error {
@@ -303,11 +308,37 @@ func (r *BlueprintReconciler) cleanupNetworkPolicies(ctx context.Context, bluepr
 	l[managerUtils.BlueprintNameLabel] = blueprint.Name
 	l[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
 	r.Log.Trace().Str(logging.ACTION, logging.DELETE).Msgf("Delete Network Policies with labels %v", l)
-	if err := r.Client.DeleteAllOf(ctx, &netv1.NetworkPolicy{}, client.InNamespace(environment.GetDefaultModulesNamespace()),
-		l); err != nil {
-		log.Error().Err(err).Msg("Error while deleting Network Policies")
+	if err := r.Client.DeleteAllOf(ctx, &netv1.NetworkPolicy{},
+		client.InNamespace(environment.GetDefaultModulesNamespace()), l); err != nil {
+		r.Log.Error().Err(err).Msg("Error while deleting Network Policies")
 		return err
 	}
 	r.Log.Trace().Str(logging.ACTION, logging.DELETE).Msg("Network Polices were deleted")
 	return nil
+}
+
+func policyPortFromURL(ur *url.URL, log *zerolog.Logger) netv1.NetworkPolicyPort {
+	portString := ur.Port()
+	if portString == "" {
+		// TODO: add default ports
+		return netv1.NetworkPolicyPort{Protocol: &tcp}
+	}
+	return policyPortFromString(portString, log)
+}
+
+func policyPortFromString(portString string, log *zerolog.Logger) netv1.NetworkPolicyPort {
+	portInt, err := strconv.Atoi(portString)
+	if err != nil {
+		log.Err(err).Msgf("cannot convert port %s to integer", portString)
+		return netv1.NetworkPolicyPort{Protocol: &tcp}
+	}
+	port := intstr.FromInt(portInt)
+	return netv1.NetworkPolicyPort{Protocol: &tcp, Port: &port}
+}
+
+func ipToIPBlock(ip net.IP) netv1.IPBlock {
+	if ipv4 := ip.To4(); ipv4 != nil {
+		return netv1.IPBlock{CIDR: ip.String() + "/32"}
+	}
+	return netv1.IPBlock{CIDR: ip.String() + "/64"}
 }

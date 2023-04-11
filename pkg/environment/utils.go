@@ -25,7 +25,7 @@ func GetEnvAsInt(key string, defaultValue int) int {
 // If the environment variable is not set or cannot be parsed the default value is returned.
 func GetEnvAsFloat32(key string, defaultValue float32) float32 {
 	if env, isSet := os.LookupEnv(key); isSet {
-		f, err := strconv.ParseFloat(env, 32) //nolint:revive,gomnd // Ignore magic number 32
+		f, err := strconv.ParseFloat(env, 32) //nolint:revive // Ignore magic number 32
 		if err == nil {
 			return float32(f)
 		}

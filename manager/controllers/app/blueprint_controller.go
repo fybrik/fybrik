@@ -183,7 +183,8 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 }
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
-	network fapp.ModuleNetwork, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string, log *zerolog.Logger) (*release.Release, error) {
+	network *fapp.ModuleNetwork, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string,
+	log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 
 	args = CopyMap(args)
@@ -294,7 +295,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 	blueprint.Status.ModulesState[instanceName] = state
 }
 
-//nolint:gocyclo
+//nolint:gocyclo,funlen
 func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
 	blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
@@ -355,7 +356,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, module.Network, args, blueprint, releaseName, log); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
