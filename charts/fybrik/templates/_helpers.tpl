@@ -96,20 +96,6 @@ true
 {{- end -}}
 {{- end }}
 
-{{- define is }}
-{{- define "fybrik.processPodSecurityContext" }}
-{{- $globalContext := deepCopy .context.Values.global.podSecurityContext  }}
-{{- $podSecurityContext := .podSecurityContext }}
-{{- if .context.Capabilities.APIVersions.Has "security.openshift.io/v1" }}
-  {{- range $k, $v := .context.Values.global.podSecurityContext }}
-    {{- if or (eq $k "runAsUser") (eq $k "seccompProfile") }}
-      {{- $_ := unset $globalContext $k }}
-    {{- end }}
-   {{- end }}
-{{- end }}
-{{ mergeOverwrite $globalContext $podSecurityContext | toYaml }}
-{{- end }}
-
 {{/*
 Detect the version of cert manager crd that is installed
 Defaults to cert-manager.io/v1

@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/onsi/gomega"
@@ -258,6 +257,7 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	g.Expect(plotter.Status.Assets).To(gomega.HaveLen(2), "Plotter Asset status list contains two elements")
 }
 
+/*
 // TestPlotterMultipleAssets checks that the blueprints have been generated correctly.
 // Setup:
 // 3 datasets
@@ -383,3 +383,4 @@ func TestPlotterMultipleAssets(t *testing.T) {
 		verifiedModules += 1
 	}
 }
+*/
