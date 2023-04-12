@@ -52,6 +52,7 @@ To stop the local kind kubernetes cluster booted up on your machine in this demo
 ```bash
 bin/kind delete cluster --name=kind-fybrik-installation-sample
 rm -rf bin 
+rm res.out
 ```
 
 > **WARNING**: If you already had a bin folder at your current directory these commands will delete it and its contents.
