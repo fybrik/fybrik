@@ -1473,7 +1473,7 @@ You can also try to do this, and the next parts of the demo, step by step in the
 </ol>
 <h2 id="requirements">Requirements</h2>
 <ol>
-<li>Linux based OS, using a bash terminal (MacOS support coming soon).</li>
+<li>Linux based OS or MacOS with a working bash terminal.</li>
 <li>Docker <a href="https://docs.docker.com/get-docker/">installed and deployed</a>. </li>
 </ol>
 <p>The demo will make a bin folder at your current directory with all the other required dependencies for Fybrik.</p>
@@ -1499,6 +1499,7 @@ Alternatively you can try Fybrik with Katalog,  a data catalog stub, strictly us
 <p>To stop the local kind kubernetes cluster booted up on your machine in this demo, and to remove the folder created with the dependencies for Fybrik, run this.  </p>
 <div class="highlight"><pre><span></span><code>bin/kind<span class="w"> </span>delete<span class="w"> </span>cluster<span class="w"> </span>--name<span class="o">=</span>kind-fybrik-installation-sample
 rm<span class="w"> </span>-rf<span class="w"> </span>bin<span class="w"> </span>
+rm<span class="w"> </span>res.out
 </code></pre></div>
 <blockquote>
 <p><strong>WARNING</strong>: If you already had a bin folder at your current directory these commands will delete it and its contents.</p>
