@@ -15,6 +15,7 @@ make kind-setup-multi
 kubectl config use-context kind-control
 make -C third_party/razee all
 
+# setup control cluster
 kubectl config use-context kind-control
 make cluster-prepare
 make docker-build
@@ -22,12 +23,15 @@ make docker-push
 make cluster-prepare-wait
 make deploy-fybrik
 
+# setup remote cluster
 export VALUES_FILE=charts/fybrik/kind-kind.values.yaml
 kubectl config use-context kind-kind
 make -C third_party/cert-manager deploy
 make deploy-fybrik
 
+# configure Vault
+make vault-setup-kind-multi
+
 # Switch to control cluster after setup
 kubectl config use-context kind-control
 
-make vault-setup-kind-multi
