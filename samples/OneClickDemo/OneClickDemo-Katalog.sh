@@ -18,14 +18,18 @@ os="unknown"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   os="linux"
-else 
-  echo "OS '$OSTYPE' is not yet supported. MacOS support coming soon. Aborting." >&2
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  os="darwin"
+fi
+
+if [[ "$os" == "unknown" ]]; then
+  echo "OS '$OSTYPE' not supported. Aborting." >&2
   exit 1
 fi
 
 if [[ "$FYBRIK_VERSION" == "" ]]; then
   # Get Fybrik lateset realease from github
-  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | cut --delimiter='/' --fields=3)
+  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | tail -c 7)
 fi
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
@@ -161,34 +165,64 @@ if [ ${USE_KIND} -eq 1 ]; then
     fi
 fi
 
-header "Checking for bin/7zzs"
-if [[ -f bin/7zzs ]]
+if [[ "$os" != "darwin" ]]
 then
-    header "  7z already exists"
-else 
-    header "Installing bin/7zzs"
-    mkdir -p 7z-install
-    curl -L https://www.7-zip.org/a/7z2201-linux-x64.tar.xz -o 7z-install/7z.tar.xz
-    tar -xf 7z-install/7z.tar.xz -C 7z-install
-    chmod u+x 7z-install/7zzs
-    mv 7z-install/7zzs ./bin
-    rm -r 7z-install
+  header "Checking for bin/7zzs"
+  if [[ -f bin/7zzs ]]
+  then
+      header "  7z already exists"
+  else 
+      header "Installing bin/7zzs"
+      mkdir -p 7z-install
+      curl -L https://www.7-zip.org/a/7z2201-linux-x64.tar.xz -o 7z-install/7z.tar.xz
+      tar -xf 7z-install/7z.tar.xz -C 7z-install
+      chmod u+x 7z-install/7zzs
+      mv 7z-install/7zzs ./bin
+      rm -r 7z-install
+  fi
 fi
 
-header "Checking for aws-cli v2"
-if [[ -f bin/aws && -d bin/aws-source/v2 ]]
+header "Checking for aws-cli"
+if [[ -f bin/aws ]]
 then
-    header "  bin/aws v2 already exists"
+    header "bin/aws already exists"
 else
-    header "Installing bin/aws ${AWSCLI_VERSION}" 
-    # Installed this way due to a known open bug: https://github.com/aws/aws-cli/issues/6852
-    mkdir -p awscli-install
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o awscli-install/awscliv2.zip
-    ./bin/7zzs x awscli-install/awscliv2.zip -oawscli-install
-    ./awscli-install/aws/install -i bin/aws-source -b bin
-    rm bin/aws bin/aws_completer
-    ln -s aws-source/v2/${AWSCLI_VERSION}/bin/aws ./bin/aws
-    rm -r ./awscli-install
+    header "Installing bin/aws" 
+    if [[ "$os" == "darwin" ]]
+    then
+      echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<"'!'"DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+  <array>
+    <dict>
+      <key>choiceAttribute</key>
+      <string>customLocation</string>
+      <key>attributeSetting</key>
+      <string>/$(pwd)/bin</string>
+      <key>choiceIdentifier</key>
+      <string>default</string>
+    </dict>
+  </array>
+</plist>" > bin/choices.xml
+
+      curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+      installer -pkg AWSCLIV2.pkg \
+              -target CurrentUserHomeDirectory \
+              -applyChoiceChangesXML bin/choices.xml
+      rm -f bin/aws 
+      ln -s ../bin/aws-cli/aws bin/aws
+      rm AWSCLIV2.pkg
+
+    else
+      # Installed this way due to a known open bug: https://github.com/aws/aws-cli/issues/6852
+      mkdir -p awscli-install
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o awscli-install/awscliv2.zip
+      ./bin/7zzs x awscli-install/awscliv2.zip -oawscli-install
+      ./awscli-install/aws/install -i bin/aws-source -b bin
+      rm bin/aws bin/aws_completer
+      ln -s aws-source/v2/${AWSCLI_VERSION}/bin/aws ./bin/aws
+      rm -r ./awscli-install
+    fi
 fi
 
 
