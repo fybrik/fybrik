@@ -10,6 +10,7 @@
 # ./create_kind.sh multi
 
 set -x
+set -e
 
 op=$1
 
@@ -34,9 +35,9 @@ source ./vault_utils.sh
 # $1 - cluster name
 # $2 - kube host of the cluster
 enable_k8s_auth_for_cluster() {
-        kubectl config use-context kind-"$1"
-        kubectl create ns $KUBE_NAMESPACE || true
-        kubectl apply -f vault_auth_sa.yaml -n "$KUBE_NAMESPACE"
+        bin/kubectl config use-context kind-"$1"
+        bin/kubectl create ns $KUBE_NAMESPACE || true
+        bin/kubectl apply -f vault_auth_sa.yaml -n "$KUBE_NAMESPACE"
         enable_k8s_auth "$1" vault-auth "$KUBE_NAMESPACE" "$2"
 }
 
@@ -52,25 +53,46 @@ add_role() {
 }
 
 add_userpass_auth_method() {
-	kubectl config use-context kind-control
+	bin/kubectl config use-context kind-control
 	enable_userpass_auth "$DATA_PROVIDER_USERNAME" "$DATA_PROVIDER_PASSWORD" "allow-all-dataset-creds"
+}
+
+# test Vault configuration by calling Kubernetes Auth Method login command
+# to authenticate services in fybrik-blueprints.
+# ref: https://developer.hashicorp.com/vault/docs/auth/kubernetes
+# params:
+# $1 - Auth path. for example: kubernetes
+test_vault_configuration() {
+	bin/kubectl config use-context kind-"$1"
+	# get the JWT of the default service account in fybrik-blueprints namespace
+	TOKEN=$(bin/kubectl create token default --namespace "$MODULE_NAMESPACE")
+	STATUS_CODE=$(bin/kubectl run curl --image=radial/busyboxplus:curl  -i --rm --restart=Never -- curl http://control-control-plane/v1/auth/"$1"/login -w "%{http_code}\n" --output /dev/null --silent  -H "Content-Type: application/json" --data '{"jwt":"'"$TOKEN"'", "role": "'"$MODULES_ROLE"'"}')
+	echo $STATUS_CODE
+	OK=200
+	if [[ "$STATUS_CODE" == *"$OK"* ]] ; then
+		echo "status code is $STATUS_CODE"
+	else
+		exit 1
+	fi
 }
 
 case "$op" in
     *)
         header_text "Configure Vault on kind multi-cluster"
-        kubectl config use-context kind-control --namespace=$KUBE_NAMESPACE
+        bin/kubectl config use-context kind-control --namespace=$KUBE_NAMESPACE
         export VAULT_ADDR=$INGRESS_ADDRESS
-        export VAULT_TOKEN=$(kubectl get secrets vault-credentials -n $KUBE_NAMESPACE -o jsonpath={.data.VAULT_TOKEN} | base64 --decode)
+        export VAULT_TOKEN=$(bin/kubectl get secrets vault-credentials -n $KUBE_NAMESPACE -o jsonpath={.data.VAULT_TOKEN} | base64 --decode)
         bin/vault login "$VAULT_TOKEN"
         enable_k8s_auth_for_cluster control "$CONTROL_CLUSTER_KUBE_HOST"
         enable_k8s_auth_for_cluster kind "$KIND_CLUSTER_KUBE_HOST"
         configure_vault
         add_role kind
         add_role control
-	add_userpass_auth_method
+        add_userpass_auth_method
+        test_vault_configuration kind
+        test_vault_configuration control
         # Switch to control cluster after configuration
-        kubectl config use-context kind-control
+        bin/kubectl config use-context kind-control
 
         ;;
 esac

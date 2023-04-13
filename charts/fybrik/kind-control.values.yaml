@@ -28,8 +28,11 @@ cluster:
 coordinator:
   vault:
     enabled: true
-    # vault service in local setup is exposed via nodeport
-    address: http://control-control-plane:31752
+    # This is the public address of the nginx controller service in the control cluster.
+    # Kind cluster maps port 80 to the listening port of the ingress controller by using
+    # extraPortMappings and node-labels when creating the cluster.
+    # ref: https://kind.sigs.k8s.io/docs/user/ingress/
+    address: http://control-control-plane
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:

@@ -21,7 +21,6 @@ make docker-build
 make docker-push
 make cluster-prepare-wait
 make deploy-fybrik
-make vault-setup-kind-multi
 
 export VALUES_FILE=charts/fybrik/kind-kind.values.yaml
 kubectl config use-context kind-kind
@@ -30,3 +29,5 @@ make deploy-fybrik
 
 # Switch to control cluster after setup
 kubectl config use-context kind-control
+
+make vault-setup-kind-multi
