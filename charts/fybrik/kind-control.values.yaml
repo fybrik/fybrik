@@ -32,7 +32,7 @@ coordinator:
     # Kind cluster maps port 80 to the listening port of the ingress controller by using
     # extraPortMappings and node-labels when creating the cluster.
     # ref: https://kind.sigs.k8s.io/docs/user/ingress/
-    address: http://control-control-plane
+    address: http://control-control-plane:80
 
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:

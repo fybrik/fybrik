@@ -18,9 +18,9 @@ cluster:
   # Set to the name of the cluster.
   name: kind-kind
   # Set to cluster zone.
-  zone: localhost
+  zone: hobbiton
   # Set to cluster region.
-  region: homeoffice
+  region: theshire
   # Set to the cluster Vault auth method path.
   vaultAuthPath: kind
 
