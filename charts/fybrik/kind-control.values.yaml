@@ -18,9 +18,9 @@ cluster:
   # Set to the name of the cluster.
   name: kind-control
   # Set to cluster zone.
-  zone: localhost
+  zone: baggin
   # Set to cluster region.
-  region: homeoffice
+  region: took
   # Set to the cluster Vault auth method path.
   vaultAuthPath: control
 
