@@ -32,9 +32,11 @@ const (
 	KubeDNSValue          = "kube-dns"
 	DNSPortName           = "dns"
 	DNSTCPPortName        = "dns-tcp"
-)
 
-const cannotParseURL = "cannot parse %s as URL"
+	NilApplicationDetailsError   = "Misconfiguration, endpoint with nil application details"
+	EmptyApplicationDetailsError = "Misconfiguration, endpoint with empty application details"
+	CannotParseURLError          = "cannot parse %s as URL"
+)
 
 var dnsEngressRules = createDNSEngressRules()
 
@@ -64,8 +66,8 @@ func createDNSEngressRules() netv1.NetworkPolicyEgressRule {
 
 // Defines the default Network Polices peer if no input was provided
 // returning nil, means denying all ingress connections
-// returning empty NetworkPolicyPeer array, means allowing all ingress connections
-func getDefaultNetworkPolicyFrom() []netv1.NetworkPolicyPeer {
+// returning empty NetworkPolicyIngressRule array, means allowing all ingress connections
+func getDefaultNetworkPolicyIngressRules() []netv1.NetworkPolicyIngressRule {
 	return nil
 }
 
@@ -113,15 +115,15 @@ func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Contex
 
 func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fapp.ModuleDeployment,
 	application *fapp.ApplicationDetails, cluster string, log *zerolog.Logger) ([]netv1.NetworkPolicyIngressRule, error) {
-	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Ingress rules creation from Endpoint: %v and Ingress: %v",
-		endpoint, ingresses)
+	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Ingress rules creation from Endpoint:%v appDetails %v and Ingress: %v",
+		endpoint, application, ingresses)
 
 	var from []netv1.NetworkPolicyPeer
 	// access from user workloads
 	// TODO: we don't check cluster here, because meantime we don't support workloads from other clusters.
 	if endpoint {
 		if application == nil {
-			err := errors.New("Misconfiguration, endpoint with nil application details")
+			err := errors.New(NilApplicationDetailsError)
 			log.Err(err)
 			return nil, err
 		}
@@ -129,7 +131,7 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 		namespaces := application.Namespaces
 		ipBlocks := application.IPBlocks
 		if len(ipBlocks) == 0 && len(namespaces) == 0 && workLoadSelector.Size() == 0 {
-			err := errors.New("Misconfiguration, endpoint with empty application details")
+			err := errors.New(EmptyApplicationDetailsError)
 			log.Err(err)
 			return nil, err
 		}
@@ -155,6 +157,8 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: ingress.Release}}
 				npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
 				from = append(from, npPeer)
+			} else {
+				log.Warn().Str(logging.ACTION, logging.CREATE).Msgf("Ingress has empty release %v", ingress)
 			}
 		} else {
 			// TODO: multi-cluster support
@@ -163,10 +167,9 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 		}
 	}
 	if len(from) == 0 {
-		from = getDefaultNetworkPolicyFrom()
+		return getDefaultNetworkPolicyIngressRules(), nil
 	}
-	ingressRules := []netv1.NetworkPolicyIngressRule{{From: from, Ports: []netv1.NetworkPolicyPort{{Protocol: &tcp}}}}
-	return ingressRules, nil
+	return []netv1.NetworkPolicyIngressRule{{From: from, Ports: []netv1.NetworkPolicyPort{{Protocol: &tcp}}}}, nil
 }
 
 //nolint:funlen
@@ -200,7 +203,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 		// 2 parse URL
 		servURL, err := managerUtils.ParseRawURL(urlString)
 		if err != nil {
-			log.Err(err).Msgf(cannotParseURL, urlString)
+			log.Err(err).Msgf(CannotParseURLError, urlString)
 			continue
 		}
 		hostName := servURL.Hostname()
@@ -278,7 +281,7 @@ func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.Modul
 					if strings.HasPrefix(urlString, egress.Release) {
 						u, err := managerUtils.ParseRawURL(urlString)
 						if err != nil {
-							log.Err(err).Msgf(cannotParseURL, urlString)
+							log.Err(err).Msgf(CannotParseURLError, urlString)
 							continue
 						}
 						policyPort := policyPortFromURL(u, log)
