@@ -171,7 +171,7 @@ for ns in ${namespaces_list[@]+"${namespaces_list[@]}"}; do
     # save the non-certificates configmaps
     for cm in $(kubectl get cm -n $ns -o=jsonpath='{.items[*].metadata.name}'); do
         if [[ ! "$cm" == *.crt ]]; then
-            cm_data=$(kubectl get cm $cm -n $ns -o=jsonpath='{.data}')s
+            cm_data=$(kubectl get cm $cm -n $ns -o=jsonpath='{.data}')
             prefix=$ns--$cm
             echo -e "$prefix:\n$cm_data\n" >> $dirname_logs/configmaps.txt
         fi
