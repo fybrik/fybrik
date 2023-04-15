@@ -4,7 +4,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/types"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"runtime"
 	"testing"
 
@@ -21,10 +26,10 @@ import (
 
 const myCluster = "MyCluster"
 
-// This test checks that a short release name is not truncated
+// This test checks Network Policies ingress rules creation
 func TestCreateNPIngressRules(t *testing.T) {
 	g := gomega.NewWithT(t)
-	log := logging.LogInit(logging.CONTROLLER, "test-np-igress")
+	log := logging.LogInit(logging.CONTROLLER, "test-np-ingress")
 
 	// Create a fake client to mock API calls.
 	cl := fake.NewClientBuilder().Build()
@@ -125,4 +130,88 @@ func TestCreateNPIngressRules(t *testing.T) {
 	expectedIngressRules = []netv1.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 	ingresses = append(ingresses, fapp.ModuleDeployment{Cluster: "myCluster"})
 	compareRules(false, ingresses, &app, myCluster, expectedIngressRules)
+}
+
+// This test checks Network Policies egress rules creation
+func TestCreateNPEgressRules(t *testing.T) {
+	g := gomega.NewWithT(t)
+	log := logging.LogInit(logging.CONTROLLER, "test-np-egress")
+
+	modulesNamespace := "fybrik-modules"
+
+	service := corev1.Service{}
+	service.Name = "vault"
+	service.Namespace = "fybrik-system"
+	service.Spec.Ports = []corev1.ServicePort{{Name: "tcp", Protocol: tcp, TargetPort: intstr.FromInt(8080)}}
+	// Create a fake client to mock API calls.
+	cl := fake.NewClientBuilder().WithRuntimeObjects(&service).Build()
+	// Register operator types with the runtime scheme.
+	s := managerUtils.NewScheme(g)
+
+	r := &BlueprintReconciler{
+		Client: cl,
+		Name:   "TestCreateNPIngressRules",
+		Log:    log,
+		Scheme: s,
+		Helmer: helm.NewEmptyFake(),
+	}
+
+	rules := r.createNPEgressRules(context.Background(), nil, []string{"vault.fybrik-system"}, myCluster, modulesNamespace, &log)
+	fmt.Printf("rules %v", rules)
+
+}
+
+func CompareNPEgressRules(rules []netv1.NetworkPolicyEgressRule) types.GomegaMatcher {
+	return &egressRulesMatcher{
+		Rules: rules,
+	}
+}
+
+type egressRulesMatcher struct {
+	Rules []netv1.NetworkPolicyEgressRule
+}
+
+func (matcher *egressRulesMatcher) Match(actual interface{}) (bool, error) {
+	actualRules, ok := actual.([]netv1.NetworkPolicyEgressRule)
+	if !ok {
+		return false, fmt.Errorf("compareNPEgressRules matcher expects an array/slice of netv1.NetworkPolicyEgressRule. Got:%T",
+			actual)
+	}
+	if len(actualRules) != len(matcher.Rules) {
+		return false, nil
+	}
+	for _, actualRule := range actualRules {
+		toMatcher := gomega.ConsistOf(actualRule.To)
+		portsMatcher := gomega.ConsistOf(actualRule.Ports)
+		exist := false
+		for _, expectRule := range matcher.Rules {
+			ok, err := portsMatcher.Match(expectRule.Ports)
+			if err != nil {
+				return false, err
+			}
+			if !ok {
+				continue
+			}
+			ok, err = toMatcher.Match(expectRule.To)
+			if err != nil {
+				return false, err
+			}
+			if ok {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func (matcher *egressRulesMatcher) FailureMessage(actual interface{}) string {
+	return format.Message(actual, "to compare NP EgressRules of", matcher.Rules)
+}
+
+func (matcher *egressRulesMatcher) NegatedFailureMessage(actual interface{}) string {
+	return ""
 }
