@@ -6,16 +6,19 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/onsi/gomega/format"
-	"github.com/onsi/gomega/types"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
+	"net"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/types"
+	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
@@ -142,7 +145,9 @@ func TestCreateNPEgressRules(t *testing.T) {
 	service := corev1.Service{}
 	service.Name = "vault"
 	service.Namespace = "fybrik-system"
-	service.Spec.Ports = []corev1.ServicePort{{Name: "tcp", Protocol: tcp, TargetPort: intstr.FromInt(8080)}}
+	service.Spec.Ports = []corev1.ServicePort{{Name: "http", Protocol: tcp, TargetPort: intstr.FromInt(8080)},
+		{Name: "https-internal", Protocol: tcp, TargetPort: intstr.FromInt(8081)}}
+	service.Spec.Selector = map[string]string{managerUtils.KubernetesAppName: "myApp"}
 	// Create a fake client to mock API calls.
 	cl := fake.NewClientBuilder().WithRuntimeObjects(&service).Build()
 	// Register operator types with the runtime scheme.
@@ -155,10 +160,108 @@ func TestCreateNPEgressRules(t *testing.T) {
 		Scheme: s,
 		Helmer: helm.NewEmptyFake(),
 	}
+	{
+		// check default DNS rules
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
+	{
+		// check ModuleNetwork.Engress settings
+		release1 := "my-release-111"
+		release2 := "my-release-222"
+		release3 := "my-release-333"
+		egresses := []fapp.ModuleDeployment{
+			{Cluster: myCluster, Release: release1},
+			{Cluster: myCluster + "-test", Release: release2}, // another cluster should be skipped for now
+			{Release: release3, URLs: []string{release3 + "-1123:8080", "123" + release3 + ":8090"}},
+		}
+		podSelector1 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release1}}
+		to := netv1.NetworkPolicyPeer{PodSelector: &podSelector1}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules, {To: []netv1.NetworkPolicyPeer{to}}}
+		podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
+		to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
+		port := intstr.FromInt(8080)
+		npPorts := []netv1.NetworkPolicyPort{{Protocol: &tcp, Port: &port}}
+		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts})
+		rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
+	{
+		// check internal service
+		podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
+		namespaceSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: service.Namespace}}
+		to := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &namespaceSelector}
+		npPorts := []netv1.NetworkPolicyPort{}
+		for i := range service.Spec.Ports {
+			npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
+				Port: &service.Spec.Ports[i].TargetPort})
+		}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules, {To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts}}
+		rules := r.createNPEgressRules(context.Background(), nil,
+			[]string{service.Name + "." + service.Namespace}, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
+	{
+		// check IP block
+		ipBlocks := []string{"192.168.0.0/24", "2001:db8::/64"}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		for _, block := range ipBlocks {
+			if _, _, err := net.ParseCIDR(block); err == nil {
+				ipBlock := netv1.IPBlock{CIDR: block}
+				expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}})
+			}
+		}
+		rules := r.createNPEgressRules(context.Background(), nil, ipBlocks, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
+	{
+		// check external IPs
+		urls := []string{"192.168.0.23", "192.168.1.25:80" /*, TODO: parseURl doesn't correctly parse IPv6. "2001:db8::68" */}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		for _, urlStr := range urls {
+			ipPort := strings.Split(urlStr, ":")
+			if ip := net.ParseIP(ipPort[0]); ip != nil {
+				ipBlock := ipToIPBlock(ip)
+				to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
+				port := netv1.NetworkPolicyPort{Protocol: &tcp}
+				if len(ipPort) > 1 {
+					portInt, err := strconv.Atoi(ipPort[1])
+					if err != nil {
+						t.Errorf("cannot transfer %s to port", ipPort[1])
+					}
+					p := intstr.FromInt(portInt)
+					port.Port = &p
+				}
+				expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
+			}
+		}
+		rules := r.createNPEgressRules(context.Background(), nil, urls, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
+	{
+		// check external hosts
+		// TODO: can we use it in the unit tests
+		urlHost := "www.google.com"
+		urlPort := 80
+		urlString := fmt.Sprintf("http://%s:%d", urlHost, urlPort)
+		ips, err := net.LookupIP(urlHost)
+		if err != nil {
+			t.Errorf("Cannot lookupIPs of %s", urlHost)
+		}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		to := []netv1.NetworkPolicyPeer{}
+		for _, ip := range ips {
+			ipBlock := ipToIPBlock(ip)
+			to = append(to, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
+		}
+		p := intstr.FromInt(urlPort)
+		port := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
+		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
 
-	rules := r.createNPEgressRules(context.Background(), nil, []string{"vault.fybrik-system"}, myCluster, modulesNamespace, &log)
-	fmt.Printf("rules %v", rules)
-
+		rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &log)
+		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+	}
 }
 
 func CompareNPEgressRules(rules []netv1.NetworkPolicyEgressRule) types.GomegaMatcher {

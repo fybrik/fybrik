@@ -40,12 +40,11 @@ const (
 
 var dnsEngressRules = createDNSEngressRules()
 
-// meantime we don't support UDP or SCTP based protocols.
 var tcp = corev1.ProtocolTCP
+var udp = corev1.ProtocolUDP
 
+// allow DNS access
 func createDNSEngressRules() netv1.NetworkPolicyEgressRule {
-	// allow DNS access
-	udp := corev1.ProtocolUDP
 	dnsPort := intstr.FromString(DNSPortName)
 	dnsTCPPort := intstr.FromString(DNSTCPPortName)
 	policyPorts := []netv1.NetworkPolicyPort{{Protocol: &udp, Port: &dnsPort}, {Protocol: &tcp, Port: &dnsTCPPort}}
@@ -180,24 +179,20 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			egresses, urls)
 	egressRules := []netv1.NetworkPolicyEgressRule{}
 
-	if egressRule := r.createNextModulesEgressRules(egresses, cluster, log); egressRule != nil {
-		egressRules = append(egressRules, *egressRule)
-	}
+	modulesEgressRules := r.createNextModulesEgressRules(egresses, cluster, log)
+	egressRules = append(egressRules, modulesEgressRules...)
 
-	// The URLs can be a CIDR block with or without an optional port, or urls to the cluster internal or external services.
+	// The URLs can be a CIDR block, or urls to the cluster internal or external services.
 
 	for _, urlString := range urls {
 		log.Trace().Msgf("Processing external URL %s", urlString)
 
 		// 1. check if it is a CIDR (Classless Inter-Domain Routing)
-		// in this case it be in a form 192.168.1.0/24 and optionally port separated by colon
-		stringsArray := strings.Split(urlString, ":")
-		_, _, err := net.ParseCIDR(stringsArray[0])
+		_, _, err := net.ParseCIDR(urlString)
 		if err == nil {
-			ipBlock := netv1.IPBlock{CIDR: stringsArray[0]}
+			ipBlock := netv1.IPBlock{CIDR: urlString}
 			to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
-			policyPort := policyPortFromString(stringsArray[1], log)
-			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
+			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to})
 			continue
 		}
 		// 2 parse URL
@@ -268,27 +263,28 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 }
 
 func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.ModuleDeployment, cluster string,
-	log *zerolog.Logger) *netv1.NetworkPolicyEgressRule {
-	var npPorts []netv1.NetworkPolicyPort
-	var to []netv1.NetworkPolicyPeer
+	log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
+	var egressRules []netv1.NetworkPolicyEgressRule
 	for _, egress := range egresses {
 		if egress.Cluster == "" || egress.Cluster == cluster {
 			if egress.Release != "" {
 				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: egress.Release}}
-				npPeer := netv1.NetworkPolicyPeer{PodSelector: &selector}
-				to = append(to, npPeer)
+				to := netv1.NetworkPolicyPeer{PodSelector: &selector}
+				var npPorts []netv1.NetworkPolicyPort
 				for _, urlString := range egress.URLs {
-					if strings.HasPrefix(urlString, egress.Release) {
-						u, err := managerUtils.ParseRawURL(urlString)
-						if err != nil {
-							log.Err(err).Msgf(CannotParseURLError, urlString)
-							continue
-						}
+					u, err := managerUtils.ParseRawURL(urlString)
+					if err != nil {
+						log.Err(err).Msgf(CannotParseURLError, urlString)
+						continue
+					}
+					if strings.HasPrefix(u.Hostname(), egress.Release) {
 						policyPort := policyPortFromURL(u, log)
 						npPorts = append(npPorts, policyPort)
+						continue
 					}
 					log.Warn().Msgf("Egress URL %s is not part of release %s", urlString, egress.Release)
 				}
+				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts})
 			}
 		} else {
 			// TODO: multi-cluster support
@@ -297,11 +293,7 @@ func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.Modul
 		}
 	}
 
-	if len(to) > 0 {
-		egressRule := netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts}
-		return &egressRule
-	}
-	return nil
+	return egressRules
 }
 
 func (r *BlueprintReconciler) cleanupNetworkPolicies(ctx context.Context, blueprint *fapp.Blueprint) error {

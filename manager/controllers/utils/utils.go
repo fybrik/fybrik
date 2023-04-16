@@ -6,6 +6,7 @@ package utils
 import (
 	"context"
 	"net/url"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -77,13 +78,9 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 // from the url.Parse comments "Trying to parse a hostname and path
 // without a scheme is invalid but may not necessarily return an error, due to parsing ambiguities."
 func ParseRawURL(rawURL string) (*url.URL, error) {
-	u, err := url.Parse(rawURL)
-	// if schema is not set, the ParseRequestURI
-	if err != nil || (u.Host == "" && u.Scheme == "") {
-		if u, err = url.Parse("http://" + rawURL); err != nil {
-			return nil, err
-		}
-		return u, nil
+	if !strings.Contains(rawURL, "://") {
+		rawURL = "http://" + rawURL // we want to prevent parsing "host:port" to schema, which is done by url.Parse
 	}
-	return u, nil
+	u, err := url.Parse(rawURL)
+	return u, err
 }
