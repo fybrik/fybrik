@@ -150,9 +150,13 @@ Setup localstack on both clusters, `kind-control` and `kind-kind`.
 2. Install localstack to the currently active namespace and wait for it to be ready:
 
     ```bash
+    LOCALSTACK_VERSION=1.2.0
+    LOCALSTACK_CHART_VERSION=0.4.3
     kubectl config use-context kind-control
     helm repo add localstack-charts https://localstack.github.io/helm-charts
     helm install localstack localstack-charts/localstack \
+         --version ${LOCALSTACK_CHART_VERSION} \
+         --set image.tag="${LOCALSTACK_VERSION}" \
          --set startServices="s3" \
          --set service.type=ClusterIP \
          --set livenessProbe.initialDelaySeconds=25 
@@ -161,6 +165,8 @@ Setup localstack on both clusters, `kind-control` and `kind-kind`.
     kubectl config use-context kind-kind
     helm repo add localstack-charts https://localstack.github.io/helm-charts
     helm install localstack localstack-charts/localstack \
+         --version ${LOCALSTACK_CHART_VERSION} \
+         --set image.tag="${LOCALSTACK_VERSION}" \
          --set startServices="s3" \
          --set service.type=ClusterIP \
          --set livenessProbe.initialDelaySeconds=25

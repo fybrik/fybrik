@@ -31,6 +31,8 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
     === "Kubernetes"
             helm repo add localstack-charts https://localstack.github.io/helm-charts
             helm install localstack localstack-charts/localstack \
+                 --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
                  --set startServices="s3" \
                  --set service.type=ClusterIP \
                  --set livenessProbe.initialDelaySeconds=25
@@ -38,6 +40,8 @@ Make a note of the service endpoint, bucket name, and access credentials. You wi
     === "OpenShift"
             helm repo add localstack-charts https://localstack.github.io/helm-charts
             helm install localstack localstack-charts/localstack \
+                 --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
                  --set startServices="s3" \
                  --set service.type=ClusterIP \
                  --set livenessProbe.initialDelaySeconds=25 \
