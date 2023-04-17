@@ -5,11 +5,33 @@ set -e
 # Tools versions, they are updated automatically from requirements.env by running 'make reconcile-requirements' from main Makefile
 HELM_VERSION=v3.10.3
 YQ_VERSION=4.6.0
-KUBE_VERSION=1.22.0
+KUBE_VERSION=1.24.1
 KIND_VERSION=0.17.0
 CERT_MANAGER_VERSION=v1.6.2
 AWSCLI_VERSION=2.7.18
+LOCALSTACK_VERSION=1.2.0
+LOCALSTACK_CHART_VERSION=0.4.3
 
+# OS Check:
+arch=amd64
+os="unknown"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  os="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  os="darwin"
+fi
+
+if [[ "$os" == "unknown" ]]; then
+  echo "OS '$OSTYPE' not supported. Aborting." >&2
+  exit 1
+fi
+
+if [[ "$FYBRIK_VERSION" == "" ]]; then
+  # Get Fybrik lateset realease from github
+  FYBRIK_VERSION=$(git -c 'versionsort.suffix=-' ls-remote --tags --sort='v:refname' https://github.com/fybrik/fybrik.git | tail --lines=1 | tail -c 7)
+fi
+export FYBRIK_BRANCH="$FYBRIK_VERSION" #used for OpenMetaData script
 FYBRIK_VERSION_VAULT="$FYBRIK_VERSION"
 if [[ "$FYBRIK_VERSION" == "master" ]]; then
   FYBRIK_VERSION=""
@@ -81,20 +103,6 @@ while getopts ":l:m:c" arg; do
 done
 
 
-# OS Check:
-arch=amd64
-os="unknown"
-
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-  os="linux"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  os="darwin"
-fi
-
-if [[ "$os" == "unknown" ]]; then
-  echo "OS '$OSTYPE' not supported. Aborting." >&2
-  exit 1
-fi
 
 # Helper functions:
 header_color=$'\e[1;32m'
@@ -173,20 +181,47 @@ else
     rm -r 7z-install
 fi
 
-header "Checking for aws-cli v2"
-if [[ -f bin/aws && -d bin/aws-source/v2 ]]
+header "Checking for aws-cli"
+if [[ -f bin/aws ]]
 then
-    header "  bin/aws v2 already exists"
+    header "bin/aws already exists"
 else
-    header "Installing bin/aws ${AWSCLI_VERSION}"
-    # Installed this way due to a known open bug: https://github.com/aws/aws-cli/issues/6852
-    mkdir -p awscli-install
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o awscli-install/awscliv2.zip
-    ./bin/7zzs x awscli-install/awscliv2.zip -oawscli-install
-    ./awscli-install/aws/install -i bin/aws-source -b bin
-    rm bin/aws bin/aws_completer
-    ln -s aws-source/v2/${AWSCLI_VERSION}/bin/aws ./bin/aws
-    rm -r ./awscli-install
+    header "Installing bin/aws" 
+    if [[ "$os" == "darwin" ]]
+    then
+      echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<"'!'"DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+  <array>
+    <dict>
+      <key>choiceAttribute</key>
+      <string>customLocation</string>
+      <key>attributeSetting</key>
+      <string>/$(pwd)/bin</string>
+      <key>choiceIdentifier</key>
+      <string>default</string>
+    </dict>
+  </array>
+</plist>" > bin/choices.xml
+
+      curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+      installer -pkg AWSCLIV2.pkg \
+              -target CurrentUserHomeDirectory \
+              -applyChoiceChangesXML bin/choices.xml
+      rm -f bin/aws 
+      ln -s ../bin/aws-cli/aws bin/aws
+      rm AWSCLIV2.pkg
+
+    else
+      # Installed this way due to a known open bug: https://github.com/aws/aws-cli/issues/6852
+      mkdir -p awscli-install
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o awscli-install/awscliv2.zip
+      ./bin/7zzs x awscli-install/awscliv2.zip -oawscli-install
+      ./awscli-install/aws/install -i bin/aws-source -b bin
+      rm bin/aws bin/aws_completer
+      ln -s aws-source/v2/${AWSCLI_VERSION}/bin/aws ./bin/aws
+      rm -r ./awscli-install
+    fi
 fi
 
 
@@ -232,8 +267,7 @@ bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 # bin/kubectl wait --for=condition=ready --all pod -n fybrik-system --timeout=120s
 
 header "\nInstall OpenMetaData"
-export FYBRIK_BRANCH=v1.2.0
-curl https://raw.githubusercontent.com/fybrik/fybrik/v1.2.0/third_party/openmetadata/install_OM.sh | bash -
+curl https://raw.githubusercontent.com/fybrik/fybrik/${FYBRIK_BRANCH}/third_party/openmetadata/install_OM.sh | bash -
 
 
 
@@ -258,21 +292,23 @@ bin/kubectl config set-context --current --namespace=fybrik-notebook-sample
 
 header "\nInstall localstack"
 bin/helm repo add localstack-charts https://localstack.github.io/helm-charts
-bin/helm install localstack localstack-charts/localstack --set startServices="s3" --set service.type=ClusterIP
-bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+bin/helm install localstack localstack-charts/localstack --version ${LOCALSTACK_CHART_VERSION} --set startServices="s3" --set service.type=ClusterIP --set livenessProbe.initialDelaySeconds=25 --set image.tag="${LOCALSTACK_VERSION}"
+bin/kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=600s
 bin/kubectl port-forward svc/localstack 4566:4566 &
 
 header "\nUpload sample dataset to localstack"
 curl -L https://raw.githubusercontent.com/fybrik/fybrik/master/samples/notebook/PS_20174392719_1491204439457_log.csv -o sample.csv
 
-export ACCESS_KEY="myaccesskey"
-export SECRET_KEY="mysecretkey"
+export ACCESS_KEY=1234
+export SECRET_KEY=1234
 export ENDPOINT="http://127.0.0.1:4566"
 export BUCKET="demo"
 export OBJECT_KEY="sample.csv"
-bin/aws configure set aws_access_key_id ${ACCESS_KEY} 
+export REGION=theshire
+bin/aws configure set aws_access_key_id ${ACCESS_KEY}
 bin/aws configure set aws_secret_access_key ${SECRET_KEY}
-bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET}
+bin/aws configure set region ${REGION}
+bin/aws --endpoint-url=${ENDPOINT} s3api create-bucket --bucket ${BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
 bin/aws --endpoint-url=${ENDPOINT} s3api put-object --bucket ${BUCKET} --key ${OBJECT_KEY} --body sample.csv
 rm sample.csv
 
@@ -389,13 +425,19 @@ while [[ $(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.asset
 
 
 header "\nRead the dataset from the notebook"
+
+export ENDPOINT_SCHEME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.scheme}")
+export ENDPOINT_HOSTNAME=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.hostname}")
+export ENDPOINT_PORT=$(kubectl get fybrikapplication my-notebook -o "jsonpath={.status.assetStates.${CATALOGED_ASSET_MODIFIED}.endpoint.fybrik-arrow-flight.port}")
+export ENDPOINT_CONNECTION=${ENDPOINT_SCHEME}://${ENDPOINT_HOSTNAME}:${ENDPOINT_PORT}
+
 cat << EOF > test.py
 import json
 import pyarrow.flight as fl
 import pandas as pd
 
-# Create a Flight client
-client = fl.connect('grpc://my-notebook-fybrik-notebook-sample-arrow-flight-aef23.fybrik-blueprints:80')
+# Create a Flight client 
+client = fl.connect('${ENDPOINT_CONNECTION}')
 
 # Prepare the request
 request = {
