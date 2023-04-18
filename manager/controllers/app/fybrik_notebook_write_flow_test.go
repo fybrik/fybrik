@@ -23,6 +23,7 @@ import (
 	"github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -199,14 +200,42 @@ func TestS3NotebookWriteFlow(t *testing.T) {
 		return k8sClient.Get(context.Background(), plotterObjectKey, plotter)
 	}, timeout, interval).Should(gomega.Succeed())
 
+	var nbytes []byte
+	fmt.Println("Expecting blueprint to be ready")
+	blueprint := &fappv1.Blueprint{}
+
+	g.Eventually(func() bool {
+		// identical object keys for plotter and blueprint resources
+		err = k8sClient.Get(context.Background(), plotterObjectKey, blueprint)
+		if err != nil {
+			fmt.Printf("blueprint %s was not created\n", plotterObjectKey.Name)
+			return false
+		}
+		nbytes, _ = yaml.Marshal(blueprint)
+		return blueprint.Status.ObservedState.Ready
+	}, timeout, interval).Should(gomega.Equal(true), nbytes)
+
+	fmt.Println("Expecting plotter to be ready")
+	g.Eventually(func() bool {
+		err = k8sClient.Get(context.Background(), plotterObjectKey, plotter)
+		if err != nil {
+			fmt.Printf("plotter %s was not read\n", plotterObjectKey.Name)
+			return false
+		}
+		nbytes, _ = yaml.Marshal(plotter)
+		return plotter.Status.ObservedState.Ready
+	}, timeout, interval).Should(gomega.Equal(true), nbytes)
+
 	fmt.Println("Expecting write application to be ready")
 	g.Eventually(func() bool {
 		err = k8sClient.Get(context.Background(), writeApplicationKey, writeApplication)
 		if err != nil {
+			fmt.Printf("application %s was not read\n", writeApplicationKey.Name)
 			return false
 		}
+		nbytes, _ = yaml.Marshal(writeApplication)
 		return writeApplication.Status.Ready
-	}, timeout, interval).Should(gomega.Equal(true))
+	}, timeout, interval).Should(gomega.Equal(true), nbytes)
 
 	modulesNamespace := plotter.Spec.ModulesNamespace
 	fmt.Printf("data access module namespace notebook test: %s\n", modulesNamespace)
