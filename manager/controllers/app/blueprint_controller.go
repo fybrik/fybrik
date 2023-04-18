@@ -325,10 +325,10 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		module := blueprint.Spec.Modules[instanceName]
 		// Get arguments by type
 		helmValues := HelmValues{
-			ModuleArguments:    module.Arguments,
-			ApplicationDetails: blueprint.Spec.Application,
-			Labels:             blueprint.Labels,
-			UUID:               uuid,
+			ModuleArguments: module.Arguments,
+			Context:         blueprint.Spec.Application.Context,
+			Labels:          blueprint.Labels,
+			UUID:            uuid,
 		}
 		args, err := utils.StructToMap(&helmValues)
 		if err != nil {
