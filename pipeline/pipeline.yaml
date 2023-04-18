@@ -631,7 +631,7 @@ spec:
     - name: charts_dir
       value: /workspace/source/fybrik/charts/fybrik
     - name: release_name
-      value: fybrik --values /workspace/source/fybrik/charts/fybrik/integration-tests.values.yaml
+      value: fybrik --values /workspace/source/fybrik/test/charts/integration-tests.values.yaml
     - name: release_namespace
       value: $(params.NAMESPACE)
     - name: overwrite_values
