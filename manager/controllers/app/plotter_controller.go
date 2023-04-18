@@ -245,7 +245,8 @@ func (r *PlotterReconciler) getBlueprintsMap(plotter *fapp.Plotter) map[string]f
 			for _, subFlowStep := range subFlow.Steps {
 				for seqStepInd, seqStep := range subFlowStep {
 					stepTemplate := plotter.Spec.Templates[seqStep.Template]
-					for _, module := range stepTemplate.Modules {
+					for indx := range stepTemplate.Modules {
+						module := stepTemplate.Modules[indx]
 						moduleArgs := seqStep.Parameters
 
 						// If the module type is "plugin" then it is assumed
@@ -510,7 +511,7 @@ func (r *PlotterReconciler) reconcile(plotter *fapp.Plotter) (ctrl.Result, []err
 		ready := *plotter.Status.ReadyTimestamp
 		elapsedTime := time.Since(ready.Time)
 		backoffFactor := int(math.Min(math.Exp2(elapsedTime.Minutes()), controllers.MaximumSecondsUntillReconcile))
-		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:revive,gomnd
+		requeueAfter := time.Duration(4+backoffFactor) * time.Second //nolint:gomnd
 
 		log.Trace().Str(logging.PLOTTER, plotter.Name).Str("BackoffFactor", fmt.Sprint(backoffFactor)).
 			Str(logging.RESPONSETIME, elapsedTime.String()).Msg(plotterReadyMsg)

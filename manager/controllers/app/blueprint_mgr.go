@@ -108,6 +108,7 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 		// connections from the module to its arguments (other modules or data locations)
 		urls := []string{}
 		egress := []fapp.ModuleDeployment{}
+		vaultAdresses := map[string]bool{}
 		for _, asset := range instances[ind].Module.Arguments.Assets {
 			for _, arg := range asset.Arguments {
 				if arg != nil {
@@ -121,12 +122,15 @@ func (r *PlotterReconciler) GenerateBlueprint(instances []ModuleInstanceSpec,
 						urls = append(urls, getURLsFromConnection(arg.Connection)...)
 					}
 					for _, vault := range arg.Vault {
-						urls = append(urls, vault.Address)
+						vaultAdresses[vault.Address] = true
 						// we need only Vault address, and don't need different per flow credentials.
 						break
 					}
 				}
 			}
+		}
+		for vaultAddress := range vaultAdresses {
+			urls = append(urls, vaultAddress)
 		}
 		// ingress
 		ingress := []fapp.ModuleDeployment{}

@@ -162,7 +162,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 	}
 	{
 		// check default DNS rules
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
 		rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &log)
 		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 	}
@@ -178,7 +178,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 		}
 		podSelector1 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release1}}
 		to := netv1.NetworkPolicyPeer{PodSelector: &podSelector1}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules, {To: []netv1.NetworkPolicyPeer{to}}}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}}}
 		podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
 		to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
 		port := intstr.FromInt(8080)
@@ -197,7 +197,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 			npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
 				Port: &service.Spec.Ports[i].TargetPort})
 		}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules, {To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts}}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts}}
 		rules := r.createNPEgressRules(context.Background(), nil,
 			[]string{service.Name + "." + service.Namespace}, myCluster, modulesNamespace, &log)
 		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
@@ -205,7 +205,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 	{
 		// check IP block
 		ipBlocks := []string{"192.168.0.0/24", "2001:db8::/64"}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
 		for _, block := range ipBlocks {
 			if _, _, err := net.ParseCIDR(block); err == nil {
 				ipBlock := netv1.IPBlock{CIDR: block}
@@ -218,7 +218,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 	{
 		// check external IPs
 		urls := []string{"192.168.0.23", "192.168.1.25:80" /*, TODO: parseURl doesn't correctly parse IPv6. "2001:db8::68" */}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
 		for _, urlStr := range urls {
 			ipPort := strings.Split(urlStr, ":")
 			if ip := net.ParseIP(ipPort[0]); ip != nil {
@@ -249,7 +249,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 		if err != nil {
 			t.Errorf("Cannot lookupIPs of %s", urlHost)
 		}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEngressRules}
+		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
 		to := []netv1.NetworkPolicyPeer{}
 		for _, ip := range ips {
 			ipBlock := ipToIPBlock(ip)

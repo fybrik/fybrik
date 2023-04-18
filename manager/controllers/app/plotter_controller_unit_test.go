@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/onsi/gomega"
@@ -257,7 +258,6 @@ func TestPlotterWithWriteFlow(t *testing.T) {
 	g.Expect(plotter.Status.Assets).To(gomega.HaveLen(2), "Plotter Asset status list contains two elements")
 }
 
-/*
 // TestPlotterMultipleAssets checks that the blueprints have been generated correctly.
 // Setup:
 // 3 datasets
@@ -351,11 +351,11 @@ func TestPlotterMultipleAssets(t *testing.T) {
 			g.Expect(module.Network.Egress).To(gomega.HaveLen(0))
 			g.Expect(module.Network.Ingress).To(gomega.HaveLen(2))
 			g.Expect(module.Network.Ingress[0].Cluster).NotTo(gomega.Equal(module.Network.Ingress[1].Cluster))
-			g.Expect(module.Network.URLs).To(gomega.HaveLen(3))
 			g.Expect(module.Network.URLs).To(gomega.ConsistOf(
 				"https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata1.parquet",
 				"https://github.com/Teradata/kylo/raw/master/samples/sample-data/parquet/userdata3.parquet",
-				"https://myserver.com:3000"))
+				"https://myserver.com:3000",
+				"http://vault.fybrik-system:8200"))
 			verifiedModules += 1
 		} else if strings.HasPrefix(key, "arrow-flight") {
 			g.Expect(module.Network.Endpoint).To(gomega.BeTrue())
@@ -383,4 +383,3 @@ func TestPlotterMultipleAssets(t *testing.T) {
 		verifiedModules += 1
 	}
 }
-*/

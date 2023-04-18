@@ -19,7 +19,6 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -295,7 +294,7 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 	blueprint.Status.ModulesState[instanceName] = state
 }
 
-//nolint:gocyclo,funlen
+//nolint:gocyclo
 func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
 	blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
@@ -324,18 +323,10 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 
 	for instanceName := range blueprint.Spec.Modules {
 		module := blueprint.Spec.Modules[instanceName]
-		appDetails := fapp.ApplicationDetails{
-			Context:          blueprint.Spec.Application.Context,
-			WorkloadSelector: meta.LabelSelector{},
-		}
-		// pass workload selector only to the module that is exposed as a virtual endpoint to the workload
-		if module.Network.Endpoint {
-			appDetails.WorkloadSelector = blueprint.Spec.Application.WorkloadSelector
-		}
 		// Get arguments by type
 		helmValues := HelmValues{
 			ModuleArguments:    module.Arguments,
-			ApplicationDetails: &appDetails,
+			ApplicationDetails: blueprint.Spec.Application,
 			Labels:             blueprint.Labels,
 			UUID:               uuid,
 		}

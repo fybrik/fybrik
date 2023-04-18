@@ -38,13 +38,13 @@ const (
 	CannotParseURLError          = "cannot parse %s as URL"
 )
 
-var dnsEngressRules = createDNSEngressRules()
+var dnsEgressRules = createDNSEgressRules()
 
 var tcp = corev1.ProtocolTCP
 var udp = corev1.ProtocolUDP
 
 // allow DNS access
-func createDNSEngressRules() netv1.NetworkPolicyEgressRule {
+func createDNSEgressRules() netv1.NetworkPolicyEgressRule {
 	dnsPort := intstr.FromString(DNSPortName)
 	dnsTCPPort := intstr.FromString(DNSTCPPortName)
 	policyPorts := []netv1.NetworkPolicyPort{{Protocol: &udp, Port: &dnsPort}, {Protocol: &tcp, Port: &dnsTCPPort}}
@@ -258,7 +258,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 		policyPort := policyPortFromURL(servURL, log)
 		egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
 	}
-	egressRules = append(egressRules, dnsEngressRules)
+	egressRules = append(egressRules, dnsEgressRules)
 	return egressRules
 }
 
