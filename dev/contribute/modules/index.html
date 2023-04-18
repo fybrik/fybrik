@@ -1747,7 +1747,6 @@ Follow the docker <a href="https://docs.docker.com/build/building/packaging/">pa
 <p>Because the chart is installed by the control plane, the input <code>values</code> to the chart will contain the following information:</p>
 <ul>
 <li><code>.Values.assets</code> - a list of <a href="../../reference/crds/#blueprintspecmoduleskeyargumentsassetsindex">asset arguments</a> such as datastores, transformations, etc.</li>
-<li><code>.Values.selector</code> - <a href="../../reference/crds/#blueprintspecapplication">application selector</a></li>
 <li><code>.Values.context</code> - <a href="../../reference/crds/#blueprintspecapplication">application context</a></li>
 <li><code>.Values.labels</code> - labels specified in <code>FybrikApplication</code></li>
 <li><code>.Values.uuid</code> - a unique id of <code>FybrikApplication</code> </li>
@@ -1761,9 +1760,6 @@ Follow the docker <a href="https://docs.docker.com/build/building/packaging/">pa
 uuid: 12345678
 context:
   intent: &quot;Fraud Detection&quot;
-selector:
-  matchLabels:
-    app: my-notebook
 assets:
 - args:
   - connection:
