@@ -89,7 +89,7 @@ install_nginx_ingress() {
 }
 
 install_calico() {
-  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${CALICO_VERSION}/manifests/calico.yaml
 }
 
 case "$op" in

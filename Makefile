@@ -24,6 +24,8 @@ export DEPLOY_OPENMETADATA_SERVER ?= 1
 export USE_OPENMETADATA_CATALOG ?= 1
 # If true, avoid creating a new cluster.
 export USE_EXISTING_CLUSTER ?= 0
+# If true, run the isolation scenario
+export RUN_ISOLATION ?= 0
 # If true, create a cluster with calico.
 export USE_CALICO ?= 0
 
@@ -182,6 +184,7 @@ run-network-policy-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-noteboo
 run-network-policy-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
 run-network-policy-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
 run-network-policy-readflow-tests-katalog: export USE_CALICO=1
+run-network-policy-readflow-tests-katalog: export RUN_ISOLATION=1
 run-network-policy-readflow-tests-katalog:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-network-policy-readflow-tests

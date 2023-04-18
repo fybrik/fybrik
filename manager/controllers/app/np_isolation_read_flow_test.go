@@ -144,7 +144,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	// Deploy policy from a configmap
 	piiReadConfigMap := &v1.ConfigMap{}
 	// Create a redact PII policy
-	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow-np/pii-policy-cm.yaml", piiReadConfigMap)).ToNot(gomega.HaveOccurred())
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/pii-policy-cm.yaml", piiReadConfigMap)).ToNot(gomega.HaveOccurred())
 	piiReadConfigMapKey := client.ObjectKeyFromObject(piiReadConfigMap)
 	g.Expect(k8sClient.Create(context.Background(), piiReadConfigMap)).Should(gomega.Succeed())
 
@@ -172,7 +172,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	var plotterObjectKey client.ObjectKey
 	var modulesNamespace string
 
-	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow-np/fybrikapplication.yaml", application)).
+	g.Expect(readObjectFromFile("../../testdata/notebook/read-flow/fybrikapplication-isolation.yaml", application)).
 		ToNot(gomega.HaveOccurred())
 	application.ObjectMeta.Name += "-1"
 	application.Spec.Data[0].DataSetID = catalogedAsset
