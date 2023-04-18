@@ -58,7 +58,7 @@ add_userpass_auth_method() {
 }
 
 # test Vault configuration by calling Kubernetes Auth Method login command
-# to authenticate services in fybrik-blueprints.
+# to authenticate services in fybrik-blueprints namespace.
 # ref: https://developer.hashicorp.com/vault/docs/auth/kubernetes
 # params:
 # $1 - Auth path. for example: kubernetes
