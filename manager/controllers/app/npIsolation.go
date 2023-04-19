@@ -270,21 +270,24 @@ func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.Modul
 			if egress.Release != "" {
 				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: egress.Release}}
 				to := netv1.NetworkPolicyPeer{PodSelector: &selector}
-				var npPorts []netv1.NetworkPolicyPort
-				for _, urlString := range egress.URLs {
-					u, err := managerUtils.ParseRawURL(urlString)
-					if err != nil {
-						log.Err(err).Msgf(CannotParseURLError, urlString)
-						continue
-					}
-					if strings.HasPrefix(u.Hostname(), egress.Release) {
-						policyPort := policyPortFromURL(u, log)
-						npPorts = append(npPorts, policyPort)
-						continue
-					}
-					log.Warn().Msgf("Egress URL %s is not part of release %s", urlString, egress.Release)
-				}
-				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts})
+				// TODO: get port from local service, combine with the multi-cluster implementation.
+				/*
+					var npPorts []netv1.NetworkPolicyPort
+					for _, urlString := range egress.URLs {
+						u, err := managerUtils.ParseRawURL(urlString)
+						if err != nil {
+							log.Err(err).Msgf(CannotParseURLError, urlString)
+							continue
+						}
+						if strings.HasPrefix(u.Hostname(), egress.Release) {
+							policyPort := policyPortFromURL(u, log)
+							npPorts = append(npPorts, policyPort)
+							continue
+						}
+						log.Warn().Msgf("Egress URL %s is not part of release %s", urlString, egress.Release
+
+					} */
+				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}})
 			}
 		} else {
 			// TODO: multi-cluster support

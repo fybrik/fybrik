@@ -1,0 +1,127 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikModule
+metadata:
+  name: airbyte-module
+  labels:
+    name: airbyte-module
+    version: latest # semantic version
+    test: test
+spec:
+  type: service
+  chart:
+    name: ghcr.io/fybrik/airbyte-module-chart:0.0.0-main
+    values:
+      image.tag: main
+  capabilities:
+    - capability: read
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+        - source:
+            protocol: postgres
+            dataformat: csv
+        - source:
+            protocol: mysql
+            dataformat: csv
+        - source:
+            protocol: google-sheets
+            dataformat: csv
+        - source:
+            protocol: us-census
+            dataformat: csv
+        - source:
+            protocol: https
+            dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
+    - capability: read
+      scope: workload
+      api:
+        connection:
+          name: http
+          http:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 79
+            scheme: grpc
+      supportedInterfaces:
+        - source:
+            protocol: postgres
+            dataformat: csv
+        - source:
+            protocol: mysql
+            dataformat: csv
+        - source:
+            protocol: google-sheets
+            dataformat: csv
+        - source:
+            protocol: us-census
+            dataformat: csv
+        - source:
+            protocol: https
+            dataformat: csv
+        - source:
+            protocol: https
+            dataformat: parquet
+    - capability: write
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+        - sink:
+            protocol: postgres
+            dataformat: csv
+        - sink:
+            protocol: mysql
+            dataformat: csv
+        - sink:
+            protocol: google-sheets
+            dataformat: csv
+        - sink:
+            protocol: localfile
+            dataformat: json
+    - capability: write
+      scope: workload
+      api:
+        connection:
+          name: http
+          http:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 79
+            scheme: grpc
+      supportedInterfaces:
+        - sink:
+            protocol: postgres
+            dataformat: csv
+        - sink:
+            protocol: mysql
+            dataformat: csv
+        - sink:
+            protocol: google-sheets
+            dataformat: csv
+        - sink:
+            protocol: us-census
+            dataformat: csv
+        - sink:
+            protocol: localfile
+            dataformat: json
+  externalServices:
+    - docker.io
+    - registry.docker.io
+    - raw.githubusercontent.com
+    - production.cloudflare.docker.com
+    # the next 2 IP addresses are for github.com. DNS randomly returns one of them.
+    - 140.82.121.3
+    - 140.82.121.4
+

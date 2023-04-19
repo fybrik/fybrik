@@ -181,9 +181,7 @@ func TestCreateNPEgressRules(t *testing.T) {
 		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}}}
 		podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
 		to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
-		port := intstr.FromInt(8080)
-		npPorts := []netv1.NetworkPolicyPort{{Protocol: &tcp, Port: &port}}
-		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts})
+		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}})
 		rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &log)
 		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 	}
@@ -256,8 +254,8 @@ func TestCreateNPEgressRules(t *testing.T) {
 			to = append(to, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 		}
 		p := intstr.FromInt(urlPort)
-		port := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
-		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
+		netPort := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
+		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{netPort}})
 
 		rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &log)
 		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
