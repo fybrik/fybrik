@@ -243,7 +243,7 @@ ifeq ($(DEPLOY_TLS_TEST_CERTS),1)
 	cd manager/testdata/notebook/read-flow-tls && ./setup-certs.sh
 endif
 ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
-#	$(MAKE) -C third_party/openmetadata all
+	$(MAKE) -C third_party/openmetadata all
 endif
 	$(MAKE) -C third_party/vault deploy
 
