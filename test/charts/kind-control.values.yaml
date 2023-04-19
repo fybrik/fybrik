@@ -16,17 +16,32 @@ global:
 # Cluster metadata values
 cluster:
   # Set to the name of the cluster.
-  name: kind-kind
+  name: kind-control
   # Set to cluster zone.
-  zone: localhost
+  zone: baggin
   # Set to cluster region.
-  region: homeoffice
+  region: took
   # Set to the cluster Vault auth method path.
-  vaultAuthPath: kind
+  vaultAuthPath: control
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:
-  enabled: false
+  vault:
+    enabled: true
+    # This is the public address of the nginx controller service in the control cluster.
+    # Kind cluster maps port 80 to the listening port of the ingress controller by using
+    # extraPortMappings and node-labels when creating the cluster.
+    # ref: https://kind.sigs.k8s.io/docs/user/ingress/
+    address: http://control-control-plane:80
+
+  # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
+  razee:
+    # URL for Razee local deployment
+    url: "http://razeedash-api-lb.razee.svc.cluster.local:8081/graphql"
+    # Usernane for Razee local deployment (dev only - fake login)
+    user: "razee-dev@example.com"
+    # Password for Razee local deployment (dev only - fake password)
+    password: "password123"
 
 # Manager component
 manager:
@@ -34,12 +49,3 @@ manager:
   # traffic from a localhost registry. Used only for development and integration tests.
   socat: true
 
-# OPA connector component
-opaConnector:
-  # Image name or a hub/image[:tag]
-  image: "serverpolicymanager-mock"
-
-# Katalog connector component
-katalogConnector:
-  # Image name or a hub/image[:tag]
-  image: "data-catalog-mock"
