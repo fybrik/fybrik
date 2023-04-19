@@ -85,7 +85,6 @@
       "type": "object",
       "required": [
         "connection",
-        "secret",
         "options"
       ],
       "properties": {
@@ -103,7 +102,7 @@
         }
       }
     },
-    "GetSupportedConnectionsResponse": {
+    "GetSupportedStorageTypesResponse": {
       "type": "object",
       "required": [
         "connectionTypes"

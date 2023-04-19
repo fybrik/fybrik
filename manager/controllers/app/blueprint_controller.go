@@ -6,7 +6,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -141,7 +140,7 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 		pullSecret := corev1.Secret{}
 		pullSecrets := []corev1.Secret{}
 
-		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetSystemNamespace(), Name: chartSpec.ChartPullSecret},
+		if err := r.Get(ctx, types.NamespacedName{Namespace: environment.GetInternalCRsNamespace(), Name: chartSpec.ChartPullSecret},
 			&pullSecret); err == nil {
 			// if this is not a dockerconfigjson, ignore
 			if pullSecret.Type == "kubernetes.io/dockerconfigjson" {
@@ -197,7 +196,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 		return nil, err
 	}
 
-	tmpDir, err := ioutil.TempDir(environment.GetDataDir(), "fybrik-helm-")
+	tmpDir, err := os.MkdirTemp(environment.GetDataDir(), "fybrik-helm-")
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed to create temporary directory for chart pull")
 	}
@@ -314,19 +313,19 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	for instanceName, module := range blueprint.Spec.Modules {
 		// Get arguments by type
 		helmValues := HelmValues{
-			ModuleArguments:    module.Arguments,
-			ApplicationDetails: blueprint.Spec.Application,
-			Labels:             blueprint.Labels,
-			UUID:               uuid,
+			ModuleArguments: module.Arguments,
+			Context:         blueprint.Spec.Application.Context,
+			Labels:          blueprint.Labels,
+			UUID:            uuid,
 		}
-		var args map[string]interface{}
 		args, err := utils.StructToMap(&helmValues)
 		if err != nil {
 			return ctrl.Result{}, errors.WithMessage(err, "Blueprint step arguments are invalid")
 		}
 
 		releaseName := managerUtils.GetReleaseName(managerUtils.GetApplicationNameFromLabels(blueprint.Labels),
-			managerUtils.GetApplicationNamespaceFromLabels(blueprint.Labels), instanceName)
+			uuid,
+			instanceName)
 		log.Trace().Msg("Release name: " + releaseName)
 		numReleases++
 
@@ -344,7 +343,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			}
 		}
 		if rel != nil && rel.Info.Status == release.StatusDeployed {
-			status, errMsg := r.checkReleaseStatus(cfg, rel.Manifest, uuid)
+			status, errMsg := r.checkReleaseStatus(rel, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
@@ -400,7 +399,7 @@ func (r *BlueprintReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// If that is true, the event will be processed by the reconciler.
 	// If it's not then it is a rogue event created by someone outside of the control plane.
 
-	blueprintNamespace := environment.GetSystemNamespace()
+	blueprintNamespace := environment.GetInternalCRsNamespace()
 	p := predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			return e.Object.GetNamespace() == blueprintNamespace
@@ -425,7 +424,7 @@ func (r *BlueprintReconciler) getExpectedResults(kind string) (*fapp.ResourceSta
 	ctx := context.Background()
 
 	var moduleList fapp.FybrikModuleList
-	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetSystemNamespace())); err != nil {
+	if err := r.List(ctx, &moduleList, client.InNamespace(environment.GetAdminCRsNamespace())); err != nil {
 		return nil, err
 	}
 	for ind := range moduleList.Items {
@@ -504,14 +503,20 @@ func (r *BlueprintReconciler) matchesCondition(res *unstructured.Unstructured, c
 	return true
 }
 
-func (r *BlueprintReconciler) checkReleaseStatus(cfg *action.Configuration, manifest, uuid string) (corev1.ConditionStatus, string) {
+func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid string) (corev1.ConditionStatus, string) {
 	log := r.Log.With().Str(managerUtils.FybrikAppUUID, uuid).Logger()
 
 	// get all resources for the given helm release in their current state
-	resources, err := r.Helmer.GetResources(cfg, manifest)
-	if err != nil {
-		log.Error().Err(err).Msg("Error getting resources")
-		return corev1.ConditionUnknown, ""
+	var resources []*unstructured.Unstructured
+	for versionKind := range rel.Info.Resources {
+		for _, obj := range rel.Info.Resources[versionKind] {
+			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+				resources = append(resources, &unstructured.Unstructured{Object: unstr})
+			} else {
+				log.Err(err).Msg("error getting resources")
+				return corev1.ConditionUnknown, ""
+			}
+		}
 	}
 	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
 	numReady := 0

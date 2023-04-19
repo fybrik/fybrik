@@ -30,7 +30,7 @@ vault:
           mountPath: /usr/local/libexec/vault
           readOnly: false
       - name: omd-secrets-plugin
-        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.1.0
+        image: ghcr.io/fybrik/vault-plugin-secrets-omd-reader:0.2.0
         command: [/bin/sh, -ec]
         args:
           - cp /vault-plugin-secrets-omd-reader /usr/local/libexec/vault/vault-plugin-secrets-omd-reader

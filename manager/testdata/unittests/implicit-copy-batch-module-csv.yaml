@@ -6,7 +6,6 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikModule
 metadata:
   name: implicit-copy-batch
-  namespace: fybrik-system
   labels:
     name: implicit-copy-batch
     version: 0.1.0 

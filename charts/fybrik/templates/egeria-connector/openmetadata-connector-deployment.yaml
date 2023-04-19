@@ -1,0 +1,96 @@
+{{- $autoFlag := and .Values.coordinator.enabled (eq .Values.coordinator.catalog "egeria") }}
+{{- if include "fybrik.isEnabled" (tuple .Values.egeriaConnector.enabled $autoFlag) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egeria-connector
+  labels:
+    app.kubernetes.io/component: egeria-connector
+    {{- include "fybrik.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.egeriaConnector.autoscaling.enabled }}
+  replicas: {{ .Values.egeriaConnector.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: egeria-connector
+      {{- include "fybrik.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.egeriaConnector.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        fybrik.io/componentType: connector
+        app.kubernetes.io/component: egeria-connector
+        {{- include "fybrik.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.egeriaConnector.serviceAccount.name }}
+      securityContext:
+      {{- include "fybrik.processPodSecurityContext" (dict "context" . "podSecurityContext" .Values.egeriaConnector.podSecurityContext) | nindent 8 }}
+      containers:
+        - name: egeria-connector
+          securityContext:
+            {{- mergeOverwrite (deepCopy .Values.global.containerSecurityContext) .Values.egeriaConnector.containerSecurityContext | toYaml | nindent 12 }}
+          image: {{ include "fybrik.image" ( tuple $ .Values.egeriaConnector ) }}
+          imagePullPolicy: {{ .Values.egeriaConnector.imagePullPolicy | default .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.readinessProbe) .Values.egeriaConnector.readinessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          livenessProbe:
+            {{- mergeOverwrite (deepCopy .Values.global.livenessProbe) .Values.egeriaConnector.livenessProbe | toYaml | nindent 12 }}
+            exec:
+              command:
+              - ls
+              - /tmp
+          resources:
+            {{- toYaml .Values.egeriaConnector.resources | nindent 12 }}
+          env:
+            - name: DATA_DIR
+              value: {{ include "fybrik.getDataDir" . }}
+            - name: SERVICE_PORT
+              value: {{ .Values.egeriaConnector.service.port | quote }}
+            - name: PRETTY_LOGGING
+              value: {{ .Values.global.prettyLogging | quote }}
+            - name: LOGGING_VERBOSITY
+              value: {{ .Values.global.loggingVerbosity | quote }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ include "fybrik.getDataDir" . }}
+            - readOnly: true
+              mountPath: /etc/conf
+              name: config
+
+      {{- with .Values.egeriaConnector.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.egeriaConnector.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.egeriaConnector.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: {{ .Values.egeriaConnector.dirSizeLimit }}
+        - name: config
+          configMap:
+            name: {{ template "fybrik.fullname" . }}-egeria-connector-configmap
+
+{{- end }}

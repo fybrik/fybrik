@@ -30,14 +30,27 @@ Make a note of the service endpoint and access credentials. You will need them l
       export SECRET_KEY="mysecretkey"
       ```
     2. Install localstack to the currently active namespace and wait for it to be ready:
-      ```bash
-      helm repo add localstack-charts https://localstack.github.io/helm-charts
-      helm install localstack localstack-charts/localstack \
-           --set startServices="s3" \
-           --set service.type=ClusterIP \
-           --set livenessProbe.initialDelaySeconds=25
-      kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
-      ```
+    === "Kubernetes"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
+    === "OpenShift"
+            helm repo add localstack-charts https://localstack.github.io/helm-charts
+            helm install localstack localstack-charts/localstack \
+                 --version {{LOCALSTACK_CHART_VERSION}} \
+                 --set image.tag="{{LOCALSTACK_VERSION}}" \
+                 --set startServices="s3" \
+                 --set service.type=ClusterIP \
+                 --set livenessProbe.initialDelaySeconds=25 \
+                 --set persistence.enabled=true \
+                 --set persistence.storageClass=ibmc-file-gold-gid \
+                 --set persistence.accessModes[0]=ReadWriteMany
+            kubectl wait --for=condition=ready --all pod -n fybrik-notebook-sample --timeout=120s
       create a port-forward to communicate with localstack server:
       ```bash
       kubectl port-forward svc/localstack 4566:4566 &
@@ -116,13 +129,20 @@ Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/late
 ```rego
 package dataapi.authz
 
-rule[{"policy": description}] {
-  description := "Forbid writing personal data in `theshire` and `neverland` storage accounts in datasets tagged with `Purpose.finance`"
-  input.action.actionType == "write"
-  input.resource.metadata.tags["Purpose.finance"]
-  input.action.destination != "theshire"
-  input.action.destination != "neverland"
-  input.resource.metadata.columns[i].tags["PersonalData.Personal"]
+rule[{"action": {"name":"Deny"}, "policy": description}] {
+  description := "Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`"
+    input.action.actionType == "write"
+    input.resource.metadata.tags["Purpose.finance"]
+    input.action.destination == "theshire"
+    input.resource.metadata.columns[i].tags["PersonalData.Personal"]
+}
+
+rule[{"action": {"name":"Deny"}, "policy": description}] {
+  description := "Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`"
+    input.action.actionType == "write"
+    input.resource.metadata.tags["Purpose.finance"]
+    input.action.destination == "neverland"
+    input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 ```
 
@@ -199,7 +219,7 @@ We expect the asset's status in `FybrikApplication.status` to be `denied` due to
 
 ### Cleanup scenario one
 
-Before prceeding to scenario two the OPA policy and fybrikapplications should be deleted:
+Before proceeding to scenario two the OPA policy and fybrikapplications should be deleted:
 
 ```bash
 kubectl delete cm sample-policy-write -n fybrik-system
@@ -254,7 +274,8 @@ while [[ $(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status
 Although the dataset has not yet been written to the object storage, a data asset has already been created in the data catalog. We will need the name of the cataloged asset in [Scenario 3](#scenario-3-read-the-newly-written-data), where we will read the contents of the dataset. Obtaining the name of the asset depends on the data catalog with which Fybrik is configured to work.
 
 === "With OpenMetadata"
-    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+    This asset id will be used in the third scenario when we try to read the new asset.
 
     ```bash
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
@@ -263,7 +284,8 @@ Although the dataset has not yet been written to the object storage, a data asse
     ```
 
 === "With Katalog"
-    Run the following command to extract the new cataloged asset id from fybrikapplication status. This asset id will be used in the third secnario when we try to read the new asset.
+    Run the following command to extract the new cataloged asset id from fybrikapplication status. 
+    This asset id will be used in the third scenario when we try to read the new asset.
 
     ```bash
     CATALOGED_ASSET=$(kubectl get fybrikapplication my-notebook-write -o 'jsonpath={.status.assetStates.new-data.catalogedAsset}')
@@ -352,28 +374,6 @@ kubectl delete fybrikapplications.app.fybrik.io my-notebook-write -n fybrik-note
 ```
 
 ## Scenario 3: Read the newly written data
-
-### Define data access policies to read the new data
-
-Define an [OpenPolicyAgent](https://www.openpolicyagent.org/) policy to allow reading the data. Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego) language):
-
-```rego
-package dataapi.authz
-
-rule[{}] {
-  description := "allow read datasets"
-  input.action.actionType == "read"
-}
-```
-
-Copy the policy to a file named `sample-policy-read.rego` and then run:
-
-```bash
-kubectl -n fybrik-system create configmap sample-policy-read --from-file=sample-policy-read.rego
-kubectl -n fybrik-system label configmap sample-policy-read openpolicyagent.org/policy=rego
-while [[ $(kubectl get cm sample-policy-read -n fybrik-system -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
-```
-
 
 ### Create a `FybrikApplication` resource to read the data for the notebook
 
@@ -469,8 +469,8 @@ The output should look something like:
 {
     "Contents": [
         {
-            "Key": "my-notebook-write5b9b855b5b/",
-            "LastModified": "2022-10-27T12:40:01+00:00",
+            "Key": "new-data22fb16f0c0/",
+            "LastModified": "2023-03-02T10:02:26+00:00",
             "ETag": "\"d41d8cd98f00b204e9800998ecf8427e\"",
             "Size": 0,
             "StorageClass": "STANDARD",
@@ -480,8 +480,8 @@ The output should look something like:
             }
         },
         {
-            "Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0",
-            "LastModified": "2022-10-27T12:40:01+00:00",
+            "Key": "new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet",
+            "LastModified": "2023-03-02T10:02:26+00:00",
             "ETag": "\"a91aefdb4bf09a1a94254a9c8b6ba473-1\"",
             "Size": 8396,
             "StorageClass": "STANDARD",
@@ -496,7 +496,7 @@ The output should look something like:
 
 Given the object keys returned by the previous command, run:
 ```bash
-aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "my-notebook-write5b9b855b5b/"}, {"Key": "my-notebook-write5b9b855b5b/part-2022-10-27-12-40-01-143378-0"}]}'
+aws --endpoint-url=http://localhost:4566 s3api --bucket=${BUCKET} delete-objects --delete='{"Objects": [{"Key": "new-data22fb16f0c0/"}, {"Key": "new-data22fb16f0c0/part-2023-03-02-10-02-19-979068-0.parquet"}]}'
 ```
 
 Be sure to replace the keys in the previous command with those returned by the AWS `list-objects` command above.

@@ -12,13 +12,8 @@ all: docker-build docker-push
 # Overwrite docker-build from docker.mk
 .PHONY: docker-build
 docker-build: source-build
-ifdef FROM_IMAGE
-	docker build . -t ${IMG} --build-arg image=${FROM_IMAGE}
+	docker build . -t ${IMG} -f Dockerfile --build-arg tag=${BASE_IMAGE_TAG}
 	rm -rf bin
-else
-	docker build . -t ${IMG}
-	rm -rf bin
-endif
 
 .PHONY: source-build
 source-build:

@@ -125,7 +125,6 @@ func (r *razeeClusterManager) GetBlueprint(clusterName, namespace, name string) 
 		return nil, nil
 	}
 
-	_ = app.AddToScheme(scheme)
 	blueprint := app.Blueprint{}
 	err = multicluster.Decode(jsonData.Content, scheme, &blueprint)
 	if blueprint.Namespace == "" {

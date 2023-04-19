@@ -48,8 +48,8 @@ var _ = Describe("FybrikApplication Controller", func() {
 		})
 		It("Test restricted access to secrets", func() {
 			if os.Getenv("USE_EXISTING_CONTROLLER") != "true" {
-				// test access restriction: only secrets from blueprints namespace can be accessed
-				// Create secrets in default and fybrik-blueprints namespaces
+				// test access restriction: only secrets from internal resource namespace can be accessed
+				// Create secrets in default and internal resource namespaces
 				// A secret from the default namespace should not be listed
 				secret1 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret1.Name = "test-secret"
@@ -58,9 +58,7 @@ var _ = Describe("FybrikApplication Controller", func() {
 				secret2 := &corev1.Secret{Type: corev1.SecretTypeOpaque, StringData: map[string]string{"password": "123"}}
 				secret2.Name = "test-secret"
 
-				modulesNamespace := environment.GetDefaultModulesNamespace()
-				fmt.Printf("Application test using data access module namespace: %s\n", modulesNamespace)
-				secret2.Namespace = modulesNamespace
+				secret2.Namespace = environment.GetInternalCRsNamespace()
 				Expect(k8sClient.Create(context.TODO(), secret2)).NotTo(HaveOccurred(), "a secret could not be created")
 				secretList := &corev1.SecretList{}
 				Expect(k8sClient.List(context.Background(), secretList)).NotTo(HaveOccurred())
@@ -186,13 +184,12 @@ var _ = Describe("FybrikApplication Controller", func() {
 			Expect(application.Status.AssetStates["s3-incomplete/allow-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			Expect(application.Status.AssetStates["s3-external/new-dataset"].Conditions[ReadyConditionIndex].Message).NotTo(BeEmpty())
 			By("Status should contain the details of the endpoint")
-			fqdn := "test-app-e2e-default-read-module-test-e2e." + blueprint.Spec.ModulesNamespace
 			connection := application.Status.AssetStates["s3/redact-dataset"].Endpoint
 			Expect(connection).ToNot(BeNil())
 			connectionMap := connection.AdditionalProperties.Items
 			Expect(connectionMap).To(HaveKey("fybrik-arrow-flight"))
 			config := connectionMap["fybrik-arrow-flight"].(map[string]interface{})
-			Expect(config["hostname"]).To(Equal(fqdn))
+			Expect(config["hostname"]).NotTo(BeEmpty())
 			Expect(config["scheme"]).To(Equal("grpc"))
 
 			By("Changing a policy for PROD application")

@@ -25,6 +25,16 @@ modulesNamespace:
 # The namespace must already exist
 applicationNamespace: ""
 
+# The namespace where Fybrik should allocate and monitor its internal CRs (Blueprints and Plotters)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+internalCRsNamespace: ""
+
+# The namespace where Fybrik should watch admin CRs (FybrikModules and FybrikStorageAccounts)
+# If not defined, the control plane namespace will be used.
+# Otherwise, the namespace must already exist.
+adminCRsNamespace: ""
+
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 
@@ -325,11 +335,7 @@ opaServer:
   # more information can be found in https://www.openpolicyagent.org/docs/latest/security/
   #  - "--tls-cert-file=/data/tls-cert/tls.crt"
   #  - "--tls-private-key-file=/data/tls-cert/tls.key"
-  #  - "--authentication=tls"
-  #  - "--tls-ca-cert-file=/data/tls-cacert/ca.crt"
   #  - "--addr=https://0.0.0.0:8443"
-
-
   tls:
     # Specifies whether the opa-server communication should use tls.
     # For more information please refer to https://www.openpolicyagent.org/docs/latest/security/
@@ -357,7 +363,7 @@ opaServer:
 
 
   kubemgmt:
-    image: openpolicyagent/kube-mgmt:0.11
+    image: openpolicyagent/kube-mgmt:0.12
 
   # Used if autoscaling is not enabled
   replicaCount: 1
@@ -444,6 +450,10 @@ opaServer:
 
   # Bootstrap policies to load upon startup
   bootstrapPolicies: {}
+
+  # Controls if the default policy is to allow by default or deny by default.
+  # Set allowByDefault: false to deny by default.
+  allowByDefault: true 
 
 # Katalog connector component
 katalogConnector:
@@ -644,6 +654,83 @@ openmetadataConnector:
   vault:
     role: "fybrik"
     jwt_file_path: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+# Egeria connector component
+egeriaConnector:
+  # Set to true to deploy the egeria connector or false to skip its deployment.
+  # Defaults to true if `coordinator.catalog` is set to "egeria"
+  enabled: auto
+
+  # Image name or a hub/image[:tag]
+  image: "ghcr.io/fybrik/egeria-connector:0.0.0"
+
+  # Overrides global.imagePullPolicy
+  imagePullPolicy: "Always"
+
+  # Used if autoscaling is not enabled
+  replicaCount: 1
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use
+    name: egeria-connector
+
+  podAnnotations: {}
+
+  # Pod Security Context. If set, the fields of podSecurityContext override
+  # the equivalent fields of .Values.global.podSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
+  podSecurityContext: {}
+
+  # Container Security Context. If set, the fields of containerSecurityContext override
+  # the equivalent fields of .Values.global.containerSecurityContext.
+  # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
+
+  readinessProbe: {}
+  livenessProbe: {}
+
+  service:
+    type: ClusterIP
+    # For tls connection use port 8443
+    port: 8080
+
+  # Set the size limit of the data directory.
+  dataDirSizeLimit: 200Mi
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage:
+    # targetMemoryUtilizationPercentage: 80
+
+  dirSizeLimit: 200Mi
+
+  egeria_endpoint: "http://egeria.egeria:1234/api"
 
   nodeSelector: {}
 

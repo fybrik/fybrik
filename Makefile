@@ -60,9 +60,12 @@ reconcile-requirements:
 	perl -i -pe 's/KIND_VERSION=.*/KIND_VERSION=$(KIND_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/AWSCLI_VERSION=.*/AWSCLI_VERSION=$(AWSCLI_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
 	perl -i -pe 's/CERT_MANAGER_VERSION=.*/CERT_MANAGER_VERSION=$(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh
+	perl -i -pe 's/LOCALSTACK_VERSION=.*/LOCALSTACK_VERSION=$(LOCALSTACK_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh $(ROOT_DIR)/samples/multicluster-razee/README.md
+	perl -i -pe 's/LOCALSTACK_CHART_VERSION=.*/LOCALSTACK_CHART_VERSION=$(LOCALSTACK_CHART_VERSION)/' $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-OMD.sh $(ROOT_DIR)/samples/OneClickDemo/OneClickDemo-Katalog.sh $(ROOT_DIR)/samples/multicluster-razee/README.md
 	perl -i -pe 's/CertMangerVersion:.*/CertMangerVersion: $(CERT_MANAGER_VERSION)/' $(ROOT_DIR)/site/external.yaml
 	perl -i -pe 's/TaxonomyCliVersion:.*/TaxonomyCliVersion: $(TAXONOMY_CLI_VERSION)/' $(ROOT_DIR)/site/external.yaml
-
+	perl -i -pe 's/LOCALSTACK_VERSION:.*/LOCALSTACK_VERSION: $(LOCALSTACK_VERSION)/' $(ROOT_DIR)/site/external.yaml
+	perl -i -pe 's/LOCALSTACK_CHART_VERSION:.*/LOCALSTACK_CHART_VERSION: $(LOCALSTACK_CHART_VERSION)/' $(ROOT_DIR)/site/external.yaml
 
 .PHONY: manifests
 manifests: $(TOOLBIN)/controller-gen $(TOOLBIN)/yq
@@ -132,6 +135,9 @@ pre-test: generate manifests $(TOOLBIN)/etcd $(TOOLBIN)/kube-apiserver $(TOOLBIN
 .PHONY: test
 test: export MODULES_NAMESPACE?=fybrik-blueprints
 test: export CONTROLLER_NAMESPACE?=fybrik-system
+test: export ADMIN_CRS_NAMESPACE?=fybrik-admin
+test: export INTERNAL_CRS_NAMESPACE?=fybrik-crd
+tests: export CATALOG_PROVIDER_NAME=mockup-catalog
 test: export CSP_PATH=$(ABSTOOLBIN)/solver
 test: export CSP_ARGS=--logtostderr
 test: pre-test
@@ -179,7 +185,6 @@ run-notebook-readflow-tls-tests:
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
 run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
-run-notebook-readflow-tls-system-cacerts-tests: export FROM_IMAGE=registry.access.redhat.com/ubi8/ubi:8.7
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests: export COPY_TEST_CACERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
@@ -194,7 +199,9 @@ run-notebook-readflow-bc-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-writeflow-tests
+run-notebook-writeflow-tests: export ADMIN_CRS_NAMESPACE=default
 run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
+run-notebook-writeflow-tests: export HELM_SETTINGS=--set "adminCRsNamespace=$(ADMIN_CRS_NAMESPACE)"
 run-notebook-writeflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-writeflow-tests
