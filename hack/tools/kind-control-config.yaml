@@ -5,6 +5,9 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+  # Kind cluster maps port 80 to the listening port of the ingress controller by using
+  # extraPortMappings and node-labels when creating the cluster.
+  # ref: https://kind.sigs.k8s.io/docs/user/ingress/
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration

@@ -2,11 +2,6 @@ vault:
   server:
     dev:
       enabled: true
-    # Enables a headless service to be used by the Vault Statefulset
-    service:
-      enabled: true
-      type: NodePort
-      nodePort: 31752
     extraArgs: '-dev-plugin-dir=/usr/local/libexec/vault'
     volumes:
       - name: plugins

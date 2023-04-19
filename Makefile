@@ -145,7 +145,7 @@ test: pre-test
 	USE_CSP=true go test $(TEST_OPTIONS) ./manager/controllers/app -count 1
 
 .PHONY: run-integration-tests
-run-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-integration-tests: export VALUES_FILE=test/charts/integration-tests.values.yaml
 run-integration-tests: export HELM_SETTINGS=--set "manager.solver.enabled=true"
 run-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
 run-integration-tests: export USE_OPENMETADATA_CATALOG=0
@@ -158,14 +158,14 @@ run-integration-tests:
 	$(MAKE) -C manager run-integration-tests
 
 .PHONY: run-notebook-readflow-tests
-run-notebook-readflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests: export VALUES_FILE=test/charts/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tests-katalog
 run-notebook-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog"
-run-notebook-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-tests-katalog: export VALUES_FILE=test/charts/notebook-test-readflow.values.yaml
 run-notebook-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
 run-notebook-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
 run-notebook-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
@@ -174,7 +174,7 @@ run-notebook-readflow-tests-katalog:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-tests
-run-notebook-readflow-tls-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls.values.yaml
+run-notebook-readflow-tls-tests: export VALUES_FILE=test/charts/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-tests: export VAULT_VALUES_FILE=charts/vault/env/ha/vault-single-cluster-values-tls.yaml
 run-notebook-readflow-tls-tests: export RUN_VAULT_CONFIGURATION_SCRIPT=0
@@ -184,7 +184,7 @@ run-notebook-readflow-tls-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-tls-system-cacerts-tests
-run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml
+run-notebook-readflow-tls-system-cacerts-tests: export VALUES_FILE=test/charts/notebook-test-readflow.tls-system-cacerts.yaml
 run-notebook-readflow-tls-system-cacerts-tests: export DEPLOY_TLS_TEST_CERTS=1
 run-notebook-readflow-tls-system-cacerts-tests: export COPY_TEST_CACERTS=1
 run-notebook-readflow-tls-system-cacerts-tests:
@@ -192,7 +192,7 @@ run-notebook-readflow-tls-system-cacerts-tests:
 	$(MAKE) -C manager run-notebook-readflow-tests
 
 .PHONY: run-notebook-readflow-bc-tests
-run-notebook-readflow-bc-tests: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
+run-notebook-readflow-bc-tests: export VALUES_FILE=test/charts/notebook-test-readflow.values.yaml
 run-notebook-readflow-bc-tests: export DEPLOY_FYBRIK_DEV_VERSION=0
 run-notebook-readflow-bc-tests:
 	$(MAKE) setup-cluster
@@ -200,7 +200,7 @@ run-notebook-readflow-bc-tests:
 
 .PHONY: run-notebook-writeflow-tests
 run-notebook-writeflow-tests: export ADMIN_CRS_NAMESPACE=default
-run-notebook-writeflow-tests: export VALUES_FILE=charts/fybrik/notebook-test-writeflow.values.yaml
+run-notebook-writeflow-tests: export VALUES_FILE=test/charts/notebook-test-writeflow.values.yaml
 run-notebook-writeflow-tests: export HELM_SETTINGS=--set "adminCRsNamespace=$(ADMIN_CRS_NAMESPACE)"
 run-notebook-writeflow-tests:
 	$(MAKE) setup-cluster
@@ -208,7 +208,7 @@ run-notebook-writeflow-tests:
 
 .PHONY: run-namescope-integration-tests
 run-namescope-integration-tests: export HELM_SETTINGS=--set "clusterScoped=false" --set "applicationNamespace=default"
-run-namescope-integration-tests: export VALUES_FILE=charts/fybrik/integration-tests.values.yaml
+run-namescope-integration-tests: export VALUES_FILE=test/charts/integration-tests.values.yaml
 run-namescope-integration-tests: export DEPLOY_OPENMETADATA_SERVER=0
 run-namescope-integration-tests: export USE_OPENMETADATA_CATALOG=0
 run-namescope-integration-tests:
@@ -264,14 +264,6 @@ ifeq ($(DEPLOY_OPENMETADATA_SERVER),1)
 endif
 	$(MAKE) -C third_party/vault undeploy
 	
-
-# Build only the docker images needed for integration testing
-.PHONY: docker-minimal-it
-docker-minimal-it:
-	$(MAKE) -C manager docker-build docker-push
-	$(MAKE) -C pkg/storage docker-build docker-push
-	$(MAKE) -C test/services docker-build docker-push
-
 .PHONY: docker-build
 docker-build:
 	$(MAKE) -C manager docker-build
