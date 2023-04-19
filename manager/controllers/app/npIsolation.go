@@ -28,7 +28,7 @@ import (
 
 const (
 	KubeSystemNamespace   = "kube-system"
-	OpenShiftDNSNamespace = " openshift-dns"
+	OpenShiftDNSNamespace = "openshift-dns"
 	KubeDNSValue          = "kube-dns"
 	DNSPortName           = "dns"
 	DNSTCPPortName        = "dns-tcp"
