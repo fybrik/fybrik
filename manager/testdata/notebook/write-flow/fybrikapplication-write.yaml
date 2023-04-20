@@ -16,6 +16,7 @@ spec:
         app: my-notebook-write
   appInfo:
     intent: Fraud Detection
+    type: test
   data:
     - dataSetID: 'new-data'
       flow: write

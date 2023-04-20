@@ -31,30 +31,13 @@ git clone https://github.com/fybrik/fybrik.git
 cd fybrik
 ```
 
-We want to have a use case that the dataset is transfered accross different clusters. So change the region of the data plane cluster `kind-kind` from `homeoffice` to `theshire`:
-
-```bash
-sed -i 's/homeoffice/theshire/g' ./charts/fybrik/kind-kind.values.yaml
-```
+We want to have a use case that the dataset is transfered accross different clusters.
 
 Check whether the regions of the two clusters, `kind-control` and `kind-kind` are different:
 
 ```bash
 grep 'region:' ./charts/fybrik/kind-control.values.yaml
 grep 'region:' ./charts/fybrik/kind-kind.values.yaml
-```
-
-Remove the use of the mockup images in control plane to trigger the built-in catalog and Open Policy Agent (OPA):
-
-```bash
-sed -i '/Connector:/d' ./charts/fybrik/kind-control.values.yaml
-sed -i '/-mock/d' ./charts/fybrik/kind-control.values.yaml
-```
-
-Trigger the docker-build instead of building the mockup images:
-
-```bash
-sed -i 's/docker-minimal-it/docker-build docker-push/g' ./hack/setup-local-multi-cluster.sh
 ```
 
 Add the [externed policies](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more.

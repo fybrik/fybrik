@@ -79,8 +79,7 @@ install_nginx_ingress() {
         kubectl create ns "$KUBE_NAMESPACE" || true
 
         echo Install ingress-nginx
-        # Using v1.0.3 because of https://github.com/kubernetes/ingress-nginx/issues/7810
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.3/deploy/static/provider/kind/deploy.yaml
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v${INGINX_INGRESS_CONTROLLER}/deploy/static/provider/kind/deploy.yaml
         kubectl wait --namespace ingress-nginx \
           --for=condition=ready pod \
           --selector=app.kubernetes.io/component=controller \
