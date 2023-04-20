@@ -12,12 +12,17 @@ if [[ -z "${ADMIN_CRS_NAMESPACE}" ]]; then
 fi
 
 # Create the storage-accounts
-kubectl -n ${FYBRIK_NAMESPACE} apply -f bucket-creds.yaml -n ${ADMIN_CRS_NAMESPACE}
-kubectl -n ${FYBRIK_NAMESPACE} apply -f theshire-storage-account.yaml -n ${ADMIN_CRS_NAMESPACE}
-kubectl -n ${FYBRIK_NAMESPACE} apply -f neverland-storage-account.yaml -n ${ADMIN_CRS_NAMESPACE}
+kubectl apply -f bucket-creds.yaml -n ${ADMIN_CRS_NAMESPACE}
+kubectl apply -f theshire-storage-account.yaml -n ${ADMIN_CRS_NAMESPACE}
+kubectl apply -f neverland-storage-account.yaml -n ${ADMIN_CRS_NAMESPACE}
 
 # Avoid using webhooks in tests
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
+
+# Apply policies
+kubectl -n ${FYBRIK_NAMESPACE} apply -f policy-cm.yaml
+kubectl -n ${FYBRIK_NAMESPACE} label configmap policy openpolicyagent.org/policy=rego
+while [[ $(kubectl get cm policy -n ${FYBRIK_NAMESPACE} -o 'jsonpath={.metadata.annotations.openpolicyagent\.org/policy-status}') != '{"status":"ok"}' ]]; do echo "waiting for policy to be applied" && sleep 5; done
 
 if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
   # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
