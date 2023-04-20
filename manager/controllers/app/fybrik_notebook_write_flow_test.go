@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	writeFlow string = "charts/fybrik/notebook-test-writeflow.values.yaml"
+	writeFlow string = "notebook-test-writeflow.values.yaml"
 )
 
 // No policies apply to the application.
@@ -418,7 +418,7 @@ func testWriteAllowed(t *testing.T, k8sClient client.Client) {
 	fmt.Println("write-flow test succeeded")
 }
 func TestS3NotebookWriteFlow(t *testing.T) {
-	if valuesYaml, ok := os.LookupEnv("VALUES_FILE"); !ok || valuesYaml != writeFlow {
+	if valuesYaml, ok := os.LookupEnv("VALUES_FILE"); !ok || !strings.HasSuffix(valuesYaml, writeFlow) {
 		t.Skip("Only executed for notebook tests")
 	}
 	gomega.RegisterFailHandler(Fail)
