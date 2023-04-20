@@ -20,6 +20,13 @@ rules:
   - update
   - watch
 - apiGroups:
+    - ""
+  resources:
+    - services
+  verbs:
+    - get
+    - list
+- apiGroups:
   - app.fybrik.io
   resources:
   - fybrikmodules/status
