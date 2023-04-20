@@ -20,12 +20,13 @@ rules:
   - update
   - watch
 - apiGroups:
-    - ""
+  - ""
   resources:
-    - services
+  - services
   verbs:
-    - get
-    - list
+  - get
+  - list
+  - watch
 - apiGroups:
   - app.fybrik.io
   resources:
