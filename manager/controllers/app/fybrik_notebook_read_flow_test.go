@@ -40,9 +40,7 @@ import (
 )
 
 const (
-	readFlow                      string        = "charts/fybrik/notebook-test-readflow.values.yaml"
-	readFlowTLS                   string        = "charts/fybrik/notebook-test-readflow.tls.values.yaml"
-	readFlowTLSCA                 string        = "charts/fybrik/notebook-test-readflow.tls-system-cacerts.yaml"
+	readFlow                      string        = "notebook-test-readflow"
 	PortFowardingMaxRetryAttempts int           = 25
 	PortForwardingDelay           time.Duration = 5
 )
@@ -78,7 +76,7 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 
 func TestS3NotebookReadFlow(t *testing.T) {
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
-	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
+	if !ok || !(strings.Contains(valuesYaml, readFlow)) {
 		t.Skip("Only executed for notebook tests")
 	}
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
