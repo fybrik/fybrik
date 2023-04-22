@@ -48,6 +48,7 @@ const (
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
 	NPEnabled                         string = "NP_ENABLED"
+	NPServiceProcess                  string = "NP_SERVICES_PROCESS"
 	OpenShiftDeployment               string = "OPENSHIFT_DEPLOYMENT"
 )
 
@@ -154,6 +155,16 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 
 func IsNPEnabled() bool {
 	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
+}
+
+func CreateNP4Service() bool {
+	process := strings.ToLower(os.Getenv(NPServiceProcess))
+	return process != "true"
+}
+
+func CreateNP4ServiceDestination() bool {
+	process := strings.ToLower(os.Getenv(NPServiceProcess))
+	return process != "false"
 }
 
 func IsOpenShiftDeployment() bool {
@@ -297,7 +308,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, StorageManagerAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
-		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion, NPEnabled}
+		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion, NPEnabled, NPServiceProcess}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {

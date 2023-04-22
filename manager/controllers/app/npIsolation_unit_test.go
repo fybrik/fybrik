@@ -7,27 +7,34 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/foxcpp/go-mockdns"
 	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiRuntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
+	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/logging"
 )
 
-const myCluster = "MyCluster"
+const (
+	myCluster        = "MyCluster"
+	modulesNamespace = "fybrik-modules"
+)
 
 // This test checks Network Policies ingress rules creation
 func TestCreateNPIngressRules(t *testing.T) {
@@ -135,131 +142,201 @@ func TestCreateNPIngressRules(t *testing.T) {
 	compareRules(false, ingresses, &app, myCluster, expectedIngressRules)
 }
 
-// This test checks Network Policies egress rules creation
-func TestCreateNPEgressRules(t *testing.T) {
-	g := gomega.NewWithT(t)
-	log := logging.LogInit(logging.CONTROLLER, "test-np-egress")
-
-	modulesNamespace := "fybrik-modules"
-
+func createMockService() *corev1.Service {
 	service := corev1.Service{}
 	service.Name = "vault"
-	service.Namespace = "fybrik-system"
+	service.Namespace = "fybrik-services"
 	service.Spec.Ports = []corev1.ServicePort{{Name: "http", Protocol: tcp, TargetPort: intstr.FromInt(8080)},
 		{Name: "https-internal", Protocol: tcp, TargetPort: intstr.FromInt(8081)}}
 	service.Spec.Selector = map[string]string{managerUtils.KubernetesAppName: "myApp"}
+	return &service
+}
+func createTestFybrikBlueprintController(s *apiRuntime.Scheme) *BlueprintReconciler {
+	log := logging.LogInit(logging.CONTROLLER, "test-np-egress")
+	service := createMockService()
 	// Create a fake client to mock API calls.
-	cl := fake.NewClientBuilder().WithRuntimeObjects(&service).Build()
+	cl := fake.NewClientBuilder().WithRuntimeObjects(service).Build()
 	// Register operator types with the runtime scheme.
-	s := managerUtils.NewScheme(g)
-
-	r := &BlueprintReconciler{
+	return &BlueprintReconciler{
 		Client: cl,
 		Name:   "TestCreateNPIngressRules",
 		Log:    log,
 		Scheme: s,
 		Helmer: helm.NewEmptyFake(),
 	}
-	{
-		// check default DNS rules
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
-		rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-	}
-	{
-		// check ModuleNetwork.Engress settings
-		release1 := "my-release-111"
-		release2 := "my-release-222"
-		release3 := "my-release-333"
-		egresses := []fapp.ModuleDeployment{
-			{Cluster: myCluster, Release: release1},
-			{Cluster: myCluster + "-test", Release: release2}, // another cluster should be skipped for now
-			{Release: release3, URLs: []string{release3 + "-1123:8080", "123" + release3 + ":8090"}},
-		}
-		podSelector1 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release1}}
-		to := netv1.NetworkPolicyPeer{PodSelector: &podSelector1}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}}}
-		podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
-		to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
-		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}})
-		rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-	}
-	{
-		// check internal service
-		podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
-		namespaceSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: service.Namespace}}
-		to := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &namespaceSelector}
-		npPorts := []netv1.NetworkPolicyPort{}
-		for i := range service.Spec.Ports {
-			npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
-				Port: &service.Spec.Ports[i].TargetPort})
-		}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}, Ports: npPorts}}
-		rules := r.createNPEgressRules(context.Background(), nil,
-			[]string{service.Name + "." + service.Namespace}, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-	}
-	{
-		// check IP block
-		ipBlocks := []string{"192.168.0.0/24", "2001:db8::/64"}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
-		for _, block := range ipBlocks {
-			if _, _, err := net.ParseCIDR(block); err == nil {
-				ipBlock := netv1.IPBlock{CIDR: block}
-				expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}})
-			}
-		}
-		rules := r.createNPEgressRules(context.Background(), nil, ipBlocks, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-	}
-	{
-		// check external IPs
-		urls := []string{"192.168.0.23", "192.168.1.25:80" /*, TODO: parseURl doesn't correctly parse IPv6. "2001:db8::68" */}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
-		for _, urlStr := range urls {
-			ipPort := strings.Split(urlStr, ":")
-			if ip := net.ParseIP(ipPort[0]); ip != nil {
-				ipBlock := ipToIPBlock(ip)
-				to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
-				port := netv1.NetworkPolicyPort{Protocol: &tcp}
-				if len(ipPort) > 1 {
-					portInt, err := strconv.Atoi(ipPort[1])
-					if err != nil {
-						t.Errorf("cannot transfer %s to port", ipPort[1])
-					}
-					p := intstr.FromInt(portInt)
-					port.Port = &p
-				}
-				expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
-			}
-		}
-		rules := r.createNPEgressRules(context.Background(), nil, urls, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-	}
-	{
-		// check external hosts
-		// TODO: can we use it in the unit tests
-		urlHost := "www.google.com"
-		urlPort := 80
-		urlString := fmt.Sprintf("http://%s:%d", urlHost, urlPort)
-		ips, err := net.LookupIP(urlHost)
-		if err != nil {
-			t.Errorf("Cannot lookupIPs of %s", urlHost)
-		}
-		expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
-		to := []netv1.NetworkPolicyPeer{}
-		for _, ip := range ips {
-			ipBlock := ipToIPBlock(ip)
-			to = append(to, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
-		}
-		p := intstr.FromInt(urlPort)
-		netPort := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
-		expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{netPort}})
+}
 
-		rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &log)
-		g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+// This test checks Network Policies default DNS egress rules creation
+func TestCreateNPEgressDefaultDNSRules(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
+	rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+}
+
+// This test checks ModuleNetwork.Engress settings
+func TestCreateNPEgress4NextModule(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+
+	release1 := "my-release-111"
+	release2 := "my-release-222"
+	release3 := "my-release-333"
+	egresses := []fapp.ModuleDeployment{
+		{Cluster: myCluster, Release: release1},
+		{Cluster: myCluster + "-test", Release: release2}, // another cluster should be skipped for now
+		{Release: release3, URLs: []string{release3 + "-1123:8080", "123" + release3 + ":8090"}},
 	}
+	podSelector1 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release1}}
+	to := netv1.NetworkPolicyPeer{PodSelector: &podSelector1}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{to}}}
+	podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
+	to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
+	expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}})
+	rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+}
+
+// This test checks NP egresses to internal services
+func TestCreateNPEgress2InternalServices(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+	service := createMockService()
+	serviceIP := "1.2.3.4"
+	serviceURL := fmt.Sprintf("%s.%s:%d", service.Name, service.Namespace, service.Spec.Ports[0].Port)
+	srv, _ := mockdns.NewServer(map[string]mockdns.Zone{
+		service.Name + "." + service.Namespace + ".": {
+			A: []string{serviceIP},
+		},
+	}, false)
+	defer srv.Close()
+	srv.PatchNet(net.DefaultResolver)
+	defer mockdns.UnpatchNet(net.DefaultResolver)
+
+	os.Setenv(environment.NPServiceProcess, "true")
+	podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
+	namespaceSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: service.Namespace}}
+	toTrue := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &namespaceSelector}
+	npPortsTrue := []netv1.NetworkPolicyPort{}
+	for i := range service.Spec.Ports {
+		npPortsTrue = append(npPortsTrue, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
+			Port: &service.Spec.Ports[i].TargetPort})
+	}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toTrue}, Ports: npPortsTrue}}
+	rules := r.createNPEgressRules(context.Background(), nil,
+		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+
+	os.Setenv(environment.NPServiceProcess, "false")
+	ips, _ := net.LookupIP(service.Name + "." + service.Namespace)
+	for _, ip := range ips {
+		fmt.Printf("ip = %v\n", ip)
+	}
+
+	ipBlock := netv1.IPBlock{CIDR: serviceIP + "/32"}
+	toFalse := netv1.NetworkPolicyPeer{IPBlock: &ipBlock}
+	p := intstr.FromInt(int(service.Spec.Ports[0].Port))
+	npPortsFalse := []netv1.NetworkPolicyPort{{Protocol: &tcp, Port: &p}}
+	expectedRules = []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toFalse}, Ports: npPortsFalse}}
+	rules = r.createNPEgressRules(context.Background(), nil,
+		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+
+	os.Setenv(environment.NPServiceProcess, "both")
+	expectedRules = []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toTrue}, Ports: npPortsTrue},
+		{To: []netv1.NetworkPolicyPeer{toFalse}, Ports: npPortsFalse}}
+	rules = r.createNPEgressRules(context.Background(), nil,
+		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+}
+
+// This test checks NP egresses to ip blocks
+func TestCreateNPEgress2IPBlocks(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+
+	ipBlocks := []string{"192.168.0.0/24", "2001:db8::/64"}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
+	for _, block := range ipBlocks {
+		if _, _, err := net.ParseCIDR(block); err == nil {
+			ipBlock := netv1.IPBlock{CIDR: block}
+			expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}})
+		}
+	}
+	rules := r.createNPEgressRules(context.Background(), nil, ipBlocks, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+}
+
+// This test checks NP egresses to IPs
+func TestCreateNPEgress2IPs(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+
+	urls := []string{"192.168.0.23", "192.168.1.25:80" /*, TODO: parseURl doesn't correctly parse IPv6. "2001:db8::68" */}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
+	for _, urlStr := range urls {
+		ipPort := strings.Split(urlStr, ":")
+		if ip := net.ParseIP(ipPort[0]); ip != nil {
+			ipBlock := ipToIPBlock(ip)
+			to := []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}
+			port := netv1.NetworkPolicyPort{Protocol: &tcp}
+			if len(ipPort) > 1 {
+				portInt, err := strconv.Atoi(ipPort[1])
+				if err != nil {
+					t.Errorf("cannot transfer %s to port", ipPort[1])
+				}
+				p := intstr.FromInt(portInt)
+				port.Port = &p
+			}
+			expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
+		}
+	}
+	rules := r.createNPEgressRules(context.Background(), nil, urls, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
+}
+
+// This test checks NP egresses to IPs
+func TestCreateNPEgress2HostNames(t *testing.T) {
+	g := gomega.NewWithT(t)
+	s := managerUtils.NewScheme(g)
+	r := createTestFybrikBlueprintController(s)
+	serviceName := "my-service.mydomain.com"
+
+	srv, _ := mockdns.NewServer(map[string]mockdns.Zone{
+		serviceName + ".": {
+			A:    []string{"192.168.0.1", "10.0.0.1"},
+			AAAA: []string{"2001:db8::1", "2001:db8::2"},
+		},
+	}, false)
+	defer srv.Close()
+	srv.PatchNet(net.DefaultResolver)
+	defer mockdns.UnpatchNet(net.DefaultResolver)
+
+	urlPort := 80
+	urlString := fmt.Sprintf("http://%s:%d", serviceName, urlPort)
+	ips, err := net.LookupIP(serviceName)
+	if err != nil {
+		t.Errorf("Cannot lookupIPs of %s", serviceName)
+	}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
+	to := []netv1.NetworkPolicyPeer{}
+	for _, ip := range ips {
+		ipBlock := ipToIPBlock(ip)
+		to = append(to, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
+	}
+	p := intstr.FromInt(urlPort)
+	netPort := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
+	expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{netPort}})
+
+	rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &r.Log)
+	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
 func CompareNPEgressRules(rules []netv1.NetworkPolicyEgressRule) types.GomegaMatcher {

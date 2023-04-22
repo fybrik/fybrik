@@ -1,0 +1,16 @@
+{{- if include "fybrik.npServiceProcessing" . }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "fybrik.fullname" . }}-np-services-role
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - services
+  verbs:
+    - get
+    - list
+    - watch
+{{- end }}
+

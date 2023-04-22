@@ -58,8 +58,6 @@ global:
   # zerolog verbosity level 
   # ref: https://github.com/rs/zerolog#leveled-logging
   loggingVerbosity: -1
-  # Defines if a networking isolation based on Kubernetes Network Policies enabled.
-  isNPEnabled: false
   # Pod Security Context. This is the default setting for all pods, and can be
   # overwritten by a specific podSecurityContext settings.
   # ref: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context
@@ -170,6 +168,22 @@ coordinator:
 worker:
   # Set to false to disable worker components in manager.
   enabled: true
+
+  npIsolation:
+    # Defines if a networking isolation based on Kubernetes Network Policies enabled.
+    enabled: false
+    # When a module need to use a local cluster service, there are several options to process the relevant Network Policy
+    # which is related on how the used CNI resolves Service Network policies. Most of CNIs translates the service request
+    # to one of the destination Pods and only after that applies the Network Policies. Therefore, the egress NPs should
+    # be created to the destination pods and not for the service itself. Theoretically, some CNIs can apply NPs before
+    # forwarding the requests to the Pods. The options are:
+    # 1. "true" - open the Service object and create egress NPs according to the Service Selector, and target ports.
+    # 2. "false" - do not open the Service object, and create an egress to the Service IP
+    # 3. "both" - create egress objects to the service and to the destination pods.
+    proceedServices: "both"
+    # Defines if a cluster level scope services read access should be provided to the Network Policies installer.
+    # Relevant if Fybrik needs to open Service objects.
+    clusterLevelServicesCheck: true
 
 # Manager component
 manager:

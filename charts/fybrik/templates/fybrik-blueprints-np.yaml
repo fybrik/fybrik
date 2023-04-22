@@ -1,5 +1,5 @@
-{{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled .Values.worker.enabled) }}
-{{- if .Values.global.isNPEnabled }}
+{{- if .Values.worker.enabled }}
+{{- if .Values.worker.npIsolation.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

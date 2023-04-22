@@ -171,7 +171,6 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 	return []netv1.NetworkPolicyIngressRule{{From: from, Ports: []netv1.NetworkPolicyPort{{Protocol: &tcp}}}}, nil
 }
 
-//nolint:funlen
 func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses []fapp.ModuleDeployment, urls []string,
 	cluster string, modulesNamespace string, log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
 	log.Trace().Str(logging.ACTION, logging.CREATE).
@@ -183,11 +182,10 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 	egressRules = append(egressRules, modulesEgressRules...)
 
 	// The URLs can be a CIDR block, or urls to the cluster internal or external services.
-
 	for _, urlString := range urls {
 		log.Trace().Msgf("Processing external URL %s", urlString)
 
-		// 1. check if it is a CIDR (Classless Inter-Domain Routing)
+		// Check if it is a CIDR (Classless Inter-Domain Routing)
 		_, _, err := net.ParseCIDR(urlString)
 		if err == nil {
 			ipBlock := netv1.IPBlock{CIDR: urlString}
@@ -195,7 +193,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to})
 			continue
 		}
-		// 2 parse URL
+		// parse URL
 		servURL, err := managerUtils.ParseRawURL(urlString)
 		if err != nil {
 			log.Err(err).Msgf(CannotParseURLError, urlString)
@@ -206,7 +204,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			log.Warn().Msgf("URL without host name: %s", servURL)
 			continue
 		}
-		// 2.1. check if the hostName is actually an IP address.
+		// Check if the hostName is actually an IP address.
 		// NOTE: IP address to a local service will not work
 		ip := net.ParseIP(hostName)
 		if ip != nil {
@@ -216,33 +214,39 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
 			continue
 		}
-		// 2.2. Check if it is a local service
-		hostStrings := strings.Split(hostName, ".")
-		service := corev1.Service{}
-		key := types.NamespacedName{Name: hostStrings[0]}
-		if len(hostStrings) > 1 {
-			key.Namespace = hostStrings[1]
-		} else {
-			key.Namespace = modulesNamespace
-		}
-		// we assume that the service exists
-		if err = r.Get(ctx, key, &service); err == nil {
-			// TODO: check NodePort and LoadBalancer
-			podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
-			npPeer := netv1.NetworkPolicyPeer{PodSelector: &podSelector}
+		if environment.CreateNP4ServiceDestination() {
+			// Check if it is a local service
+			hostStrings := strings.Split(hostName, ".")
+			service := corev1.Service{}
+			key := types.NamespacedName{Name: hostStrings[0]}
 			if len(hostStrings) > 1 {
-				nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: hostStrings[1]}}
-				npPeer.NamespaceSelector = &nsSelector
+				key.Namespace = hostStrings[1]
+			} else {
+				key.Namespace = modulesNamespace
 			}
-			to := []netv1.NetworkPolicyPeer{npPeer}
-			npPorts := []netv1.NetworkPolicyPort{}
-			for _, port := range service.Spec.Ports {
-				protocol := port.Protocol
-				targetPort := port.TargetPort
-				npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &protocol, Port: &targetPort})
+			// we assume that the service exists
+			if err = r.Get(ctx, key, &service); err != nil {
+				log.Info().Msgf("Get service returned error. %v", service)
+			} else {
+				// TODO: check NodePort and LoadBalancer
+				podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
+				npPeer := netv1.NetworkPolicyPeer{PodSelector: &podSelector}
+				if len(hostStrings) > 1 {
+					nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: hostStrings[1]}}
+					npPeer.NamespaceSelector = &nsSelector
+				}
+				to := []netv1.NetworkPolicyPeer{npPeer}
+				npPorts := []netv1.NetworkPolicyPort{}
+				for _, port := range service.Spec.Ports {
+					protocol := port.Protocol
+					targetPort := port.TargetPort
+					npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &protocol, Port: &targetPort})
+				}
+				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts})
+				if !environment.CreateNP4Service() {
+					continue
+				}
 			}
-			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts})
-			continue
 		}
 		// 3. deal with external service names
 		ips, err := net.LookupIP(hostName)
