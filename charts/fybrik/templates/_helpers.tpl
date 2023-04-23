@@ -169,7 +169,7 @@ Defines if Network Policies creation process should open local cluster service o
 */}}
 {{- define "fybrik.npServiceProcessing" -}}
 {{- if and .Values.worker.enabled .Values.worker.npIsolation.enabled }}
-{{- if or (eq .Values.worker.npIsolation.proceedServices "true") (eq .Values.worker.npIsolation.proceedServices "both") }}
+{{- if or (eq .Values.worker.npIsolation.processServices "true") (eq .Values.worker.npIsolation.processServices "both") }}
 true
 {{- end }}
 {{- end }}

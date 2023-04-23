@@ -12,7 +12,7 @@ data:
   MIN_TLS_VERSION:  {{ .Values.manager.tls.minVersion }}
   LEADER_ELECTION_ID: {{ .Values.manager.leaderElectionID }}
   NP_ENABLED: {{ .Values.worker.npIsolation.enabled | quote }}
-  NP_SERVICES_PROCESS: {{ .Values.worker.npIsolation.proceedServices | quote }}
+  NP_SERVICES_PROCESS: {{ .Values.worker.npIsolation.processServices | quote }}
   OPENSHIFT_DEPLOYMENT: {{ .Capabilities.APIVersions.Has "security.openshift.io/v1" | quote }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
