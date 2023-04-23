@@ -124,10 +124,13 @@ spec:
     # the next 2 IP addresses are for github.com. DNS randomly returns one of them.
     # if you have any troubles you can check your github address by running:
     # "docker run -it tutum/dnsutils nslookup github.com" on an airbyte pod
+    # or use Wiredshark with "kubectl sniff", see https://kubesandclouds.com/index.php/2021/01/20/ksniff/
     - 140.82.121.3
     - 140.82.121.4
     - 140.82.112.3
     - 140.82.112.4
+    - 140.82.114.3
+    - 140.82.114.4
     - 20.207.73.82
 
 

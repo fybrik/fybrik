@@ -183,7 +183,7 @@ worker:
     proceedServices: "both"
     # Defines if a cluster level scope services read access should be provided to the Network Policies installer.
     # Relevant if Fybrik needs to open Service objects.
-    clusterLevelServicesCheck: true
+    clusterLevelServicesAccess: true
 
 # Manager component
 manager:

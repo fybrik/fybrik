@@ -1,6 +1,6 @@
 {{- if .Values.clusterScoped }}
 {{- if include "fybrik.npServiceProcessing" . }}
-{{- if .Values.worker.npIsolation.clusterLevelServicesCheck}}
+{{- if .Values.worker.npIsolation.clusterLevelServicesAccess}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
