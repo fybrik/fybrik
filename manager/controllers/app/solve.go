@@ -9,7 +9,6 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
-	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
@@ -71,13 +70,13 @@ func validateBasicConditions(env *datapath.Environment, datasets []datapath.Data
 	for i := range datasets {
 		dataset := &datasets[i]
 		if dataset.Context.Flow == "" || dataset.Context.Flow == taxonomy.ReadFlow {
-			if errorMessage := validateApplicationProtocol(env, dataset); errorMessage != "" {
-				log.Error().Str(managerUtils.FybrikAppUUID, dataset.Configuration.UUID).Msg(errorMessage)
-				return errors.New(errorMessage)
+			if err := validateApplicationProtocol(env, dataset); err != nil {
+				log.Error().Err(err)
+				return err
 			}
-			if errorMessage := validateAssetProtocol(env, dataset); errorMessage != "" {
-				log.Error().Str(managerUtils.FybrikAppUUID, dataset.Configuration.UUID).Msg(errorMessage)
-				return errors.New(errorMessage)
+			if err := validateAssetProtocol(env, dataset); err != nil {
+				log.Error().Err(err)
+				return err
 			}
 		}
 	}
@@ -94,33 +93,30 @@ func createInterfaceString(interfacePtr *taxonomy.Interface) string {
 }
 
 // check if any deployed module provides the requested read api by the application
-// return an empty string if such module exists, and an error message if not
-func validateApplicationProtocol(env *datapath.Environment, dataset *datapath.DataInfo) string {
-	var applicationInterfacePtr *taxonomy.Interface
-	if dataset.Context.Requirements.Interface != nil {
-		applicationInterfacePtr = &taxonomy.Interface{Protocol: dataset.Context.Requirements.Interface.Protocol,
-			DataFormat: dataset.Context.Requirements.Interface.DataFormat}
-	}
+// return nil if such module exists, and an error if not
+func validateApplicationProtocol(env *datapath.Environment, dataset *datapath.DataInfo) error {
+	applicationInterfacePtr := dataset.Context.Requirements.Interface
 	for _, module := range env.Modules {
 		for _, capability := range module.Spec.Capabilities {
 			// check if the module capability matches the application protocol requirement
 			var capabilityInterfacePtr *taxonomy.Interface
-			if capability.API != nil {
-				capabilityInterfacePtr = &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+			if capability.API == nil {
+				continue
 			}
+			capabilityInterfacePtr = &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 			if match(capabilityInterfacePtr, applicationInterfacePtr) {
-				return ""
+				return nil
 			}
 		}
 	}
 	message := fmt.Sprintf("The requested interface (%s) is not supported by the deployed modules for dataset '%s'",
 		createInterfaceString(applicationInterfacePtr), dataset.Context.DataSetID)
-	return message
+	return errors.New(message)
 }
 
 // check if any deployed module provides the connection to read the asset
-// return an empty string if such module exists, and an error message if not
-func validateAssetProtocol(env *datapath.Environment, dataset *datapath.DataInfo) string {
+// return nil if such module exists, and an error if not
+func validateAssetProtocol(env *datapath.Environment, dataset *datapath.DataInfo) error {
 	assetConnection := dataset.DataDetails.Details.Connection.Name
 	assetDataformat := dataset.DataDetails.Details.DataFormat
 	assetInterfacePtr := &taxonomy.Interface{Protocol: assetConnection, DataFormat: assetDataformat}
@@ -129,12 +125,12 @@ func validateAssetProtocol(env *datapath.Environment, dataset *datapath.DataInfo
 			// check if the module capability matches the asset connection requirement
 			for _, readInterface := range capability.SupportedInterfaces {
 				if match(readInterface.Source, assetInterfacePtr) {
-					return ""
+					return nil
 				}
 			}
 		}
 	}
 	message := fmt.Sprintf("The asset '%s' (%s) can't be read by the deployed modules",
 		dataset.Context.DataSetID, createInterfaceString(assetInterfacePtr))
-	return message
+	return errors.New(message)
 }
