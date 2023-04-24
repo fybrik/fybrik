@@ -282,7 +282,7 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	_, err = solveSingleDataset(env, asset, &testLog)
+	_, err = solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
