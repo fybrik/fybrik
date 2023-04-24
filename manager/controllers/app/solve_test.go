@@ -220,14 +220,15 @@ func TestReadWithTransforms(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account.Spec.Geography)}})
 	asset := createReadRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	// only read is not enough
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
 	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 }
 
@@ -246,11 +247,12 @@ func TestReadModuleSource(t *testing.T) {
 	asset := createReadRequest()
 	asset.DataDetails.Details.Connection.Name = mockup.JdbcDB2
 	asset.DataDetails.Details.DataFormat = ""
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, readModuleDB2)
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	logging.LogStructure("TestReadModuleSource", &solution, &testLog, zerolog.InfoLevel, false, false)
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(readModuleDB2.Name))
@@ -275,11 +277,12 @@ func TestReadAndCopyWithTransforms(t *testing.T) {
 	addModule(env, copyModule)
 	addStorageAccount(env, account)
 	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	_, err = solveSingleDataset(env, asset, &testLog)
+	_, err = solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
@@ -299,8 +302,9 @@ func TestReadAndTransformModules(t *testing.T) {
 	asset.DataDetails.Details.Connection.Name = mockup.S3
 	asset.DataDetails.Details.DataFormat = mockup.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(readModule.Name))
 	g.Expect(solution.DataPath[1].Module.Name).To(gomega.Equal(transformModule.Name))
@@ -325,8 +329,9 @@ func TestReadAfterRead(t *testing.T) {
 	asset.DataDetails.Details.Connection.Name = mockup.S3
 	asset.DataDetails.Details.DataFormat = mockup.Parquet
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(readModule.Name))
 	g.Expect(solution.DataPath[1].Module.Name).To(gomega.Equal(transformModule.Name))
@@ -371,12 +376,13 @@ func TestTransformInDataLocation(t *testing.T) {
 	}
 	asset.StorageRequirements[account.Spec.Geography] = []taxonomy.Action{}
 	asset.StorageRequirements[taxonomy.ProcessingLocation(remoteGeo)] = []taxonomy.Action{}
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	// remove restriction on copy
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{Deploy: adminconfig.StatusUnknown}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	// copy
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account.Spec.Geography))
@@ -407,11 +413,12 @@ func TestCopyFlow(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: string(account1.Spec.Geography)}})
 
 	asset := createCopyRequest()
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// copy
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
@@ -462,7 +469,7 @@ func TestStorageCostRestrictictions(t *testing.T) {
 		Object:     taxonomy.StorageAccount,
 		Instance:   account2.Name,
 	})
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 	// change the restriction to fit one of the accounts
 	asset.Configuration.ConfigDecisions["copy"] = adminconfig.Decision{
@@ -470,8 +477,9 @@ func TestStorageCostRestrictictions(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "storage-cost", Range: &taxonomy.RangeType{Max: 15}}}},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
 }
@@ -504,8 +512,9 @@ func TestWriteNewAsset(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "geography", Values: adminconfig.StringList{string(account2.Spec.Geography)}}}},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(account2.Spec.Geography))
@@ -534,7 +543,7 @@ func TestStorageAndModuleMismatch(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "geography", Values: adminconfig.StringList{string(account.Spec.Geography)}}}},
 	}
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).To(gomega.HaveOccurred())
 }
 
@@ -568,8 +577,9 @@ func TestStorageTypeRestriction(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			StorageAccounts: []adminconfig.Restriction{{Property: "type", Values: adminconfig.StringList{string(accountMySQL.Spec.Type)}}}},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
 	g.Expect(solution.DataPath[0].StorageAccount.Type).To(gomega.Equal(accountMySQL.Spec.Type))
@@ -599,8 +609,9 @@ func TestWriteExistingAsset(t *testing.T) {
 	asset := createUpdateRequest()
 	asset.StorageRequirements[account1.Spec.Geography] = []taxonomy.Action{}
 	asset.StorageRequirements[account2.Spec.Geography] = []taxonomy.Action{}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	// write
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.BeEmpty())
@@ -621,8 +632,9 @@ func TestWriteAndTransformModules(t *testing.T) {
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createUpdateRequest()
 	asset.Actions = []taxonomy.Action{{Name: "RedactAction"}}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(writeModule.Name))
 	g.Expect(solution.DataPath[1].Module.Name).To(gomega.Equal(transformModule.Name))
@@ -646,8 +658,9 @@ func TestDeleteFlow(t *testing.T) {
 	addModule(env, transformModule)
 	addCluster(env, multicluster.Cluster{Metadata: multicluster.ClusterMetadata{Region: "xyz"}})
 	asset := createDeleteRequest()
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(deleteModule.Name))
 }
@@ -671,12 +684,13 @@ func TestModuleSelection(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{Modules: []adminconfig.Restriction{{
 			Property: "capabilities.scope",
 			Values:   adminconfig.StringList{"workload"}}}}}
-	_, err := solveSingleDataset(env, asset, &testLog)
+	_, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	// wrong scope
 	g.Expect(err).To(gomega.HaveOccurred())
 	addModule(env, workloadLevelModule)
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Module.Name).To(gomega.Equal(workloadLevelModule.Name))
 }
@@ -733,8 +747,9 @@ func TestOptimalStorage(t *testing.T) {
 		})
 		cost += 5
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
 }
@@ -807,8 +822,9 @@ func TestOptimalStorageAndClusterCost(t *testing.T) {
 		Object:     taxonomy.Cluster,
 		Instance:   "Expensive",
 	})
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation("region2")))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("Cheap"))
@@ -857,8 +873,9 @@ func TestGoalConflict(t *testing.T) {
 			Weight:    "0.8",
 		},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.HavePrefix("cluster"))
 }
@@ -915,8 +932,9 @@ func TestMinMultipleGoals(t *testing.T) {
 			Weight:    "0.1",
 		},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster2"))
 }
@@ -973,8 +991,9 @@ func TestMinMaxGoals(t *testing.T) {
 			Weight:    "0.4",
 		},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(1))
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal("cluster4"))
 }
@@ -1039,8 +1058,9 @@ func TestMinDistance(t *testing.T) {
 		Object:     taxonomy.InterRegion,
 		Arguments:  []string{"theshire", "theshire"},
 	})
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath).To(gomega.HaveLen(2))
 	g.Expect(solution.DataPath[0].StorageAccount.Geography).To(gomega.Equal(taxonomy.ProcessingLocation(workloadCluster)))
 }
@@ -1082,7 +1102,8 @@ func TestClusterAttribute(t *testing.T) {
 		DeploymentRestrictions: adminconfig.Restrictions{
 			Clusters: []adminconfig.Restriction{{Property: "compliance", Values: adminconfig.StringList{"true"}}}},
 	}
-	solution, err := solveSingleDataset(env, asset, &testLog)
+	solutions, err := solve(env, []datapath.DataInfo{*asset}, &testLog)
 	g.Expect(err).ToNot(gomega.HaveOccurred())
+	solution := solutions[0]
 	g.Expect(solution.DataPath[0].Cluster).To(gomega.Equal(allowedCluster.Name))
 }
