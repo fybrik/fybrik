@@ -99,11 +99,10 @@ func validateApplicationProtocol(env *datapath.Environment, dataset *datapath.Da
 	for _, module := range env.Modules {
 		for _, capability := range module.Spec.Capabilities {
 			// check if the module capability matches the application protocol requirement
-			var capabilityInterfacePtr *taxonomy.Interface
 			if capability.API == nil {
 				continue
 			}
-			capabilityInterfacePtr = &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
+			capabilityInterfacePtr := &taxonomy.Interface{Protocol: capability.API.Connection.Name, DataFormat: capability.API.DataFormat}
 			if match(capabilityInterfacePtr, applicationInterfacePtr) {
 				return nil
 			}
@@ -123,8 +122,8 @@ func validateAssetProtocol(env *datapath.Environment, dataset *datapath.DataInfo
 	for _, module := range env.Modules {
 		for _, capability := range module.Spec.Capabilities {
 			// check if the module capability matches the asset connection requirement
-			for _, readInterface := range capability.SupportedInterfaces {
-				if match(readInterface.Source, assetInterfacePtr) {
+			for _, capabilityInterface := range capability.SupportedInterfaces {
+				if match(capabilityInterface.Source, assetInterfacePtr) {
 					return nil
 				}
 			}
