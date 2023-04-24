@@ -1,6 +1,5 @@
-{{- if .Values.clusterScoped }}
-{{- if include "fybrik.npServiceProcessing" . }}
-{{- if .Values.worker.npIsolation.clusterLevelServicesAccess}}
+{{- if and .Values.worker.enabled .Values.worker.npIsolation.enabled }}
+{{- if and .Values.clusterScoped .Values.worker.npIsolation.clusterLevelServicesAccess}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -13,6 +12,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ .Values.manager.serviceAccount.name | default "default" }}
     namespace: {{ .Release.Namespace }}
-{{- end }}
 {{- end }}
 {{- end }}

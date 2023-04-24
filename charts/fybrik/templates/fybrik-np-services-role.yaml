@@ -1,4 +1,4 @@
-{{- if include "fybrik.npServiceProcessing" . }}
+{{- if and .Values.worker.enabled .Values.worker.npIsolation.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

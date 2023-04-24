@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -26,7 +25,6 @@ import (
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
-	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/helm"
 	"fybrik.io/fybrik/pkg/logging"
 )
@@ -218,39 +216,27 @@ func TestCreateNPEgress2InternalServices(t *testing.T) {
 	srv.PatchNet(net.DefaultResolver)
 	defer mockdns.UnpatchNet(net.DefaultResolver)
 
-	os.Setenv(environment.NPServiceProcess, "true")
 	podSelector := meta.LabelSelector{MatchLabels: service.Spec.Selector}
 	namespaceSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: service.Namespace}}
-	toTrue := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &namespaceSelector}
-	npPortsTrue := []netv1.NetworkPolicyPort{}
+	toPods := netv1.NetworkPolicyPeer{PodSelector: &podSelector, NamespaceSelector: &namespaceSelector}
+	npPortsPods := []netv1.NetworkPolicyPort{}
 	for i := range service.Spec.Ports {
-		npPortsTrue = append(npPortsTrue, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
+		npPortsPods = append(npPortsPods, netv1.NetworkPolicyPort{Protocol: &service.Spec.Ports[i].Protocol,
 			Port: &service.Spec.Ports[i].TargetPort})
 	}
-	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toTrue}, Ports: npPortsTrue}}
-	rules := r.createNPEgressRules(context.Background(), nil,
-		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
-	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 
-	os.Setenv(environment.NPServiceProcess, "false")
 	ips, _ := net.LookupIP(service.Name + "." + service.Namespace)
 	for _, ip := range ips {
 		fmt.Printf("ip = %v\n", ip)
 	}
 
 	ipBlock := netv1.IPBlock{CIDR: serviceIP + "/32"}
-	toFalse := netv1.NetworkPolicyPeer{IPBlock: &ipBlock}
+	toSvc := netv1.NetworkPolicyPeer{IPBlock: &ipBlock}
 	p := intstr.FromInt(int(service.Spec.Ports[0].Port))
-	npPortsFalse := []netv1.NetworkPolicyPort{{Protocol: &tcp, Port: &p}}
-	expectedRules = []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toFalse}, Ports: npPortsFalse}}
-	rules = r.createNPEgressRules(context.Background(), nil,
-		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
-	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
-
-	os.Setenv(environment.NPServiceProcess, "both")
-	expectedRules = []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toTrue}, Ports: npPortsTrue},
-		{To: []netv1.NetworkPolicyPeer{toFalse}, Ports: npPortsFalse}}
-	rules = r.createNPEgressRules(context.Background(), nil,
+	npPortsSvc := []netv1.NetworkPolicyPort{{Protocol: &tcp, Port: &p}}
+	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toPods}, Ports: npPortsPods},
+		{To: []netv1.NetworkPolicyPeer{toSvc}, Ports: npPortsSvc}}
+	rules := r.createNPEgressRules(context.Background(), nil,
 		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }

@@ -214,9 +214,10 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{policyPort}})
 			continue
 		}
-		if environment.CreateNP4ServiceDestination() {
-			// Check if it is a local service
-			hostStrings := strings.Split(hostName, ".")
+		// Check if it is a local service
+		hostStrings := strings.Split(hostName, ".")
+		// local K8s services have the following format: <serviceName>.<nameSpace>.svc.cluster.local
+		if len(hostStrings) < 3 || hostStrings[2] == "svc" { //nolint: revive
 			service := corev1.Service{}
 			key := types.NamespacedName{Name: hostStrings[0]}
 			if len(hostStrings) > 1 {
@@ -243,9 +244,6 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 					npPorts = append(npPorts, netv1.NetworkPolicyPort{Protocol: &protocol, Port: &targetPort})
 				}
 				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: to, Ports: npPorts})
-				if !environment.CreateNP4Service() {
-					continue
-				}
 			}
 		}
 		// 3. deal with external service names

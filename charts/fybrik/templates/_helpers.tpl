@@ -163,14 +163,3 @@ passed as parameter to the function.
 {{- $dir := toString (first .) -}}
 {{- printf "%s/%s" (include "fybrik.getDataDir" .) $dir }}
 {{- end }}
-
-{{/*
-Defines if Network Policies creation process should open local cluster service objects
-*/}}
-{{- define "fybrik.npServiceProcessing" -}}
-{{- if and .Values.worker.enabled .Values.worker.npIsolation.enabled }}
-{{- if or (eq .Values.worker.npIsolation.processServices "true") (eq .Values.worker.npIsolation.processServices "both") }}
-true
-{{- end }}
-{{- end }}
-{{- end }}
