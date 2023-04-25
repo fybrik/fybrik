@@ -108,6 +108,9 @@ func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.
 			return client.IgnoreNotFound(err)
 		}
 	}
+	if environment.IsNPEnabled() {
+		return r.cleanupNetworkPolicies(ctx, blueprint)
+	}
 	return nil
 }
 
@@ -179,7 +182,8 @@ func (r *BlueprintReconciler) obtainSecrets(ctx context.Context, log *zerolog.Lo
 }
 
 func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *action.Configuration, chartSpec fapp.ChartSpec,
-	args map[string]interface{}, releaseNamespace, releaseName string, log *zerolog.Logger) (*release.Release, error) {
+	network *fapp.ModuleNetwork, args map[string]interface{}, blueprint *fapp.Blueprint, releaseName string,
+	log *zerolog.Logger) (*release.Release, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Chart Ref ---\n\n" + chartSpec.Name + "\n\n")
 
 	args = CopyMap(args)
@@ -221,6 +225,13 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
+	if environment.IsNPEnabled() {
+		err = r.createNetworkPolicies(ctx, releaseName, network, blueprint, log)
+		if err != nil {
+			return nil, err
+		}
+	}
+	releaseNamespace := blueprint.Spec.ModulesNamespace
 	inst, err := r.Helmer.IsInstalled(cfg, releaseName)
 	// TODO should we return err if it is not nil?
 	var rel *release.Release
@@ -310,7 +321,8 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	blueprint.Labels[managerUtils.BlueprintNameLabel] = blueprint.Name
 	blueprint.Labels[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
 
-	for instanceName, module := range blueprint.Spec.Modules {
+	for instanceName := range blueprint.Spec.Modules {
+		module := blueprint.Spec.Modules[instanceName]
 		// Get arguments by type
 		helmValues := HelmValues{
 			ModuleArguments: module.Arguments,
@@ -335,7 +347,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, args, blueprint.Spec.ModulesNamespace, releaseName, log); err != nil {
+			if rel, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {

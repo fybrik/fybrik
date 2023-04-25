@@ -47,6 +47,8 @@ const (
 	ResourcesPollingInterval          string = "RESOURCE_POLLING_INTERVAL"
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
+	NPEnabled                         string = "NP_ENABLED"
+	OpenShiftDeployment               string = "OPENSHIFT_DEPLOYMENT"
 )
 
 const printValueStr = "%s set to \"%s\""
@@ -150,6 +152,14 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 	return rv
 }
 
+func IsNPEnabled() bool {
+	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
+}
+
+func IsOpenShiftDeployment() bool {
+	return strings.ToLower(os.Getenv(OpenShiftDeployment)) == "true"
+}
+
 // GetDataDir returns the directory where the data resides.
 func GetDataDir() string {
 	return os.Getenv(DataDir)
@@ -204,7 +214,7 @@ func GetDiscoveryQPS() (float32, error) {
 	if qpsStr == "" {
 		return -1, nil
 	}
-	//nolint:revive,gomnd // ignore magic numbers
+	//nolint:revive // ignore magic numbers
 	qps, err := strconv.ParseFloat(qpsStr, 32)
 	if err != nil {
 		return -1, err
@@ -287,7 +297,7 @@ func LogEnvVariables(log *zerolog.Logger) {
 	envVarArray := [...]string{CatalogConnectorServiceAddressKey, StorageManagerAddressKey, VaultAddressKey, VaultModulesRoleKey,
 		EnableWebhooksKey, MainPolicyManagerConnectorURLKey,
 		MainPolicyManagerNameKey, LoggingVerbosityKey, PrettyLoggingKey,
-		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion}
+		DataDir, ModuleNamespace, ControllerNamespace, ApplicationNamespace, MinTLSVersion, NPEnabled}
 
 	log.Info().Msg("Manager configured with the following environment variables:")
 	for _, envVar := range envVarArray {
