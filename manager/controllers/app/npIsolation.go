@@ -178,7 +178,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			egresses, urls)
 	egressRules := []netv1.NetworkPolicyEgressRule{}
 
-	modulesEgressRules := r.createNextModulesEgressRules(egresses, cluster, log)
+	modulesEgressRules := r.createModuleEgressRules(egresses, cluster, log)
 	egressRules = append(egressRules, modulesEgressRules...)
 
 	// The URLs can be a CIDR block, or urls to the cluster internal or external services.
@@ -225,7 +225,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 			} else {
 				key.Namespace = modulesNamespace
 			}
-			// we assume that the service exists
+			// we assume that the service exists and there are permissions to access it
 			if err = r.Get(ctx, key, &service); err != nil {
 				log.Info().Msgf("Get service returned error. %v", service)
 			} else {
@@ -264,7 +264,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 	return egressRules
 }
 
-func (r *BlueprintReconciler) createNextModulesEgressRules(egresses []fapp.ModuleDeployment, cluster string,
+func (r *BlueprintReconciler) createModuleEgressRules(egresses []fapp.ModuleDeployment, cluster string,
 	log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
 	var egressRules []netv1.NetworkPolicyEgressRule
 	for _, egress := range egresses {

@@ -20,6 +20,7 @@ import (
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	ctlClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -93,7 +94,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 	client.QPS = environment.GetEnvAsFloat32(controllers.KubernetesClientQPSConfiguration, controllers.DefaultKubernetesClientQPS)
 	client.Burst = environment.GetEnvAsInt(controllers.KubernetesClientBurstConfiguration, controllers.DefaultKubernetesClientBurst)
 
-	setupLog.Info().Msg("Manager client rate limits: qps = " + fmt.Sprint(client.QPS) + " burst=" + fmt.Sprint(client.Burst))
+	setupLog.Info().Msg(fmt.Sprintf("Manager client rate limits: qps = %f burst = %d", client.QPS, client.Burst))
 
 	// Set health probes address(required to run probes)
 	// and desired liveness and readiness endpoints(optional)
@@ -106,6 +107,7 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		LeaderElectionID:       os.Getenv("LEADER_ELECTION_ID"),
 		Port:                   controllers.ManagerPort,
 		HealthProbeBindAddress: healthProbeAddr,
+		ClientDisableCacheFor:  []ctlClient.Object{&corev1.Service{}},
 		NewCache:               cache.BuilderWithOptions(cache.Options{SelectorsByObject: selectorsByObject}),
 	})
 	if err != nil {
