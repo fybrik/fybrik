@@ -169,6 +169,13 @@ worker:
   # Set to false to disable worker components in manager.
   enabled: true
 
+  npIsolation:
+    # Defines if a networking isolation based on Kubernetes Network Policies enabled.
+    enabled: false
+    # Defines if a cluster level scope services read access should be provided to the Network Policies installer.
+    # Relevant if Fybrik needs to open Service objects.
+    clusterLevelServicesAccess: false
+
 # Manager component
 manager:
   # Set to true to deploy the manager component or false to skip its deployment.

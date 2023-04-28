@@ -4,6 +4,7 @@
 package v1beta1
 
 import (
+	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"fybrik.io/fybrik/pkg/model/taxonomy"
@@ -35,6 +36,18 @@ type ApplicationDetails struct {
 	// +optional
 	WorkloadSelector metav1.LabelSelector `json:"selector,omitempty"`
 
+	// Namespaces where user application might run
+	// It is obtained from FybrikApplication spec.
+	// +optional
+	Namespaces []string `json:"namespaces"`
+
+	// IPBlocks define policy on particular IPBlocks.
+	// the structure of the IPBlock is defined at
+	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io
+	// It is obtained from FybrikApplication spec.
+	// +optional
+	IPBlocks []*netv1.IPBlock `json:"ipBlocks,omitempty"`
+
 	// Application context such as intent, role, etc.
 	// +optional
 	Context taxonomy.AppInfo `json:"context,omitempty"`
@@ -45,6 +58,33 @@ type ModuleArguments struct {
 	// Assets define asset related arguments, such as data source, transformations, etc.
 	// +optional
 	Assets []AssetContext `json:"assets,omitempty"`
+}
+
+// ModuleDeployment specifies deployment of a Fybrik module
+type ModuleDeployment struct {
+	// Cluster name
+	Cluster string `json:"cluster"`
+	// Release name
+	Release string `json:"release"`
+	// Service URLs, usually represented by hostname + port
+	URLs []string `json:"urls"`
+}
+
+// ModuleNetwork specifies the module communication with a workload or other modules
+type ModuleNetwork struct {
+	// Endpoint indicates whether the module service is used as an endpoint by the workload application
+	// +optional
+	Endpoint bool `json:"endpoint,omitempty"`
+	// Ingress (internal modules)
+	// +optional
+	Ingress []ModuleDeployment `json:"ingress,omitempty"`
+	// Egress (internal modules)
+	// +optional
+	Egress []ModuleDeployment `json:"egress,omitempty"`
+	// External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint), or a CIDR
+	// (Classless Inter-Domain Routing) with optional port
+	// +optional
+	URLs []string `json:"urls,omitempty"`
 }
 
 // BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the information necessary
@@ -66,6 +106,10 @@ type BlueprintModule struct {
 	// as well as module status in the future.
 	// +optional
 	AssetIDs []string `json:"assetIds,omitempty"`
+
+	// Network specifies the module communication with a workload or other modules
+	// +optional
+	Network ModuleNetwork `json:"network,omitempty"`
 }
 
 // BlueprintSpec defines the desired state of Blueprint, which defines the components of the workload's data path

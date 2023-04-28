@@ -155,6 +155,10 @@ type ModuleInfo struct {
 	// Module capability
 	// +required
 	Capability taxonomy.Capability `json:"capability"`
+
+	// External services that are required for functionality of the module.
+	// +optional
+	ExternalServices []string `json:"externalServices,omitempty"`
 }
 
 // Template contains basic information about the required modules to serve the fybrikapplication
