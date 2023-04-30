@@ -71,11 +71,7 @@ func ExecCmdExample(restClient restclient.Interface, config *restclient.Config, 
 }
 
 func TestNetworkPolicyReadFlow(t *testing.T) {
-	fmt.Print("network policy test")
-	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
-	if !ok || (valuesYaml != readFlow && valuesYaml != readFlowTLS && valuesYaml != readFlowTLSCA) {
-		t.Skip("Only executed for notebook tests")
-	}
+	fmt.Println("network policy test")
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
 	if !ok || catalogedAsset == "" {
 		log.Printf("CATALOGED_ASSET should be defined.")
