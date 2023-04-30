@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: vault-ingress
@@ -9,6 +9,9 @@ spec:
   - http:
       paths:
       - path: /v1/*
+        pathType: Prefix
         backend:
-          serviceName: vault
-          servicePort: 8200
+          service:
+            name: vault
+            port:
+              number: 8200

@@ -174,6 +174,13 @@ BlueprintModule is a copy of a FybrikModule Custom Resource.  It contains the in
           assetIDs indicate the assets processed by this module.  Included so we can track asset status as well as module status in the future.<br/>
         </td>
         <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetwork">network</a></b></td>
+        <td>object</td>
+        <td>
+          Network specifies the module communication with a workload or other modules<br/>
+        </td>
+        <td>false</td>
       </tr></tbody>
 </table>
 
@@ -437,6 +444,136 @@ Action to be performed on the data, e.g., masking
 </table>
 
 
+#### Blueprint.spec.modules[key].network
+<sup><sup>[↩ Parent](#blueprintspecmoduleskey)</sup></sup>
+
+
+
+Network specifies the module communication with a workload or other modules
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetworkegressindex">egress</a></b></td>
+        <td>[]object</td>
+        <td>
+          Egress (internal modules)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>endpoint</b></td>
+        <td>boolean</td>
+        <td>
+          Endpoint indicates whether the module service is used as an endpoint by the workload application<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#blueprintspecmoduleskeynetworkingressindex">ingress</a></b></td>
+        <td>[]object</td>
+        <td>
+          Ingress (internal modules)<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          External services and datasets in the form of hostname + port or a hostname only (e.g., s3 endpoint), or a CIDR (Classless Inter-Domain Routing) with optional port<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].network.egress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
+
+
+
+ModuleDeployment specifies deployment of a Fybrik module
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>release</b></td>
+        <td>string</td>
+        <td>
+          Release name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          Service URLs, usually represented by hostname + port<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.modules[key].network.ingress[index]
+<sup><sup>[↩ Parent](#blueprintspecmoduleskeynetwork)</sup></sup>
+
+
+
+ModuleDeployment specifies deployment of a Fybrik module
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cluster</b></td>
+        <td>string</td>
+        <td>
+          Cluster name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>release</b></td>
+        <td>string</td>
+        <td>
+          Release name<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>urls</b></td>
+        <td>[]string</td>
+        <td>
+          Service URLs, usually represented by hostname + port<br/>
+        </td>
+        <td>true</td>
+      </tr></tbody>
+</table>
+
+
 #### Blueprint.spec.application
 <sup><sup>[↩ Parent](#blueprintspec)</sup></sup>
 
@@ -461,10 +598,58 @@ ApplicationContext is a context of the origin FybrikApplication (labels, propert
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b><a href="#blueprintspecapplicationipblocksindex">ipBlocks</a></b></td>
+        <td>[]object</td>
+        <td>
+          IPBlocks define policy on particular IPBlocks. the structure of the IPBlock is defined at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespaces</b></td>
+        <td>[]string</td>
+        <td>
+          Namespaces where user application might run It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b><a href="#blueprintspecapplicationselector">selector</a></b></td>
         <td>object</td>
         <td>
           Application selector is used to identify the user workload. It is obtained from FybrikApplication spec.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Blueprint.spec.application.ipBlocks[index]
+<sup><sup>[↩ Parent](#blueprintspecapplication)</sup></sup>
+
+
+
+IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cidr</b></td>
+        <td>string</td>
+        <td>
+          CIDR is a string representing the IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64"<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>except</b></td>
+        <td>[]string</td>
+        <td>
+          Except is a slice of CIDRs that should not be included within an IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64" Except values will be rejected if they are outside the CIDR range<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1035,7 +1220,7 @@ Selector enables to connect the resource to the application Application labels s
         <td><b><a href="#fybrikapplicationspecselectorworkloadselector">workloadSelector</a></b></td>
         <td>object</td>
         <td>
-          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+          WorkloadSelector enables to connect the resource to a user application. Application labels should match the labels in the selector.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -1043,6 +1228,20 @@ Selector enables to connect the resource to the application Application labels s
         <td>string</td>
         <td>
           Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#fybrikapplicationspecselectoripblocksindex">ipBlocks</a></b></td>
+        <td>[]object</td>
+        <td>
+          IPBlocks define policy on particular IPBlocks. the structure of the IPBlock is defined at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespaces</b></td>
+        <td>[]string</td>
+        <td>
+          Namespaces where user application might run<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1054,7 +1253,7 @@ Selector enables to connect the resource to the application Application labels s
 
 
 
-WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+WorkloadSelector enables to connect the resource to a user application. Application labels should match the labels in the selector.
 
 <table>
     <thead>
@@ -1118,6 +1317,40 @@ A label selector requirement is a selector that contains values, a key, and an o
         <td>[]string</td>
         <td>
           values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### FybrikApplication.spec.selector.ipBlocks[index]
+<sup><sup>[↩ Parent](#fybrikapplicationspecselector)</sup></sup>
+
+
+
+IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cidr</b></td>
+        <td>string</td>
+        <td>
+          CIDR is a string representing the IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64"<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>except</b></td>
+        <td>[]string</td>
+        <td>
+          Except is a slice of CIDRs that should not be included within an IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64" Except values will be rejected if they are outside the CIDR range<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -1774,6 +2007,13 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         </td>
         <td>false</td>
       </tr><tr>
+        <td><b>externalServices</b></td>
+        <td>[]string</td>
+        <td>
+          External services that are required for functionality of the module, format of the strings might be: be a URL (with or without schema) or a host name with or without port, or a CIDR (Classless Inter-Domain Routing) with optional port number separated by a colon<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>pluginType</b></td>
         <td>string</td>
         <td>
@@ -1784,7 +2024,7 @@ FybrikModuleSpec contains the info common to all modules, which are one of the c
         <td><b><a href="#fybrikmodulespecstatusindicatorsindex">statusIndicators</a></b></td>
         <td>[]object</td>
         <td>
-          StatusIndicators allow to check status of a non-standard resource that can not be computed by helm/kstatus<br/>
+          StatusIndicators allow checking status of a non-standard resource that can not be computed by helm/kstatus<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3101,6 +3341,13 @@ ModuleInfo is a copy of FybrikModule Custom Resource.  It contains information t
         </td>
         <td>true</td>
       </tr><tr>
+        <td><b>externalServices</b></td>
+        <td>[]string</td>
+        <td>
+          External services that are required for functionality of the module.<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
         <td><b>scope</b></td>
         <td>enum</td>
         <td>
@@ -3174,7 +3421,7 @@ Selector enables to connect the resource to the application Application labels s
         <td><b><a href="#plotterspecappselectorworkloadselector">workloadSelector</a></b></td>
         <td>object</td>
         <td>
-          WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.<br/>
+          WorkloadSelector enables to connect the resource to a user application. Application labels should match the labels in the selector.<br/>
         </td>
         <td>true</td>
       </tr><tr>
@@ -3182,6 +3429,20 @@ Selector enables to connect the resource to the application Application labels s
         <td>string</td>
         <td>
           Cluster name<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b><a href="#plotterspecappselectoripblocksindex">ipBlocks</a></b></td>
+        <td>[]object</td>
+        <td>
+          IPBlocks define policy on particular IPBlocks. the structure of the IPBlock is defined at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io<br/>
+        </td>
+        <td>false</td>
+      </tr><tr>
+        <td><b>namespaces</b></td>
+        <td>[]string</td>
+        <td>
+          Namespaces where user application might run<br/>
         </td>
         <td>false</td>
       </tr></tbody>
@@ -3193,7 +3454,7 @@ Selector enables to connect the resource to the application Application labels s
 
 
 
-WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+WorkloadSelector enables to connect the resource to a user application. Application labels should match the labels in the selector.
 
 <table>
     <thead>
@@ -3257,6 +3518,40 @@ A label selector requirement is a selector that contains values, a key, and an o
         <td>[]string</td>
         <td>
           values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.<br/>
+        </td>
+        <td>false</td>
+      </tr></tbody>
+</table>
+
+
+#### Plotter.spec.appSelector.ipBlocks[index]
+<sup><sup>[↩ Parent](#plotterspecappselector)</sup></sup>
+
+
+
+IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody><tr>
+        <td><b>cidr</b></td>
+        <td>string</td>
+        <td>
+          CIDR is a string representing the IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64"<br/>
+        </td>
+        <td>true</td>
+      </tr><tr>
+        <td><b>except</b></td>
+        <td>[]string</td>
+        <td>
+          Except is a slice of CIDRs that should not be included within an IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64" Except values will be rejected if they are outside the CIDR range<br/>
         </td>
         <td>false</td>
       </tr></tbody>

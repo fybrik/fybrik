@@ -85,7 +85,6 @@ The names of the Kubernetes resources deployed by the module helm chart must con
 Because the chart is installed by the control plane, the input `values` to the chart will contain the following information:
 
 - `.Values.assets` - a list of [asset arguments](../reference/crds.md#blueprintspecmoduleskeyargumentsassetsindex) such as datastores, transformations, etc.
-- `.Values.selector` - [application selector](../reference/crds.md#blueprintspecapplication)
 - `.Values.context` - [application context](../reference/crds.md#blueprintspecapplication)
 - `.Values.labels` - labels specified in `FybrikApplication`
 - `.Values.uuid` - a unique id of `FybrikApplication` 
@@ -99,9 +98,6 @@ labels:
 uuid: 12345678
 context:
   intent: "Fraud Detection"
-selector:
-  matchLabels:
-    app: my-notebook
 assets:
 - args:
   - connection:

@@ -3,15 +3,25 @@
 
 package utils
 
-import api "fybrik.io/fybrik/manager/apis/app/v1beta1"
+import (
+	"strings"
+
+	api "fybrik.io/fybrik/manager/apis/app/v1beta1"
+)
 
 const (
-	ApplicationClusterLabel   = "app.fybrik.io/app-cluster"
-	ApplicationNamespaceLabel = "app.fybrik.io/app-namespace"
-	ApplicationNameLabel      = "app.fybrik.io/app-name"
-	BlueprintNamespaceLabel   = "app.fybrik.io/blueprint-namespace"
-	BlueprintNameLabel        = "app.fybrik.io/blueprint-name"
-	FybrikAppUUID             = "app.fybrik.io/app-uuid"
+	FybrikPrefix              = "app.fybrik.io"
+	ApplicationClusterLabel   = FybrikPrefix + "/app-cluster"
+	ApplicationNamespaceLabel = FybrikPrefix + "/app-namespace"
+	ApplicationNameLabel      = FybrikPrefix + "/app-name"
+	BlueprintNamespaceLabel   = FybrikPrefix + "/blueprint-namespace"
+	BlueprintNameLabel        = FybrikPrefix + "/blueprint-name"
+	FybrikAppUUID             = FybrikPrefix + "/app-uuid"
+	KubernetesInstance        = "app.kubernetes.io/instance"
+	KubernetesNamespaceName   = "kubernetes.io/metadata.name"
+	KubernetesAppName         = "app.kubernetes.io/name"
+	KubernetesAppNameOld      = "k8s-app"
+	OpenShiftDNS              = "dns.operator.openshift.io/daemonset-dns"
 )
 
 func GetApplicationClusterFromLabels(labels map[string]string) string {
@@ -50,4 +60,14 @@ func GetFybrikApplicationUUIDfromAnnotations(annotations map[string]string) stri
 		return "UUID missing"
 	}
 	return uuid
+}
+
+func CopyFybrikLabels(m map[string]string) map[string]string {
+	labels := map[string]string{}
+	for k, v := range m {
+		if strings.HasPrefix(k, FybrikPrefix) {
+			labels[k] = v
+		}
+	}
+	return labels
 }
