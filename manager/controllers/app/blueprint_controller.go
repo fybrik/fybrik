@@ -234,7 +234,6 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
-	fmt.Printf("IsNPEnabled = %v\n", environment.IsNPEnabled())
 	if environment.IsNPEnabled() {
 		err = r.createNetworkPolicies(ctx, releaseName, network, blueprint, log)
 		if err != nil {
@@ -310,8 +309,7 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 		for _, obj := range rel.Info.Resources[versionKind] {
 			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
 				res := unstructured.Unstructured{Object: unstr}
-				// resources = append(resources, &res)
-				fmt.Printf("resouce kind = %s, name = %s, port %v\n", res.GetKind(), res.GetName(), res.GetObjectKind())
+				r.Log.Trace().Msg("resouce kind = " + res.GetKind() + " name = " + res.GetName())
 				if res.GetKind() == "Service" {
 					svc := corev1.Service{}
 					svcID := res.GetName()
@@ -322,18 +320,10 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 					} else {
 						// svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
 						for _, port := range svc.Spec.Ports {
+							r.Log.Trace().Msg("expose service " + svc.GetName() + " with port " + strconv.Itoa(int(port.Port)))
 							svcsToExpose = append(svcsToExpose, SvcToExpose{svc.GetName(), strconv.Itoa(int(port.Port))})
 						}
-						// fmt.Printf("service name is %s, ports %v, svcIP = %s\n", svc.GetName(), svc.Spec.Ports, svcIP)
-						fmt.Printf("service to expose %v\n", svcsToExpose)
 					}
-					// svc, svcerr := clientset.CoreV1().Services(moduleNamespace).Get(context.TODO(), svcID, metav1.GetOptions{})
-					// if svcerr != nil {
-					// 	r.Log.Error().Err(err).Msg("Error getting resources")
-					// 	return svcerr
-					// }
-					// svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
-					// fmt.Printf("service name is %s, port %d, svcIP = %s\n", svc.GetName(), svc.Spec.Ports[0].Port, svcIP)
 				}
 			} else {
 				log.Err(err).Msg("error getting resources")
@@ -345,38 +335,31 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 }
 
 func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork, rel *release.Release) error {
-	fmt.Printf("go client mbg start\n")
+	r.Log.Trace().Msg("apply MBG network")
 	config, err := restclient.InClusterConfig()
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	// // create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	fmt.Printf("start exec\n")
+	if err != nil {
+		return err
+	}
 	// Connect the two MBGs
-	// MBGCTLMainPodName := "mbgctl-deployment-fd7798bb9-w8qdt" // ENV Variable
 	MBGPodName := environment.GetMBGPodName()
 	MBGCTLPodName := environment.GetMBGCtlPodName()
 	moduleNamespace := blueprint.Spec.ModulesNamespace
 	MBGNamespace := environment.GetMBGNameSpace()
-	// MBGNamespace := blueprint.Spec.ModulesNamespace
 	cluster := blueprint.Spec.Cluster
-	fmt.Printf("mbg pod %s, mbg ctl %s, cluster %s, network = %v\n", MBGPodName, MBGCTLPodName, cluster, network)
-
+	r.Log.Trace().Msg("mbg pod is " + MBGPodName + " mbgctl pod is " + MBGCTLPodName + " cluster is " + cluster)
 	var svcsToExpose []SvcToExpose
 	// if the module is an endpoint then add and expose it
 	if network.Endpoint {
+		r.Log.Trace().Msg("the module is an endpoint")
 		svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
 	} else {
 		for _, ingress := range network.Ingress {
-			fmt.Printf("ingress cluster = %s, ingress %v\n", ingress.Cluster, ingress)
+			r.Log.Trace().Msg("ingress cluster is " + ingress.Cluster)
 			// if the ingress from a different cluster then add the module's service
 			if ingress.Cluster != cluster {
-				// get the service
-				// get resources of the module's chart
+				r.Log.Trace().Msg("there is a remote connection from a different cluster")
+				// get services of the module's chart
 				svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
 				break
 			}
@@ -384,7 +367,7 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	}
 
 	for _, svcToExpose := range svcsToExpose {
-		fmt.Printf("service to expose %v\n", svcToExpose)
+		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
 		// add the service to MBG
 		MBGCommand := "./mbgctl add service --id " + svcToExpose.svcName + " --target " + svcToExpose.svcName + " --port " + svcToExpose.port
 		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
@@ -402,13 +385,13 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	// managerUtils.KubernetesInstance
 	fmt.Printf("blueprint labels = %v, release labels = %v, app = %s \n", blueprint.Labels, rel.Labels, rel.Labels["app"])
 	for _, egress := range network.Egress {
-		fmt.Printf("egress cluster = %s, egress %v\n", egress.Cluster, egress)
 		// if the egress list has a service from a different cluster then add the module's service
 		if egress.Cluster != cluster {
 			// get the label
 			fmt.Printf("blueprints labels = %v, app = %s \n", blueprint.Labels, blueprint.Labels["app"])
 			if label, ok := blueprint.Labels["app"]; ok {
-				fmt.Printf("add label to mbg = %s\n", label)
+				r.Log.Trace().Msg("there is a remote connection to a different cluster")
+				r.Log.Trace().Msg("add label to mbg " + label)
 				// add the label to mbg
 				MBGCommand := "./mbgctl add service --id " + label
 				err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
@@ -419,56 +402,6 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 			break
 		}
 	}
-
-	// ////////////////////////////////////////////////
-	// // mbgctl1, err := api.CreateMbgctl("127.0.0.1", MBGCTLMainPodName, "1.2:4", "", "", "mtlsFolder+mbg1key", "mtls")
-	// // fmt.Printf("gg %v", mbgctl1)
-	// // MBGRemoteName := "mbgctl-deployment-fd7798bb9-th6zs"
-	// // MBGRemoteIP := "172.18.0.4"
-	// // MBGRemotePort := "30443"
-	// // MBGCommand := "./mbgctl addPeer --id " + MBGRemoteName + " --ip " + MBGRemoteIP + " --cport " + MBGRemotePort
-	// // err = ExecCmdExample(clientset, config, MBGCTLMainPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-	// // if err != nil {
-	// // 	return err
-	// // }
-
-	// // Add service
-	// var svcID string
-	// var svcIP string
-	// // svcID = "my-app-fybrik-airbyte-sample-airbyte-module"
-	// // resources, err := r.Helmer.GetResources(cfg, manifest)
-	// if err != nil {
-	// 	r.Log.Error().Err(err).Msg("Error getting resources")
-	// 	return err
-	// }
-	// // Expose the services that there exist connections to them
-	// for _, res := range resources {
-	// 	fmt.Printf("kind %s, name %s\n", res.GetKind(), res.GetName())
-	// 	if res.GetKind() == "Service" {
-	// 		svcID = res.GetName()
-	// 		svc, svcerr := clientset.CoreV1().Services(namespace).Get(context.TODO(), svcID, metav1.GetOptions{})
-	// 		if svcerr != nil {
-	// 			r.Log.Error().Err(err).Msg("Error getting resources")
-	// 			return svcerr
-	// 		}
-	// 		svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
-	// 		fmt.Printf("service name is %s, port %d\n", svc.GetName(), svc.Spec.Ports[0].Port)
-	// 	}
-	// }
-	// // svcIP := "my-app-fybrik-airbyte-sample-airbyte-module:80"
-	// fmt.Printf("service to expose %s\n", svcIP)
-	// MBGCommand := "./mbgctl addService --id " + svcID + " --ip " + svcIP
-	// err = ExecCmdExample(clientset, config, MBGCTLPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // Expose service
-	// MBGCommand = "./mbgctl expose --serviceId " + svcID
-	// err = ExecCmdExample(clientset, config, MBGCTLPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }
 
