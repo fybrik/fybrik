@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -65,6 +66,10 @@ func execCmdCommand(restClient restclient.Interface, config *restclient.Config, 
 
 func TestNetworkPolicyReadFlow(t *testing.T) {
 	fmt.Println("network policy test")
+	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
+	if !ok || !(strings.Contains(valuesYaml, readFlow)) {
+		t.Skip("Only executed for notebook tests")
+	}
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
 	if !ok || catalogedAsset == "" {
 		log.Printf("CATALOGED_ASSET should be defined.")
