@@ -30,24 +30,21 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
-func execCmdCommand(restClient restclient.Interface, config *restclient.Config, podName string, namespace string,
-	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+func execCmdCommand(restClient restclient.Interface, config *restclient.Config, namespace string,
+	command string, stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
 		"-c",
 		command,
 	}
-	req := restClient.Post().Resource("pods").Name(podName).
+	req := restClient.Post().Resource("pods").Name("my-shell").
 		Namespace(namespace).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
-		Stdin:   true,
+		Stdin:   false,
 		Stdout:  true,
 		Stderr:  true,
 		TTY:     true,
-	}
-	if stdin == nil {
-		option.Stdin = false
 	}
 	req.VersionedParams(
 		option,
@@ -58,7 +55,7 @@ func execCmdCommand(restClient restclient.Interface, config *restclient.Config, 
 		return err
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  stdin,
+		Stdin:  nil,
 		Stdout: stdout,
 		Stderr: stderr,
 	})
@@ -200,7 +197,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
 	time.Sleep(20 * time.Second)
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
 	g.Expect(err).To(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -214,14 +211,14 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(err).To(gomega.BeNil())
 	fmt.Println("Expecting Reading command to fail now")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
 
 	// Try to read from other namespace
 	fmt.Println("Expecting Reading from default namespace to fail")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
+	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "default", readCommand, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -235,7 +232,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	err = k8sClient.Update(context.Background(), podObj)
 	g.Expect(err).To(gomega.BeNil())
 	fmt.Println("Expecting Reading from default namespace with labels to fail")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
+	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "default", readCommand, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -269,7 +266,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -303,7 +300,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		time.Sleep(20 * time.Second)
 		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the new url")
 		readCommand = "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
-		err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+		err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
 		g.Expect(err).ToNot(gomega.BeNil())
 		stdout.Reset()
 		stderr.Reset()
