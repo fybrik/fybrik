@@ -41,7 +41,7 @@ import (
 
 const (
 	readFlow                      string        = "notebook-test-readflow"
-	PortFowardingMaxRetryAttempts int           = 25
+	PortFowardingMaxRetryAttempts int           = 10
 	PortForwardingDelay           time.Duration = 5
 )
 
@@ -71,7 +71,7 @@ func RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName string, por
 		time.Sleep(PortForwardingDelay * time.Second)
 		i++
 	}
-	return "", errors.New("Port Forwarding command failed with error")
+	return "", err
 }
 
 func TestS3NotebookReadFlow(t *testing.T) {
@@ -302,7 +302,6 @@ func TestS3NotebookReadFlow(t *testing.T) {
 	fmt.Printf("Starting kubectl port-forward for arrow-flight service %s port %s in ns %s\n", svcName, port, modulesNamespace)
 	portNum, err := strconv.Atoi(port)
 	g.Expect(err).To(gomega.BeNil(), "wrong port number %s", port)
-
 	listenPort, err := RunPortForwardCommandWithRetryAttemps(modulesNamespace, svcName, portNum)
 	if err != nil {
 		g.Fail("Port Forwarding command failed with error " + err.Error())

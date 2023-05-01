@@ -381,6 +381,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	if numReady == numReleases {
 		// all modules have been orchestrated successfully - the data is ready for use
 		blueprint.Status.ObservedState.Ready = true
+		log.Info().Msg("blueprint is ready")
 		return ctrl.Result{}, nil
 	}
 
@@ -531,6 +532,9 @@ func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid stri
 		}
 	}
 	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
+	if len(resources) == 0 {
+		return corev1.ConditionUnknown, ""
+	}
 	numReady := 0
 	for _, res := range resources {
 		state, errMsg := r.checkResourceStatus(res)
