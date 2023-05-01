@@ -24,6 +24,9 @@ data:
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "http://%s-connector:8080" .Values.coordinator.policyManager) | quote }}
   STORAGE_MANAGER_URL: {{ printf "http://localhost:%s" .Values.storageManager.serverPort | quote }}
+  MBG_POD_NAME: {{ .Values.cluster.mbgPodName }}
+  MBG_CTL_POD_NAME: {{ .Values.cluster.mbgCtlPodName }}
+  MBG_NAMESPACE: {{ .Values.cluster.mbgNamespace }}
   {{- if .Values.coordinator.vault.enabled }}
   VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}

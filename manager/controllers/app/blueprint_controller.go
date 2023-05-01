@@ -6,23 +6,31 @@ package app
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"emperror.dev/errors"
 	distributionref "github.com/distribution/distribution/reference"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	credentialprovider "github.com/vdemeester/k8s-pkg-credentialprovider"
 	credentialprovidersecrets "github.com/vdemeester/k8s-pkg-credentialprovider/secrets"
 	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
+	"k8s.io/kubectl/pkg/scheme"
 	kstatus "sigs.k8s.io/cli-utils/pkg/kstatus/status"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,10 +55,11 @@ const (
 // BlueprintReconciler reconciles a Blueprint object
 type BlueprintReconciler struct {
 	client.Client
-	Name   string
-	Log    zerolog.Logger
-	Scheme *runtime.Scheme
-	Helmer helm.Interface
+	Name                string
+	Log                 zerolog.Logger
+	Scheme              *runtime.Scheme
+	Helmer              helm.Interface
+	IsMultiClusterSetup bool
 }
 
 // Reconcile receives a Blueprint CRD
@@ -225,6 +234,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	if err != nil {
 		return nil, errors.WithMessage(err, chartSpec.Name+": failed chart load")
 	}
+	fmt.Printf("IsNPEnabled = %v\n", environment.IsNPEnabled())
 	if environment.IsNPEnabled() {
 		err = r.createNetworkPolicies(ctx, releaseName, network, blueprint, log)
 		if err != nil {
@@ -248,6 +258,218 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	}
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("--- Release Status ---\n\n" + string(rel.Info.Status) + "\n\n")
 	return rel, nil
+}
+
+func execCmdCommand(client kubernetes.Interface, config *restclient.Config, podName string, namespace string,
+	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+	cmd := []string{
+		"sh",
+		"-c",
+		command,
+	}
+	req := client.CoreV1().RESTClient().Post().Resource("pods").Name(podName).
+		Namespace(namespace).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		Stdin:   true,
+		Stdout:  true,
+		Stderr:  true,
+		TTY:     true,
+	}
+	if stdin == nil {
+		option.Stdin = false
+	}
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type SvcToExpose struct {
+	svcName string
+	port    string
+}
+
+func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace string, rel *release.Release) ([]SvcToExpose, error) {
+	var svcsToExpose []SvcToExpose
+	for versionKind := range rel.Info.Resources {
+		for _, obj := range rel.Info.Resources[versionKind] {
+			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
+				res := unstructured.Unstructured{Object: unstr}
+				// resources = append(resources, &res)
+				fmt.Printf("resouce kind = %s, name = %s, port %v\n", res.GetKind(), res.GetName(), res.GetObjectKind())
+				if res.GetKind() == "Service" {
+					svc := corev1.Service{}
+					svcID := res.GetName()
+					key := types.NamespacedName{Name: svcID}
+					key.Namespace = moduleNamespace
+					if err = r.Get(ctx, key, &svc); err != nil {
+						log.Info().Msgf("Get service returned error. %v", svc)
+					} else {
+						// svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
+						for _, port := range svc.Spec.Ports {
+							svcsToExpose = append(svcsToExpose, SvcToExpose{svc.GetName(), strconv.Itoa(int(port.Port))})
+						}
+						// fmt.Printf("service name is %s, ports %v, svcIP = %s\n", svc.GetName(), svc.Spec.Ports, svcIP)
+						fmt.Printf("service to expose %v\n", svcsToExpose)
+					}
+					// svc, svcerr := clientset.CoreV1().Services(moduleNamespace).Get(context.TODO(), svcID, metav1.GetOptions{})
+					// if svcerr != nil {
+					// 	r.Log.Error().Err(err).Msg("Error getting resources")
+					// 	return svcerr
+					// }
+					// svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
+					// fmt.Printf("service name is %s, port %d, svcIP = %s\n", svc.GetName(), svc.Spec.Ports[0].Port, svcIP)
+				}
+			} else {
+				log.Err(err).Msg("error getting resources")
+				return nil, err
+			}
+		}
+	}
+	return svcsToExpose, nil
+}
+
+func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork, rel *release.Release) error {
+	fmt.Printf("go client mbg start\n")
+	config, err := restclient.InClusterConfig()
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	// // create the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
+	fmt.Printf("start exec\n")
+	// Connect the two MBGs
+	// MBGCTLMainPodName := "mbgctl-deployment-fd7798bb9-w8qdt" // ENV Variable
+	MBGPodName := environment.GetMBGPodName()
+	MBGCTLPodName := environment.GetMBGCtlPodName()
+	moduleNamespace := blueprint.Spec.ModulesNamespace
+	MBGNamespace := environment.GetMBGNameSpace()
+	// MBGNamespace := blueprint.Spec.ModulesNamespace
+	cluster := blueprint.Spec.Cluster
+	fmt.Printf("mbg pod %s, mbg ctl %s, cluster %s, network = %v\n", MBGPodName, MBGCTLPodName, cluster, network)
+
+	var svcsToExpose []SvcToExpose
+	// if the module is an endpoint then add and expose it
+	if network.Endpoint {
+		svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
+	} else {
+		for _, ingress := range network.Ingress {
+			fmt.Printf("ingress cluster = %s, ingress %v\n", ingress.Cluster, ingress)
+			// if the ingress from a different cluster then add the module's service
+			if ingress.Cluster != cluster {
+				// get the service
+				// get resources of the module's chart
+				svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
+				break
+			}
+		}
+	}
+
+	for _, svcToExpose := range svcsToExpose {
+		fmt.Printf("service to expose %v\n", svcToExpose)
+		// add the service to MBG
+		MBGCommand := "./mbgctl add service --id " + svcToExpose.svcName + " --target " + svcToExpose.svcName + " --port " + svcToExpose.port
+		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		if err != nil {
+			return err
+		}
+		// Expose the service
+		MBGCommand = "./mbgctl expose --service " + svcToExpose.svcName
+		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		if err != nil {
+			return err
+		}
+	}
+
+	// managerUtils.KubernetesInstance
+	fmt.Printf("blueprint labels = %v, release labels = %v, app = %s \n", blueprint.Labels, rel.Labels, rel.Labels["app"])
+	for _, egress := range network.Egress {
+		fmt.Printf("egress cluster = %s, egress %v\n", egress.Cluster, egress)
+		// if the egress list has a service from a different cluster then add the module's service
+		if egress.Cluster != cluster {
+			// get the label
+			fmt.Printf("blueprints labels = %v, app = %s \n", blueprint.Labels, blueprint.Labels["app"])
+			if label, ok := blueprint.Labels["app"]; ok {
+				fmt.Printf("add label to mbg = %s\n", label)
+				// add the label to mbg
+				MBGCommand := "./mbgctl add service --id " + label
+				err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+				if err != nil {
+					return err
+				}
+			}
+			break
+		}
+	}
+
+	// ////////////////////////////////////////////////
+	// // mbgctl1, err := api.CreateMbgctl("127.0.0.1", MBGCTLMainPodName, "1.2:4", "", "", "mtlsFolder+mbg1key", "mtls")
+	// // fmt.Printf("gg %v", mbgctl1)
+	// // MBGRemoteName := "mbgctl-deployment-fd7798bb9-th6zs"
+	// // MBGRemoteIP := "172.18.0.4"
+	// // MBGRemotePort := "30443"
+	// // MBGCommand := "./mbgctl addPeer --id " + MBGRemoteName + " --ip " + MBGRemoteIP + " --cport " + MBGRemotePort
+	// // err = ExecCmdExample(clientset, config, MBGCTLMainPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+	// // if err != nil {
+	// // 	return err
+	// // }
+
+	// // Add service
+	// var svcID string
+	// var svcIP string
+	// // svcID = "my-app-fybrik-airbyte-sample-airbyte-module"
+	// // resources, err := r.Helmer.GetResources(cfg, manifest)
+	// if err != nil {
+	// 	r.Log.Error().Err(err).Msg("Error getting resources")
+	// 	return err
+	// }
+	// // Expose the services that there exist connections to them
+	// for _, res := range resources {
+	// 	fmt.Printf("kind %s, name %s\n", res.GetKind(), res.GetName())
+	// 	if res.GetKind() == "Service" {
+	// 		svcID = res.GetName()
+	// 		svc, svcerr := clientset.CoreV1().Services(namespace).Get(context.TODO(), svcID, metav1.GetOptions{})
+	// 		if svcerr != nil {
+	// 			r.Log.Error().Err(err).Msg("Error getting resources")
+	// 			return svcerr
+	// 		}
+	// 		svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
+	// 		fmt.Printf("service name is %s, port %d\n", svc.GetName(), svc.Spec.Ports[0].Port)
+	// 	}
+	// }
+	// // svcIP := "my-app-fybrik-airbyte-sample-airbyte-module:80"
+	// fmt.Printf("service to expose %s\n", svcIP)
+	// MBGCommand := "./mbgctl addService --id " + svcID + " --ip " + svcIP
+	// err = ExecCmdExample(clientset, config, MBGCTLPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// // Expose service
+	// MBGCommand = "./mbgctl expose --serviceId " + svcID
+	// err = ExecCmdExample(clientset, config, MBGCTLPodName, MBGMainNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
 }
 
 // CopyMap copies a map
@@ -360,6 +582,10 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
 				r.updateModuleState(blueprint, instanceName, false, errMsg)
 			} else if status == corev1.ConditionTrue {
+				// apply MBG
+				if r.IsMultiClusterSetup {
+					r.applyMBGNetwork(ctx, blueprint, &module.Network, rel)
+				}
 				r.updateModuleState(blueprint, instanceName, true, "")
 				numReady++
 			}
@@ -395,13 +621,14 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 }
 
 // NewBlueprintReconciler creates a new reconciler for Blueprint resources
-func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface) *BlueprintReconciler {
+func NewBlueprintReconciler(mgr ctrl.Manager, name string, helmer helm.Interface, isMultiClusterSetup bool) *BlueprintReconciler {
 	return &BlueprintReconciler{
-		Client: mgr.GetClient(),
-		Name:   name,
-		Log:    logging.LogInit(logging.CONTROLLER, name),
-		Scheme: mgr.GetScheme(),
-		Helmer: helmer,
+		Client:              mgr.GetClient(),
+		Name:                name,
+		Log:                 logging.LogInit(logging.CONTROLLER, name),
+		Scheme:              mgr.GetScheme(),
+		Helmer:              helmer,
+		IsMultiClusterSetup: isMultiClusterSetup,
 	}
 }
 

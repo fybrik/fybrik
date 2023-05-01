@@ -156,6 +156,18 @@ func IsNPEnabled() bool {
 	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
 }
 
+func GetMBGPodName() string {
+	return os.Getenv("MBG_POD_NAME")
+}
+
+func GetMBGCtlPodName() string {
+	return os.Getenv("MBG_CTL_POD_NAME")
+}
+
+func GetMBGNameSpace() string {
+	return os.Getenv("MBG_NAMESPACE")
+}
+
 func IsOpenShiftDeployment() bool {
 	return strings.ToLower(os.Getenv(OpenShiftDeployment)) == "true"
 }
