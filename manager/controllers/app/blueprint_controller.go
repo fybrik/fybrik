@@ -347,14 +347,13 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
+			if _, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
-		}
-		if rel != nil && rel.Info.Status == release.StatusDeployed {
+		} else if rel != nil && rel.Info.Status == release.StatusDeployed {
 			status, errMsg := r.checkReleaseStatus(rel, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
@@ -532,9 +531,6 @@ func (r *BlueprintReconciler) checkReleaseStatus(rel *release.Release, uuid stri
 		}
 	}
 	// return True if all resources are ready, False - if any resource failed, Unknown - otherwise
-	if len(resources) == 0 {
-		return corev1.ConditionUnknown, ""
-	}
 	numReady := 0
 	for _, res := range resources {
 		state, errMsg := r.checkResourceStatus(res)
