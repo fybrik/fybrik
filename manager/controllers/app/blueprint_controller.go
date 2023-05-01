@@ -347,14 +347,13 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		if updateRequired || err != nil || rel == nil || rel.Info.Status == release.StatusFailed {
 			// Process templates with arguments
 			chart := module.Chart
-			if rel, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
+			if _, err = r.applyChartResource(ctx, cfg, chart, &module.Network, args, blueprint, releaseName, log); err != nil {
 				blueprint.Status.ObservedState.Error += errors.Wrap(err, "ChartDeploymentFailure: ").Error() + "\n"
 				r.updateModuleState(blueprint, instanceName, false, err.Error())
 			} else {
 				r.updateModuleState(blueprint, instanceName, false, "")
 			}
-		}
-		if rel != nil && rel.Info.Status == release.StatusDeployed {
+		} else if rel != nil && rel.Info.Status == release.StatusDeployed {
 			status, errMsg := r.checkReleaseStatus(rel, uuid)
 			if status == corev1.ConditionFalse {
 				blueprint.Status.ObservedState.Error += "ResourceAllocationFailure: " + errMsg + "\n"
@@ -381,6 +380,7 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	if numReady == numReleases {
 		// all modules have been orchestrated successfully - the data is ready for use
 		blueprint.Status.ObservedState.Ready = true
+		log.Info().Msg("blueprint is ready")
 		return ctrl.Result{}, nil
 	}
 
