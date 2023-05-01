@@ -179,8 +179,8 @@ run-notebook-readflow-tests-katalog:
 
 .PHONY: run-network-policy-readflow-tests-katalog
 run-network-policy-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog" --set "global.isNPEnabled=true"
-run-network-policy-readflow-tests-katalog: export VALUES_FILE=charts/fybrik/notebook-test-readflow.values.yaml
-run-network-policy-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
+run-network-policy-readflow-tests-katalog: export VALUES_FILE=test/charts/notebook-test-readflow.values.yaml
+run-network-policy-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/userdata
 run-network-policy-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
 run-network-policy-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
 run-network-policy-readflow-tests-katalog: export USE_CALICO=1

@@ -13,7 +13,11 @@ kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
 if [[ "${USE_OPENMETADATA_CATALOG}" -eq 0 ]]; then
   # Deploy katalog asset
-  kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
+  if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
+    kubectl -n fybrik-notebook-sample apply -f asset-isolation.yaml
+  else
+    kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
+  fi
 else
   port=8080
   local_port=8081
@@ -48,7 +52,7 @@ fi
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
 
 if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
-  kubectl apply -f np-modules-ex/arrow-flight-np-read.yaml -n fybrik-system
+  kubectl apply -f np-modules-ex/airbyte-module-with-np.yaml -n fybrik-system
   kubectl apply -f np-modules-ex/arrow-flight-np-transform.yaml -n fybrik-system
 else
   if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
@@ -75,12 +79,6 @@ if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
   kubectl run my-shell --image ghcr.io/fybrik/airbyte-module-client:main --image-pull-policy=Always -n default
   kubectl wait pod --for=condition=ready my-shell -n fybrik-blueprints --timeout 10m
   kubectl wait pod --for=condition=ready my-shell -n default --timeout 10m
-
-  # Forward port of test S3 instance
-  kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
-  # Create a new service for the same s3 storage for testing
-  kubectl apply -f s3-dup.yaml -n fybrik-system
-  kubectl port-forward -n fybrik-system svc/s3-dup 9393:9393 &
 else
   # Forward port of test S3 instance
   kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
