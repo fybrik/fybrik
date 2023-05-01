@@ -9,6 +9,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/rs/zerolog"
 
+	"fybrik.io/fybrik/pkg/adminconfig"
 	"fybrik.io/fybrik/pkg/datapath"
 	"fybrik.io/fybrik/pkg/environment"
 	"fybrik.io/fybrik/pkg/logging"
@@ -79,6 +80,10 @@ func validateBasicConditions(env *datapath.Environment, datasets []datapath.Data
 				return err
 			}
 		}
+		if err := validateRequiredCapabilities(env, dataset); err != nil {
+			log.Error().Err(err)
+			return err
+		}
 	}
 	return nil
 }
@@ -132,4 +137,35 @@ func validateAssetProtocol(env *datapath.Environment, dataset *datapath.DataInfo
 	message := fmt.Sprintf("The asset '%s' (%s) can't be read by the deployed modules",
 		dataset.Context.DataSetID, createInterfaceString(assetInterfacePtr))
 	return errors.New(message)
+}
+
+// check if the deployed modules provide the required capabilities by the dataset
+// return nil if the capabilites are offered by the deployed modules, and an error if not
+func validateRequiredCapabilities(env *datapath.Environment, dataset *datapath.DataInfo) error {
+	decisionPerCapabilityMap := &dataset.Configuration.ConfigDecisions
+	for capability := range *decisionPerCapabilityMap {
+		if (*decisionPerCapabilityMap)[capability].Deploy != adminconfig.StatusTrue {
+			continue
+		}
+		isFoundModule := false
+		for _, module := range env.Modules {
+			for _, moduleCapability := range module.Spec.Capabilities {
+				// check if the module capability matches the required capability
+				if moduleCapability.Capability == capability {
+					isFoundModule = true
+					break
+				}
+			}
+			if isFoundModule {
+				break
+			}
+		}
+		if !isFoundModule {
+			message := fmt.Sprintf(
+				"The dataset '%s' requires that the capability '%s' will be deployed, but it is not offered by any deployed module",
+				dataset.Context.DataSetID, string(capability))
+			return errors.New(message)
+		}
+	}
+	return nil
 }
