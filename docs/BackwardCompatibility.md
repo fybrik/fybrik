@@ -70,6 +70,7 @@ validations, therefore we can see taxonomy as part of external connectivity and 
   - [IT Configuration Policies](#default-it-config-policies)
 - [Format of Fybrik log files](#format-of-fybrik-log-files). If Fybrik log files are used by external analytic tools, 
 format of the files will be part of external integration points too.
+- [Infrastructure Attributes and IT Configuration Policies](#infrastructure-attributes-and-it-config-policies)
 - [Python modules](#python-modules)
 
 ## Kubernetes Custom Resource Versions and Upgrade Plan
@@ -223,6 +224,11 @@ The default IT policies and the default infrastructure definitions exist at
 the `./charts/fybrik/adminconfig` or direct changes in the `fybrik-adminconfig` configmap. However, fybrik updates will
 overwrite these changes. We have to provide a different mechanism, which will automatically merge default and user defined 
 settings.  
+
+## Infrastructure Attributes and IT Config Policies
+Infrastructure attributes are defined in [infrastructure.json](https://github.com/fybrik/fybrik/tree/master/charts/fybrik/files/adminconfig/infrastructure.json). While the values of metrics and attributes defined in this file may be customized, the scheme should be always backward compatible.
+[IT config policies](https://fybrik.io/v1.1/concepts/config-policies/) are written in Rego files. Each file defines a package `adminconfig` that matches the current rule structure used by Fybrik. Any changes to the structure that break backward compatibility will result in defining a new package `adminconfig.vXXX` where XXX denotes the package version. 
+
 
 ## Format of Fybrik log files
 Fybrik, during its running produces log files. The files are output of Fybrik execution, so we don't have to define a 
