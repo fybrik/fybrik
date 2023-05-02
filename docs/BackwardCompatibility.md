@@ -227,6 +227,7 @@ settings.
 
 ## Infrastructure Attributes and IT Config Policies
 Infrastructure attributes are defined in [infrastructure.json](https://github.com/fybrik/fybrik/tree/master/charts/fybrik/files/adminconfig/infrastructure.json). While the values of metrics and attributes defined in this file may be customized, the scheme should be always backward compatible.
+
 [IT config policies](https://fybrik.io/v1.1/concepts/config-policies/) are written in Rego files. Each file defines a package `adminconfig` that matches the current rule structure used by Fybrik. Any changes to the structure that break backward compatibility will result in defining a new package `adminconfig.vXXX` where XXX denotes the package version. 
 
 
