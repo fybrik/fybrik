@@ -70,6 +70,10 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	if !ok || !(strings.Contains(valuesYaml, readFlow)) {
 		t.Skip("Only executed for notebook tests")
 	}
+	isolation, ok := os.LookupEnv("RUN_ISOLATION")
+	if !ok || isolation != "1" {
+		t.Skip("Only executed when isolation in enabled")
+	}
 	catalogedAsset, ok := os.LookupEnv("CATALOGED_ASSET")
 	if !ok || catalogedAsset == "" {
 		log.Printf("CATALOGED_ASSET should be defined.")

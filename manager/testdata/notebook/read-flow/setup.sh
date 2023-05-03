@@ -52,15 +52,13 @@ fi
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
 
 if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
-  kubectl apply -f np-modules-ex/airbyte-module-with-np.yaml -n fybrik-system
-  kubectl apply -f np-modules-ex/arrow-flight-np-transform.yaml -n fybrik-system
+  kubectl apply -f ../../airbyte-module-with-np.yaml -n fybrik-system
+fi
+if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
+  # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
+  kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 else
-  if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
-    # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
-    kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
-  else
-    kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}/module.yaml -n fybrik-system
-  fi
+  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}/module.yaml -n fybrik-system
 fi
 
 # When Vault uses mutual TLS the certificates and private key for the arrow-flight-module
