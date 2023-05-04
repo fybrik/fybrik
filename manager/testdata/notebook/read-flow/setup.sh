@@ -13,11 +13,7 @@ kubectl -n fybrik-notebook-sample apply -f s3credentials.yaml
 
 if [[ "${USE_OPENMETADATA_CATALOG}" -eq 0 ]]; then
   # Deploy katalog asset
-  if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
-    kubectl -n fybrik-notebook-sample apply -f asset-isolation.yaml
-  else
-    kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
-  fi
+  kubectl -n fybrik-notebook-sample apply -f katalog-asset.yaml
 else
   port=8080
   local_port=8081
@@ -52,13 +48,15 @@ fi
 kubectl delete validatingwebhookconfiguration fybrik-system-validating-webhook
 
 if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
-  kubectl apply -f ../../airbyte-module-with-np.yaml -n fybrik-system
-fi
-if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
-  # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
-  kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+  kubectl apply -f np-modules-ex/arrow-flight-np-read.yaml -n fybrik-system
+  kubectl apply -f np-modules-ex/arrow-flight-np-transform.yaml -n fybrik-system
 else
-  kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}/module.yaml -n fybrik-system
+  if [[ -z "${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}" ]]; then
+    # Use master version of arrow-flight-module according to https://github.com/fybrik/arrow-flight-module#version-compatbility-matrix
+    kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+  else
+    kubectl apply -f https://github.com/fybrik/arrow-flight-module/releases/download/${LATEST_BACKWARD_SUPPORTED_AFM_VERSION}/module.yaml -n fybrik-system
+  fi
 fi
 
 # When Vault uses mutual TLS the certificates and private key for the arrow-flight-module
@@ -77,7 +75,12 @@ if [[ "${RUN_ISOLATION}" -eq 1 ]]; then
   kubectl run my-shell --image ghcr.io/fybrik/airbyte-module-client:main --image-pull-policy=Always -n default
   kubectl wait pod --for=condition=ready my-shell -n fybrik-blueprints --timeout 10m
   kubectl wait pod --for=condition=ready my-shell -n default --timeout 10m
-else
-  # Forward port of test S3 instance
-  kubectl port-forward -n fybrik-system svc/s3 9090:9090 &
+
+  # Create a new service for the same s3 storage for testing
+  kubectl apply -f s3-dup.yaml -n fybrik-system
+  sleep 10
+  kubectl port-forward -n fybrik-system svc/s3-dup 9393:9090 &
 fi
+
+# Forward port of test S3 instance
+kubectl port-forward -n fybrik-system svc/s3 9090:9090 &

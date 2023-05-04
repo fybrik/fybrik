@@ -264,6 +264,9 @@ jobs:
     - name: Read flow notebook tests with katalog
       if: ${{ ! github.event.pull_request.draft }}
       run: make run-notebook-readflow-tests-katalog
+    - name: Isolation tests with katalog
+      if: ${{ ! github.event.pull_request.draft }}
+      run: make run-network-policy-readflow-tests-katalog
 
 
   tekton-pipelines:

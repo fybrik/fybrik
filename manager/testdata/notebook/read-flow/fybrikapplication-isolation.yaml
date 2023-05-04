@@ -19,7 +19,7 @@ spec:
   appInfo:
     intent: Fraud Detection
   data:
-    - dataSetID: 'fybrik-notebook-sample/userdata'
+    - dataSetID: 'fybrik-notebook-sample/data-csv'
       flow: read
       requirements:
         interface:

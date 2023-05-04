@@ -14,6 +14,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
@@ -31,8 +36,8 @@ import (
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 )
 
-func execCmdCommand(restClient restclient.Interface, config *restclient.Config, namespace string,
-	command string, stdout io.Writer, stderr io.Writer) error {
+func execCmdCommand(restClient restclient.Interface, config *restclient.Config, namespace string, command string,
+	stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
 		"-c",
@@ -64,6 +69,47 @@ func execCmdCommand(restClient restclient.Interface, config *restclient.Config, 
 	return err
 }
 
+func uploadToS3(endpoint string, g gomega.Gomega) {
+	region := "theshire"
+	bucket := "bucket1"
+	key1 := "data.csv"
+	filename := "../../testdata/data.csv"
+	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
+	sess2 := session.Must(session.NewSession(&aws.Config{
+		Credentials:      s3credentials,
+		Endpoint:         &endpoint,
+		Region:           &region,
+		S3ForcePathStyle: aws.Bool(true),
+	}))
+	s3Client2 := s3.New(sess2)
+	object2, err := s3Client2.GetObject(&s3.GetObjectInput{
+		Bucket: &bucket,
+		Key:    &key1,
+	})
+	if err != nil { // Could not retrieve object. Assume it does not exist
+		uploader2 := s3manager.NewUploader(sess2)
+
+		f, ferr := os.Open(filename)
+		g.Expect(ferr).To(gomega.BeNil(), "Opening local test data file")
+
+		// Upload the file to S3.
+		var result *s3manager.UploadOutput
+		result, err = uploader2.Upload(&s3manager.UploadInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key1),
+			Body:   f,
+		})
+		g.Expect(err).To(gomega.BeNil(), "S3 upload")
+		if result != nil {
+			log.Printf("file uploaded to, %s\n", result.Location)
+		}
+	} else {
+		g.Expect(object2).ToNot(gomega.BeNil())
+		fmt.Printf("error %v\n", err)
+		log.Println("Object already exists in S3!")
+	}
+}
+
 func TestNetworkPolicyReadFlow(t *testing.T) {
 	fmt.Println("network policy test")
 	valuesYaml, ok := os.LookupEnv("VALUES_FILE")
@@ -83,6 +129,16 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 
 	g := gomega.NewGomegaWithT(t)
 	defer GinkgoRecover()
+
+	// Copy data.csv file to S3
+	// S3 is assumed to be exposed on localhost at port 9090
+	endpoint := "http://localhost:9090"
+	// S3 duplicate is assumed to be exposed on localhost at port 9393
+	endpointDup := "http://localhost:9393"
+	// upload to the s3 store
+	uploadToS3(endpoint, g)
+	// upload to the duplicate s3 store
+	uploadToS3(endpointDup, g)
 
 	err := fapp.AddToScheme(scheme.Scheme)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
@@ -294,20 +350,20 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		var yamlData map[string]interface{}
 		err = yaml.Unmarshal([]byte(confYaml), &yamlData)
 		g.Expect(err).To(gomega.BeNil())
-		// Check if this configmap has an http connection
-		val, ok := yamlData["data"].([]interface{})[0].(map[interface{}]interface{})["connection"].(map[interface{}]interface{})["https"]
+		// Check if this configmap has an s3 connection
+		val, ok := yamlData["data"].([]interface{})[0].(map[interface{}]interface{})["connection"].(map[interface{}]interface{})["s3"]
 		if !ok {
 			continue
 		}
-		// Change the url endpoint of the data
-		val.(map[interface{}]interface{})["url"] = "https://www.google.com"
+		// Change the endpoint to the second s3 storage
+		val.(map[interface{}]interface{})["endpoint_url"] = "http://s3-dup.fybrik-system:9090"
 		newYaml, err := yaml.Marshal(yamlData)
 		g.Expect(err).To(gomega.BeNil())
 		configMap.Data["conf.yaml"] = string(newYaml)
 		err = k8sClient.Update(context.Background(), &moduleConfigMapList.Items[i])
 		g.Expect(err).To(gomega.BeNil())
-		time.Sleep(20 * time.Second)
-		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the new url")
+		time.Sleep(100 * time.Second)
+		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the second s3 storage")
 		readCommand = "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
 		err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
 		g.Expect(err).ToNot(gomega.BeNil())
