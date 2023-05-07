@@ -46,7 +46,7 @@ func NewS3Impl() *S3Impl {
 func init() {
 	s3Impl := NewS3Impl()
 	if err := registrator.Register(s3Impl); err != nil {
-		s3Impl.Log.Error().Err(err)
+		s3Impl.Log.Error().Err(err).Send()
 	}
 }
 
