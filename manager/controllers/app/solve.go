@@ -72,16 +72,16 @@ func validateBasicConditions(env *datapath.Environment, datasets []datapath.Data
 		dataset := &datasets[i]
 		if dataset.Context.Flow == "" || dataset.Context.Flow == taxonomy.ReadFlow {
 			if err := validateApplicationProtocol(env, dataset); err != nil {
-				log.Error().Err(err)
+				log.Error().Err(err).Send()
 				return err
 			}
 			if err := validateAssetProtocol(env, dataset); err != nil {
-				log.Error().Err(err)
+				log.Error().Err(err).Send()
 				return err
 			}
 		}
 		if err := validateRequiredCapabilities(env, dataset); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Send()
 			return err
 		}
 	}
