@@ -334,8 +334,30 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 	return svcsToExpose, nil
 }
 
+func getSvcHostPort(urlString string) (string, string, string) {
+	servURL, err := managerUtils.ParseRawURL(urlString)
+	if err != nil {
+		log.Err(err).Msgf(CannotParseURLError, urlString)
+		return "", "", ""
+	}
+	hostName := servURL.Hostname()
+	port := servURL.Port()
+	if hostName == "" {
+		log.Warn().Msgf("URL without host name: %s", servURL)
+		return "", "", ""
+	}
+	// Check if it is a local service
+	hostStrings := strings.Split(hostName, ".")
+	if len(hostStrings) > 1 {
+		return hostStrings[0], hostStrings[1], port
+	} else {
+		return hostStrings[0], "", port
+	}
+}
+
 func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork, rel *release.Release) error {
 	r.Log.Trace().Msg("apply MBG network")
+	fmt.Printf("network is %v\n", network)
 	config, err := restclient.InClusterConfig()
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -361,6 +383,9 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 				r.Log.Trace().Msg("there is a remote connection from a different cluster")
 				// get services of the module's chart
 				svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
+				if err != nil {
+					return err
+				}
 				break
 			}
 		}
@@ -398,8 +423,26 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 				if err != nil {
 					return err
 				}
+				// create a binding to the exposed remote service
+				for _, urlString := range egress.URLs {
+					svcName, svcNamesapce, svcPort := getSvcHostPort(urlString)
+					if svcName != "" {
+						log.Warn().Msgf("URL without host name: %s", urlString)
+						continue
+					}
+					MBGCommand = "./mbgctl add binding --service " + svcName + " --namespace " + svcNamesapce + " --port " + svcPort
+					err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+					if err != nil {
+						return err
+					}
+					// add policy to allow connection to the remote service
+					MBGCommand = "./mbgctl add policy --type acl --serviceSrc \"*\" --serviceDst " + svcName + "--priority 0 --action 0"
+					err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+					if err != nil {
+						return err
+					}
+				}
 			}
-			break
 		}
 	}
 	return nil
@@ -516,7 +559,10 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 			} else if status == corev1.ConditionTrue {
 				// apply MBG
 				if r.IsMultiClusterSetup {
-					r.applyMBGNetwork(ctx, blueprint, &module.Network, rel)
+					err = r.applyMBGNetwork(ctx, blueprint, &module.Network, rel)
+					if err != nil {
+						r.Log.Trace().Msg("MBG error " + err.Error())
+					}
 				}
 				r.updateModuleState(blueprint, instanceName, true, "")
 				numReady++
