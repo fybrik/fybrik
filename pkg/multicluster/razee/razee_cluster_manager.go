@@ -286,7 +286,7 @@ func (r *razeeClusterManager) UpdateBlueprint(cluster string, blueprint *app.Blu
 	// create channel version
 	channelVersion, err := r.con.Versions.AddChannelVersion(r.orgID, channelInfo.UUID, nextVersion, content, "")
 	if err != nil {
-		r.log.Error().Err(err)
+		r.log.Error().Err(err).Send()
 		return err
 	}
 
