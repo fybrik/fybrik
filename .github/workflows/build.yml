@@ -227,7 +227,7 @@ jobs:
       run: make install-tools
     - name: Write flow notebook tests
       run: make run-notebook-writeflow-tests
-    - name: Update env vars to use existsing cluster
+    - name: Update env vars to use existing cluster
       run: |
         # The step that creates or updates the environment variable does
         # not have access to the new value, but all subsequent steps 
@@ -264,6 +264,9 @@ jobs:
     - name: Read flow notebook tests with katalog
       if: ${{ ! github.event.pull_request.draft }}
       run: make run-notebook-readflow-tests-katalog
+    - name: Update env vars to create a new cluster
+      run: |
+        echo "USE_EXISTING_CLUSTER=0" >> $GITHUB_ENV
     - name: Isolation tests with katalog
       if: ${{ ! github.event.pull_request.draft }}
       run: make run-network-policy-readflow-tests-katalog

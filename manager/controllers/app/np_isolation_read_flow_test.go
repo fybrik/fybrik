@@ -75,26 +75,26 @@ func uploadToS3(endpoint string, g gomega.Gomega) {
 	key1 := "data.csv"
 	filename := "../../testdata/data.csv"
 	s3credentials := credentials.NewStaticCredentials("ak", "sk", "")
-	sess2 := session.Must(session.NewSession(&aws.Config{
+	sess := session.Must(session.NewSession(&aws.Config{
 		Credentials:      s3credentials,
 		Endpoint:         &endpoint,
 		Region:           &region,
 		S3ForcePathStyle: aws.Bool(true),
 	}))
-	s3Client2 := s3.New(sess2)
-	object2, err := s3Client2.GetObject(&s3.GetObjectInput{
+	s3Client := s3.New(sess)
+	object, err := s3Client.GetObject(&s3.GetObjectInput{
 		Bucket: &bucket,
 		Key:    &key1,
 	})
 	if err != nil { // Could not retrieve object. Assume it does not exist
-		uploader2 := s3manager.NewUploader(sess2)
+		uploader := s3manager.NewUploader(sess)
 
 		f, ferr := os.Open(filename)
 		g.Expect(ferr).To(gomega.BeNil(), "Opening local test data file")
 
 		// Upload the file to S3.
 		var result *s3manager.UploadOutput
-		result, err = uploader2.Upload(&s3manager.UploadInput{
+		result, err = uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key1),
 			Body:   f,
@@ -104,7 +104,7 @@ func uploadToS3(endpoint string, g gomega.Gomega) {
 			log.Printf("file uploaded to, %s\n", result.Location)
 		}
 	} else {
-		g.Expect(object2).ToNot(gomega.BeNil())
+		g.Expect(object).ToNot(gomega.BeNil())
 		fmt.Printf("error %v\n", err)
 		log.Println("Object already exists in S3!")
 	}
@@ -253,7 +253,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 
 	readCommand := "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
 	var stdout, stderr bytes.Buffer
-	fmt.Println("Expecting successfull read from the namesapce of the module")
+	fmt.Println("Expecting successful read from the namespace of the module")
 	// Add the application label
 	podObj := &v1.Pod{}
 	podObjKey := client.ObjectKey{Namespace: modulesNamespace, Name: "my-shell"}
@@ -288,7 +288,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	stdout.Reset()
 	stderr.Reset()
 
-	// change lables and try to read
+	// change labels and try to read
 	podObj = &v1.Pod{}
 	podObjKey = client.ObjectKey{Namespace: "default", Name: "my-shell"}
 	err = k8sClient.Get(context.Background(), podObjKey, podObj)
