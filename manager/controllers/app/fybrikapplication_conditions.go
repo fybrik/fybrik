@@ -51,7 +51,7 @@ func setErrorCondition(appContext ApplicationContext, assetID, msg string) {
 		Type:    fapp.ErrorCondition,
 		Status:  corev1.ConditionTrue,
 		Message: msg}
-	appContext.Log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+	appContext.Log.Error().CallerSkipFrame(1).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 		Str(logging.DATASETID, assetID).Msgf("Setting error condition: %s", msg)
 }
 
@@ -60,13 +60,13 @@ func setDenyCondition(appContext ApplicationContext, assetID, msg string) {
 		Type:    fapp.DenyCondition,
 		Status:  corev1.ConditionTrue,
 		Message: msg}
-	appContext.Log.Error().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+	appContext.Log.Error().CallerSkipFrame(1).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 		Str(logging.DATASETID, assetID).Msg("Setting deny condition: " + msg)
 }
 
 func setReadyCondition(appContext ApplicationContext, assetID string) {
 	appContext.Application.Status.AssetStates[assetID].Conditions[ReadyConditionIndex].Status = corev1.ConditionTrue
-	appContext.Log.Info().Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
+	appContext.Log.Info().CallerSkipFrame(1).Bool(logging.FORUSER, true).Bool(logging.AUDIT, true).
 		Str(logging.DATASETID, assetID).Msg("Setting ready condition")
 }
 

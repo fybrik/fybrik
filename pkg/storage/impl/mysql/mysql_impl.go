@@ -54,7 +54,7 @@ func NewMySQLImpl() *MySQLImpl {
 func init() {
 	mysqlImpl := NewMySQLImpl()
 	if err := registrator.Register(mysqlImpl); err != nil {
-		mysqlImpl.Log.Error().Err(err)
+		mysqlImpl.Log.Error().Err(err).Send()
 	}
 }
 

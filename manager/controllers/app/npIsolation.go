@@ -123,7 +123,7 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 	if endpoint {
 		if application == nil {
 			err := errors.New(NilApplicationDetailsError)
-			log.Err(err)
+			log.Error().Err(err).Send()
 			return nil, err
 		}
 		workLoadSelector := application.WorkloadSelector
@@ -131,7 +131,7 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 		ipBlocks := application.IPBlocks
 		if len(ipBlocks) == 0 && len(namespaces) == 0 && workLoadSelector.Size() == 0 {
 			err := errors.New(EmptyApplicationDetailsError)
-			log.Err(err)
+			log.Error().Err(err).Send()
 			return nil, err
 		}
 		for _, ip := range ipBlocks {

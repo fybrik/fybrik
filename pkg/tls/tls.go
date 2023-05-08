@@ -40,7 +40,7 @@ func GetHTTPClient(log *zerolog.Logger) *retryablehttp.Client {
 	retryClient.Logger = log
 	config, err := GetClientTLSConfig(log)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Send()
 		return nil
 	}
 	if config != nil {
