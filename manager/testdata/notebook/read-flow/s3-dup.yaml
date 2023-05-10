@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dup-s3mock
+  labels:
+    app.kubernetes.io/component: dup-s3mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: dup-s3mock
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app.kubernetes.io/component: dup-s3mock
+    spec:
+      containers:
+        - name: s3mock
+          image: adobe/s3mock:latest
+          env:
+            - name: validKmsKeys
+              value: "ak/sk"
+            - name: initialBuckets
+              value: "demo,bucket1,bucket2"
+          ports:
+            - containerPort: 9090
+              name: http
+              protocol: TCP
+            - containerPort: 9191
+              name: https
+              protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-dup
+spec:
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+    - name: https
+      port: 9191
+      targetPort: 9191
+  selector:
+    app.kubernetes.io/component: dup-s3mock
