@@ -24,6 +24,8 @@ export DEPLOY_OPENMETADATA_SERVER ?= 1
 export USE_OPENMETADATA_CATALOG ?= 1
 # If true, avoid creating a new cluster.
 export USE_EXISTING_CLUSTER ?= 0
+# If true, run the isolation scenario
+export RUN_ISOLATION ?= 0
 
 DOCKER_PUBLIC_HOSTNAME ?= ghcr.io
 DOCKER_PUBLIC_NAMESPACE ?= fybrik
@@ -173,6 +175,17 @@ run-notebook-readflow-tests-katalog:
 	$(MAKE) setup-cluster
 	$(MAKE) -C manager run-notebook-readflow-tests
 
+.PHONY: run-network-policy-readflow-tests-katalog
+run-network-policy-readflow-tests-katalog: export HELM_SETTINGS=--set "coordinator.catalog=katalog" --set "worker.npIsolation.enabled=true"
+run-network-policy-readflow-tests-katalog: export VALUES_FILE=test/charts/notebook-test-readflow.values.yaml
+run-network-policy-readflow-tests-katalog: export CATALOGED_ASSET=fybrik-notebook-sample/data-csv
+run-network-policy-readflow-tests-katalog: export DEPLOY_OPENMETADATA_SERVER=0
+run-network-policy-readflow-tests-katalog: export USE_OPENMETADATA_CATALOG=0
+run-network-policy-readflow-tests-katalog: export RUN_ISOLATION=1
+run-network-policy-readflow-tests-katalog:
+	$(MAKE) setup-cluster
+	$(MAKE) -C manager run-network-policy-readflow-tests
+
 .PHONY: run-notebook-readflow-tls-tests
 run-notebook-readflow-tls-tests: export VALUES_FILE=test/charts/notebook-test-readflow.tls.values.yaml
 run-notebook-readflow-tls-tests: export DEPLOY_TLS_TEST_CERTS=1
@@ -220,7 +233,11 @@ setup-cluster: export DOCKER_HOSTNAME?=localhost:5000
 setup-cluster: export DOCKER_NAMESPACE?=fybrik-system
 setup-cluster:
 ifeq ($(USE_EXISTING_CLUSTER),0)
+ifeq ($(RUN_ISOLATION),0)
 	$(MAKE) kind
+else
+	$(MAKE) kind-calico
+endif
 endif
 	$(MAKE) cluster-prepare
 	$(MAKE) docker-build docker-push
