@@ -79,13 +79,13 @@ spec:
             parameters:
               args:
                 - assetId: "S3"
-                  api:
-                    connection:
-                      name: fybrik-arrow-flight
-                      fybrik-arrow-flight:
-                        hostname: mygrpc-service
-                        port: 80
-                        scheme: grpc
+              api:
+                connection:
+                  name: fybrik-arrow-flight
+                  fybrik-arrow-flight:
+                    hostname: mygrpc-service
+                    port: 80
+                    scheme: grpc
   modulesNamespace: fybrik-blueprints
   templates:
     copyTemplate:

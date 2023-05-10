@@ -134,11 +134,12 @@ func (p *PlotterGenerator) addTemplate(element *datapath.ResolvedEdge, plotterSp
 	template := fappv1.Template{
 		Name: templateName,
 		Modules: []fappv1.ModuleInfo{{
-			Name:       element.Module.Name,
-			Type:       element.Module.Spec.Type,
-			Chart:      element.Module.Spec.Chart,
-			Scope:      moduleCapability.Scope,
-			Capability: moduleCapability.Capability,
+			Name:             element.Module.Name,
+			Type:             element.Module.Spec.Type,
+			Chart:            element.Module.Spec.Chart,
+			Scope:            moduleCapability.Scope,
+			Capability:       moduleCapability.Capability,
+			ExternalServices: element.Module.Spec.ExternalServices,
 		}},
 	}
 	plotterSpec.Templates[template.Name] = template
@@ -338,12 +339,7 @@ func (p *PlotterGenerator) AddFlowInfoForAsset(item *datapath.DataInfo, applicat
 
 func moduleAPIToService(api *datacatalog.ResourceDetails, scope fappv1.CapabilityScope, appContext *fappv1.FybrikApplication,
 	moduleName, assetID string) (*datacatalog.ResourceDetails, error) {
-	instanceName := moduleName
-	if scope == fappv1.Asset {
-		// if the scope of the module is asset then concat its id to the module name
-		// to create the instance name.
-		instanceName = managerUtils.CreateStepName(moduleName, assetID)
-	}
+	instanceName := managerUtils.CreateStepName(moduleName, assetID, scope)
 	releaseName := managerUtils.GetReleaseName(appContext.Name, string(appContext.UID), instanceName)
 	releaseNamespace := environment.GetDefaultModulesNamespace()
 

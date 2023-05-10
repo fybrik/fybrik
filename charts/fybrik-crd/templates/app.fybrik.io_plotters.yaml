@@ -49,8 +49,30 @@ spec:
                     clusterName:
                       description: Cluster name
                       type: string
+                    ipBlocks:
+                      description: IPBlocks define policy on particular IPBlocks. the structure of the IPBlock is defined at https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#ipblock-v1-networking-k8s-io
+                      items:
+                        description: IPBlock describes a particular CIDR (Ex. "192.168.1.1/24","2001:db9::/64") that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should not be included within this rule.
+                        properties:
+                          cidr:
+                            description: CIDR is a string representing the IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64"
+                            type: string
+                          except:
+                            description: Except is a slice of CIDRs that should not be included within an IP Block Valid examples are "192.168.1.1/24" or "2001:db9::/64" Except values will be rejected if they are outside the CIDR range
+                            items:
+                              type: string
+                            type: array
+                        required:
+                          - cidr
+                        type: object
+                      type: array
+                    namespaces:
+                      description: Namespaces where user application might run
+                      items:
+                        type: string
+                      type: array
                     workloadSelector:
-                      description: WorkloadSelector enables to connect the resource to the application Application labels should match the labels in the selector.
+                      description: WorkloadSelector enables to connect the resource to a user application. Application labels should match the labels in the selector.
                       properties:
                         matchExpressions:
                           description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
@@ -313,6 +335,11 @@ spec:
                               required:
                                 - name
                               type: object
+                            externalServices:
+                              description: External services that are required for functionality of the module.
+                              items:
+                                type: string
+                              type: array
                             name:
                               description: Name of the module
                               type: string

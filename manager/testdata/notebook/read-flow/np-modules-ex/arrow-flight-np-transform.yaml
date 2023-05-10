@@ -1,0 +1,35 @@
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikModule
+metadata:
+  name: arrow-flight-module-transform
+  labels:
+    name: arrow-flight-module-transform
+    version: latest # semantic version
+spec:
+  type: service
+  chart:
+    name: ghcr.io/fybrik/arrow-flight-module-chart:0.10.0
+    values:
+      image.tag: 0.10.0
+  capabilities:
+    - capability: read
+      scope: workload
+      api:
+        connection:
+          name: fybrik-arrow-flight
+          fybrik-arrow-flight:
+            hostname: "{{ .Release.Name }}.{{ .Release.Namespace }}"
+            port: 80
+            scheme: grpc
+      supportedInterfaces:
+        - source:
+            protocol: s3
+            dataformat: parquet
+        - source:
+            protocol: fybrik-arrow-flight
+      actions:
+        - name: RedactAction
+        - name: RemoveAction
+        - name: FilterAction
+        - name: AgeFilterAction
+

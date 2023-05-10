@@ -5,6 +5,8 @@ package utils
 
 import (
 	"context"
+	"net/url"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -12,6 +14,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
 	"fybrik.io/fybrik/pkg/model/taxonomy"
 	"fybrik.io/fybrik/pkg/utils"
 )
@@ -29,8 +32,11 @@ func GetReleaseName(applicationName, uuid, instanceName string) string {
 
 // Create a name for a step in a blueprint.
 // Since this is part of the name of a release, this should be done in a central location to make testing easier
-func CreateStepName(moduleName, assetID string) string {
-	return moduleName + "-" + utils.Hash(assetID, utils.StepNameHashLength)
+func CreateStepName(moduleName, assetID string, moduleScope fapp.CapabilityScope) string {
+	if moduleScope == fapp.Asset {
+		return moduleName + "-" + utils.Hash(assetID, utils.StepNameHashLength)
+	}
+	return moduleName
 }
 
 // UpdateStatus updates the resource status
@@ -66,4 +72,15 @@ func UpdateStatus(ctx context.Context, cl client.Client, obj client.Object, prev
 		res.Object[statusKey] = currentStatus
 		return cl.Status().Update(ctx, res)
 	})
+}
+
+// ParseRawURL parses a string to return URl even if the schema is not set
+// from the url.Parse comments "Trying to parse a hostname and path
+// without a scheme is invalid but may not necessarily return an error, due to parsing ambiguities."
+func ParseRawURL(rawURL string) (*url.URL, error) {
+	if !strings.Contains(rawURL, "://") {
+		rawURL = "http://" + rawURL // we want to prevent parsing "host:port" to schema, which is done by url.Parse
+	}
+	u, err := url.Parse(rawURL)
+	return u, err
 }

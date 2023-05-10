@@ -4,16 +4,18 @@
 apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
-  name: my-notebook
+  name: my-app
   namespace: fybrik-notebook-sample
   labels:
-    app: my-notebook
+    app: my-app
 spec:
   selector:
     clusterName: thegreendragon
     workloadSelector:
       matchLabels:
-        app: my-notebook
+        app: my-app
+    namespaces:
+      - "fybrik-blueprints"
   appInfo:
     intent: Fraud Detection
   data:
