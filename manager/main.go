@@ -350,7 +350,6 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 // newClusterManager decides based on the environment variables that are set which
 // cluster manager instance should be initiated.
 func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
-	//return argocd.NewArgoCDClusterManager("https://argo-argocd-server.argocd:443")
 	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
 	if argocdUrl, argocdConf := os.LookupEnv("ARGOCD_URL"); argocdConf {
 		argocdUser := strings.TrimSpace(os.Getenv("ARGOCD_USER"))

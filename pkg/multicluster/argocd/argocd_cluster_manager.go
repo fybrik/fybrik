@@ -37,10 +37,14 @@ import (
 )
 
 const (
-	gitRepoBranch      = "main"
-	appBlueprintPrefix = "blueprints-"
-	blueprintsDirPath  = "blueprints"
-	tmpFileName        = ".tmp"
+	gitRepoBranch                     = "main"
+	appBlueprintPrefix                = "blueprints-"
+	blueprintsDirPath                 = "blueprints"
+	tmpFileName                       = ".tmp"
+	gitOrigin                         = "origin"
+	failToListClustersErrMsg          = "Failed to list clusters"
+	failedToCreateBlueprintErrMsg     = "Failed to create blueprint"
+	failedToCreateBlueprintsDirErrMsg = "Failed to create blueprints directory"
 )
 
 var (
@@ -82,7 +86,7 @@ func (cm *argocdClusterManager) doGitCommitAndPush(repo *git.Repository, w *git.
 		},
 	})
 
-	remote, err := repo.Remote("origin")
+	remote, err := repo.Remote(gitOrigin)
 
 	cm.log.Info().Msg("commit hash " + commit.String())
 	po := &git.PushOptions{
@@ -90,7 +94,7 @@ func (cm *argocdClusterManager) doGitCommitAndPush(repo *git.Repository, w *git.
 			Username: cm.argoCDAppsGitRepo.username,
 			Password: cm.argoCDAppsGitRepo.password,
 		},
-		RemoteName:      "origin",
+		RemoteName:      gitOrigin,
 		RefSpecs:        []config.RefSpec{config.RefSpec("refs/heads/*:refs/heads/*")},
 		Progress:        os.Stdout,
 		Force:           false,
@@ -115,13 +119,13 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 	repoDir, repo, err := cm.cloneGitRepo()
 	defer os.RemoveAll(repoDir)
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to create blueprints dir")
+		cm.log.Error().Err(err).Msg(failedToCreateBlueprintsDirErrMsg)
 		return err
 	}
 	if _, err := os.Stat(repoDir + "/" + blueprintsDirPath); os.IsNotExist(err) {
 		w, err := repo.Worktree()
 		if err != nil {
-			cm.log.Error().Err(err).Msg("Failed to create blueprints dir")
+			cm.log.Error().Err(err).Msg(failedToCreateBlueprintsDirErrMsg)
 		}
 
 		err = os.MkdirAll(repoDir+"/"+cm.getBlueprintFilePath(), os.ModePerm)
@@ -170,7 +174,6 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 			return err
 		}
 		cm.log.Info().Msg("Successfully created Blueprints folder!")
-
 	}
 	return nil
 }
@@ -232,7 +235,10 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoU
 		},
 		argocdFybrikAppsNamePrefix: argocdFybrikAppsNamePrefix,
 	}
-	cm.createBlueprintsDirIfNotExists()
+	err = cm.createBlueprintsDirIfNotExists()
+	if err != nil {
+		return nil, err
+	}
 
 	return &cm, nil
 }
@@ -320,15 +326,15 @@ func (cm *argocdClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 
 	clustersList, httpResp, err := cm.client.ClusterServiceApi.ClusterServiceListExecute(req)
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to list clusters")
+		cm.log.Error().Err(err).Msg(failToListClustersErrMsg)
 		return nil, err
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("Failed to list clusters: http status code is " + strconv.Itoa(httpResp.StatusCode))
+		cm.log.Error().Msg(failToListClustersErrMsg + " http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
 	if !clustersList.HasItems() {
-		cm.log.Error().Msg("Failed to list clusters: no cluster exists")
+		cm.log.Error().Msg(failToListClustersErrMsg + " no cluster exists")
 		return nil, errors.New("no cluster exists")
 	}
 	for _, clusterItem := range clustersList.GetItems() {
@@ -336,7 +342,7 @@ func (cm *argocdClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 		cm.log.Info().Msg("cluster name: " + name)
 		cluster, err := cm.getClusterInfo(name)
 		if err != nil {
-			cm.log.Error().Err(err).Msg("Failed to list clusters")
+			cm.log.Error().Err(err).Msg(failToListClustersErrMsg)
 			return nil, err
 		}
 		clusters = append(clusters, cluster)
@@ -449,13 +455,13 @@ func (cm *argocdClusterManager) CreateBlueprint(cluster string, blueprint *app.B
 	repoDir, repo, err := cm.cloneGitRepo()
 	defer os.RemoveAll(repoDir)
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to create blueprint")
+		cm.log.Error().Err(err).Msg(failedToCreateBlueprintErrMsg)
 		return err
 	}
 	fileName := cm.getBlueprintFileName(cluster, blueprint.Name, blueprint.Namespace)
 	w, err := repo.Worktree()
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to create blueprint")
+		cm.log.Error().Err(err).Msg(failedToCreateBlueprintErrMsg)
 	}
 
 	content, err := yaml.Marshal(blueprint)
