@@ -257,7 +257,7 @@ rule[{"action": {"name":"RedactAction", "columns": column_names}, "policy": desc
   # this statement assigns to column_names variable all the columns that contain "PII.Sensitive" tag
   column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags["PII.Sensitive"]]
   # this condition is true if column_names is not empty
-  # we need this check to apply the RedactAction action only in cases where sensitive column exists.
+  # we need this check to apply the RedactAction action only in cases where sensitive data exists.
   count(column_names) > 0
 }
 ```
