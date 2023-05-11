@@ -258,7 +258,7 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	return rel, nil
 }
 
-func execCmdCommand(k8sClient kubernetes.Interface, config *restclient.Config, podName string, namespace string,
+func execPod(k8sClient kubernetes.Interface, config *restclient.Config, podName string, namespace string,
 	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
@@ -308,7 +308,7 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 		for _, obj := range rel.Info.Resources[versionKind] {
 			if unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj); err == nil {
 				res := unstructured.Unstructured{Object: unstr}
-				r.Log.Trace().Msg("resouce kind = " + res.GetKind() + " name = " + res.GetName())
+				r.Log.Trace().Msg("resource kind = " + res.GetKind() + " name = " + res.GetName())
 				if res.GetKind() == "Service" {
 					svc := corev1.Service{}
 					svcID := res.GetName()
@@ -317,7 +317,6 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 					if err = r.Get(ctx, key, &svc); err != nil {
 						log.Info().Msgf("Get service returned error. %v", svc)
 					} else {
-						// svcIP = svc.GetName() + ":" + strconv.Itoa(int(svc.Spec.Ports[0].Port))
 						for _, port := range svc.Spec.Ports {
 							r.Log.Trace().Msg("expose service " + svc.GetName() + " with port " + strconv.Itoa(int(port.Port)))
 							svcsToExpose = append(svcsToExpose, SvcToExpose{svc.GetName(), strconv.Itoa(int(port.Port))})
@@ -368,8 +367,8 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	// Connect the two MBGs
 	MBGPodName := environment.GetMBGPodName()
 	MBGCTLPodName := environment.GetMBGCtlPodName()
-	moduleNamespace := blueprint.Spec.ModulesNamespace
 	MBGNamespace := environment.GetMBGNameSpace()
+	moduleNamespace := blueprint.Spec.ModulesNamespace
 	cluster := blueprint.Spec.Cluster
 	r.Log.Trace().Msg("mbg pod is " + MBGPodName + " mbgctl pod is " + MBGCTLPodName + " cluster is " + cluster)
 	var svcsToExpose []SvcToExpose
@@ -383,7 +382,7 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	} else {
 		for _, ingress := range network.Ingress {
 			r.Log.Trace().Msg("ingress cluster is " + ingress.Cluster)
-			// if the ingress from a different cluster then add the module's service
+			// if the ingress from a different cluster then add the module's services
 			if ingress.Cluster != cluster {
 				r.Log.Trace().Msg("there is a remote connection from a different cluster")
 				// get services of the module's chart
@@ -399,16 +398,16 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	for _, svcToExpose := range svcsToExpose {
 		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
 		// add the service to MBG
-		MBGCommand := "./mbgctl add service --id " + svcToExpose.svcName + " --target " + svcToExpose.svcName +
-			".fybrik-blueprints --port " + svcToExpose.port
-		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		svcId := svcToExpose.svcName + "." + moduleNamespace
+		MBGCommand := "./mbgctl add service --id " + svcId + "-" + svcToExpose.port + " --target " + svcId + " --port " + svcToExpose.port
+		err = execPod(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			// return err
 			r.Log.Trace().Msg("MBG error " + err.Error())
 		}
 		// Expose the service
-		MBGCommand = "./mbgctl expose --service " + svcToExpose.svcName
-		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		MBGCommand = "./mbgctl expose --service " + svcId + "-" + svcToExpose.port
+		err = execPod(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			// return err
 			r.Log.Trace().Msg("MBG error " + err.Error())
@@ -425,7 +424,8 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 		}
 	}
 	if accessMBG {
-		// add rules to allow access from the module to the MBG
+		// TODO: add rules to allow access from the module to the MBG
+		r.Log.Trace().Msg("add network policies")
 	}
 
 	return nil
