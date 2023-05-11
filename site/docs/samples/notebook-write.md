@@ -129,19 +129,29 @@ Below is the policy (written in [Rego](https://www.openpolicyagent.org/docs/late
 ```rego
 package dataapi.authz
 
+# If the conditions between the curly braces are true then Fybrik will get an object for the "Deny" action.
 rule[{"action": {"name":"Deny"}, "policy": description}] {
   description := "Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`"
+    # this condition is true if it is a write operation
     input.action.actionType == "write"
+    # this condition is true if the asset has "Purpose.finance" tag
     input.resource.metadata.tags["Purpose.finance"]
+    # this condition is true if write destination is theshire object-stores
     input.action.destination == "theshire"
+    # this statement is true if one of the columns has "PersonalData.Personal" tag
     input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 
+# If the conditions between the curly braces are true then Fybrik will get an object for the "Deny" action.
 rule[{"action": {"name":"Deny"}, "policy": description}] {
   description := "Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`"
+    # this condition is true if it is a write operation
     input.action.actionType == "write"
+    # this condition is true if the asset has "Purpose.finance" tag
     input.resource.metadata.tags["Purpose.finance"]
+    # this condition is true if write destination is neverland object-stores
     input.action.destination == "neverland"
+    # this statement is true if one of the columns has "PersonalData.Personal" tag
     input.resource.metadata.columns[i].tags["PersonalData.Personal"]
 }
 ```

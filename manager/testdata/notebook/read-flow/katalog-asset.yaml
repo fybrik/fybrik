@@ -18,11 +18,14 @@ spec:
     owner: Alice
     geography: theshire
     tags:
-      finance: true
+      Purpose.finance: true
     columns:
       - name: nameOrig
         tags:
-          PII: true
+          PII.Sensitive: true
       - name: oldbalanceOrg
         tags:
-          sensitive: true
+          PII.Sensitive: true
+      - name: newbalanceOrig
+        tags:
+          PII.Sensitive: true
