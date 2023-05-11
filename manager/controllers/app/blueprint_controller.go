@@ -21,7 +21,6 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -259,16 +258,16 @@ func (r *BlueprintReconciler) applyChartResource(ctx context.Context, cfg *actio
 	return rel, nil
 }
 
-func execCmdCommand(client kubernetes.Interface, config *restclient.Config, podName string, namespace string,
+func execCmdCommand(k8sClient kubernetes.Interface, config *restclient.Config, podName string, namespace string,
 	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
 		"-c",
 		command,
 	}
-	req := client.CoreV1().RESTClient().Post().Resource("pods").Name(podName).
+	req := k8sClient.CoreV1().RESTClient().Post().Resource("pods").Name(podName).
 		Namespace(namespace).SubResource("exec")
-	option := &v1.PodExecOptions{
+	option := &corev1.PodExecOptions{
 		Command: cmd,
 		Stdin:   true,
 		Stdout:  true,
@@ -350,15 +349,18 @@ func getSvcHostPort(urlString string) (string, string, string) {
 	hostStrings := strings.Split(hostName, ".")
 	if len(hostStrings) > 1 {
 		return hostStrings[0], hostStrings[1], port
-	} else {
-		return hostStrings[0], "", port
 	}
+	return hostStrings[0], "", port
 }
 
-func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork, rel *release.Release) error {
+func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork,
+	rel *release.Release) error {
 	r.Log.Trace().Msg("apply MBG network")
 	fmt.Printf("network is %v\n", network)
 	config, err := restclient.InClusterConfig()
+	if err != nil {
+		return err
+	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return err
@@ -375,6 +377,9 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	if network.Endpoint {
 		r.Log.Trace().Msg("the module is an endpoint")
 		svcsToExpose, err = r.getModuleSvcs(ctx, moduleNamespace, rel)
+		if err != nil {
+			return err
+		}
 	} else {
 		for _, ingress := range network.Ingress {
 			r.Log.Trace().Msg("ingress cluster is " + ingress.Cluster)
@@ -394,57 +399,35 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	for _, svcToExpose := range svcsToExpose {
 		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
 		// add the service to MBG
-		MBGCommand := "./mbgctl add service --id " + svcToExpose.svcName + " --target " + svcToExpose.svcName + " --port " + svcToExpose.port
+		MBGCommand := "./mbgctl add service --id " + svcToExpose.svcName + " --target " + svcToExpose.svcName +
+			".fybrik-blueprints --port " + svcToExpose.port
 		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
-			return err
+			// return err
+			r.Log.Trace().Msg("MBG error " + err.Error())
 		}
 		// Expose the service
 		MBGCommand = "./mbgctl expose --service " + svcToExpose.svcName
 		err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
-			return err
+			// return err
+			r.Log.Trace().Msg("MBG error " + err.Error())
 		}
 	}
 
-	// managerUtils.KubernetesInstance
 	fmt.Printf("blueprint labels = %v, release labels = %v, app = %s \n", blueprint.Labels, rel.Labels, rel.Labels["app"])
+	accessMBG := false
 	for _, egress := range network.Egress {
-		// if the egress list has a service from a different cluster then add the module's service
+		// if the egress list has a service from a different cluster then allow it to access the MBG
 		if egress.Cluster != cluster {
-			// get the label
-			fmt.Printf("blueprints labels = %v, app = %s \n", blueprint.Labels, blueprint.Labels["app"])
-			if label, ok := blueprint.Labels["app"]; ok {
-				r.Log.Trace().Msg("there is a remote connection to a different cluster")
-				r.Log.Trace().Msg("add label to mbg " + label)
-				// add the label to mbg
-				MBGCommand := "./mbgctl add service --id " + label
-				err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-				if err != nil {
-					return err
-				}
-				// create a binding to the exposed remote service
-				for _, urlString := range egress.URLs {
-					svcName, svcNamesapce, svcPort := getSvcHostPort(urlString)
-					if svcName != "" {
-						log.Warn().Msgf("URL without host name: %s", urlString)
-						continue
-					}
-					MBGCommand = "./mbgctl add binding --service " + svcName + " --namespace " + svcNamesapce + " --port " + svcPort
-					err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-					if err != nil {
-						return err
-					}
-					// add policy to allow connection to the remote service
-					MBGCommand = "./mbgctl add policy --type acl --serviceSrc \"*\" --serviceDst " + svcName + "--priority 0 --action 0"
-					err = execCmdCommand(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-					if err != nil {
-						return err
-					}
-				}
-			}
+			// add network policy to allow accessing to MBG
+			accessMBG = true
 		}
 	}
+	if accessMBG {
+		// add rules to allow access from the module to the MBG
+	}
+
 	return nil
 }
 
