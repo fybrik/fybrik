@@ -15,7 +15,7 @@ HELM_VALUES ?= \
 	--set hello=world1
 
 TEMP := /tmp
-CHART_LOCAL_PATH ?= ../${DOCKER_NAME}
+CHART_LOCAL_PATH ?= charts/fybrik
 CHART_NAME ?= ${DOCKER_NAME}
 HELM_RELEASE ?= rel1-${DOCKER_NAME}
 HELM_TAG ?= 0.0.0

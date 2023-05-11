@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fybrik-kind-control
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: ''
+    namespace: fybrik-system
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: charts/fybrik
+    repoURL: 'https://github.com/revit13/fybrik'
+    targetRevision: argocd-test
+    helm:
+      parameters:
+        - name: cluster.name
+          value: kind-control
+        - name: cluster.zone
+          value: baggin
+        - name: cluster.region
+          value: took
+        - name: cluster.vaultAuthPath
+          value: control
+        - name: coordinator.vault.enabled
+          value: "true"
+        - name: coordinator.vault.address
+          value: http://control-control-plane:80
+        - name: coordinator.catalog
+          value: katalog
+        - name: manager.socat
+          value: "true"
+        - name: global.hub
+          value: ghcr.io/revit13
+        - name: global.tag
+          value: "0.0.0"
+        - name: coordinator.argocd.url
+          value: "http://argo-argocd-server.argocd:80"
+        - name: coordinator.argocd.user
+          value: "admin"
+        - name: coordinator.argocd.password
+          value: "6ce0q4V67rJO59z-"
+        - name: coordinator.argocd.appsGitRepo.url
+          value: "https://github.com/fybrik/blueprint-repo"
+        - name: coordinator.argocd.appsGitRepo.user
+          value: "gitUsername"
+        - name: coordinator.argocd.appsGitRepo.password
+          value: "gitPassword"
+        - name: coordinator.argocd.appsGitRepo.fybrikAppsPrefix
+          value: "fybrik"
+        - name: coordinator.argocd.appsGitRepo.blueprintsAppsPath
+          value: "blueprints"
+  sources: []
+  project: default
+

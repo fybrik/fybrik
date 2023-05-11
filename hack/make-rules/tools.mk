@@ -6,6 +6,12 @@ define post-install-check
 	$(SKIP_INSTALL_CHECK) || git diff --exit-code -- go.mod
 endef
 
+INSTALL_TOOLS += $(TOOLBIN)/argocd-cli
+.PHONY: $(TOOLBIN)/argocd-cli
+$(TOOLBIN)/argocd-cli:
+	cd $(TOOLS_DIR); ./install_argocd-cli.sh
+	$(call post-install-check)
+
 INSTALL_TOOLS += $(TOOLBIN)/yq
 .PHONY: $(TOOLBIN)/yq
 $(TOOLBIN)/yq:

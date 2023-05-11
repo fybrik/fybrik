@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fybrik-crd-kind-control
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: ''
+    namespace: fybrik-system
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: charts/fybrik-crd
+    repoURL: 'https://github.com/fybrik/charts'
+    targetRevision: HEAD
+  sources: []
+  project: default
+
