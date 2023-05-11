@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.5.10">
     
     
       
@@ -1806,19 +1806,29 @@ Then, register two storage accounts: one in <code>theshire</code> and one in <co
 <p>Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
+# If the conditions between the curly braces are true then Fybrik will get an object for the &quot;Deny&quot; action.
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;Deny&quot;}, &quot;policy&quot;: description}] {
   description := &quot;Forbid writing sensitive data to theshire object-stores in datasets tagged with `finance`&quot;
+    # this condition is true if it is a write operation
     input.action.actionType == &quot;write&quot;
+    # this condition is true if the asset has &quot;Purpose.finance&quot; tag
     input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+    # this condition is true if write destination is theshire object-stores
     input.action.destination == &quot;theshire&quot;
+    # this statement is true if one of the columns has &quot;PersonalData.Personal&quot; tag
     input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
 }
 
+# If the conditions between the curly braces are true then Fybrik will get an object for the &quot;Deny&quot; action.
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;Deny&quot;}, &quot;policy&quot;: description}] {
   description := &quot;Forbid writing sensitive data to neverland object-stores in datasets tagged with `finance`&quot;
+    # this condition is true if it is a write operation
     input.action.actionType == &quot;write&quot;
+    # this condition is true if the asset has &quot;Purpose.finance&quot; tag
     input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+    # this condition is true if write destination is neverland object-stores
     input.action.destination == &quot;neverland&quot;
+    # this statement is true if one of the columns has &quot;PersonalData.Personal&quot; tag
     input.resource.metadata.columns[i].tags[&quot;PersonalData.Personal&quot;]
 }
 </code></pre></div>

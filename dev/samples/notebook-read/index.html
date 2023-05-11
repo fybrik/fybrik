@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.5.10">
     
     
       
@@ -1723,11 +1723,18 @@ We use port-forwarding to send asset creation requests to the Katalog connector.
 <p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII.Sensitive</code> for datasets tagged with <code>Purpose.finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
 <div class="highlight"><pre><span></span><code>package dataapi.authz
 
+# If the conditions between the curly braces are true then Fybrik will get an object containing information about
+# &quot;RedactAction&quot;.
 rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
   description := &quot;Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true&quot;
+  # this condition is true if it is a read operation
   input.action.actionType == &quot;read&quot;
+  # this condition is true if the asset has &quot;Purpose.finance&quot; tag
   input.resource.metadata.tags[&quot;Purpose.finance&quot;]
+  # this statement assigns to column_names variable all the columns that contain &quot;PII.Sensitive&quot; tag
   column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags[&quot;PII.Sensitive&quot;]]
+  # this condition is true if column_names is not empty
+  # we need this check to apply the RedactAction action only in cases where sensitive data exists.
   count(column_names) &gt; 0
 }
 </code></pre></div>
