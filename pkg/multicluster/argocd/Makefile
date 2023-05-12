@@ -41,5 +41,11 @@ generate-client-argocd: patch
 	rm -f $(ROOT_DIR)/pkg/multicluster/argocd/auto-generated/client/.gitignore $(ROOT_DIR)/pkg/multicluster/argocd/auto-generated/client/.openapi-generator-ignore
 	rm -rf $(ROOT_DIR)/pkg/multicluster/argocd/auto-generated/client/docs
 
+.PHONY: check
+check:
+	go fmt ./...
+	go vet ./...
+	go mod tidy -compat=1.19
+
 clean:
 	rm makeenv

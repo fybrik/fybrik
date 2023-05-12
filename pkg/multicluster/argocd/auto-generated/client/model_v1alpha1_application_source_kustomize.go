@@ -16,14 +16,17 @@ import (
 
 // V1alpha1ApplicationSourceKustomize struct for V1alpha1ApplicationSourceKustomize
 type V1alpha1ApplicationSourceKustomize struct {
-	CommonAnnotations      *map[string]string `json:"commonAnnotations,omitempty"`
-	CommonLabels           *map[string]string `json:"commonLabels,omitempty"`
-	ForceCommonAnnotations *bool              `json:"forceCommonAnnotations,omitempty"`
-	ForceCommonLabels      *bool              `json:"forceCommonLabels,omitempty"`
-	Images                 *[]string          `json:"images,omitempty"`
-	NamePrefix             *string            `json:"namePrefix,omitempty"`
-	NameSuffix             *string            `json:"nameSuffix,omitempty"`
-	Version                *string            `json:"version,omitempty"`
+	CommonAnnotations         *map[string]string          `json:"commonAnnotations,omitempty"`
+	CommonAnnotationsEnvsubst *bool                       `json:"commonAnnotationsEnvsubst,omitempty"`
+	CommonLabels              *map[string]string          `json:"commonLabels,omitempty"`
+	ForceCommonAnnotations    *bool                       `json:"forceCommonAnnotations,omitempty"`
+	ForceCommonLabels         *bool                       `json:"forceCommonLabels,omitempty"`
+	Images                    *[]string                   `json:"images,omitempty"`
+	NamePrefix                *string                     `json:"namePrefix,omitempty"`
+	NameSuffix                *string                     `json:"nameSuffix,omitempty"`
+	Namespace                 *string                     `json:"namespace,omitempty"`
+	Replicas                  *[]V1alpha1KustomizeReplica `json:"replicas,omitempty"`
+	Version                   *string                     `json:"version,omitempty"`
 }
 
 // NewV1alpha1ApplicationSourceKustomize instantiates a new V1alpha1ApplicationSourceKustomize object
@@ -73,6 +76,38 @@ func (o *V1alpha1ApplicationSourceKustomize) HasCommonAnnotations() bool {
 // SetCommonAnnotations gets a reference to the given map[string]string and assigns it to the CommonAnnotations field.
 func (o *V1alpha1ApplicationSourceKustomize) SetCommonAnnotations(v map[string]string) {
 	o.CommonAnnotations = &v
+}
+
+// GetCommonAnnotationsEnvsubst returns the CommonAnnotationsEnvsubst field value if set, zero value otherwise.
+func (o *V1alpha1ApplicationSourceKustomize) GetCommonAnnotationsEnvsubst() bool {
+	if o == nil || o.CommonAnnotationsEnvsubst == nil {
+		var ret bool
+		return ret
+	}
+	return *o.CommonAnnotationsEnvsubst
+}
+
+// GetCommonAnnotationsEnvsubstOk returns a tuple with the CommonAnnotationsEnvsubst field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *V1alpha1ApplicationSourceKustomize) GetCommonAnnotationsEnvsubstOk() (*bool, bool) {
+	if o == nil || o.CommonAnnotationsEnvsubst == nil {
+		return nil, false
+	}
+	return o.CommonAnnotationsEnvsubst, true
+}
+
+// HasCommonAnnotationsEnvsubst returns a boolean if a field has been set.
+func (o *V1alpha1ApplicationSourceKustomize) HasCommonAnnotationsEnvsubst() bool {
+	if o != nil && o.CommonAnnotationsEnvsubst != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetCommonAnnotationsEnvsubst gets a reference to the given bool and assigns it to the CommonAnnotationsEnvsubst field.
+func (o *V1alpha1ApplicationSourceKustomize) SetCommonAnnotationsEnvsubst(v bool) {
+	o.CommonAnnotationsEnvsubst = &v
 }
 
 // GetCommonLabels returns the CommonLabels field value if set, zero value otherwise.
@@ -267,6 +302,70 @@ func (o *V1alpha1ApplicationSourceKustomize) SetNameSuffix(v string) {
 	o.NameSuffix = &v
 }
 
+// GetNamespace returns the Namespace field value if set, zero value otherwise.
+func (o *V1alpha1ApplicationSourceKustomize) GetNamespace() string {
+	if o == nil || o.Namespace == nil {
+		var ret string
+		return ret
+	}
+	return *o.Namespace
+}
+
+// GetNamespaceOk returns a tuple with the Namespace field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *V1alpha1ApplicationSourceKustomize) GetNamespaceOk() (*string, bool) {
+	if o == nil || o.Namespace == nil {
+		return nil, false
+	}
+	return o.Namespace, true
+}
+
+// HasNamespace returns a boolean if a field has been set.
+func (o *V1alpha1ApplicationSourceKustomize) HasNamespace() bool {
+	if o != nil && o.Namespace != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetNamespace gets a reference to the given string and assigns it to the Namespace field.
+func (o *V1alpha1ApplicationSourceKustomize) SetNamespace(v string) {
+	o.Namespace = &v
+}
+
+// GetReplicas returns the Replicas field value if set, zero value otherwise.
+func (o *V1alpha1ApplicationSourceKustomize) GetReplicas() []V1alpha1KustomizeReplica {
+	if o == nil || o.Replicas == nil {
+		var ret []V1alpha1KustomizeReplica
+		return ret
+	}
+	return *o.Replicas
+}
+
+// GetReplicasOk returns a tuple with the Replicas field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *V1alpha1ApplicationSourceKustomize) GetReplicasOk() (*[]V1alpha1KustomizeReplica, bool) {
+	if o == nil || o.Replicas == nil {
+		return nil, false
+	}
+	return o.Replicas, true
+}
+
+// HasReplicas returns a boolean if a field has been set.
+func (o *V1alpha1ApplicationSourceKustomize) HasReplicas() bool {
+	if o != nil && o.Replicas != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetReplicas gets a reference to the given []V1alpha1KustomizeReplica and assigns it to the Replicas field.
+func (o *V1alpha1ApplicationSourceKustomize) SetReplicas(v []V1alpha1KustomizeReplica) {
+	o.Replicas = &v
+}
+
 // GetVersion returns the Version field value if set, zero value otherwise.
 func (o *V1alpha1ApplicationSourceKustomize) GetVersion() string {
 	if o == nil || o.Version == nil {
@@ -304,6 +403,9 @@ func (o V1alpha1ApplicationSourceKustomize) MarshalJSON() ([]byte, error) {
 	if o.CommonAnnotations != nil {
 		toSerialize["commonAnnotations"] = o.CommonAnnotations
 	}
+	if o.CommonAnnotationsEnvsubst != nil {
+		toSerialize["commonAnnotationsEnvsubst"] = o.CommonAnnotationsEnvsubst
+	}
 	if o.CommonLabels != nil {
 		toSerialize["commonLabels"] = o.CommonLabels
 	}
@@ -321,6 +423,12 @@ func (o V1alpha1ApplicationSourceKustomize) MarshalJSON() ([]byte, error) {
 	}
 	if o.NameSuffix != nil {
 		toSerialize["nameSuffix"] = o.NameSuffix
+	}
+	if o.Namespace != nil {
+		toSerialize["namespace"] = o.Namespace
+	}
+	if o.Replicas != nil {
+		toSerialize["replicas"] = o.Replicas
 	}
 	if o.Version != nil {
 		toSerialize["version"] = o.Version

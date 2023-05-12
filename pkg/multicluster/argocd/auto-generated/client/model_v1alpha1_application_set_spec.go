@@ -16,11 +16,12 @@ import (
 
 // V1alpha1ApplicationSetSpec ApplicationSetSpec represents a class of application set state.
 type V1alpha1ApplicationSetSpec struct {
-	Generators *[]V1alpha1ApplicationSetGenerator `json:"generators,omitempty"`
-	GoTemplate *bool                              `json:"goTemplate,omitempty"`
-	Strategy   *V1alpha1ApplicationSetStrategy    `json:"strategy,omitempty"`
-	SyncPolicy *V1alpha1ApplicationSetSyncPolicy  `json:"syncPolicy,omitempty"`
-	Template   *V1alpha1ApplicationSetTemplate    `json:"template,omitempty"`
+	Generators      *[]V1alpha1ApplicationSetGenerator  `json:"generators,omitempty"`
+	GoTemplate      *bool                               `json:"goTemplate,omitempty"`
+	PreservedFields *V1alpha1ApplicationPreservedFields `json:"preservedFields,omitempty"`
+	Strategy        *V1alpha1ApplicationSetStrategy     `json:"strategy,omitempty"`
+	SyncPolicy      *V1alpha1ApplicationSetSyncPolicy   `json:"syncPolicy,omitempty"`
+	Template        *V1alpha1ApplicationSetTemplate     `json:"template,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetSpec instantiates a new V1alpha1ApplicationSetSpec object
@@ -102,6 +103,38 @@ func (o *V1alpha1ApplicationSetSpec) HasGoTemplate() bool {
 // SetGoTemplate gets a reference to the given bool and assigns it to the GoTemplate field.
 func (o *V1alpha1ApplicationSetSpec) SetGoTemplate(v bool) {
 	o.GoTemplate = &v
+}
+
+// GetPreservedFields returns the PreservedFields field value if set, zero value otherwise.
+func (o *V1alpha1ApplicationSetSpec) GetPreservedFields() V1alpha1ApplicationPreservedFields {
+	if o == nil || o.PreservedFields == nil {
+		var ret V1alpha1ApplicationPreservedFields
+		return ret
+	}
+	return *o.PreservedFields
+}
+
+// GetPreservedFieldsOk returns a tuple with the PreservedFields field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *V1alpha1ApplicationSetSpec) GetPreservedFieldsOk() (*V1alpha1ApplicationPreservedFields, bool) {
+	if o == nil || o.PreservedFields == nil {
+		return nil, false
+	}
+	return o.PreservedFields, true
+}
+
+// HasPreservedFields returns a boolean if a field has been set.
+func (o *V1alpha1ApplicationSetSpec) HasPreservedFields() bool {
+	if o != nil && o.PreservedFields != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetPreservedFields gets a reference to the given V1alpha1ApplicationPreservedFields and assigns it to the PreservedFields field.
+func (o *V1alpha1ApplicationSetSpec) SetPreservedFields(v V1alpha1ApplicationPreservedFields) {
+	o.PreservedFields = &v
 }
 
 // GetStrategy returns the Strategy field value if set, zero value otherwise.
@@ -207,6 +240,9 @@ func (o V1alpha1ApplicationSetSpec) MarshalJSON() ([]byte, error) {
 	}
 	if o.GoTemplate != nil {
 		toSerialize["goTemplate"] = o.GoTemplate
+	}
+	if o.PreservedFields != nil {
+		toSerialize["preservedFields"] = o.PreservedFields
 	}
 	if o.Strategy != nil {
 		toSerialize["strategy"] = o.Strategy

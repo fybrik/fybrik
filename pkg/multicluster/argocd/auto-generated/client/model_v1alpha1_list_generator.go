@@ -16,8 +16,9 @@ import (
 
 // V1alpha1ListGenerator struct for V1alpha1ListGenerator
 type V1alpha1ListGenerator struct {
-	Elements *[]V1JSON                       `json:"elements,omitempty"`
-	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
+	Elements     *[]V1JSON                       `json:"elements,omitempty"`
+	ElementsYaml *string                         `json:"elementsYaml,omitempty"`
+	Template     *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1ListGenerator instantiates a new V1alpha1ListGenerator object
@@ -69,6 +70,38 @@ func (o *V1alpha1ListGenerator) SetElements(v []V1JSON) {
 	o.Elements = &v
 }
 
+// GetElementsYaml returns the ElementsYaml field value if set, zero value otherwise.
+func (o *V1alpha1ListGenerator) GetElementsYaml() string {
+	if o == nil || o.ElementsYaml == nil {
+		var ret string
+		return ret
+	}
+	return *o.ElementsYaml
+}
+
+// GetElementsYamlOk returns a tuple with the ElementsYaml field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *V1alpha1ListGenerator) GetElementsYamlOk() (*string, bool) {
+	if o == nil || o.ElementsYaml == nil {
+		return nil, false
+	}
+	return o.ElementsYaml, true
+}
+
+// HasElementsYaml returns a boolean if a field has been set.
+func (o *V1alpha1ListGenerator) HasElementsYaml() bool {
+	if o != nil && o.ElementsYaml != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetElementsYaml gets a reference to the given string and assigns it to the ElementsYaml field.
+func (o *V1alpha1ListGenerator) SetElementsYaml(v string) {
+	o.ElementsYaml = &v
+}
+
 // GetTemplate returns the Template field value if set, zero value otherwise.
 func (o *V1alpha1ListGenerator) GetTemplate() V1alpha1ApplicationSetTemplate {
 	if o == nil || o.Template == nil {
@@ -105,6 +138,9 @@ func (o V1alpha1ListGenerator) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Elements != nil {
 		toSerialize["elements"] = o.Elements
+	}
+	if o.ElementsYaml != nil {
+		toSerialize["elementsYaml"] = o.ElementsYaml
 	}
 	if o.Template != nil {
 		toSerialize["template"] = o.Template
