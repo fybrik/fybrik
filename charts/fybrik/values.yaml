@@ -110,9 +110,11 @@ cluster:
   # Set to the cluster Vault auth method path.
   vaultAuthPath: kubernetes
   # MBG
-  mbgPodName: "mbg"
-  mbgCtlPodName: "mbgctl"
-  mbgNamespace: "fybrik-blueprints"
+  mbg:
+    enabled: false
+    mbgPodName: ""
+    mbgCtlPodName: ""
+    mbgNamespace: "default"
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:

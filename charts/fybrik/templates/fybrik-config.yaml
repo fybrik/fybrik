@@ -13,6 +13,12 @@ data:
   LEADER_ELECTION_ID: {{ .Values.manager.leaderElectionID }}
   NP_ENABLED: {{ .Values.worker.npIsolation.enabled | quote }}
   OPENSHIFT_DEPLOYMENT: {{ .Capabilities.APIVersions.Has "security.openshift.io/v1" | quote }}
+  {{- if .Values.cluster.mbg.enabled }}
+  MBG_ENABLED: "true"
+  MBG_POD_NAME: {{ .Values.cluster.mbg.mbgPodName | quote }}
+  MBG_CTL_POD_NAME: {{ .Values.cluster.mbg.mbgCtlPodName | quote }}
+  MBG_NAMESPACE: {{ .Values.cluster.mbg.mbgNamespace | quote }}
+  {{- end }}
   {{- if .Values.coordinator.enabled }}
   DATAPATH_MAX_SIZE: {{ .Values.manager.dataPathMaxSize | quote }}
   {{- if .Values.manager.solver.image }}
@@ -24,9 +30,6 @@ data:
   MAIN_POLICY_MANAGER_NAME: {{ .Values.coordinator.policyManager | quote }}
   MAIN_POLICY_MANAGER_CONNECTOR_URL: {{ .Values.coordinator.policyManagerConnectorURL | default (printf "http://%s-connector:8080" .Values.coordinator.policyManager) | quote }}
   STORAGE_MANAGER_URL: {{ printf "http://localhost:%s" .Values.storageManager.serverPort | quote }}
-  MBG_POD_NAME: {{ .Values.cluster.mbgPodName }}
-  MBG_CTL_POD_NAME: {{ .Values.cluster.mbgCtlPodName }}
-  MBG_NAMESPACE: {{ .Values.cluster.mbgNamespace }}
   {{- if .Values.coordinator.vault.enabled }}
   VAULT_ENABLED: "true"
   VAULT_ADDRESS: {{ tpl .Values.coordinator.vault.address . | quote }}

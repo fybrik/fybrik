@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -24,50 +23,15 @@ import (
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/remotecommand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
+	managerUtils "fybrik.io/fybrik/manager/controllers/utils"
 )
-
-func execCmdCommand(restClient restclient.Interface, config *restclient.Config, namespace string, command string,
-	stdout io.Writer, stderr io.Writer) error {
-	cmd := []string{
-		"sh",
-		"-c",
-		command,
-	}
-	req := restClient.Post().Resource("pods").Name("my-shell").
-		Namespace(namespace).SubResource("exec")
-	option := &v1.PodExecOptions{
-		Command: cmd,
-		Stdin:   false,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     true,
-	}
-	req.VersionedParams(
-		option,
-		scheme.ParameterCodec,
-	)
-	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
-	if err != nil {
-		return err
-	}
-	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  nil,
-		Stdout: stdout,
-		Stderr: stderr,
-	})
-
-	return err
-}
 
 func uploadToS3(endpoint string, g gomega.Gomega) {
 	region := "theshire"
@@ -242,13 +206,9 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	port := fmt.Sprintf("%v", connection["port"])
 
 	// using my-shell pod to read
-	gvk := schema.GroupVersionKind{
-		Group:   "",
-		Version: "v1",
-		Kind:    "Pod",
-	}
-
-	restClient, err := apiutil.RESTClientForGVK(gvk, false, ctrl.GetConfigOrDie(), serializer.NewCodecFactory(scheme.Scheme))
+	config, err := restclient.InClusterConfig()
+	g.Expect(err).To(gomega.BeNil())
+	clientset, err := kubernetes.NewForConfig(config)
 	g.Expect(err).To(gomega.BeNil())
 
 	readCommand := "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
@@ -262,7 +222,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
 	time.Sleep(20 * time.Second)
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
+	err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
 	g.Expect(err).To(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -276,14 +236,14 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(err).To(gomega.BeNil())
 	fmt.Println("Expecting Reading command to fail now")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
+	err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
 
 	// Try to read from other namespace
 	fmt.Println("Expecting Reading from default namespace to fail")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "default", readCommand, &stdout, &stderr)
+	err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -297,7 +257,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	err = k8sClient.Update(context.Background(), podObj)
 	g.Expect(err).To(gomega.BeNil())
 	fmt.Println("Expecting Reading from default namespace with labels to fail")
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), "default", readCommand, &stdout, &stderr)
+	err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", "default", readCommand, nil, &stdout, &stderr)
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -331,7 +291,8 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 	podObj.ObjectMeta.Labels["app"] = "my-app"
 	err = k8sClient.Update(context.Background(), podObj)
-	err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
+	err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
+
 	g.Expect(err).ToNot(gomega.BeNil())
 	stdout.Reset()
 	stderr.Reset()
@@ -365,7 +326,7 @@ func TestNetworkPolicyReadFlow(t *testing.T) {
 		time.Sleep(100 * time.Second)
 		fmt.Println("Expecting Reading command to fail because the module not allowed to connect to the second s3 storage")
 		readCommand = "python3 /root/client.py --host " + hostname + " --port " + port + " --asset " + catalogedAsset
-		err = execCmdCommand(restClient, ctrl.GetConfigOrDie(), modulesNamespace, readCommand, &stdout, &stderr)
+		err = managerUtils.ExecPod(clientset, ctrl.GetConfigOrDie(), "my-shell", modulesNamespace, readCommand, nil, &stdout, &stderr)
 		g.Expect(err).ToNot(gomega.BeNil())
 		stdout.Reset()
 		stderr.Reset()
