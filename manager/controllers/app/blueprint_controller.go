@@ -116,7 +116,7 @@ func (r *BlueprintReconciler) removeFinalizers(ctx context.Context, cfg *action.
 		return r.cleanupNetworkPolicies(ctx, blueprint)
 	}
 	if r.IsMultiClusterSetup {
-		r.cleanupMBGNetwork(ctx, blueprint)
+		r.cleanupMBGNetwork()
 	}
 	return nil
 }
