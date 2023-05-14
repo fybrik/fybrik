@@ -13,6 +13,10 @@ spec:
       name: 'blueprints-{{name}}' # 'name' field of the Secret
     spec:
       project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
       source:
         repoURL: https://github.com/revit13/new-argocd-test1
         targetRevision: HEAD
