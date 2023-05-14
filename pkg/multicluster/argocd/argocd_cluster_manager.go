@@ -18,7 +18,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
@@ -41,10 +40,14 @@ const (
 	appBlueprintPrefix                = "blueprints-"
 	blueprintsDirPath                 = "blueprints"
 	tmpFileName                       = ".tmp"
+	blueprintKind                     = "Blueprint"
+	blueprintGroup                    = "app.fybrik.io"
+	blueprintVersion                  = "v1beta1"
 	gitOrigin                         = "origin"
 	failToListClustersErrMsg          = "Failed to list clusters"
 	failedToCreateBlueprintErrMsg     = "Failed to create blueprint"
 	failedToCreateBlueprintsDirErrMsg = "Failed to create blueprints directory"
+	applicationsNamespace             = "argocd"
 )
 
 var (
@@ -369,49 +372,15 @@ func (cm *argocdClusterManager) getBlueprintFilePath() string {
 // thus this function needs to be revisit.
 func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*app.Blueprint, error) {
 	cm.log.Info().Msg("Get Blueprint " + " cluster " + cluster + " namespace: " + namespace + " name: " + name)
-	req := cm.client.ApplicationServiceApi.ApplicationServiceGetManifests(context.Background(), appBlueprintPrefix+cluster)
-	req = req.AppNamespace("argocd")
-	resp, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetManifestsExecute(req)
-	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to get application manifest")
-		return nil, err
-	}
-	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("Failed to get application manifest: http status code is " + strconv.Itoa(httpResp.StatusCode))
-		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
-	}
-	cm.log.Info().Msg("print manifest")
-	blueprint := app.Blueprint{}
-	found := false
-	for _, manifest := range resp.GetManifests() {
-		err = multicluster.Decode(manifest, scheme, &blueprint)
-		if err != nil {
-			return nil, err
-		}
-
-		if blueprint.Namespace == "" {
-			log.Warn().Msg("Retrieved an empty blueprint")
-			return nil, nil
-		}
-		cm.log.Info().Msg("found manifest for " + blueprint.GetName())
-
-		if blueprint.GetName() == name {
-			cm.log.Info().Msg(manifest)
-			found = true
-			break
-		}
-	}
-	if !found {
-		err = errors.New("blueprint not found for " + name)
-		cm.log.Error().Err(err).Msg("Failed to get blueprint")
-		return nil, err
-	}
-	cm.log.Info().Msg("blueprint successfully read " + blueprint.Namespace)
 
 	// TO BE REMOVED: experimental code
-	/*req1 := cm.client.ApplicationServiceApi.ApplicationServiceGetResource(context.Background(), appBlueprintPrefix+cluster)
-	req1 = req1.ResourceName(blueprint.GetName())
-	req1 = req1.AppNamespace("argocd")
+	req1 := cm.client.ApplicationServiceApi.ApplicationServiceGetResource(context.Background(), appBlueprintPrefix+cluster)
+	req1 = req1.ResourceName(name)
+	req1 = req1.Kind(blueprintKind)
+	req1 = req1.AppNamespace(applicationsNamespace)
+	req1 = req1.Group(blueprintGroup)
+	req1 = req1.Version(blueprintVersion)
+	req1 = req1.Namespace(namespace)
 	resp1, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetResourceExecute(req1)
 	if err != nil {
 		cm.log.Error().Err(err).Msg("Failed to get application manifest")
@@ -421,30 +390,21 @@ func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*
 		cm.log.Error().Msg("Failed to get application manifest: http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
-	cm.log.Info().Msg("print manifest111")
+	cm.log.Info().Msg("print manifest")
 
 	manifest := resp1.GetManifest()
+	blueprint := app.Blueprint{}
 	cm.log.Info().Msg(manifest)
-
-	req2 := cm.client.ApplicationServiceApi.ApplicationServiceManagedResources(context.Background(), appBlueprintPrefix+cluster)
-	req2 = req2.AppNamespace("argocd")
-	resp2, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceManagedResourcesExecute(req2)
+	err = multicluster.Decode(manifest, scheme, &blueprint)
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to get application manifest")
 		return nil, err
 	}
-	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("Failed to get application manifest: http status code is " + strconv.Itoa(httpResp.StatusCode))
-		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
+	if blueprint.Namespace == "" {
+		cm.log.Warn().Msg("Retrieved an empty blueprint")
+		return nil, nil
 	}
-	cm.log.Info().Msg("print manifest222")
-	for _, item := range resp2.GetItems() {
-		if item.GetName() == blueprint.GetName() {
-			cm.log.Info().Msg("difffff")
-			cm.log.Info().Msg(item.GetDiff())
-		}
-	}*/
-
+	cm.log.Info().Msg("found manifest for " + blueprint.GetName())
+	cm.log.Info().Msg("blueprint successfully read " + blueprint.Namespace)
 	return &blueprint, nil
 }
 
