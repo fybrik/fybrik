@@ -366,10 +366,8 @@ func (cm *argocdClusterManager) getBlueprintFilePath() string {
 }
 
 // GetBlueprint returns a blueprint matching the given name, namespace and cluster details
-// To do so an API call to ApplicationServiceGetManifests is done.
-// TODO: This function gets the Blueprint in the desired state (in Git) while we need the actual state of the blueprint status
-// in the cluster. Currently, the status diff is not working properly (https://github.com/argoproj/argo-cd/issues/13486)
-// thus this function needs to be revisit.
+// To do so an API call to ApplicationServiceGetResource is done which returns the actual Blueprint
+// resource deployed on the cluster.
 func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*app.Blueprint, error) {
 	cm.log.Info().Msg("Get Blueprint " + " cluster " + cluster + " namespace: " + namespace + " name: " + name)
 
