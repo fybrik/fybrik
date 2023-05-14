@@ -12,9 +12,6 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 		--set configs.params."server.insecure"=true \
 		--set server.ingress.enabled=true \
 		--version v${ARGOCD_HELM_VERSION}
-	# The status field is ignoed by default, to disable it the argocd-cm is patched.
-	# see https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/
-	kubectl patch cm argocd-cm  --patch-file  argocd-patch.yaml
 
 .PHONY: undeploy
 undeploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
