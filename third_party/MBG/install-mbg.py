@@ -27,14 +27,14 @@ def startKindClusterMbg(mbgName, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPor
     runcmdb(f'kubectl exec -i {mbgctlPod} -- ./mbgctl create --id {mbgctlName} --mbgIP {destMbgIp}  --dataplane {dataplane} {mbgcrtFlags} ')
 
 def buildMbg(name):
-    runcmd(f"kubectl apply -f pkg/MBG/mbg-role.yaml")
-    runcmd(f"kubectl create -f pkg/MBG/mbg.yaml")
+    runcmd(f"kubectl apply -f third_party/MBG/mbg-role.yaml")
+    runcmd(f"kubectl create -f third_party/MBG/mbg.yaml")
     waitPod("mbg")
     podMbg, mbgIp= getPodNameIp("mbg")
     return podMbg, mbgIp
 
 def buildMbgctl(name):
-    runcmd(f"kubectl create -f pkg/MBG/mbgctl.yaml")
+    runcmd(f"kubectl create -f third_party/MBG/mbgctl.yaml")
     waitPod("mbgctl")
     name,ip= getPodNameIp("mbgctl")
     return name, ip
@@ -99,8 +99,7 @@ if __name__ == "__main__":
 
     args = vars(parser.parse_args())
 
-    printHeader("\n\nStart Kind Test\n\n")
-    printHeader("Start pre-setting")
+    printHeader("Start installing MBG")
 
     dataplane = args["dataplane"]
     #MBG1 parameters 

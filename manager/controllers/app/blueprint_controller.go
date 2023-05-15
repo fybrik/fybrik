@@ -284,7 +284,7 @@ func (r *BlueprintReconciler) getModuleSvcs(ctx context.Context, moduleNamespace
 					}
 				}
 			} else {
-				r.Log.Err(err).Msg("error getting resources")
+				r.Log.Err(err).Msg("failed to get resources")
 				return nil, err
 			}
 		}
@@ -312,6 +312,32 @@ func (r *BlueprintReconciler) getSvcHostPort(urlString string) (string, string, 
 	return hostStrings[0], "", port
 }
 
+func (r *BlueprintReconciler) exposeServices(svcsToExpose *[]SvcToExpose, restClient restclient.Interface, config *restclient.Config,
+	mbgCtlPodName string, mbgNamespace string, moduleNamespace string) error {
+	if svcsToExpose == nil {
+		return nil
+	}
+	for _, svcToExpose := range *svcsToExpose {
+		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
+		// add the service to MBG
+		svcID := svcToExpose.svcName + "." + moduleNamespace
+		MBGCommand := "./mbgctl add service --id " + svcID + "-" + svcToExpose.port + " --target " + svcID + " --port " + svcToExpose.port
+		err := managerUtils.ExecPod(restClient, config, mbgCtlPodName, mbgNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		if err != nil {
+			// return err
+			r.Log.Trace().Msg("MBG error " + err.Error())
+		}
+		// Expose the service
+		MBGCommand = "./mbgctl expose --service " + svcID + "-" + svcToExpose.port
+		err = managerUtils.ExecPod(restClient, config, mbgCtlPodName, mbgNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		if err != nil {
+			// return err
+			r.Log.Trace().Msg("MBG error " + err.Error())
+		}
+	}
+	return nil
+}
+
 func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fapp.Blueprint, network *fapp.ModuleNetwork,
 	rel *release.Release) error {
 	r.Log.Trace().Msg("apply MBG network")
@@ -326,12 +352,12 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 		return err
 	}
 	// get the variables related to MBG
-	MBGPodName := environment.GetMBGPodName()
-	MBGCTLPodName := environment.GetMBGCtlPodName()
-	MBGNamespace := environment.GetMBGNameSpace()
+	mbgPodName := environment.GetMBGPodName()
+	mbgCtlPodName := environment.GetMBGCtlPodName()
+	mbgNamespace := environment.GetMBGNameSpace()
 	moduleNamespace := blueprint.Spec.ModulesNamespace
 	cluster := blueprint.Spec.Cluster
-	r.Log.Trace().Msg("mbg pod is " + MBGPodName + " mbgctl pod is " + MBGCTLPodName + " cluster is " + cluster)
+	r.Log.Trace().Msg("mbg pod is " + mbgPodName + " mbgctl pod is " + mbgCtlPodName + " cluster is " + cluster)
 	var svcsToExpose []SvcToExpose
 	// if the module is an endpoint then add and expose it
 	if network.Endpoint {
@@ -355,24 +381,10 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 			}
 		}
 	}
-
-	for _, svcToExpose := range svcsToExpose {
-		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
-		// add the service to MBG
-		svcID := svcToExpose.svcName + "." + moduleNamespace
-		MBGCommand := "./mbgctl add service --id " + svcID + "-" + svcToExpose.port + " --target " + svcID + " --port " + svcToExpose.port
-		err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-		if err != nil {
-			// return err
-			r.Log.Trace().Msg("MBG error " + err.Error())
-		}
-		// Expose the service
-		MBGCommand = "./mbgctl expose --service " + svcID + "-" + svcToExpose.port
-		err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
-		if err != nil {
-			// return err
-			r.Log.Trace().Msg("MBG error " + err.Error())
-		}
+	err = r.exposeServices(&svcsToExpose, restClient, config, mbgCtlPodName, mbgNamespace, moduleNamespace)
+	if err != nil {
+		r.Log.Trace().Msg("MBG error " + err.Error())
+		return err
 	}
 
 	accessMBG := false
@@ -390,7 +402,7 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 				// MBG doesn't support binding in a different namespace
 				// MBGCommand := "./mbgctl add binding --service " + svcName + " --namespace " + svcNamesapce + " --port " + svcPort
 				MBGCommand := "./mbgctl add binding --service " + svcName + "." + svcNamespace + "-" + svcPort + " --port " + svcPort
-				err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+				err = managerUtils.ExecPod(restClient, config, mbgCtlPodName, mbgNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 				if err != nil {
 					// return err
 					r.Log.Trace().Msg("MBG error " + err.Error())
@@ -459,7 +471,6 @@ func (r *BlueprintReconciler) updateModuleState(blueprint *fapp.Blueprint, insta
 func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configuration, log *zerolog.Logger,
 	blueprint *fapp.Blueprint) (ctrl.Result, error) {
 	uuid := managerUtils.GetFybrikApplicationUUIDfromAnnotations(blueprint.GetAnnotations())
-
 	// Gather all templates and process them into a list of resources to apply
 	// force-update if the blueprint spec is different
 	updateRequired := blueprint.Status.ObservedGeneration != blueprint.GetGeneration()
@@ -481,7 +492,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 	}
 	blueprint.Labels[managerUtils.BlueprintNameLabel] = blueprint.Name
 	blueprint.Labels[managerUtils.BlueprintNamespaceLabel] = blueprint.Namespace
-
 	for instanceName := range blueprint.Spec.Modules {
 		module := blueprint.Spec.Modules[instanceName]
 		// Get arguments by type
@@ -551,7 +561,6 @@ func (r *BlueprintReconciler) reconcile(ctx context.Context, cfg *action.Configu
 		log.Info().Msg("blueprint is ready")
 		return ctrl.Result{}, nil
 	}
-
 	// the status is unknown yet - continue polling
 	if blueprint.Status.ObservedState.Error == "" {
 		log.Trace().Msg("blueprint.Status.ObservedState is not ready, will try again")
