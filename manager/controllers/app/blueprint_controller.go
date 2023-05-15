@@ -321,6 +321,7 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 		return err
 	}
 	clientset, err := kubernetes.NewForConfig(config)
+	restClient := clientset.CoreV1().RESTClient()
 	if err != nil {
 		return err
 	}
@@ -360,14 +361,14 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 		// add the service to MBG
 		svcID := svcToExpose.svcName + "." + moduleNamespace
 		MBGCommand := "./mbgctl add service --id " + svcID + "-" + svcToExpose.port + " --target " + svcID + " --port " + svcToExpose.port
-		err = managerUtils.ExecPod(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			// return err
 			r.Log.Trace().Msg("MBG error " + err.Error())
 		}
 		// Expose the service
 		MBGCommand = "./mbgctl expose --service " + svcID + "-" + svcToExpose.port
-		err = managerUtils.ExecPod(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+		err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			// return err
 			r.Log.Trace().Msg("MBG error " + err.Error())
@@ -383,14 +384,13 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 			for _, urlString := range egress.URLs {
 				svcName, svcNamespace, svcPort := r.getSvcHostPort(urlString)
 				if svcName != "" {
-					r.Log.Warn().Msgf("URL without host name: %s", urlString)
 					continue
 				}
 				r.Log.Trace().Msgf("bind MBG remote service with name %s, namespace %s, port %s", svcName, svcNamespace, svcPort)
 				// MBG doesn't support binding in a different namespace
 				// MBGCommand := "./mbgctl add binding --service " + svcName + " --namespace " + svcNamesapce + " --port " + svcPort
 				MBGCommand := "./mbgctl add binding --service " + svcName + "." + svcNamespace + "-" + svcPort + " --port " + svcPort
-				err = managerUtils.ExecPod(clientset, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
+				err = managerUtils.ExecPod(restClient, config, MBGCTLPodName, MBGNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr)
 				if err != nil {
 					// return err
 					r.Log.Trace().Msg("MBG error " + err.Error())

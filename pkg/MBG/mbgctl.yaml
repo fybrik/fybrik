@@ -1,0 +1,30 @@
+################################################################
+#Name: mbgctl-deployment 
+#Desc: YAML file for creating mbgctl for CLI to MBG 
+################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mbgctl-deployment
+  labels:
+    app: mbgctl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mbgctl
+  template:
+    metadata:
+      labels:
+        app: mbgctl
+    spec:
+      containers:
+      - name: mbgctl
+        image: quay.io/mcnet/mbg
+        securityContext:
+          privileged: true
+        imagePullPolicy: Always
+        command: [ "sleep" ]
+        args: [ "infinity" ]  
+        ports:
+        - containerPort: 50051

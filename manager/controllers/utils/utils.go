@@ -13,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/util/retry"
@@ -91,14 +90,14 @@ func ParseRawURL(rawURL string) (*url.URL, error) {
 	return u, err
 }
 
-func ExecPod(k8sClient kubernetes.Interface, config *restclient.Config, podName string, namespace string,
+func ExecPod(restClient restclient.Interface, config *restclient.Config, podName string, namespace string,
 	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	cmd := []string{
 		"sh",
 		"-c",
 		command,
 	}
-	req := k8sClient.CoreV1().RESTClient().Post().Resource("pods").Name(podName).
+	req := restClient.Post().Resource("pods").Name(podName).
 		Namespace(namespace).SubResource("exec")
 	option := &corev1.PodExecOptions{
 		Command: cmd,

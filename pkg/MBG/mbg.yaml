@@ -1,0 +1,30 @@
+################################################################
+#Name: mbg 
+#Desc: YAML file for creating mbg deployment
+################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mbg-deployment
+  labels:
+    app: mbg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mbg
+  template:
+    metadata:
+      labels:
+        app: mbg
+    spec:
+      containers:
+      - name: mbg
+        image: quay.io/mcnet/mbg
+        securityContext:
+          privileged: true
+        imagePullPolicy: Always
+        command: [ "sleep" ]
+        args: [ "infinity" ]        
+        ports:
+        - containerPort: 50051
