@@ -46,6 +46,15 @@ Add the [externed policies](https://fybrik.io/dev/concepts/config-policies/#exte
 cp ./samples/adminconfig/quickstart_policies.rego ./charts/fybrik/files/adminconfig/
 ```
 
+Next add the following items to extraPortMappings entry in `kind-control` node to port forward Razee related ports.
+
+```bash
+  - containerPort: 30333  # Razee dash API node port in K8s
+    hostPort: 3333  # Razee dash API on host
+  - containerPort: 30080  # Razee dash UI node port in K8s
+    hostPort: 8080  # Razee dash UI on host
+```
+
 Now we can execute the script to setup a Razee multicluster automatically:
 
 ```bash

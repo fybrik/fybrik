@@ -47,35 +47,34 @@ In order to facilitate this flow with Argo CD, it is necessary to supply a GitHu
 ## Before you begin
 
 - Fybrik pre-requisite: https://fybrik.io/v1.3/get-started/quickstart/
-- Argo CD CLI
+- Argo CD CLI v2.7 and above
 - Github account and Github repository to store the Blueprints
 
 
 ## Setup multi-cluster environment
 
-For local testing [`hack/setup-local-multi-cluster.sh`](../hack/setup-local-multi-cluster.sh) script can be used to setup two kind clusters:
+For local testing `hack/tools/create_kind.sh` script can be used to setup two kind clusters:
 
 - `kind-control`: the coordinator cluster.
 - `kind-kind`: the remote cluster.
 
-After running the script above the two clusters contains the following deployments:
-- `kind-control`:
+To do so please execute the command:
 
-                  1. Argo CD in argocd namespace
+```bash
+make kind-setup-multi
+```
 
-                  2. Vault (*)
+Then, run the following command to deploy Argo CD:
 
-                  3. Cert Manager (*)
-
-- `kind-kind`: 
-
-                  1. Cert Manager (*)
-
-(*) TODO: should be deployed with Argo CD
+```bash
+kubectl config use-context kind-control
+make -C third_party/argocd deploy
+make -C third_party/argocd deploy-wait
+```
 
 ## Logging to Argo CD:
 
-To execute Argo CD CLI commands in this tutorial, run the following login command:
+To execute Argo CD CLI commands in this tutorial, run the following commands:
 
 First, retrieve the admin password from the command line:
 ```bash
@@ -88,18 +87,14 @@ Then, port-forward the argocd service:
 kubectl port-forward service/argo-argocd-server -n argocd 8080:443 &
 ```
 
-Lastly, logging using the admin password retrieved above.
+The API server can now be accessed using https://localhost:8080 using the username `admin` and the password extracted above.
+
+Then logging using Argo CD CLI with the admin password retrieved above.
 
 ```bash
 kubectl config set-context kind-control --namespace=argocd
 argocd login localhost:8080 --insecure
 ```
-
-For more information please refer to the Argo CD [getting started page](https://argo-cd.readthedocs.io/en/stable/getting_started/).
-
-## Logging to Argocd GUI
-
-The API server can then be accessed using https://localhost:8080
 
 For more information please refer to the Argo CD [getting started page](https://argo-cd.readthedocs.io/en/stable/getting_started/).
 
@@ -109,20 +104,22 @@ The following steps needs to be executed to configure the argo CD server:
 
 1. Add clusters:
 
-The coordinator cluster is automatically registered in argo CD server. However its default name is `in-cluster`. In this tutorial we change it to `kind-control`. This could be done via the Argo CD GUI.
-For the remote cluster, please follow the steps below that are taken from the [link](https://github.com/argoproj/argo-cd/issues/4204) which are require due to a bug in registering cluster in KinD. Note that for newer version of Argo CD a new flag was added to fix that (`cluster add --cluster-endpoint`) but it is not working properly.
+The coordinator cluster is automatically registered in argo CD server. However its default name is `in-cluster`. In this tutorial we change it to `kind-control`. This can be done manually via the Argo CD GUI or by executing the following command:
 
-```bash
-kubectl config use-context kind-kind
-kubectl get endpoints -A
-```
-Copy the endpoint for `kubernetes` to ~/.kube/config , replacing the existing `server:` field for 'kind-kind' cluster.
-
-Then run the following command to register the cluster:
 ```bash
 kubectl config set-context kind-control --namespace=argocd
-argocd cluster --insecure add kind-kind
+argocd cluster --insecure add kind-control  --in-cluster --name kind-control
 ```
+
+For the remote cluster, please execute the following command.
+
+```bash
+kubectl config set-context kind-control --namespace=argocd
+argocd cluster add kind-kind --cluster-endpoint kube-public
+```
+
+Note that the `--cluster-endpoint` is a new option added in Argo CD v2.7. For older versions
+please refer to a workaround suggested in the [link](https://github.com/argoproj/argo-cd/issues/4204)
 
 2. Add private repositories:
 
@@ -134,6 +131,30 @@ argocd repo add https://github.com/xxx/argocd-fybrik-blueprints --name my-bluepr
 ```
 
 Alternatively, the repository can be added using the Argo CD GUI.
+
+3. Reduce sync interval
+
+The automatic sync interval is determined by the timeout.reconciliation value in the [argocd-cm ConfigMap](https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/), which defaults to 180s (3 minutes).
+We recommend to reduce it to 10s.
+
+To do so please change the value of `timeout.reconciliation` in argocd-cm config map:
+
+```bash
+k edit cm argocd-cm -n argocd
+```
+
+
+## Deploy Cert-manager and Vault
+
+Run the following commands to deploy cert-manager and Vault on the clusters.
+Vault is deployed only on the coordinator cluster.
+
+```bash
+kubectl apply -f samples/multicluster-argocd/cert-manager-appset.yaml
+kubectl apply -f samples/multicluster-argocd/vault-app.yaml
+```
+
+Please note that the applications are automatically synced as defined in the applications.
 
 ### Fybrik deployment using Argo CD
 
@@ -168,10 +189,10 @@ For example, for Argo CD password the following command can be used to retrieve 
 ```bash
 kubectl config use-context kind-control
 
-ARGO_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Then, replace the value of `coordinator.argocd.password` in samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml with ARGO_PASSWORD value above.
+Then, replace the value of `coordinator.argocd.password` in samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml with the password value above.
 
 #### Remote cluster
 
@@ -184,15 +205,83 @@ The remote clusters only need the watch keeper and cluster subscription agents i
           value: "false"
 ```
 
-Once all the Argo CD applications in `samples/multicluster-argocd/fybrik-applications/` folder are applied then they can be synced via the Argo CD GUI given that auto sync option is disabled.
+Apply the applications to deploy Fybrik chart on the clusters:
+
+``bash
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-control.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-kind.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml
+```
+
+## Deploy Fybrik modules
+
+Next, deploy the [arrow flight module](https://github.com/fybrik/arrow-flight-module)
+which enables reading data through Apache Arrow Flight API.
+
+```bash
+kubectl config use-context kind-control
+kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
+```
+
+## Change Adminconfig
+
+First, add the [externed policies](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more.
+
+```bash
+kubectl config use-context kind-control
+kubectl edit cm fybrik-adminconfig -n fybrik-system
+```
+
+Add the following policy:
+
+```rego
+    config[{"capability": "transform", "decision": decision}] {
+        policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored", "version": "0.1"}
+        cluster_restrict := {"property": "metadata.region", "values": ["theshire"]}
+        decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
+    }
+```
 
 ### Apply Argo CD application for the Blueprints
 
-Upon Fybrik deployment, a new directory named `blueprints` is automatically created on the github repository with sub-directories for each of the clusters to hold the blueprints of that cluster.
+Upon Fybrik deployment, a new directory named `blueprints` is automatically created (if not exists) on the github repository with sub-directories for each of the clusters to hold the blueprints of that cluster.
 
 File  `samples/multicluster-argocd/blueprints-appset.yaml` contains Argo CD applicationSet to sync the Fybrik blueprints from the git repo described above with the clusters. The Argo CD applications are generated with name prefix "blueprints" and the full applications names for the blueprints deployment are expected to be of the form: blueprints-<cluster-name>. For example, when the cluster name is "kind-kind" the application name is `blueprints-kind-kind`.
 
 Note: This stage should be done *After* Fybrik deployment as the later creates the sub directory for each cluster to hold the blueprint of that cluster.
+
+```bash
+kubectl apply -f samples/multicluster-argocd/blueprints-appset.yaml
+```
+
+# Run the notebook read flow sample
+
+Execute the (`before we begin`)[https://fybrik.io/v1.3/samples/pre-steps/] section and (notebook-read)(https://fybrik.io/v1.3/samples/notebook-read/) section, using the katalog as data catalog. Stop before `Create a FybrikApplication resource for the notebook` section.
+
+### Apply Fybrik application
+
+cat <<EOF | kubectl apply -f -
+apiVersion: app.fybrik.io/v1beta1
+kind: FybrikApplication
+metadata:
+  name: my-notebook
+  labels:
+    app: my-notebook
+spec:
+  selector:
+    clusterName: kind-kind
+    workloadSelector:
+      matchLabels:
+        app: my-notebook
+  appInfo:
+    intent: Fraud Detection
+  data:
+    - dataSetID: 'fybrik-notebook-sample/paysim-csv'
+      requirements:
+        interface: 
+          protocol: fybrik-arrow-flight
+EOF
 
 
 

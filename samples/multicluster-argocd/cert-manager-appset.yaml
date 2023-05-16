@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: appset-bluerprints
+  name: appset-cert-manager
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,7 +10,7 @@ spec:
   - clusters: {} # Automatically use all clusters defined within Argo CD
   template:
     metadata:
-      name: 'blueprints-{{name}}' # 'name' field of the Secret
+      name: 'cert-manager-{{name}}' # 'name' field of the Secret
     spec:
       project: default
       syncPolicy:
@@ -18,11 +18,18 @@ spec:
           prune: true
           selfHeal: true
           allowEmpty: true
+        syncOptions:
+          - CreateNamespace=true
       source:
-        repoURL: https://github.com/revit13/new-argocd-test1
-        targetRevision: HEAD
-        path: blueprints/{{name}}
+        repoURL: https://charts.jetstack.io
+        chart: cert-manager
+        targetRevision: v1.6.2
+        helm:
+          parameters:
+          - name: installCRDs
+            value: 'true'
+
       destination:
         server: '{{server}}' # 'server' field of the secret
-        namespace: fybrik-system
+        namespace: cert-manager
 
