@@ -23,6 +23,10 @@ spec:
     targetRevision: argocd-test
     helm:
       parameters:
+        - name: clusterScoped
+          value: 'false'
+        - name: applicationNamespace
+          value: fybrik-notebook-sample
         - name: cluster.name
           value: kind-control
         - name: cluster.zone
@@ -37,18 +41,12 @@ spec:
           value: http://control-control-plane:80
         - name: coordinator.catalog
           value: katalog
-        - name: manager.socat
-          value: "true"
-        - name: global.hub
-          value: ghcr.io/revit13
-        - name: global.tag
-          value: "0.0.0"
         - name: coordinator.argocd.url
           value: "http://argo-argocd-server.argocd:80"
         - name: coordinator.argocd.user
           value: "admin"
         - name: coordinator.argocd.password
-          value: "6ce0q4V67rJO59z-"
+          value: "esalFNL3cpAusjW8"
         - name: coordinator.argocd.appsGitRepo.url
           value: "https://github.com/fybrik/blueprint-repo"
         - name: coordinator.argocd.appsGitRepo.user

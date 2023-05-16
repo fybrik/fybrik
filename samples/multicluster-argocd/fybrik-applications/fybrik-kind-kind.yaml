@@ -22,6 +22,10 @@ spec:
     targetRevision: HEAD
     helm:
       parameters:
+        - name: clusterScoped
+          value: 'false'
+        - name: applicationNamespace
+          value: fybrik-notebook-sample
         - name: cluster.name
           value: kind-kind
         - name: cluster.zone
@@ -32,11 +36,5 @@ spec:
           value: kind
         - name: coordinator.enabled
           value: "false"
-        - name: manager.socat
-          value: "true"
-        - name: global.hub
-          value: localhost:5000/fybrik-system
-        - name: global.tag
-          value: "0.0.0"
   sources: []
   project: default

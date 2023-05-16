@@ -263,6 +263,9 @@ func (cm *argocdClusterManager) packClusterConfigMap(params map[string]string) *
 //	      value: kind-control
 //	    - name: cluster.zone
 //	      value: baggin
+//
+// TODO: Consider retrieving the cluster info from fybrik cluster-metadata configMap resource
+// by using ApplicationServiceGetResource API call
 func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster.Cluster, error) {
 	var cluster multicluster.Cluster
 	req := cm.client.ApplicationServiceApi.ApplicationServiceGet(context.Background(),
@@ -295,6 +298,11 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 			params["VaultAuthPath"] = helmParam.GetValue()
 			cm.log.Info().Msg("VaultAuthPath: " + helmParam.GetValue())
 		}
+	}
+
+	if len(params) != 4 {
+		cm.log.Error().Err(err).Msg("missing expected cluster info related field in helm params")
+		return cluster, errors.New("Failed to get cluster info")
 	}
 
 	return multicluster.CreateCluster(*cm.packClusterConfigMap(params)), nil
@@ -369,7 +377,6 @@ func (cm *argocdClusterManager) getBlueprintFilePath() string {
 func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*app.Blueprint, error) {
 	cm.log.Info().Msg("Get Blueprint " + " cluster " + cluster + " namespace: " + namespace + " name: " + name)
 
-	// TO BE REMOVED: experimental code
 	req1 := cm.client.ApplicationServiceApi.ApplicationServiceGetResource(context.Background(), appBlueprintPrefix+cluster)
 	req1 = req1.ResourceName(name)
 	req1 = req1.Kind(blueprintKind)

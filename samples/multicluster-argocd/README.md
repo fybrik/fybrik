@@ -108,18 +108,18 @@ The coordinator cluster is automatically registered in argo CD server. However i
 
 ```bash
 kubectl config set-context kind-control --namespace=argocd
-argocd cluster --insecure add kind-control  --in-cluster --name kind-control
+argocd cluster --insecure add kind-control  --in-cluster --name kind-control -y
 ```
 
 For the remote cluster, please execute the following command.
 
 ```bash
 kubectl config set-context kind-control --namespace=argocd
-argocd cluster add kind-kind --cluster-endpoint kube-public
+argocd cluster add kind-kind --cluster-endpoint kube-public -y
 ```
 
 Note that the `--cluster-endpoint` is a new option added in Argo CD v2.7. For older versions
-please refer to a workaround suggested in the [link](https://github.com/argoproj/argo-cd/issues/4204)
+please refer this [workaround](https://github.com/argoproj/argo-cd/issues/4204).
 
 2. Add private repositories:
 
@@ -127,6 +127,7 @@ A github repository needs to be provided for the purpose of hosting the Fybrik B
 Run the following command to register a private repository in Argo CD:
 
 ```bash
+kubectl config set-context kind-control --namespace=argocd
 argocd repo add https://github.com/xxx/argocd-fybrik-blueprints --name my-blueprints --username username --password xxx
 ```
 
@@ -150,11 +151,12 @@ Run the following commands to deploy cert-manager and Vault on the clusters.
 Vault is deployed only on the coordinator cluster.
 
 ```bash
-kubectl apply -f samples/multicluster-argocd/cert-manager-appset.yaml
+kubectl config set-context kind-control --namespace=argocd
 kubectl apply -f samples/multicluster-argocd/vault-app.yaml
+kubectl apply -f samples/multicluster-argocd/cert-manager-appset.yaml
 ```
 
-Please note that the applications are automatically synced as defined in the applications.
+Please note that the deployments are automatically synced as defined in the applications.
 
 ### Fybrik deployment using Argo CD
 
@@ -162,8 +164,17 @@ This section describe Fybrik deployment on the clusters using Argo CD. In additi
 
 The folder `samples/multicluster-argocd/fybrik-applications/` contains Argo CD applications that install the fybrik-crd and fybrik helm chart on the clusters.
 It's important to note that the default prefix for ArgoCD application names related to the Fybrik helm chart deployment is 'fybrik'. The complete application names for fybrik deployment are expected to be in the format: fybrik-<cluster-name>. For example, if the cluster name is "kind-kind" and the prefix is "fybrik", then the ArgoCD application name should be "fybrik-kind-kind".
-The application name prefix ('fybrik') can be customized and changed during fybrik deployment on the coordinator cluster via the argo CD application.
+The application name prefix ('fybrik') is customized and can be changed upon fybrik deployment by changing the relavent helm parameter.
 It is crucial that the ArgoCD application names for Fybrik deployments follow the specified syntax, as Fybrik relies on it when retrieving cluster information from the Argo CD server.
+
+Note that Fybrik is deployed with clusterScope=false option due to an [open issue](https://github.com/kubernetes-sigs/aws-load-balancer-controller/issues/3188) in Argo CD, In this mode the Fybrik application namespace needs to be manually created before Fybrik deployment by running the following commands:
+
+```bash
+kubectl config use-context kind-control
+kubectl create ns fybrik-notebook-sample
+kubectl config use-context kind-kind
+kubectl create ns fybrik-notebook-sample
+```
 
 Before installing the applications, details about Argo CD local deployment and the git repository needs to be updated in the `samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml` file:
 
@@ -192,7 +203,7 @@ kubectl config use-context kind-control
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Then, replace the value of `coordinator.argocd.password` in samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml with the password value above.
+Then, replace the value of `coordinator.argocd.password` in `samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml` with the password value above.
 
 #### Remote cluster
 
@@ -205,14 +216,21 @@ The remote clusters only need the watch keeper and cluster subscription agents i
           value: "false"
 ```
 
-Apply the applications to deploy Fybrik chart on the clusters:
 
-``bash
+Notice that the cluster information such as region and zone is different in the two applications.
+
+Finally, apply the applications to deploy Fybrik chart on the clusters:
+
+```bash
+kubectl config use-context kind-control
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-control.yaml
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-kind.yaml
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml
 ```
+
+As the application contains automatic sync the deployment of Fybrik CRD and Fybrik should be done automatically
+on the cluster. This can be verified in Argocd GUI by pressing the `Applications` button and checking the applications status.
 
 ## Deploy Fybrik modules
 
@@ -224,9 +242,9 @@ kubectl config use-context kind-control
 kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/master/module.yaml -n fybrik-system
 ```
 
-## Change Adminconfig
+## Add Adminconfig policy
 
-First, add the [externed policies](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements, such as where read or transform modules should run, what should be the scope of module deployments, and more.
+Add an [extended policy](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements. In this sample a policy which specify where the transform modules should run is deployed. As the katalog Asset region is `theshire` then the blueprint is expected to be created on the remote cluster `kind-kind`.
 
 ```bash
 kubectl config use-context kind-control
@@ -238,7 +256,7 @@ Add the following policy:
 ```rego
     config[{"capability": "transform", "decision": decision}] {
         policy := {"ID": "transform-geo", "description":"Governance based transformations must take place in the geography where the data is stored", "version": "0.1"}
-        cluster_restrict := {"property": "metadata.region", "values": ["theshire"]}
+        cluster_restrict := {"property": "metadata.region", "values": [input.request.dataset.geography]}
         decision := {"policy": policy, "restrictions": {"clusters": [cluster_restrict]}}
     }
 ```
@@ -247,9 +265,9 @@ Add the following policy:
 
 Upon Fybrik deployment, a new directory named `blueprints` is automatically created (if not exists) on the github repository with sub-directories for each of the clusters to hold the blueprints of that cluster.
 
-File  `samples/multicluster-argocd/blueprints-appset.yaml` contains Argo CD applicationSet to sync the Fybrik blueprints from the git repo described above with the clusters. The Argo CD applications are generated with name prefix "blueprints" and the full applications names for the blueprints deployment are expected to be of the form: blueprints-<cluster-name>. For example, when the cluster name is "kind-kind" the application name is `blueprints-kind-kind`.
+File  `samples/multicluster-argocd/blueprints-appset.yaml` contains Argo CD applicationSet to sync the Fybrik blueprints from the git repo described above with the clusters. The Argo CD applications are generated with name prefix "blueprints" while the full applications names for the blueprints deployment are expected to be of the form: blueprints-<cluster-name>. For example, when the cluster name is "kind-kind" the application name is `blueprints-kind-kind`.
 
-Note: This stage should be done *After* Fybrik deployment as the later creates the sub directory for each cluster to hold the blueprint of that cluster.
+Next execute the following command to apply the applicationSet:
 
 ```bash
 kubectl apply -f samples/multicluster-argocd/blueprints-appset.yaml
@@ -260,6 +278,8 @@ kubectl apply -f samples/multicluster-argocd/blueprints-appset.yaml
 Execute the (`before we begin`)[https://fybrik.io/v1.3/samples/pre-steps/] section and (notebook-read)(https://fybrik.io/v1.3/samples/notebook-read/) section, using the katalog as data catalog. Stop before `Create a FybrikApplication resource for the notebook` section.
 
 ### Apply Fybrik application
+
+Execute the following command to create fybrikapplication resource.
 
 cat <<EOF | kubectl apply -f -
 apiVersion: app.fybrik.io/v1beta1
@@ -283,6 +303,12 @@ spec:
           protocol: fybrik-arrow-flight
 EOF
 
+
+Run the following command to wait until the FybrikApplication is ready
+
+```bash
+while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
+```
 
 
 
