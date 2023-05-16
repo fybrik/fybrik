@@ -169,8 +169,6 @@ coordinator:
       user: ""
       # Password for git repository repo
       password: ""
-      # path to ArgoCD applications yamls for Blueprints deployment
-      blueprintsAppsPath: ""
       
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup
   razee:

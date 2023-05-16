@@ -60,10 +60,9 @@ func init() {
 }
 
 type gitRepo struct {
-	password           string
-	username           string
-	url                string
-	blueprintsAppsPath string
+	password string
+	username string
+	url      string
 }
 
 // argocdClusterManager for argocd cluster configuration
@@ -181,8 +180,8 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 	return nil
 }
 
-func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoUser, gitRepoPassword, argocdFybrikAppsNamePrefix,
-	gitRepoBlueprintsAppsPath string) (multicluster.ClusterManager, error) {
+func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoUser, gitRepoPassword,
+	argocdFybrikAppsNamePrefix string) (multicluster.ClusterManager, error) {
 	logger := logging.LogInit(logging.SETUP, "ArgoCDManager")
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
@@ -231,10 +230,9 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoU
 		client: argoclient.NewAPIClient(&configuration),
 		log:    logger,
 		argoCDAppsGitRepo: gitRepo{
-			password:           gitRepoPassword,
-			username:           gitRepoUser,
-			url:                gitRepoUrl,
-			blueprintsAppsPath: gitRepoBlueprintsAppsPath,
+			password: gitRepoPassword,
+			username: gitRepoUser,
+			url:      gitRepoUrl,
 		},
 		argocdFybrikAppsNamePrefix: argocdFybrikAppsNamePrefix,
 	}
@@ -302,7 +300,7 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 	return multicluster.CreateCluster(*cm.packClusterConfigMap(params)), nil
 }
 
-// Clone a git reposetory into local filesystem
+// Clone a git repository into local filesystem
 func (cm *argocdClusterManager) cloneGitRepo() (string, *git.Repository, error) {
 	cm.log.Info().Msg(cm.argoCDAppsGitRepo.username + cm.argoCDAppsGitRepo.url)
 	tmpDir, err := os.MkdirTemp(environment.GetDataDir(), "blueprints-repo")
