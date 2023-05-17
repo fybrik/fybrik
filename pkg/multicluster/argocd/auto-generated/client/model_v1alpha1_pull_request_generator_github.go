@@ -19,12 +19,12 @@ type V1alpha1PullRequestGeneratorGithub struct {
 	// The GitHub API URL to talk to. If blank, use https://api.github.com/.
 	Api *string `json:"api,omitempty"`
 	// AppSecretName is a reference to a GitHub App repo-creds secret with permission to access pull requests.
-	AppSecretName *string   `json:"appSecretName,omitempty"`
-	Labels        *[]string `json:"labels,omitempty"`
+	AppSecretName *string `json:"appSecretName,omitempty"`
+	Labels *[]string `json:"labels,omitempty"`
 	// GitHub org or user to scan. Required.
 	Owner *string `json:"owner,omitempty"`
 	// GitHub repo name to scan. Required.
-	Repo     *string            `json:"repo,omitempty"`
+	Repo *string `json:"repo,omitempty"`
 	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
@@ -295,3 +295,5 @@ func (v *NullableV1alpha1PullRequestGeneratorGithub) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

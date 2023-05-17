@@ -16,7 +16,7 @@ import (
 
 // V1alpha1Info struct for V1alpha1Info
 type V1alpha1Info struct {
-	Name  *string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1Info) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

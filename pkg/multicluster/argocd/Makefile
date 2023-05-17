@@ -20,7 +20,7 @@ OPENAPI_GENERATOR_IMG := openapitools/openapi-generator-cli:v${OPENAPI_GENERATOR
 .PHONY: patch
 patch:
 # workaround for https://github.com/argoproj/argo-cd/issues/4314
-		jq 'setpath(["definitions", "v1Time"]; {"type":"string"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "apisCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "resourcesCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterInfo", "properties", "applicationsCount"]; {"type":"integer"}) | setpath(["definitions", "v1ObjectMeta", "properties", "generation"]; {"type":"integer"})| setpath(["definitions", "v1alpha1RevisionHistory", "properties", "id"]; {"type":"integer"})' swagger.json.orig > swagger.json
+		jq 'setpath(["definitions", "v1Time"]; {"type":"string"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "apisCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "resourcesCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterInfo", "properties", "applicationsCount"]; {"type":"integer"}) | setpath(["definitions", "v1ObjectMeta", "properties", "generation"]; {"type":"integer"})| setpath(["definitions", "v1alpha1RevisionHistory", "properties", "id"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1RetryStrategy", "properties", "limit"]; {"type":"integer"})' swagger.json.orig > swagger.json
 
 .PHONY: generate-client-argocd
 generate-client-argocd: patch

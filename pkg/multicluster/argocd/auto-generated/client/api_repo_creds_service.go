@@ -28,10 +28,10 @@ var (
 type RepoCredsServiceApiService service
 
 type ApiRepoCredsServiceCreateRepositoryCredentialsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepoCredsServiceApiService
-	body       *V1alpha1RepoCreds
-	upsert     *bool
+	body *V1alpha1RepoCreds
+	upsert *bool
 }
 
 // Repository definition
@@ -39,7 +39,6 @@ func (r ApiRepoCredsServiceCreateRepositoryCredentialsRequest) Body(body V1alpha
 	r.body = &body
 	return r
 }
-
 // Whether to create in upsert mode.
 func (r ApiRepoCredsServiceCreateRepositoryCredentialsRequest) Upsert(upsert bool) ApiRepoCredsServiceCreateRepositoryCredentialsRequest {
 	r.upsert = &upsert
@@ -53,25 +52,24 @@ func (r ApiRepoCredsServiceCreateRepositoryCredentialsRequest) Execute() (V1alph
 /*
 RepoCredsServiceCreateRepositoryCredentials CreateRepositoryCredentials creates a new repository credential set
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiRepoCredsServiceCreateRepositoryCredentialsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiRepoCredsServiceCreateRepositoryCredentialsRequest
 */
 func (a *RepoCredsServiceApiService) RepoCredsServiceCreateRepositoryCredentials(ctx _context.Context) ApiRepoCredsServiceCreateRepositoryCredentialsRequest {
 	return ApiRepoCredsServiceCreateRepositoryCredentialsRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepoCreds
+//  @return V1alpha1RepoCreds
 func (a *RepoCredsServiceApiService) RepoCredsServiceCreateRepositoryCredentialsExecute(r ApiRepoCredsServiceCreateRepositoryCredentialsRequest) (V1alpha1RepoCreds, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepoCreds
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepoCreds
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepoCredsServiceApiService.RepoCredsServiceCreateRepositoryCredentials")
@@ -132,13 +130,13 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceCreateRepositoryCredentials
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -155,10 +153,11 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceCreateRepositoryCredentials
 }
 
 type ApiRepoCredsServiceDeleteRepositoryCredentialsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepoCredsServiceApiService
-	url        string
+	url string
 }
+
 
 func (r ApiRepoCredsServiceDeleteRepositoryCredentialsRequest) Execute() (map[string]interface{}, *_nethttp.Response, error) {
 	return r.ApiService.RepoCredsServiceDeleteRepositoryCredentialsExecute(r)
@@ -167,27 +166,26 @@ func (r ApiRepoCredsServiceDeleteRepositoryCredentialsRequest) Execute() (map[st
 /*
 RepoCredsServiceDeleteRepositoryCredentials DeleteRepositoryCredentials deletes a repository credential set from the configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param url
-	@return ApiRepoCredsServiceDeleteRepositoryCredentialsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param url
+ @return ApiRepoCredsServiceDeleteRepositoryCredentialsRequest
 */
 func (a *RepoCredsServiceApiService) RepoCredsServiceDeleteRepositoryCredentials(ctx _context.Context, url string) ApiRepoCredsServiceDeleteRepositoryCredentialsRequest {
 	return ApiRepoCredsServiceDeleteRepositoryCredentialsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		url:        url,
+		ctx: ctx,
+		url: url,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *RepoCredsServiceApiService) RepoCredsServiceDeleteRepositoryCredentialsExecute(r ApiRepoCredsServiceDeleteRepositoryCredentialsRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepoCredsServiceApiService.RepoCredsServiceDeleteRepositoryCredentials")
@@ -241,13 +239,13 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceDeleteRepositoryCredentials
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -264,9 +262,9 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceDeleteRepositoryCredentials
 }
 
 type ApiRepoCredsServiceListRepositoryCredentialsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepoCredsServiceApiService
-	url        *string
+	url *string
 }
 
 // Repo URL for query.
@@ -282,25 +280,24 @@ func (r ApiRepoCredsServiceListRepositoryCredentialsRequest) Execute() (V1alpha1
 /*
 RepoCredsServiceListRepositoryCredentials ListRepositoryCredentials gets a list of all configured repository credential sets
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiRepoCredsServiceListRepositoryCredentialsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiRepoCredsServiceListRepositoryCredentialsRequest
 */
 func (a *RepoCredsServiceApiService) RepoCredsServiceListRepositoryCredentials(ctx _context.Context) ApiRepoCredsServiceListRepositoryCredentialsRequest {
 	return ApiRepoCredsServiceListRepositoryCredentialsRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepoCredsList
+//  @return V1alpha1RepoCredsList
 func (a *RepoCredsServiceApiService) RepoCredsServiceListRepositoryCredentialsExecute(r ApiRepoCredsServiceListRepositoryCredentialsRequest) (V1alpha1RepoCredsList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepoCredsList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepoCredsList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepoCredsServiceApiService.RepoCredsServiceListRepositoryCredentials")
@@ -356,13 +353,13 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceListRepositoryCredentialsEx
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -379,10 +376,10 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceListRepositoryCredentialsEx
 }
 
 type ApiRepoCredsServiceUpdateRepositoryCredentialsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepoCredsServiceApiService
-	credsUrl   string
-	body       *V1alpha1RepoCreds
+	credsUrl string
+	body *V1alpha1RepoCreds
 }
 
 func (r ApiRepoCredsServiceUpdateRepositoryCredentialsRequest) Body(body V1alpha1RepoCreds) ApiRepoCredsServiceUpdateRepositoryCredentialsRequest {
@@ -397,27 +394,26 @@ func (r ApiRepoCredsServiceUpdateRepositoryCredentialsRequest) Execute() (V1alph
 /*
 RepoCredsServiceUpdateRepositoryCredentials UpdateRepositoryCredentials updates a repository credential set
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param credsUrl URL is the URL that this credentials matches to
-	@return ApiRepoCredsServiceUpdateRepositoryCredentialsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param credsUrl URL is the URL that this credentials matches to
+ @return ApiRepoCredsServiceUpdateRepositoryCredentialsRequest
 */
 func (a *RepoCredsServiceApiService) RepoCredsServiceUpdateRepositoryCredentials(ctx _context.Context, credsUrl string) ApiRepoCredsServiceUpdateRepositoryCredentialsRequest {
 	return ApiRepoCredsServiceUpdateRepositoryCredentialsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		credsUrl:   credsUrl,
+		ctx: ctx,
+		credsUrl: credsUrl,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepoCreds
+//  @return V1alpha1RepoCreds
 func (a *RepoCredsServiceApiService) RepoCredsServiceUpdateRepositoryCredentialsExecute(r ApiRepoCredsServiceUpdateRepositoryCredentialsRequest) (V1alpha1RepoCreds, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepoCreds
+		localVarHTTPMethod   = _nethttp.MethodPut
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepoCreds
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepoCredsServiceApiService.RepoCredsServiceUpdateRepositoryCredentials")
@@ -476,13 +472,13 @@ func (a *RepoCredsServiceApiService) RepoCredsServiceUpdateRepositoryCredentials
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

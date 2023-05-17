@@ -16,7 +16,7 @@ import (
 
 // StreamResultOfApplicationLogEntry struct for StreamResultOfApplicationLogEntry
 type StreamResultOfApplicationLogEntry struct {
-	Error  *RuntimeStreamError  `json:"error,omitempty"`
+	Error *RuntimeStreamError `json:"error,omitempty"`
 	Result *ApplicationLogEntry `json:"result,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableStreamResultOfApplicationLogEntry) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

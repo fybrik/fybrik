@@ -17,7 +17,7 @@ import (
 // V1alpha1HealthStatus struct for V1alpha1HealthStatus
 type V1alpha1HealthStatus struct {
 	Message *string `json:"message,omitempty"`
-	Status  *string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // NewV1alpha1HealthStatus instantiates a new V1alpha1HealthStatus object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1HealthStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

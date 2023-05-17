@@ -17,7 +17,7 @@ import (
 // V1alpha1BasicAuthBitbucketServer BasicAuthBitbucketServer defines the username/(password or personal access token) for Basic auth.
 type V1alpha1BasicAuthBitbucketServer struct {
 	PasswordRef *V1alpha1SecretRef `json:"passwordRef,omitempty"`
-	Username    *string            `json:"username,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // NewV1alpha1BasicAuthBitbucketServer instantiates a new V1alpha1BasicAuthBitbucketServer object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1BasicAuthBitbucketServer) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

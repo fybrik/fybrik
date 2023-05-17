@@ -17,7 +17,7 @@ import (
 // V1EventSource EventSource contains information for an event.
 type V1EventSource struct {
 	Component *string `json:"component,omitempty"`
-	Host      *string `json:"host,omitempty"`
+	Host *string `json:"host,omitempty"`
 }
 
 // NewV1EventSource instantiates a new V1EventSource object
@@ -147,3 +147,5 @@ func (v *NullableV1EventSource) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

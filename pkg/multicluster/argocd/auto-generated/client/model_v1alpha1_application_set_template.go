@@ -17,7 +17,7 @@ import (
 // V1alpha1ApplicationSetTemplate struct for V1alpha1ApplicationSetTemplate
 type V1alpha1ApplicationSetTemplate struct {
 	Metadata *V1alpha1ApplicationSetTemplateMeta `json:"metadata,omitempty"`
-	Spec     *V1alpha1ApplicationSpec            `json:"spec,omitempty"`
+	Spec *V1alpha1ApplicationSpec `json:"spec,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetTemplate instantiates a new V1alpha1ApplicationSetTemplate object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ApplicationSetTemplate) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

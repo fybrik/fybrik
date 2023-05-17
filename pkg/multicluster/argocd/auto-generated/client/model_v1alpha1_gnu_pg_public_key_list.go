@@ -16,8 +16,8 @@ import (
 
 // V1alpha1GnuPGPublicKeyList struct for V1alpha1GnuPGPublicKeyList
 type V1alpha1GnuPGPublicKeyList struct {
-	Items    *[]V1alpha1GnuPGPublicKey `json:"items,omitempty"`
-	Metadata *V1ListMeta               `json:"metadata,omitempty"`
+	Items *[]V1alpha1GnuPGPublicKey `json:"items,omitempty"`
+	Metadata *V1ListMeta `json:"metadata,omitempty"`
 }
 
 // NewV1alpha1GnuPGPublicKeyList instantiates a new V1alpha1GnuPGPublicKeyList object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1GnuPGPublicKeyList) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

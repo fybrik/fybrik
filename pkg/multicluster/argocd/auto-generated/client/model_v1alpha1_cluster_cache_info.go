@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ClusterCacheInfo struct for V1alpha1ClusterCacheInfo
 type V1alpha1ClusterCacheInfo struct {
-	ApisCount         *int32  `json:"apisCount,omitempty"`
+	ApisCount *int32 `json:"apisCount,omitempty"`
 	LastCacheSyncTime *string `json:"lastCacheSyncTime,omitempty"`
-	ResourcesCount    *int32  `json:"resourcesCount,omitempty"`
+	ResourcesCount *int32 `json:"resourcesCount,omitempty"`
 }
 
 // NewV1alpha1ClusterCacheInfo instantiates a new V1alpha1ClusterCacheInfo object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ClusterCacheInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -16,18 +16,18 @@ import (
 
 // V1alpha1ResourceDiff struct for V1alpha1ResourceDiff
 type V1alpha1ResourceDiff struct {
-	Diff                *string `json:"diff,omitempty"`
-	Group               *string `json:"group,omitempty"`
-	Hook                *bool   `json:"hook,omitempty"`
-	Kind                *string `json:"kind,omitempty"`
-	LiveState           *string `json:"liveState,omitempty"`
-	Modified            *bool   `json:"modified,omitempty"`
-	Name                *string `json:"name,omitempty"`
-	Namespace           *string `json:"namespace,omitempty"`
+	Diff *string `json:"diff,omitempty"`
+	Group *string `json:"group,omitempty"`
+	Hook *bool `json:"hook,omitempty"`
+	Kind *string `json:"kind,omitempty"`
+	LiveState *string `json:"liveState,omitempty"`
+	Modified *bool `json:"modified,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
 	NormalizedLiveState *string `json:"normalizedLiveState,omitempty"`
-	PredictedLiveState  *string `json:"predictedLiveState,omitempty"`
-	ResourceVersion     *string `json:"resourceVersion,omitempty"`
-	TargetState         *string `json:"targetState,omitempty"`
+	PredictedLiveState *string `json:"predictedLiveState,omitempty"`
+	ResourceVersion *string `json:"resourceVersion,omitempty"`
+	TargetState *string `json:"targetState,omitempty"`
 }
 
 // NewV1alpha1ResourceDiff instantiates a new V1alpha1ResourceDiff object
@@ -507,3 +507,5 @@ func (v *NullableV1alpha1ResourceDiff) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

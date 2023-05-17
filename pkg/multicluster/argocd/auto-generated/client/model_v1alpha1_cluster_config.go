@@ -18,11 +18,11 @@ import (
 type V1alpha1ClusterConfig struct {
 	AwsAuthConfig *V1alpha1AWSAuthConfig `json:"awsAuthConfig,omitempty"`
 	// Server requires Bearer authentication. This client will not attempt to use refresh tokens for an OAuth2 flow. TODO: demonstrate an OAuth2 compatible client.
-	BearerToken        *string                     `json:"bearerToken,omitempty"`
+	BearerToken *string `json:"bearerToken,omitempty"`
 	ExecProviderConfig *V1alpha1ExecProviderConfig `json:"execProviderConfig,omitempty"`
-	Password           *string                     `json:"password,omitempty"`
-	TlsClientConfig    *V1alpha1TLSClientConfig    `json:"tlsClientConfig,omitempty"`
-	Username           *string                     `json:"username,omitempty"`
+	Password *string `json:"password,omitempty"`
+	TlsClientConfig *V1alpha1TLSClientConfig `json:"tlsClientConfig,omitempty"`
+	Username *string `json:"username,omitempty"`
 }
 
 // NewV1alpha1ClusterConfig instantiates a new V1alpha1ClusterConfig object
@@ -292,3 +292,5 @@ func (v *NullableV1alpha1ClusterConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

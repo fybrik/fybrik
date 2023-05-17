@@ -17,7 +17,7 @@ import (
 // V1alpha1ApplicationSetRolloutStep struct for V1alpha1ApplicationSetRolloutStep
 type V1alpha1ApplicationSetRolloutStep struct {
 	MatchExpressions *[]V1alpha1ApplicationMatchExpression `json:"matchExpressions,omitempty"`
-	MaxUpdate        *IntstrIntOrString                    `json:"maxUpdate,omitempty"`
+	MaxUpdate *IntstrIntOrString `json:"maxUpdate,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetRolloutStep instantiates a new V1alpha1ApplicationSetRolloutStep object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ApplicationSetRolloutStep) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

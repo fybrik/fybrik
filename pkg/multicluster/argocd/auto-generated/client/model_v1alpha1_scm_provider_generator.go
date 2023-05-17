@@ -16,19 +16,19 @@ import (
 
 // V1alpha1SCMProviderGenerator SCMProviderGenerator defines a generator that scrapes a SCMaaS API to find candidate repos.
 type V1alpha1SCMProviderGenerator struct {
-	AzureDevOps     *V1alpha1SCMProviderGeneratorAzureDevOps     `json:"azureDevOps,omitempty"`
-	Bitbucket       *V1alpha1SCMProviderGeneratorBitbucket       `json:"bitbucket,omitempty"`
+	AzureDevOps *V1alpha1SCMProviderGeneratorAzureDevOps `json:"azureDevOps,omitempty"`
+	Bitbucket *V1alpha1SCMProviderGeneratorBitbucket `json:"bitbucket,omitempty"`
 	BitbucketServer *V1alpha1SCMProviderGeneratorBitbucketServer `json:"bitbucketServer,omitempty"`
 	// Which protocol to use for the SCM URL. Default is provider-specific but ssh if possible. Not all providers necessarily support all protocols.
 	CloneProtocol *string `json:"cloneProtocol,omitempty"`
 	// Filters for which repos should be considered.
 	Filters *[]V1alpha1SCMProviderGeneratorFilter `json:"filters,omitempty"`
-	Gitea   *V1alpha1SCMProviderGeneratorGitea    `json:"gitea,omitempty"`
-	Github  *V1alpha1SCMProviderGeneratorGithub   `json:"github,omitempty"`
-	Gitlab  *V1alpha1SCMProviderGeneratorGitlab   `json:"gitlab,omitempty"`
+	Gitea *V1alpha1SCMProviderGeneratorGitea `json:"gitea,omitempty"`
+	Github *V1alpha1SCMProviderGeneratorGithub `json:"github,omitempty"`
+	Gitlab *V1alpha1SCMProviderGeneratorGitlab `json:"gitlab,omitempty"`
 	// Standard parameters.
-	RequeueAfterSeconds *string                         `json:"requeueAfterSeconds,omitempty"`
-	Template            *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
+	RequeueAfterSeconds *string `json:"requeueAfterSeconds,omitempty"`
+	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1SCMProviderGenerator instantiates a new V1alpha1SCMProviderGenerator object
@@ -438,3 +438,5 @@ func (v *NullableV1alpha1SCMProviderGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

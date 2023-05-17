@@ -16,7 +16,7 @@ import (
 
 // V1EventList EventList is a list of events.
 type V1EventList struct {
-	Items    *[]V1Event  `json:"items,omitempty"`
+	Items *[]V1Event `json:"items,omitempty"`
 	Metadata *V1ListMeta `json:"metadata,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableV1EventList) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

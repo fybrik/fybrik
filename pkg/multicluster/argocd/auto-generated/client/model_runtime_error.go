@@ -16,10 +16,10 @@ import (
 
 // RuntimeError struct for RuntimeError
 type RuntimeError struct {
-	Code    *int32         `json:"code,omitempty"`
+	Code *int32 `json:"code,omitempty"`
 	Details *[]ProtobufAny `json:"details,omitempty"`
-	Error   *string        `json:"error,omitempty"`
-	Message *string        `json:"message,omitempty"`
+	Error *string `json:"error,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // NewRuntimeError instantiates a new RuntimeError object
@@ -219,3 +219,5 @@ func (v *NullableRuntimeError) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

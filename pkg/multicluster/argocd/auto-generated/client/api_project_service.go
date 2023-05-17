@@ -28,9 +28,9 @@ var (
 type ProjectServiceApiService service
 
 type ApiProjectServiceCreateRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	body       *ProjectProjectCreateRequest
+	body *ProjectProjectCreateRequest
 }
 
 func (r ApiProjectServiceCreateRequest) Body(body ProjectProjectCreateRequest) ApiProjectServiceCreateRequest {
@@ -45,25 +45,24 @@ func (r ApiProjectServiceCreateRequest) Execute() (V1alpha1AppProject, *_nethttp
 /*
 ProjectServiceCreate Create a new project
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiProjectServiceCreateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiProjectServiceCreateRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceCreate(ctx _context.Context) ApiProjectServiceCreateRequest {
 	return ApiProjectServiceCreateRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1AppProject
+//  @return V1alpha1AppProject
 func (a *ProjectServiceApiService) ProjectServiceCreateExecute(r ApiProjectServiceCreateRequest) (V1alpha1AppProject, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1AppProject
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1AppProject
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceCreate")
@@ -121,13 +120,13 @@ func (a *ProjectServiceApiService) ProjectServiceCreateExecute(r ApiProjectServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -144,11 +143,11 @@ func (a *ProjectServiceApiService) ProjectServiceCreateExecute(r ApiProjectServi
 }
 
 type ApiProjectServiceCreateTokenRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	project    string
-	role       string
-	body       *ProjectProjectTokenCreateRequest
+	project string
+	role string
+	body *ProjectProjectTokenCreateRequest
 }
 
 func (r ApiProjectServiceCreateTokenRequest) Body(body ProjectProjectTokenCreateRequest) ApiProjectServiceCreateTokenRequest {
@@ -163,29 +162,28 @@ func (r ApiProjectServiceCreateTokenRequest) Execute() (ProjectProjectTokenRespo
 /*
 ProjectServiceCreateToken Create a new project token
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param project
-	@param role
-	@return ApiProjectServiceCreateTokenRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param project
+ @param role
+ @return ApiProjectServiceCreateTokenRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceCreateToken(ctx _context.Context, project string, role string) ApiProjectServiceCreateTokenRequest {
 	return ApiProjectServiceCreateTokenRequest{
 		ApiService: a,
-		ctx:        ctx,
-		project:    project,
-		role:       role,
+		ctx: ctx,
+		project: project,
+		role: role,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ProjectProjectTokenResponse
+//  @return ProjectProjectTokenResponse
 func (a *ProjectServiceApiService) ProjectServiceCreateTokenExecute(r ApiProjectServiceCreateTokenRequest) (ProjectProjectTokenResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ProjectProjectTokenResponse
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ProjectProjectTokenResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceCreateToken")
@@ -245,13 +243,13 @@ func (a *ProjectServiceApiService) ProjectServiceCreateTokenExecute(r ApiProject
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -268,10 +266,11 @@ func (a *ProjectServiceApiService) ProjectServiceCreateTokenExecute(r ApiProject
 }
 
 type ApiProjectServiceDeleteRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceDeleteRequest) Execute() (map[string]interface{}, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceDeleteExecute(r)
@@ -280,27 +279,26 @@ func (r ApiProjectServiceDeleteRequest) Execute() (map[string]interface{}, *_net
 /*
 ProjectServiceDelete Delete deletes a project
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceDeleteRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceDeleteRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceDelete(ctx _context.Context, name string) ApiProjectServiceDeleteRequest {
 	return ApiProjectServiceDeleteRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *ProjectServiceApiService) ProjectServiceDeleteExecute(r ApiProjectServiceDeleteRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceDelete")
@@ -354,13 +352,13 @@ func (a *ProjectServiceApiService) ProjectServiceDeleteExecute(r ApiProjectServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -377,12 +375,12 @@ func (a *ProjectServiceApiService) ProjectServiceDeleteExecute(r ApiProjectServi
 }
 
 type ApiProjectServiceDeleteTokenRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	project    string
-	role       string
-	iat        string
-	id         *string
+	project string
+	role string
+	iat string
+	id *string
 }
 
 func (r ApiProjectServiceDeleteTokenRequest) Id(id string) ApiProjectServiceDeleteTokenRequest {
@@ -397,31 +395,30 @@ func (r ApiProjectServiceDeleteTokenRequest) Execute() (map[string]interface{}, 
 /*
 ProjectServiceDeleteToken Delete a new project token
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param project
-	@param role
-	@param iat
-	@return ApiProjectServiceDeleteTokenRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param project
+ @param role
+ @param iat
+ @return ApiProjectServiceDeleteTokenRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceDeleteToken(ctx _context.Context, project string, role string, iat string) ApiProjectServiceDeleteTokenRequest {
 	return ApiProjectServiceDeleteTokenRequest{
 		ApiService: a,
-		ctx:        ctx,
-		project:    project,
-		role:       role,
-		iat:        iat,
+		ctx: ctx,
+		project: project,
+		role: role,
+		iat: iat,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *ProjectServiceApiService) ProjectServiceDeleteTokenExecute(r ApiProjectServiceDeleteTokenRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceDeleteToken")
@@ -480,13 +477,13 @@ func (a *ProjectServiceApiService) ProjectServiceDeleteTokenExecute(r ApiProject
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -503,10 +500,11 @@ func (a *ProjectServiceApiService) ProjectServiceDeleteTokenExecute(r ApiProject
 }
 
 type ApiProjectServiceGetRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceGetRequest) Execute() (V1alpha1AppProject, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceGetExecute(r)
@@ -515,27 +513,26 @@ func (r ApiProjectServiceGetRequest) Execute() (V1alpha1AppProject, *_nethttp.Re
 /*
 ProjectServiceGet Get returns a project by name
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceGetRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceGetRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceGet(ctx _context.Context, name string) ApiProjectServiceGetRequest {
 	return ApiProjectServiceGetRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1AppProject
+//  @return V1alpha1AppProject
 func (a *ProjectServiceApiService) ProjectServiceGetExecute(r ApiProjectServiceGetRequest) (V1alpha1AppProject, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1AppProject
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1AppProject
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceGet")
@@ -589,13 +586,13 @@ func (a *ProjectServiceApiService) ProjectServiceGetExecute(r ApiProjectServiceG
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -612,10 +609,11 @@ func (a *ProjectServiceApiService) ProjectServiceGetExecute(r ApiProjectServiceG
 }
 
 type ApiProjectServiceGetDetailedProjectRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceGetDetailedProjectRequest) Execute() (ProjectDetailedProjectsResponse, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceGetDetailedProjectExecute(r)
@@ -624,27 +622,26 @@ func (r ApiProjectServiceGetDetailedProjectRequest) Execute() (ProjectDetailedPr
 /*
 ProjectServiceGetDetailedProject GetDetailedProject returns a project that include project, global project and scoped resources by name
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceGetDetailedProjectRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceGetDetailedProjectRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceGetDetailedProject(ctx _context.Context, name string) ApiProjectServiceGetDetailedProjectRequest {
 	return ApiProjectServiceGetDetailedProjectRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ProjectDetailedProjectsResponse
+//  @return ProjectDetailedProjectsResponse
 func (a *ProjectServiceApiService) ProjectServiceGetDetailedProjectExecute(r ApiProjectServiceGetDetailedProjectRequest) (ProjectDetailedProjectsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ProjectDetailedProjectsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ProjectDetailedProjectsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceGetDetailedProject")
@@ -698,13 +695,13 @@ func (a *ProjectServiceApiService) ProjectServiceGetDetailedProjectExecute(r Api
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -721,10 +718,11 @@ func (a *ProjectServiceApiService) ProjectServiceGetDetailedProjectExecute(r Api
 }
 
 type ApiProjectServiceGetGlobalProjectsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceGetGlobalProjectsRequest) Execute() (ProjectGlobalProjectsResponse, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceGetGlobalProjectsExecute(r)
@@ -733,27 +731,26 @@ func (r ApiProjectServiceGetGlobalProjectsRequest) Execute() (ProjectGlobalProje
 /*
 ProjectServiceGetGlobalProjects Get returns a virtual project by name
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceGetGlobalProjectsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceGetGlobalProjectsRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceGetGlobalProjects(ctx _context.Context, name string) ApiProjectServiceGetGlobalProjectsRequest {
 	return ApiProjectServiceGetGlobalProjectsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ProjectGlobalProjectsResponse
+//  @return ProjectGlobalProjectsResponse
 func (a *ProjectServiceApiService) ProjectServiceGetGlobalProjectsExecute(r ApiProjectServiceGetGlobalProjectsRequest) (ProjectGlobalProjectsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ProjectGlobalProjectsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ProjectGlobalProjectsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceGetGlobalProjects")
@@ -807,13 +804,13 @@ func (a *ProjectServiceApiService) ProjectServiceGetGlobalProjectsExecute(r ApiP
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -830,10 +827,11 @@ func (a *ProjectServiceApiService) ProjectServiceGetGlobalProjectsExecute(r ApiP
 }
 
 type ApiProjectServiceGetSyncWindowsStateRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceGetSyncWindowsStateRequest) Execute() (ProjectSyncWindowsResponse, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceGetSyncWindowsStateExecute(r)
@@ -842,27 +840,26 @@ func (r ApiProjectServiceGetSyncWindowsStateRequest) Execute() (ProjectSyncWindo
 /*
 ProjectServiceGetSyncWindowsState GetSchedulesState returns true if there are any active sync syncWindows
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceGetSyncWindowsStateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceGetSyncWindowsStateRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceGetSyncWindowsState(ctx _context.Context, name string) ApiProjectServiceGetSyncWindowsStateRequest {
 	return ApiProjectServiceGetSyncWindowsStateRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ProjectSyncWindowsResponse
+//  @return ProjectSyncWindowsResponse
 func (a *ProjectServiceApiService) ProjectServiceGetSyncWindowsStateExecute(r ApiProjectServiceGetSyncWindowsStateRequest) (ProjectSyncWindowsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ProjectSyncWindowsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ProjectSyncWindowsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceGetSyncWindowsState")
@@ -916,13 +913,13 @@ func (a *ProjectServiceApiService) ProjectServiceGetSyncWindowsStateExecute(r Ap
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -939,9 +936,9 @@ func (a *ProjectServiceApiService) ProjectServiceGetSyncWindowsStateExecute(r Ap
 }
 
 type ApiProjectServiceListRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       *string
+	name *string
 }
 
 func (r ApiProjectServiceListRequest) Name(name string) ApiProjectServiceListRequest {
@@ -956,25 +953,24 @@ func (r ApiProjectServiceListRequest) Execute() (V1alpha1AppProjectList, *_netht
 /*
 ProjectServiceList List returns list of projects
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiProjectServiceListRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiProjectServiceListRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceList(ctx _context.Context) ApiProjectServiceListRequest {
 	return ApiProjectServiceListRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1AppProjectList
+//  @return V1alpha1AppProjectList
 func (a *ProjectServiceApiService) ProjectServiceListExecute(r ApiProjectServiceListRequest) (V1alpha1AppProjectList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1AppProjectList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1AppProjectList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceList")
@@ -1030,13 +1026,13 @@ func (a *ProjectServiceApiService) ProjectServiceListExecute(r ApiProjectService
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1053,10 +1049,11 @@ func (a *ProjectServiceApiService) ProjectServiceListExecute(r ApiProjectService
 }
 
 type ApiProjectServiceListEventsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceListEventsRequest) Execute() (V1EventList, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceListEventsExecute(r)
@@ -1065,27 +1062,26 @@ func (r ApiProjectServiceListEventsRequest) Execute() (V1EventList, *_nethttp.Re
 /*
 ProjectServiceListEvents ListEvents returns a list of project events
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceListEventsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceListEventsRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceListEvents(ctx _context.Context, name string) ApiProjectServiceListEventsRequest {
 	return ApiProjectServiceListEventsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1EventList
+//  @return V1EventList
 func (a *ProjectServiceApiService) ProjectServiceListEventsExecute(r ApiProjectServiceListEventsRequest) (V1EventList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1EventList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1EventList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceListEvents")
@@ -1139,13 +1135,13 @@ func (a *ProjectServiceApiService) ProjectServiceListEventsExecute(r ApiProjectS
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1162,10 +1158,11 @@ func (a *ProjectServiceApiService) ProjectServiceListEventsExecute(r ApiProjectS
 }
 
 type ApiProjectServiceListLinksRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *ProjectServiceApiService
-	name       string
+	name string
 }
+
 
 func (r ApiProjectServiceListLinksRequest) Execute() (ApplicationLinksResponse, *_nethttp.Response, error) {
 	return r.ApiService.ProjectServiceListLinksExecute(r)
@@ -1174,27 +1171,26 @@ func (r ApiProjectServiceListLinksRequest) Execute() (ApplicationLinksResponse, 
 /*
 ProjectServiceListLinks ListLinks returns all deep links for the particular project
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param name
-	@return ApiProjectServiceListLinksRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param name
+ @return ApiProjectServiceListLinksRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceListLinks(ctx _context.Context, name string) ApiProjectServiceListLinksRequest {
 	return ApiProjectServiceListLinksRequest{
 		ApiService: a,
-		ctx:        ctx,
-		name:       name,
+		ctx: ctx,
+		name: name,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ApplicationLinksResponse
+//  @return ApplicationLinksResponse
 func (a *ProjectServiceApiService) ProjectServiceListLinksExecute(r ApiProjectServiceListLinksRequest) (ApplicationLinksResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ApplicationLinksResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ApplicationLinksResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceListLinks")
@@ -1248,13 +1244,13 @@ func (a *ProjectServiceApiService) ProjectServiceListLinksExecute(r ApiProjectSe
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1271,10 +1267,10 @@ func (a *ProjectServiceApiService) ProjectServiceListLinksExecute(r ApiProjectSe
 }
 
 type ApiProjectServiceUpdateRequest struct {
-	ctx                 _context.Context
-	ApiService          *ProjectServiceApiService
+	ctx _context.Context
+	ApiService *ProjectServiceApiService
 	projectMetadataName string
-	body                *ProjectProjectUpdateRequest
+	body *ProjectProjectUpdateRequest
 }
 
 func (r ApiProjectServiceUpdateRequest) Body(body ProjectProjectUpdateRequest) ApiProjectServiceUpdateRequest {
@@ -1289,27 +1285,26 @@ func (r ApiProjectServiceUpdateRequest) Execute() (V1alpha1AppProject, *_nethttp
 /*
 ProjectServiceUpdate Update updates a project
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param projectMetadataName Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names +optional
-	@return ApiProjectServiceUpdateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param projectMetadataName Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names +optional
+ @return ApiProjectServiceUpdateRequest
 */
 func (a *ProjectServiceApiService) ProjectServiceUpdate(ctx _context.Context, projectMetadataName string) ApiProjectServiceUpdateRequest {
 	return ApiProjectServiceUpdateRequest{
-		ApiService:          a,
-		ctx:                 ctx,
+		ApiService: a,
+		ctx: ctx,
 		projectMetadataName: projectMetadataName,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1AppProject
+//  @return V1alpha1AppProject
 func (a *ProjectServiceApiService) ProjectServiceUpdateExecute(r ApiProjectServiceUpdateRequest) (V1alpha1AppProject, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1AppProject
+		localVarHTTPMethod   = _nethttp.MethodPut
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1AppProject
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ProjectServiceApiService.ProjectServiceUpdate")
@@ -1368,13 +1363,13 @@ func (a *ProjectServiceApiService) ProjectServiceUpdateExecute(r ApiProjectServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

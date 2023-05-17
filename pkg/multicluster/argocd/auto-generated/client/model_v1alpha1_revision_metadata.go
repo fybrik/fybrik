@@ -17,12 +17,12 @@ import (
 // V1alpha1RevisionMetadata struct for V1alpha1RevisionMetadata
 type V1alpha1RevisionMetadata struct {
 	Author *string `json:"author,omitempty"`
-	Date   *string `json:"date,omitempty"`
+	Date *string `json:"date,omitempty"`
 	// Message contains the message associated with the revision, most likely the commit message.
 	Message *string `json:"message,omitempty"`
 	// SignatureInfo contains a hint on the signer if the revision was signed with GPG, and signature verification is enabled.
-	SignatureInfo *string   `json:"signatureInfo,omitempty"`
-	Tags          *[]string `json:"tags,omitempty"`
+	SignatureInfo *string `json:"signatureInfo,omitempty"`
+	Tags *[]string `json:"tags,omitempty"`
 }
 
 // NewV1alpha1RevisionMetadata instantiates a new V1alpha1RevisionMetadata object
@@ -257,3 +257,5 @@ func (v *NullableV1alpha1RevisionMetadata) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -16,17 +16,17 @@ import (
 
 // V1alpha1ApplicationSourceKustomize struct for V1alpha1ApplicationSourceKustomize
 type V1alpha1ApplicationSourceKustomize struct {
-	CommonAnnotations         *map[string]string          `json:"commonAnnotations,omitempty"`
-	CommonAnnotationsEnvsubst *bool                       `json:"commonAnnotationsEnvsubst,omitempty"`
-	CommonLabels              *map[string]string          `json:"commonLabels,omitempty"`
-	ForceCommonAnnotations    *bool                       `json:"forceCommonAnnotations,omitempty"`
-	ForceCommonLabels         *bool                       `json:"forceCommonLabels,omitempty"`
-	Images                    *[]string                   `json:"images,omitempty"`
-	NamePrefix                *string                     `json:"namePrefix,omitempty"`
-	NameSuffix                *string                     `json:"nameSuffix,omitempty"`
-	Namespace                 *string                     `json:"namespace,omitempty"`
-	Replicas                  *[]V1alpha1KustomizeReplica `json:"replicas,omitempty"`
-	Version                   *string                     `json:"version,omitempty"`
+	CommonAnnotations *map[string]string `json:"commonAnnotations,omitempty"`
+	CommonAnnotationsEnvsubst *bool `json:"commonAnnotationsEnvsubst,omitempty"`
+	CommonLabels *map[string]string `json:"commonLabels,omitempty"`
+	ForceCommonAnnotations *bool `json:"forceCommonAnnotations,omitempty"`
+	ForceCommonLabels *bool `json:"forceCommonLabels,omitempty"`
+	Images *[]string `json:"images,omitempty"`
+	NamePrefix *string `json:"namePrefix,omitempty"`
+	NameSuffix *string `json:"nameSuffix,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
+	Replicas *[]V1alpha1KustomizeReplica `json:"replicas,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // NewV1alpha1ApplicationSourceKustomize instantiates a new V1alpha1ApplicationSourceKustomize object
@@ -471,3 +471,5 @@ func (v *NullableV1alpha1ApplicationSourceKustomize) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

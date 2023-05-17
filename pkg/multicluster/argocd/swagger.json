@@ -7964,9 +7964,7 @@
           "$ref": "#/definitions/v1alpha1Backoff"
         },
         "limit": {
-          "description": "Limit is the maximum number of attempts for retrying a failed sync. If set to 0, no retries will be performed.",
-          "type": "string",
-          "format": "int64"
+          "type": "integer"
         }
       }
     },

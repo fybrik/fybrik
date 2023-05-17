@@ -17,7 +17,7 @@ import (
 // V1alpha1MatrixGenerator MatrixGenerator generates the cartesian product of two sets of parameters. The parameters are defined by two nested generators.
 type V1alpha1MatrixGenerator struct {
 	Generators *[]V1alpha1ApplicationSetNestedGenerator `json:"generators,omitempty"`
-	Template   *V1alpha1ApplicationSetTemplate          `json:"template,omitempty"`
+	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1MatrixGenerator instantiates a new V1alpha1MatrixGenerator object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1MatrixGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

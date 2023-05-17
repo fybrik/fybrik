@@ -22,7 +22,7 @@ type V1alpha1PullRequestGeneratorGitea struct {
 	// Gitea org or user to scan. Required.
 	Owner *string `json:"owner,omitempty"`
 	// Gitea repo name to scan. Required.
-	Repo     *string            `json:"repo,omitempty"`
+	Repo *string `json:"repo,omitempty"`
 	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
@@ -258,3 +258,5 @@ func (v *NullableV1alpha1PullRequestGeneratorGitea) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

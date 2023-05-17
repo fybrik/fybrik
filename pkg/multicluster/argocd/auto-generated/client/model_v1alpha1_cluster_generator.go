@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ClusterGenerator ClusterGenerator defines a generator to match against clusters registered with ArgoCD.
 type V1alpha1ClusterGenerator struct {
-	Selector *V1LabelSelector                `json:"selector,omitempty"`
+	Selector *V1LabelSelector `json:"selector,omitempty"`
 	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
-	Values   *map[string]string              `json:"values,omitempty"`
+	Values *map[string]string `json:"values,omitempty"`
 }
 
 // NewV1alpha1ClusterGenerator instantiates a new V1alpha1ClusterGenerator object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ClusterGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

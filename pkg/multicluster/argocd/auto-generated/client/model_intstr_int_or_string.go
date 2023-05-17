@@ -16,9 +16,9 @@ import (
 
 // IntstrIntOrString +protobuf=true +protobuf.options.(gogoproto.goproto_stringer)=false +k8s:openapi-gen=true
 type IntstrIntOrString struct {
-	IntVal *int32  `json:"intVal,omitempty"`
+	IntVal *int32 `json:"intVal,omitempty"`
 	StrVal *string `json:"strVal,omitempty"`
-	Type   *string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // NewIntstrIntOrString instantiates a new IntstrIntOrString object
@@ -183,3 +183,5 @@ func (v *NullableIntstrIntOrString) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

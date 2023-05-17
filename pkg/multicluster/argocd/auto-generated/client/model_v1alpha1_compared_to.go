@@ -17,8 +17,8 @@ import (
 // V1alpha1ComparedTo struct for V1alpha1ComparedTo
 type V1alpha1ComparedTo struct {
 	Destination *V1alpha1ApplicationDestination `json:"destination,omitempty"`
-	Source      *V1alpha1ApplicationSource      `json:"source,omitempty"`
-	Sources     *[]V1alpha1ApplicationSource    `json:"sources,omitempty"`
+	Source *V1alpha1ApplicationSource `json:"source,omitempty"`
+	Sources *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
 }
 
 // NewV1alpha1ComparedTo instantiates a new V1alpha1ComparedTo object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ComparedTo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

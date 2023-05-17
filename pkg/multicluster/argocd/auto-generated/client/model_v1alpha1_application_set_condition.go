@@ -17,10 +17,10 @@ import (
 // V1alpha1ApplicationSetCondition struct for V1alpha1ApplicationSetCondition
 type V1alpha1ApplicationSetCondition struct {
 	LastTransitionTime *string `json:"lastTransitionTime,omitempty"`
-	Message            *string `json:"message,omitempty"`
-	Reason             *string `json:"reason,omitempty"`
-	Status             *string `json:"status,omitempty"`
-	Type               *string `json:"type,omitempty"`
+	Message *string `json:"message,omitempty"`
+	Reason *string `json:"reason,omitempty"`
+	Status *string `json:"status,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetCondition instantiates a new V1alpha1ApplicationSetCondition object
@@ -255,3 +255,5 @@ func (v *NullableV1alpha1ApplicationSetCondition) UnmarshalJSON(src []byte) erro
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

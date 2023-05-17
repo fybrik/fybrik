@@ -27,9 +27,10 @@ var (
 type NotificationServiceApiService service
 
 type ApiNotificationServiceListServicesRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *NotificationServiceApiService
 }
+
 
 func (r ApiNotificationServiceListServicesRequest) Execute() (NotificationServiceList, *_nethttp.Response, error) {
 	return r.ApiService.NotificationServiceListServicesExecute(r)
@@ -38,25 +39,24 @@ func (r ApiNotificationServiceListServicesRequest) Execute() (NotificationServic
 /*
 NotificationServiceListServices List returns list of services
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiNotificationServiceListServicesRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiNotificationServiceListServicesRequest
 */
 func (a *NotificationServiceApiService) NotificationServiceListServices(ctx _context.Context) ApiNotificationServiceListServicesRequest {
 	return ApiNotificationServiceListServicesRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return NotificationServiceList
+//  @return NotificationServiceList
 func (a *NotificationServiceApiService) NotificationServiceListServicesExecute(r ApiNotificationServiceListServicesRequest) (NotificationServiceList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue NotificationServiceList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  NotificationServiceList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NotificationServiceApiService.NotificationServiceListServices")
@@ -109,13 +109,13 @@ func (a *NotificationServiceApiService) NotificationServiceListServicesExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -132,9 +132,10 @@ func (a *NotificationServiceApiService) NotificationServiceListServicesExecute(r
 }
 
 type ApiNotificationServiceListTemplatesRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *NotificationServiceApiService
 }
+
 
 func (r ApiNotificationServiceListTemplatesRequest) Execute() (NotificationTemplateList, *_nethttp.Response, error) {
 	return r.ApiService.NotificationServiceListTemplatesExecute(r)
@@ -143,25 +144,24 @@ func (r ApiNotificationServiceListTemplatesRequest) Execute() (NotificationTempl
 /*
 NotificationServiceListTemplates List returns list of templates
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiNotificationServiceListTemplatesRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiNotificationServiceListTemplatesRequest
 */
 func (a *NotificationServiceApiService) NotificationServiceListTemplates(ctx _context.Context) ApiNotificationServiceListTemplatesRequest {
 	return ApiNotificationServiceListTemplatesRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return NotificationTemplateList
+//  @return NotificationTemplateList
 func (a *NotificationServiceApiService) NotificationServiceListTemplatesExecute(r ApiNotificationServiceListTemplatesRequest) (NotificationTemplateList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue NotificationTemplateList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  NotificationTemplateList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NotificationServiceApiService.NotificationServiceListTemplates")
@@ -214,13 +214,13 @@ func (a *NotificationServiceApiService) NotificationServiceListTemplatesExecute(
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -237,9 +237,10 @@ func (a *NotificationServiceApiService) NotificationServiceListTemplatesExecute(
 }
 
 type ApiNotificationServiceListTriggersRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *NotificationServiceApiService
 }
+
 
 func (r ApiNotificationServiceListTriggersRequest) Execute() (NotificationTriggerList, *_nethttp.Response, error) {
 	return r.ApiService.NotificationServiceListTriggersExecute(r)
@@ -248,25 +249,24 @@ func (r ApiNotificationServiceListTriggersRequest) Execute() (NotificationTrigge
 /*
 NotificationServiceListTriggers List returns list of triggers
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiNotificationServiceListTriggersRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiNotificationServiceListTriggersRequest
 */
 func (a *NotificationServiceApiService) NotificationServiceListTriggers(ctx _context.Context) ApiNotificationServiceListTriggersRequest {
 	return ApiNotificationServiceListTriggersRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return NotificationTriggerList
+//  @return NotificationTriggerList
 func (a *NotificationServiceApiService) NotificationServiceListTriggersExecute(r ApiNotificationServiceListTriggersRequest) (NotificationTriggerList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue NotificationTriggerList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  NotificationTriggerList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NotificationServiceApiService.NotificationServiceListTriggers")
@@ -319,13 +319,13 @@ func (a *NotificationServiceApiService) NotificationServiceListTriggersExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

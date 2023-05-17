@@ -16,19 +16,19 @@ import (
 
 // V1alpha1AppProjectSpec struct for V1alpha1AppProjectSpec
 type V1alpha1AppProjectSpec struct {
-	ClusterResourceBlacklist        *[]V1GroupKind                            `json:"clusterResourceBlacklist,omitempty"`
-	ClusterResourceWhitelist        *[]V1GroupKind                            `json:"clusterResourceWhitelist,omitempty"`
-	Description                     *string                                   `json:"description,omitempty"`
-	Destinations                    *[]V1alpha1ApplicationDestination         `json:"destinations,omitempty"`
-	NamespaceResourceBlacklist      *[]V1GroupKind                            `json:"namespaceResourceBlacklist,omitempty"`
-	NamespaceResourceWhitelist      *[]V1GroupKind                            `json:"namespaceResourceWhitelist,omitempty"`
-	OrphanedResources               *V1alpha1OrphanedResourcesMonitorSettings `json:"orphanedResources,omitempty"`
-	PermitOnlyProjectScopedClusters *bool                                     `json:"permitOnlyProjectScopedClusters,omitempty"`
-	Roles                           *[]V1alpha1ProjectRole                    `json:"roles,omitempty"`
-	SignatureKeys                   *[]V1alpha1SignatureKey                   `json:"signatureKeys,omitempty"`
-	SourceNamespaces                *[]string                                 `json:"sourceNamespaces,omitempty"`
-	SourceRepos                     *[]string                                 `json:"sourceRepos,omitempty"`
-	SyncWindows                     *[]V1alpha1SyncWindow                     `json:"syncWindows,omitempty"`
+	ClusterResourceBlacklist *[]V1GroupKind `json:"clusterResourceBlacklist,omitempty"`
+	ClusterResourceWhitelist *[]V1GroupKind `json:"clusterResourceWhitelist,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Destinations *[]V1alpha1ApplicationDestination `json:"destinations,omitempty"`
+	NamespaceResourceBlacklist *[]V1GroupKind `json:"namespaceResourceBlacklist,omitempty"`
+	NamespaceResourceWhitelist *[]V1GroupKind `json:"namespaceResourceWhitelist,omitempty"`
+	OrphanedResources *V1alpha1OrphanedResourcesMonitorSettings `json:"orphanedResources,omitempty"`
+	PermitOnlyProjectScopedClusters *bool `json:"permitOnlyProjectScopedClusters,omitempty"`
+	Roles *[]V1alpha1ProjectRole `json:"roles,omitempty"`
+	SignatureKeys *[]V1alpha1SignatureKey `json:"signatureKeys,omitempty"`
+	SourceNamespaces *[]string `json:"sourceNamespaces,omitempty"`
+	SourceRepos *[]string `json:"sourceRepos,omitempty"`
+	SyncWindows *[]V1alpha1SyncWindow `json:"syncWindows,omitempty"`
 }
 
 // NewV1alpha1AppProjectSpec instantiates a new V1alpha1AppProjectSpec object
@@ -543,3 +543,5 @@ func (v *NullableV1alpha1AppProjectSpec) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

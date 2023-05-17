@@ -17,12 +17,12 @@ import (
 // V1alpha1PullRequestGeneratorGitLab PullRequestGeneratorGitLab defines connection info specific to GitLab.
 type V1alpha1PullRequestGeneratorGitLab struct {
 	// The GitLab API URL to talk to. If blank, uses https://gitlab.com/.
-	Api    *string   `json:"api,omitempty"`
+	Api *string `json:"api,omitempty"`
 	Labels *[]string `json:"labels,omitempty"`
 	// GitLab project to scan. Required.
-	Project          *string            `json:"project,omitempty"`
-	PullRequestState *string            `json:"pullRequestState,omitempty"`
-	TokenRef         *V1alpha1SecretRef `json:"tokenRef,omitempty"`
+	Project *string `json:"project,omitempty"`
+	PullRequestState *string `json:"pullRequestState,omitempty"`
+	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
 // NewV1alpha1PullRequestGeneratorGitLab instantiates a new V1alpha1PullRequestGeneratorGitLab object
@@ -257,3 +257,5 @@ func (v *NullableV1alpha1PullRequestGeneratorGitLab) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

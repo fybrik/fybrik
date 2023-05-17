@@ -17,7 +17,7 @@ import (
 // V1alpha1ApplicationSetStatus struct for V1alpha1ApplicationSetStatus
 type V1alpha1ApplicationSetStatus struct {
 	ApplicationStatus *[]V1alpha1ApplicationSetApplicationStatus `json:"applicationStatus,omitempty"`
-	Conditions        *[]V1alpha1ApplicationSetCondition         `json:"conditions,omitempty"`
+	Conditions *[]V1alpha1ApplicationSetCondition `json:"conditions,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetStatus instantiates a new V1alpha1ApplicationSetStatus object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ApplicationSetStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -17,10 +17,10 @@ import (
 // V1ListMeta ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.
 type V1ListMeta struct {
 	// continue may be set if the user set a limit on the number of items returned, and indicates that the server has more data available. The value is opaque and may be used to issue another request to the endpoint that served this list to retrieve the next set of available objects. Continuing a consistent list may not be possible if the server configuration has changed or more than a few minutes have passed. The resourceVersion field returned when using this continue value will be identical to the value in the first response, unless you have received this token from an error message.
-	Continue           *string `json:"continue,omitempty"`
+	Continue *string `json:"continue,omitempty"`
 	RemainingItemCount *string `json:"remainingItemCount,omitempty"`
-	ResourceVersion    *string `json:"resourceVersion,omitempty"`
-	SelfLink           *string `json:"selfLink,omitempty"`
+	ResourceVersion *string `json:"resourceVersion,omitempty"`
+	SelfLink *string `json:"selfLink,omitempty"`
 }
 
 // NewV1ListMeta instantiates a new V1ListMeta object
@@ -220,3 +220,5 @@ func (v *NullableV1ListMeta) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

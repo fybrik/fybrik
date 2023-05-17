@@ -16,11 +16,11 @@ import (
 
 // RuntimeStreamError struct for RuntimeStreamError
 type RuntimeStreamError struct {
-	Details    *[]ProtobufAny `json:"details,omitempty"`
-	GrpcCode   *int32         `json:"grpc_code,omitempty"`
-	HttpCode   *int32         `json:"http_code,omitempty"`
-	HttpStatus *string        `json:"http_status,omitempty"`
-	Message    *string        `json:"message,omitempty"`
+	Details *[]ProtobufAny `json:"details,omitempty"`
+	GrpcCode *int32 `json:"grpc_code,omitempty"`
+	HttpCode *int32 `json:"http_code,omitempty"`
+	HttpStatus *string `json:"http_status,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
 // NewRuntimeStreamError instantiates a new RuntimeStreamError object
@@ -255,3 +255,5 @@ func (v *NullableRuntimeStreamError) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

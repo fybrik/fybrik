@@ -17,7 +17,7 @@ import (
 // V1GroupKind +protobuf.options.(gogoproto.goproto_stringer)=false
 type V1GroupKind struct {
 	Group *string `json:"group,omitempty"`
-	Kind  *string `json:"kind,omitempty"`
+	Kind *string `json:"kind,omitempty"`
 }
 
 // NewV1GroupKind instantiates a new V1GroupKind object
@@ -147,3 +147,5 @@ func (v *NullableV1GroupKind) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

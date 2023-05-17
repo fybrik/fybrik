@@ -26,11 +26,11 @@ type V1NodeSystemInfo struct {
 	// KubeProxy Version reported by the node.
 	KubeProxyVersion *string `json:"kubeProxyVersion,omitempty"`
 	// Kubelet Version reported by the node.
-	KubeletVersion  *string `json:"kubeletVersion,omitempty"`
-	MachineID       *string `json:"machineID,omitempty"`
+	KubeletVersion *string `json:"kubeletVersion,omitempty"`
+	MachineID *string `json:"machineID,omitempty"`
 	OperatingSystem *string `json:"operatingSystem,omitempty"`
 	// OS Image reported by the node from /etc/os-release (e.g. Debian GNU/Linux 7 (wheezy)).
-	OsImage    *string `json:"osImage,omitempty"`
+	OsImage *string `json:"osImage,omitempty"`
 	SystemUUID *string `json:"systemUUID,omitempty"`
 }
 
@@ -441,3 +441,5 @@ func (v *NullableV1NodeSystemInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

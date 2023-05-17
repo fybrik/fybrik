@@ -16,8 +16,8 @@ import (
 
 // V1alpha1RepositoryCertificateList struct for V1alpha1RepositoryCertificateList
 type V1alpha1RepositoryCertificateList struct {
-	Items    *[]V1alpha1RepositoryCertificate `json:"items,omitempty"`
-	Metadata *V1ListMeta                      `json:"metadata,omitempty"`
+	Items *[]V1alpha1RepositoryCertificate `json:"items,omitempty"`
+	Metadata *V1ListMeta `json:"metadata,omitempty"`
 }
 
 // NewV1alpha1RepositoryCertificateList instantiates a new V1alpha1RepositoryCertificateList object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1RepositoryCertificateList) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -16,13 +16,13 @@ import (
 
 // V1alpha1GitGenerator struct for V1alpha1GitGenerator
 type V1alpha1GitGenerator struct {
-	Directories         *[]V1alpha1GitDirectoryGeneratorItem `json:"directories,omitempty"`
-	Files               *[]V1alpha1GitFileGeneratorItem      `json:"files,omitempty"`
-	PathParamPrefix     *string                              `json:"pathParamPrefix,omitempty"`
-	RepoURL             *string                              `json:"repoURL,omitempty"`
-	RequeueAfterSeconds *string                              `json:"requeueAfterSeconds,omitempty"`
-	Revision            *string                              `json:"revision,omitempty"`
-	Template            *V1alpha1ApplicationSetTemplate      `json:"template,omitempty"`
+	Directories *[]V1alpha1GitDirectoryGeneratorItem `json:"directories,omitempty"`
+	Files *[]V1alpha1GitFileGeneratorItem `json:"files,omitempty"`
+	PathParamPrefix *string `json:"pathParamPrefix,omitempty"`
+	RepoURL *string `json:"repoURL,omitempty"`
+	RequeueAfterSeconds *string `json:"requeueAfterSeconds,omitempty"`
+	Revision *string `json:"revision,omitempty"`
+	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1GitGenerator instantiates a new V1alpha1GitGenerator object
@@ -327,3 +327,5 @@ func (v *NullableV1alpha1GitGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

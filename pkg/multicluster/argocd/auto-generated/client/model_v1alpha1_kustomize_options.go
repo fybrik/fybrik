@@ -16,7 +16,7 @@ import (
 
 // V1alpha1KustomizeOptions struct for V1alpha1KustomizeOptions
 type V1alpha1KustomizeOptions struct {
-	BinaryPath   *string `json:"binaryPath,omitempty"`
+	BinaryPath *string `json:"binaryPath,omitempty"`
 	BuildOptions *string `json:"buildOptions,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1KustomizeOptions) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

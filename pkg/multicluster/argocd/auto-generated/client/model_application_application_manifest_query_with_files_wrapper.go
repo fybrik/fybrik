@@ -16,7 +16,7 @@ import (
 
 // ApplicationApplicationManifestQueryWithFilesWrapper struct for ApplicationApplicationManifestQueryWithFilesWrapper
 type ApplicationApplicationManifestQueryWithFilesWrapper struct {
-	Chunk *ApplicationFileChunk                         `json:"chunk,omitempty"`
+	Chunk *ApplicationFileChunk `json:"chunk,omitempty"`
 	Query *ApplicationApplicationManifestQueryWithFiles `json:"query,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableApplicationApplicationManifestQueryWithFilesWrapper) UnmarshalJ
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

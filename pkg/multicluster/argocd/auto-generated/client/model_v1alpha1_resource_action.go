@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ResourceAction struct for V1alpha1ResourceAction
 type V1alpha1ResourceAction struct {
-	Disabled *bool                          `json:"disabled,omitempty"`
-	Name     *string                        `json:"name,omitempty"`
-	Params   *[]V1alpha1ResourceActionParam `json:"params,omitempty"`
+	Disabled *bool `json:"disabled,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Params *[]V1alpha1ResourceActionParam `json:"params,omitempty"`
 }
 
 // NewV1alpha1ResourceAction instantiates a new V1alpha1ResourceAction object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ResourceAction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

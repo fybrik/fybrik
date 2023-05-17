@@ -16,15 +16,15 @@ import (
 
 // V1alpha1ApplicationSetGenerator ApplicationSetGenerator represents a generator at the top level of an ApplicationSet.
 type V1alpha1ApplicationSetGenerator struct {
-	ClusterDecisionResource *V1alpha1DuckTypeGenerator    `json:"clusterDecisionResource,omitempty"`
-	Clusters                *V1alpha1ClusterGenerator     `json:"clusters,omitempty"`
-	Git                     *V1alpha1GitGenerator         `json:"git,omitempty"`
-	List                    *V1alpha1ListGenerator        `json:"list,omitempty"`
-	Matrix                  *V1alpha1MatrixGenerator      `json:"matrix,omitempty"`
-	Merge                   *V1alpha1MergeGenerator       `json:"merge,omitempty"`
-	PullRequest             *V1alpha1PullRequestGenerator `json:"pullRequest,omitempty"`
-	ScmProvider             *V1alpha1SCMProviderGenerator `json:"scmProvider,omitempty"`
-	Selector                *V1LabelSelector              `json:"selector,omitempty"`
+	ClusterDecisionResource *V1alpha1DuckTypeGenerator `json:"clusterDecisionResource,omitempty"`
+	Clusters *V1alpha1ClusterGenerator `json:"clusters,omitempty"`
+	Git *V1alpha1GitGenerator `json:"git,omitempty"`
+	List *V1alpha1ListGenerator `json:"list,omitempty"`
+	Matrix *V1alpha1MatrixGenerator `json:"matrix,omitempty"`
+	Merge *V1alpha1MergeGenerator `json:"merge,omitempty"`
+	PullRequest *V1alpha1PullRequestGenerator `json:"pullRequest,omitempty"`
+	ScmProvider *V1alpha1SCMProviderGenerator `json:"scmProvider,omitempty"`
+	Selector *V1LabelSelector `json:"selector,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetGenerator instantiates a new V1alpha1ApplicationSetGenerator object
@@ -399,3 +399,5 @@ func (v *NullableV1alpha1ApplicationSetGenerator) UnmarshalJSON(src []byte) erro
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

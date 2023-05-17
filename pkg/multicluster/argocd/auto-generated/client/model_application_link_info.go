@@ -17,9 +17,9 @@ import (
 // ApplicationLinkInfo struct for ApplicationLinkInfo
 type ApplicationLinkInfo struct {
 	Description *string `json:"description,omitempty"`
-	IconClass   *string `json:"iconClass,omitempty"`
-	Title       *string `json:"title,omitempty"`
-	Url         *string `json:"url,omitempty"`
+	IconClass *string `json:"iconClass,omitempty"`
+	Title *string `json:"title,omitempty"`
+	Url *string `json:"url,omitempty"`
 }
 
 // NewApplicationLinkInfo instantiates a new ApplicationLinkInfo object
@@ -219,3 +219,5 @@ func (v *NullableApplicationLinkInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

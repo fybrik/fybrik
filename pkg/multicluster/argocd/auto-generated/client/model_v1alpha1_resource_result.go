@@ -19,14 +19,14 @@ type V1alpha1ResourceResult struct {
 	Group *string `json:"group,omitempty"`
 	// HookPhase contains the state of any operation associated with this resource OR hook This can also contain values for non-hook resources.
 	HookPhase *string `json:"hookPhase,omitempty"`
-	HookType  *string `json:"hookType,omitempty"`
-	Kind      *string `json:"kind,omitempty"`
-	Message   *string `json:"message,omitempty"`
-	Name      *string `json:"name,omitempty"`
+	HookType *string `json:"hookType,omitempty"`
+	Kind *string `json:"kind,omitempty"`
+	Message *string `json:"message,omitempty"`
+	Name *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
-	Status    *string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 	SyncPhase *string `json:"syncPhase,omitempty"`
-	Version   *string `json:"version,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // NewV1alpha1ResourceResult instantiates a new V1alpha1ResourceResult object
@@ -436,3 +436,5 @@ func (v *NullableV1alpha1ResourceResult) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

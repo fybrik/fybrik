@@ -17,10 +17,10 @@ import (
 // ApplicationApplicationRollbackRequest struct for ApplicationApplicationRollbackRequest
 type ApplicationApplicationRollbackRequest struct {
 	AppNamespace *string `json:"appNamespace,omitempty"`
-	DryRun       *bool   `json:"dryRun,omitempty"`
-	Id           *string `json:"id,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	Prune        *bool   `json:"prune,omitempty"`
+	DryRun *bool `json:"dryRun,omitempty"`
+	Id *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Prune *bool `json:"prune,omitempty"`
 }
 
 // NewApplicationApplicationRollbackRequest instantiates a new ApplicationApplicationRollbackRequest object
@@ -255,3 +255,5 @@ func (v *NullableApplicationApplicationRollbackRequest) UnmarshalJSON(src []byte
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

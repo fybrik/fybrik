@@ -16,7 +16,7 @@ import (
 
 // V1alpha1Command struct for V1alpha1Command
 type V1alpha1Command struct {
-	Args    *[]string `json:"args,omitempty"`
+	Args *[]string `json:"args,omitempty"`
 	Command *[]string `json:"command,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1Command) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

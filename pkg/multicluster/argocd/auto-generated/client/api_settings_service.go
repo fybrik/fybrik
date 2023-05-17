@@ -27,9 +27,10 @@ var (
 type SettingsServiceApiService service
 
 type ApiSettingsServiceGetRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *SettingsServiceApiService
 }
+
 
 func (r ApiSettingsServiceGetRequest) Execute() (ClusterSettings, *_nethttp.Response, error) {
 	return r.ApiService.SettingsServiceGetExecute(r)
@@ -38,25 +39,24 @@ func (r ApiSettingsServiceGetRequest) Execute() (ClusterSettings, *_nethttp.Resp
 /*
 SettingsServiceGet Get returns Argo CD settings
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiSettingsServiceGetRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiSettingsServiceGetRequest
 */
 func (a *SettingsServiceApiService) SettingsServiceGet(ctx _context.Context) ApiSettingsServiceGetRequest {
 	return ApiSettingsServiceGetRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ClusterSettings
+//  @return ClusterSettings
 func (a *SettingsServiceApiService) SettingsServiceGetExecute(r ApiSettingsServiceGetRequest) (ClusterSettings, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ClusterSettings
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ClusterSettings
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SettingsServiceApiService.SettingsServiceGet")
@@ -109,13 +109,13 @@ func (a *SettingsServiceApiService) SettingsServiceGetExecute(r ApiSettingsServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -132,9 +132,10 @@ func (a *SettingsServiceApiService) SettingsServiceGetExecute(r ApiSettingsServi
 }
 
 type ApiSettingsServiceGetPluginsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *SettingsServiceApiService
 }
+
 
 func (r ApiSettingsServiceGetPluginsRequest) Execute() (ClusterSettingsPluginsResponse, *_nethttp.Response, error) {
 	return r.ApiService.SettingsServiceGetPluginsExecute(r)
@@ -143,25 +144,24 @@ func (r ApiSettingsServiceGetPluginsRequest) Execute() (ClusterSettingsPluginsRe
 /*
 SettingsServiceGetPlugins Get returns Argo CD plugins
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiSettingsServiceGetPluginsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiSettingsServiceGetPluginsRequest
 */
 func (a *SettingsServiceApiService) SettingsServiceGetPlugins(ctx _context.Context) ApiSettingsServiceGetPluginsRequest {
 	return ApiSettingsServiceGetPluginsRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return ClusterSettingsPluginsResponse
+//  @return ClusterSettingsPluginsResponse
 func (a *SettingsServiceApiService) SettingsServiceGetPluginsExecute(r ApiSettingsServiceGetPluginsRequest) (ClusterSettingsPluginsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue ClusterSettingsPluginsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  ClusterSettingsPluginsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SettingsServiceApiService.SettingsServiceGetPlugins")
@@ -214,13 +214,13 @@ func (a *SettingsServiceApiService) SettingsServiceGetPluginsExecute(r ApiSettin
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

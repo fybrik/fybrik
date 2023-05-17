@@ -17,7 +17,7 @@ import (
 // V1alpha1ManagedNamespaceMetadata struct for V1alpha1ManagedNamespaceMetadata
 type V1alpha1ManagedNamespaceMetadata struct {
 	Annotations *map[string]string `json:"annotations,omitempty"`
-	Labels      *map[string]string `json:"labels,omitempty"`
+	Labels *map[string]string `json:"labels,omitempty"`
 }
 
 // NewV1alpha1ManagedNamespaceMetadata instantiates a new V1alpha1ManagedNamespaceMetadata object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ManagedNamespaceMetadata) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

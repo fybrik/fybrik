@@ -27,10 +27,10 @@ var (
 type CertificateServiceApiService service
 
 type ApiCertificateServiceCreateCertificateRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *CertificateServiceApiService
-	body       *V1alpha1RepositoryCertificateList
-	upsert     *bool
+	body *V1alpha1RepositoryCertificateList
+	upsert *bool
 }
 
 // List of certificates to be created
@@ -38,7 +38,6 @@ func (r ApiCertificateServiceCreateCertificateRequest) Body(body V1alpha1Reposit
 	r.body = &body
 	return r
 }
-
 // Whether to upsert already existing certificates.
 func (r ApiCertificateServiceCreateCertificateRequest) Upsert(upsert bool) ApiCertificateServiceCreateCertificateRequest {
 	r.upsert = &upsert
@@ -52,25 +51,24 @@ func (r ApiCertificateServiceCreateCertificateRequest) Execute() (V1alpha1Reposi
 /*
 CertificateServiceCreateCertificate Creates repository certificates on the server
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCertificateServiceCreateCertificateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiCertificateServiceCreateCertificateRequest
 */
 func (a *CertificateServiceApiService) CertificateServiceCreateCertificate(ctx _context.Context) ApiCertificateServiceCreateCertificateRequest {
 	return ApiCertificateServiceCreateCertificateRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepositoryCertificateList
+//  @return V1alpha1RepositoryCertificateList
 func (a *CertificateServiceApiService) CertificateServiceCreateCertificateExecute(r ApiCertificateServiceCreateCertificateRequest) (V1alpha1RepositoryCertificateList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepositoryCertificateList
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepositoryCertificateList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CertificateServiceApiService.CertificateServiceCreateCertificate")
@@ -131,13 +129,13 @@ func (a *CertificateServiceApiService) CertificateServiceCreateCertificateExecut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -154,11 +152,11 @@ func (a *CertificateServiceApiService) CertificateServiceCreateCertificateExecut
 }
 
 type ApiCertificateServiceDeleteCertificateRequest struct {
-	ctx             _context.Context
-	ApiService      *CertificateServiceApiService
+	ctx _context.Context
+	ApiService *CertificateServiceApiService
 	hostNamePattern *string
-	certType        *string
-	certSubType     *string
+	certType *string
+	certSubType *string
 }
 
 // A file-glob pattern (not regular expression) the host name has to match.
@@ -166,13 +164,11 @@ func (r ApiCertificateServiceDeleteCertificateRequest) HostNamePattern(hostNameP
 	r.hostNamePattern = &hostNamePattern
 	return r
 }
-
 // The type of the certificate to match (ssh or https).
 func (r ApiCertificateServiceDeleteCertificateRequest) CertType(certType string) ApiCertificateServiceDeleteCertificateRequest {
 	r.certType = &certType
 	return r
 }
-
 // The sub type of the certificate to match (protocol dependent, usually only used for ssh certs).
 func (r ApiCertificateServiceDeleteCertificateRequest) CertSubType(certSubType string) ApiCertificateServiceDeleteCertificateRequest {
 	r.certSubType = &certSubType
@@ -186,25 +182,24 @@ func (r ApiCertificateServiceDeleteCertificateRequest) Execute() (V1alpha1Reposi
 /*
 CertificateServiceDeleteCertificate Delete the certificates that match the RepositoryCertificateQuery
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCertificateServiceDeleteCertificateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiCertificateServiceDeleteCertificateRequest
 */
 func (a *CertificateServiceApiService) CertificateServiceDeleteCertificate(ctx _context.Context) ApiCertificateServiceDeleteCertificateRequest {
 	return ApiCertificateServiceDeleteCertificateRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepositoryCertificateList
+//  @return V1alpha1RepositoryCertificateList
 func (a *CertificateServiceApiService) CertificateServiceDeleteCertificateExecute(r ApiCertificateServiceDeleteCertificateRequest) (V1alpha1RepositoryCertificateList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepositoryCertificateList
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepositoryCertificateList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CertificateServiceApiService.CertificateServiceDeleteCertificate")
@@ -266,13 +261,13 @@ func (a *CertificateServiceApiService) CertificateServiceDeleteCertificateExecut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -289,11 +284,11 @@ func (a *CertificateServiceApiService) CertificateServiceDeleteCertificateExecut
 }
 
 type ApiCertificateServiceListCertificatesRequest struct {
-	ctx             _context.Context
-	ApiService      *CertificateServiceApiService
+	ctx _context.Context
+	ApiService *CertificateServiceApiService
 	hostNamePattern *string
-	certType        *string
-	certSubType     *string
+	certType *string
+	certSubType *string
 }
 
 // A file-glob pattern (not regular expression) the host name has to match.
@@ -301,13 +296,11 @@ func (r ApiCertificateServiceListCertificatesRequest) HostNamePattern(hostNamePa
 	r.hostNamePattern = &hostNamePattern
 	return r
 }
-
 // The type of the certificate to match (ssh or https).
 func (r ApiCertificateServiceListCertificatesRequest) CertType(certType string) ApiCertificateServiceListCertificatesRequest {
 	r.certType = &certType
 	return r
 }
-
 // The sub type of the certificate to match (protocol dependent, usually only used for ssh certs).
 func (r ApiCertificateServiceListCertificatesRequest) CertSubType(certSubType string) ApiCertificateServiceListCertificatesRequest {
 	r.certSubType = &certSubType
@@ -321,25 +314,24 @@ func (r ApiCertificateServiceListCertificatesRequest) Execute() (V1alpha1Reposit
 /*
 CertificateServiceListCertificates List all available repository certificates
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiCertificateServiceListCertificatesRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiCertificateServiceListCertificatesRequest
 */
 func (a *CertificateServiceApiService) CertificateServiceListCertificates(ctx _context.Context) ApiCertificateServiceListCertificatesRequest {
 	return ApiCertificateServiceListCertificatesRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepositoryCertificateList
+//  @return V1alpha1RepositoryCertificateList
 func (a *CertificateServiceApiService) CertificateServiceListCertificatesExecute(r ApiCertificateServiceListCertificatesRequest) (V1alpha1RepositoryCertificateList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepositoryCertificateList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepositoryCertificateList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "CertificateServiceApiService.CertificateServiceListCertificates")
@@ -401,13 +393,13 @@ func (a *CertificateServiceApiService) CertificateServiceListCertificatesExecute
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

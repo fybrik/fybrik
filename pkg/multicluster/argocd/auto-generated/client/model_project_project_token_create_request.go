@@ -17,10 +17,10 @@ import (
 // ProjectProjectTokenCreateRequest ProjectTokenCreateRequest defines project token creation parameters.
 type ProjectProjectTokenCreateRequest struct {
 	Description *string `json:"description,omitempty"`
-	ExpiresIn   *string `json:"expiresIn,omitempty"`
-	Id          *string `json:"id,omitempty"`
-	Project     *string `json:"project,omitempty"`
-	Role        *string `json:"role,omitempty"`
+	ExpiresIn *string `json:"expiresIn,omitempty"`
+	Id *string `json:"id,omitempty"`
+	Project *string `json:"project,omitempty"`
+	Role *string `json:"role,omitempty"`
 }
 
 // NewProjectProjectTokenCreateRequest instantiates a new ProjectProjectTokenCreateRequest object
@@ -255,3 +255,5 @@ func (v *NullableProjectProjectTokenCreateRequest) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -17,10 +17,10 @@ import (
 // V1alpha1ApplicationSetTemplateMeta struct for V1alpha1ApplicationSetTemplateMeta
 type V1alpha1ApplicationSetTemplateMeta struct {
 	Annotations *map[string]string `json:"annotations,omitempty"`
-	Finalizers  *[]string          `json:"finalizers,omitempty"`
-	Labels      *map[string]string `json:"labels,omitempty"`
-	Name        *string            `json:"name,omitempty"`
-	Namespace   *string            `json:"namespace,omitempty"`
+	Finalizers *[]string `json:"finalizers,omitempty"`
+	Labels *map[string]string `json:"labels,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetTemplateMeta instantiates a new V1alpha1ApplicationSetTemplateMeta object
@@ -255,3 +255,5 @@ func (v *NullableV1alpha1ApplicationSetTemplateMeta) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

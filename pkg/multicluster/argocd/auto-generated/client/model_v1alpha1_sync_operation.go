@@ -16,18 +16,18 @@ import (
 
 // V1alpha1SyncOperation SyncOperation contains details about a sync operation.
 type V1alpha1SyncOperation struct {
-	DryRun    *bool                            `json:"dryRun,omitempty"`
-	Manifests *[]string                        `json:"manifests,omitempty"`
-	Prune     *bool                            `json:"prune,omitempty"`
+	DryRun *bool `json:"dryRun,omitempty"`
+	Manifests *[]string `json:"manifests,omitempty"`
+	Prune *bool `json:"prune,omitempty"`
 	Resources *[]V1alpha1SyncOperationResource `json:"resources,omitempty"`
 	// Revision is the revision (Git) or chart version (Helm) which to sync the application to If omitted, will use the revision specified in app spec.
 	Revision *string `json:"revision,omitempty"`
 	// Revisions is the list of revision (Git) or chart version (Helm) which to sync each source in sources field for the application to If omitted, will use the revision specified in app spec.
-	Revisions    *[]string                    `json:"revisions,omitempty"`
-	Source       *V1alpha1ApplicationSource   `json:"source,omitempty"`
-	Sources      *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
-	SyncOptions  *[]string                    `json:"syncOptions,omitempty"`
-	SyncStrategy *V1alpha1SyncStrategy        `json:"syncStrategy,omitempty"`
+	Revisions *[]string `json:"revisions,omitempty"`
+	Source *V1alpha1ApplicationSource `json:"source,omitempty"`
+	Sources *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
+	SyncOptions *[]string `json:"syncOptions,omitempty"`
+	SyncStrategy *V1alpha1SyncStrategy `json:"syncStrategy,omitempty"`
 }
 
 // NewV1alpha1SyncOperation instantiates a new V1alpha1SyncOperation object
@@ -437,3 +437,5 @@ func (v *NullableV1alpha1SyncOperation) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

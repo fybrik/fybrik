@@ -17,7 +17,7 @@ import (
 // V1alpha1OrphanedResourcesMonitorSettings struct for V1alpha1OrphanedResourcesMonitorSettings
 type V1alpha1OrphanedResourcesMonitorSettings struct {
 	Ignore *[]V1alpha1OrphanedResourceKey `json:"ignore,omitempty"`
-	Warn   *bool                          `json:"warn,omitempty"`
+	Warn *bool `json:"warn,omitempty"`
 }
 
 // NewV1alpha1OrphanedResourcesMonitorSettings instantiates a new V1alpha1OrphanedResourcesMonitorSettings object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1OrphanedResourcesMonitorSettings) UnmarshalJSON(src []b
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

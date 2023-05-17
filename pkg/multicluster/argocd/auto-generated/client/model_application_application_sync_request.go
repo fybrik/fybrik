@@ -16,17 +16,17 @@ import (
 
 // ApplicationApplicationSyncRequest struct for ApplicationApplicationSyncRequest
 type ApplicationApplicationSyncRequest struct {
-	AppNamespace  *string                          `json:"appNamespace,omitempty"`
-	DryRun        *bool                            `json:"dryRun,omitempty"`
-	Infos         *[]V1alpha1Info                  `json:"infos,omitempty"`
-	Manifests     *[]string                        `json:"manifests,omitempty"`
-	Name          *string                          `json:"name,omitempty"`
-	Prune         *bool                            `json:"prune,omitempty"`
-	Resources     *[]V1alpha1SyncOperationResource `json:"resources,omitempty"`
-	RetryStrategy *V1alpha1RetryStrategy           `json:"retryStrategy,omitempty"`
-	Revision      *string                          `json:"revision,omitempty"`
-	Strategy      *V1alpha1SyncStrategy            `json:"strategy,omitempty"`
-	SyncOptions   *ApplicationSyncOptions          `json:"syncOptions,omitempty"`
+	AppNamespace *string `json:"appNamespace,omitempty"`
+	DryRun *bool `json:"dryRun,omitempty"`
+	Infos *[]V1alpha1Info `json:"infos,omitempty"`
+	Manifests *[]string `json:"manifests,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Prune *bool `json:"prune,omitempty"`
+	Resources *[]V1alpha1SyncOperationResource `json:"resources,omitempty"`
+	RetryStrategy *V1alpha1RetryStrategy `json:"retryStrategy,omitempty"`
+	Revision *string `json:"revision,omitempty"`
+	Strategy *V1alpha1SyncStrategy `json:"strategy,omitempty"`
+	SyncOptions *ApplicationSyncOptions `json:"syncOptions,omitempty"`
 }
 
 // NewApplicationApplicationSyncRequest instantiates a new ApplicationApplicationSyncRequest object
@@ -471,3 +471,5 @@ func (v *NullableApplicationApplicationSyncRequest) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

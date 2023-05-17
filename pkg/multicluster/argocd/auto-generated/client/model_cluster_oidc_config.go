@@ -16,12 +16,12 @@ import (
 
 // ClusterOIDCConfig struct for ClusterOIDCConfig
 type ClusterOIDCConfig struct {
-	CliClientID   *string               `json:"cliClientID,omitempty"`
-	ClientID      *string               `json:"clientID,omitempty"`
+	CliClientID *string `json:"cliClientID,omitempty"`
+	ClientID *string `json:"clientID,omitempty"`
 	IdTokenClaims *map[string]OidcClaim `json:"idTokenClaims,omitempty"`
-	Issuer        *string               `json:"issuer,omitempty"`
-	Name          *string               `json:"name,omitempty"`
-	Scopes        *[]string             `json:"scopes,omitempty"`
+	Issuer *string `json:"issuer,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Scopes *[]string `json:"scopes,omitempty"`
 }
 
 // NewClusterOIDCConfig instantiates a new ClusterOIDCConfig object
@@ -291,3 +291,5 @@ func (v *NullableClusterOIDCConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

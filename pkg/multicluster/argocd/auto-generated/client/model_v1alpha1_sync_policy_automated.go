@@ -17,8 +17,8 @@ import (
 // V1alpha1SyncPolicyAutomated struct for V1alpha1SyncPolicyAutomated
 type V1alpha1SyncPolicyAutomated struct {
 	AllowEmpty *bool `json:"allowEmpty,omitempty"`
-	Prune      *bool `json:"prune,omitempty"`
-	SelfHeal   *bool `json:"selfHeal,omitempty"`
+	Prune *bool `json:"prune,omitempty"`
+	SelfHeal *bool `json:"selfHeal,omitempty"`
 }
 
 // NewV1alpha1SyncPolicyAutomated instantiates a new V1alpha1SyncPolicyAutomated object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1SyncPolicyAutomated) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

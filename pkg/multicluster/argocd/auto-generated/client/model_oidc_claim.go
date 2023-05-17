@@ -16,9 +16,9 @@ import (
 
 // OidcClaim struct for OidcClaim
 type OidcClaim struct {
-	Essential *bool     `json:"essential,omitempty"`
-	Value     *string   `json:"value,omitempty"`
-	Values    *[]string `json:"values,omitempty"`
+	Essential *bool `json:"essential,omitempty"`
+	Value *string `json:"value,omitempty"`
+	Values *[]string `json:"values,omitempty"`
 }
 
 // NewOidcClaim instantiates a new OidcClaim object
@@ -183,3 +183,5 @@ func (v *NullableOidcClaim) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

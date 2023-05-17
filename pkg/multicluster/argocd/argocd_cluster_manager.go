@@ -220,11 +220,11 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoURL, gitRepoU
 	sessionResp, httpResp, err := apiClient.SessionServiceApi.SessionServiceCreateExecute(sess)
 	defer httpResp.Body.Close()
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed to get bearer token")
+		logger.Error().Err(err).Msg("failed to get bearer token")
 		return nil, err
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		logger.Error().Msg("Failed get bearer token: http status code is " + strconv.Itoa(httpResp.StatusCode))
+		logger.Error().Msg("failed get bearer token: http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
 
@@ -283,11 +283,11 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 	argocdApplication, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetExecute(req)
 	defer httpResp.Body.Close()
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to get argocd application")
+		cm.log.Error().Err(err).Msg("failed to get argocd application")
 		return cluster, err
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("Failed to get argocd application: http status code is " + strconv.Itoa(httpResp.StatusCode))
+		cm.log.Error().Msg("failed to get argocd application: http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return cluster, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
 	fybrikHelmParams := argocdApplication.GetSpec().Source.Helm.GetParameters()
@@ -312,7 +312,7 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 
 	if len(params) != 4 {
 		cm.log.Error().Err(err).Msg("missing expected cluster info related field in helm params")
-		return cluster, errors.New("Failed to get cluster info")
+		return cluster, errors.New("failed to get cluster info")
 	}
 
 	return multicluster.CreateCluster(*cm.packClusterConfigMap(params)), nil
@@ -333,7 +333,7 @@ func (cm *argocdClusterManager) cloneGitRepo() (string, *git.Repository, error) 
 		URL: cm.argoCDAppsGitRepo.url,
 	})
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to clone repo")
+		cm.log.Error().Err(err).Msg("failed to clone repo")
 		return "", nil, err
 	}
 	return tmpDir, r, nil
@@ -401,11 +401,11 @@ func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*
 	resp1, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetResourceExecute(req1)
 	defer httpResp.Body.Close()
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to get application manifest")
+		cm.log.Error().Err(err).Msg("failed to get application manifest")
 		return nil, err
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("Failed to get application manifest: http status code is " + strconv.Itoa(httpResp.StatusCode))
+		cm.log.Error().Msg("failed to get application manifest: http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return nil, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
 	cm.log.Info().Msg("print manifest")
@@ -449,7 +449,7 @@ func (cm *argocdClusterManager) CreateBlueprint(cluster string, blueprint *app.B
 	cm.log.Info().Msg("fullPath: " + fileName)
 
 	fullFilename := filepath.Join(repoDir+"/"+cm.getBlueprintFilePath()+cluster, fileName)
-	err = os.WriteFile(fullFilename, content, 0644)
+	err = os.WriteFile(fullFilename, content, 0600)
 
 	if err != nil {
 		return err

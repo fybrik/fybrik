@@ -16,30 +16,30 @@ import (
 
 // ClusterSettings struct for ClusterSettings
 type ClusterSettings struct {
-	AppLabelKey               *string                              `json:"appLabelKey,omitempty"`
-	AppsInAnyNamespaceEnabled *bool                                `json:"appsInAnyNamespaceEnabled,omitempty"`
-	ConfigManagementPlugins   *[]V1alpha1ConfigManagementPlugin    `json:"configManagementPlugins,omitempty"`
-	ControllerNamespace       *string                              `json:"controllerNamespace,omitempty"`
-	DexConfig                 *ClusterDexConfig                    `json:"dexConfig,omitempty"`
-	ExecEnabled               *bool                                `json:"execEnabled,omitempty"`
-	GoogleAnalytics           *ClusterGoogleAnalyticsConfig        `json:"googleAnalytics,omitempty"`
-	Help                      *ClusterHelp                         `json:"help,omitempty"`
-	KustomizeOptions          *V1alpha1KustomizeOptions            `json:"kustomizeOptions,omitempty"`
-	KustomizeVersions         *[]string                            `json:"kustomizeVersions,omitempty"`
-	OidcConfig                *ClusterOIDCConfig                   `json:"oidcConfig,omitempty"`
-	PasswordPattern           *string                              `json:"passwordPattern,omitempty"`
-	Plugins                   *[]ClusterPlugin                     `json:"plugins,omitempty"`
-	ResourceOverrides         *map[string]V1alpha1ResourceOverride `json:"resourceOverrides,omitempty"`
-	StatusBadgeEnabled        *bool                                `json:"statusBadgeEnabled,omitempty"`
-	StatusBadgeRootUrl        *string                              `json:"statusBadgeRootUrl,omitempty"`
-	TrackingMethod            *string                              `json:"trackingMethod,omitempty"`
-	UiBannerContent           *string                              `json:"uiBannerContent,omitempty"`
-	UiBannerPermanent         *bool                                `json:"uiBannerPermanent,omitempty"`
-	UiBannerPosition          *string                              `json:"uiBannerPosition,omitempty"`
-	UiBannerURL               *string                              `json:"uiBannerURL,omitempty"`
-	UiCssURL                  *string                              `json:"uiCssURL,omitempty"`
-	Url                       *string                              `json:"url,omitempty"`
-	UserLoginsDisabled        *bool                                `json:"userLoginsDisabled,omitempty"`
+	AppLabelKey *string `json:"appLabelKey,omitempty"`
+	AppsInAnyNamespaceEnabled *bool `json:"appsInAnyNamespaceEnabled,omitempty"`
+	ConfigManagementPlugins *[]V1alpha1ConfigManagementPlugin `json:"configManagementPlugins,omitempty"`
+	ControllerNamespace *string `json:"controllerNamespace,omitempty"`
+	DexConfig *ClusterDexConfig `json:"dexConfig,omitempty"`
+	ExecEnabled *bool `json:"execEnabled,omitempty"`
+	GoogleAnalytics *ClusterGoogleAnalyticsConfig `json:"googleAnalytics,omitempty"`
+	Help *ClusterHelp `json:"help,omitempty"`
+	KustomizeOptions *V1alpha1KustomizeOptions `json:"kustomizeOptions,omitempty"`
+	KustomizeVersions *[]string `json:"kustomizeVersions,omitempty"`
+	OidcConfig *ClusterOIDCConfig `json:"oidcConfig,omitempty"`
+	PasswordPattern *string `json:"passwordPattern,omitempty"`
+	Plugins *[]ClusterPlugin `json:"plugins,omitempty"`
+	ResourceOverrides *map[string]V1alpha1ResourceOverride `json:"resourceOverrides,omitempty"`
+	StatusBadgeEnabled *bool `json:"statusBadgeEnabled,omitempty"`
+	StatusBadgeRootUrl *string `json:"statusBadgeRootUrl,omitempty"`
+	TrackingMethod *string `json:"trackingMethod,omitempty"`
+	UiBannerContent *string `json:"uiBannerContent,omitempty"`
+	UiBannerPermanent *bool `json:"uiBannerPermanent,omitempty"`
+	UiBannerPosition *string `json:"uiBannerPosition,omitempty"`
+	UiBannerURL *string `json:"uiBannerURL,omitempty"`
+	UiCssURL *string `json:"uiCssURL,omitempty"`
+	Url *string `json:"url,omitempty"`
+	UserLoginsDisabled *bool `json:"userLoginsDisabled,omitempty"`
 }
 
 // NewClusterSettings instantiates a new ClusterSettings object
@@ -939,3 +939,5 @@ func (v *NullableClusterSettings) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

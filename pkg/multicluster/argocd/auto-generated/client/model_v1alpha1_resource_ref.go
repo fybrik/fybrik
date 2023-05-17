@@ -16,12 +16,12 @@ import (
 
 // V1alpha1ResourceRef struct for V1alpha1ResourceRef
 type V1alpha1ResourceRef struct {
-	Group     *string `json:"group,omitempty"`
-	Kind      *string `json:"kind,omitempty"`
-	Name      *string `json:"name,omitempty"`
+	Group *string `json:"group,omitempty"`
+	Kind *string `json:"kind,omitempty"`
+	Name *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
-	Uid       *string `json:"uid,omitempty"`
-	Version   *string `json:"version,omitempty"`
+	Uid *string `json:"uid,omitempty"`
+	Version *string `json:"version,omitempty"`
 }
 
 // NewV1alpha1ResourceRef instantiates a new V1alpha1ResourceRef object
@@ -291,3 +291,5 @@ func (v *NullableV1alpha1ResourceRef) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

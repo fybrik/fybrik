@@ -17,8 +17,8 @@ import (
 // ClusterHelp struct for ClusterHelp
 type ClusterHelp struct {
 	BinaryUrls *map[string]string `json:"binaryUrls,omitempty"`
-	ChatText   *string            `json:"chatText,omitempty"`
-	ChatUrl    *string            `json:"chatUrl,omitempty"`
+	ChatText *string `json:"chatText,omitempty"`
+	ChatUrl *string `json:"chatUrl,omitempty"`
 }
 
 // NewClusterHelp instantiates a new ClusterHelp object
@@ -183,3 +183,5 @@ func (v *NullableClusterHelp) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

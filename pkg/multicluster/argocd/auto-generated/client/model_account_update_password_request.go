@@ -17,8 +17,8 @@ import (
 // AccountUpdatePasswordRequest struct for AccountUpdatePasswordRequest
 type AccountUpdatePasswordRequest struct {
 	CurrentPassword *string `json:"currentPassword,omitempty"`
-	Name            *string `json:"name,omitempty"`
-	NewPassword     *string `json:"newPassword,omitempty"`
+	Name *string `json:"name,omitempty"`
+	NewPassword *string `json:"newPassword,omitempty"`
 }
 
 // NewAccountUpdatePasswordRequest instantiates a new AccountUpdatePasswordRequest object
@@ -183,3 +183,5 @@ func (v *NullableAccountUpdatePasswordRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

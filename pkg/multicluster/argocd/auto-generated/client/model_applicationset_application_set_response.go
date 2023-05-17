@@ -17,7 +17,7 @@ import (
 // ApplicationsetApplicationSetResponse struct for ApplicationsetApplicationSetResponse
 type ApplicationsetApplicationSetResponse struct {
 	Applicationset *V1alpha1ApplicationSet `json:"applicationset,omitempty"`
-	Project        *string                 `json:"project,omitempty"`
+	Project *string `json:"project,omitempty"`
 }
 
 // NewApplicationsetApplicationSetResponse instantiates a new ApplicationsetApplicationSetResponse object
@@ -147,3 +147,5 @@ func (v *NullableApplicationsetApplicationSetResponse) UnmarshalJSON(src []byte)
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

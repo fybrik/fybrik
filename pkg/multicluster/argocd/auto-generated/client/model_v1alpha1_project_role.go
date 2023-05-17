@@ -16,11 +16,11 @@ import (
 
 // V1alpha1ProjectRole struct for V1alpha1ProjectRole
 type V1alpha1ProjectRole struct {
-	Description *string             `json:"description,omitempty"`
-	Groups      *[]string           `json:"groups,omitempty"`
-	JwtTokens   *[]V1alpha1JWTToken `json:"jwtTokens,omitempty"`
-	Name        *string             `json:"name,omitempty"`
-	Policies    *[]string           `json:"policies,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Groups *[]string `json:"groups,omitempty"`
+	JwtTokens *[]V1alpha1JWTToken `json:"jwtTokens,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Policies *[]string `json:"policies,omitempty"`
 }
 
 // NewV1alpha1ProjectRole instantiates a new V1alpha1ProjectRole object
@@ -255,3 +255,5 @@ func (v *NullableV1alpha1ProjectRole) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

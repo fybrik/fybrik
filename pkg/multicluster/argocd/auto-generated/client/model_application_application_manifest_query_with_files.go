@@ -17,8 +17,8 @@ import (
 // ApplicationApplicationManifestQueryWithFiles struct for ApplicationApplicationManifestQueryWithFiles
 type ApplicationApplicationManifestQueryWithFiles struct {
 	AppNamespace *string `json:"appNamespace,omitempty"`
-	Checksum     *string `json:"checksum,omitempty"`
-	Name         *string `json:"name,omitempty"`
+	Checksum *string `json:"checksum,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // NewApplicationApplicationManifestQueryWithFiles instantiates a new ApplicationApplicationManifestQueryWithFiles object
@@ -183,3 +183,5 @@ func (v *NullableApplicationApplicationManifestQueryWithFiles) UnmarshalJSON(src
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

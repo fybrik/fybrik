@@ -16,12 +16,12 @@ import (
 
 // RepositoryManifestResponse struct for RepositoryManifestResponse
 type RepositoryManifestResponse struct {
-	Manifests    *[]string `json:"manifests,omitempty"`
-	Namespace    *string   `json:"namespace,omitempty"`
-	Revision     *string   `json:"revision,omitempty"`
-	Server       *string   `json:"server,omitempty"`
-	SourceType   *string   `json:"sourceType,omitempty"`
-	VerifyResult *string   `json:"verifyResult,omitempty"`
+	Manifests *[]string `json:"manifests,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
+	Revision *string `json:"revision,omitempty"`
+	Server *string `json:"server,omitempty"`
+	SourceType *string `json:"sourceType,omitempty"`
+	VerifyResult *string `json:"verifyResult,omitempty"`
 }
 
 // NewRepositoryManifestResponse instantiates a new RepositoryManifestResponse object
@@ -291,3 +291,5 @@ func (v *NullableRepositoryManifestResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

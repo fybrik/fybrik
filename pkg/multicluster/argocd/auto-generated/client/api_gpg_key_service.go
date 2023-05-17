@@ -28,10 +28,10 @@ var (
 type GPGKeyServiceApiService service
 
 type ApiGPGKeyServiceCreateRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *GPGKeyServiceApiService
-	body       *V1alpha1GnuPGPublicKey
-	upsert     *bool
+	body *V1alpha1GnuPGPublicKey
+	upsert *bool
 }
 
 // Raw key data of the GPG key(s) to create
@@ -39,7 +39,6 @@ func (r ApiGPGKeyServiceCreateRequest) Body(body V1alpha1GnuPGPublicKey) ApiGPGK
 	r.body = &body
 	return r
 }
-
 // Whether to upsert already existing public keys.
 func (r ApiGPGKeyServiceCreateRequest) Upsert(upsert bool) ApiGPGKeyServiceCreateRequest {
 	r.upsert = &upsert
@@ -53,25 +52,24 @@ func (r ApiGPGKeyServiceCreateRequest) Execute() (GpgkeyGnuPGPublicKeyCreateResp
 /*
 GPGKeyServiceCreate Create one or more GPG public keys in the server's configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGPGKeyServiceCreateRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiGPGKeyServiceCreateRequest
 */
 func (a *GPGKeyServiceApiService) GPGKeyServiceCreate(ctx _context.Context) ApiGPGKeyServiceCreateRequest {
 	return ApiGPGKeyServiceCreateRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return GpgkeyGnuPGPublicKeyCreateResponse
+//  @return GpgkeyGnuPGPublicKeyCreateResponse
 func (a *GPGKeyServiceApiService) GPGKeyServiceCreateExecute(r ApiGPGKeyServiceCreateRequest) (GpgkeyGnuPGPublicKeyCreateResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue GpgkeyGnuPGPublicKeyCreateResponse
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  GpgkeyGnuPGPublicKeyCreateResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GPGKeyServiceApiService.GPGKeyServiceCreate")
@@ -132,13 +130,13 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceCreateExecute(r ApiGPGKeyServiceC
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -155,9 +153,9 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceCreateExecute(r ApiGPGKeyServiceC
 }
 
 type ApiGPGKeyServiceDeleteRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *GPGKeyServiceApiService
-	keyID      *string
+	keyID *string
 }
 
 // The GPG key ID to query for.
@@ -173,25 +171,24 @@ func (r ApiGPGKeyServiceDeleteRequest) Execute() (map[string]interface{}, *_neth
 /*
 GPGKeyServiceDelete Delete specified GPG public key from the server's configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGPGKeyServiceDeleteRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiGPGKeyServiceDeleteRequest
 */
 func (a *GPGKeyServiceApiService) GPGKeyServiceDelete(ctx _context.Context) ApiGPGKeyServiceDeleteRequest {
 	return ApiGPGKeyServiceDeleteRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *GPGKeyServiceApiService) GPGKeyServiceDeleteExecute(r ApiGPGKeyServiceDeleteRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GPGKeyServiceApiService.GPGKeyServiceDelete")
@@ -247,13 +244,13 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceDeleteExecute(r ApiGPGKeyServiceD
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -270,10 +267,11 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceDeleteExecute(r ApiGPGKeyServiceD
 }
 
 type ApiGPGKeyServiceGetRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *GPGKeyServiceApiService
-	keyID      string
+	keyID string
 }
+
 
 func (r ApiGPGKeyServiceGetRequest) Execute() (V1alpha1GnuPGPublicKey, *_nethttp.Response, error) {
 	return r.ApiService.GPGKeyServiceGetExecute(r)
@@ -282,27 +280,26 @@ func (r ApiGPGKeyServiceGetRequest) Execute() (V1alpha1GnuPGPublicKey, *_nethttp
 /*
 GPGKeyServiceGet Get information about specified GPG public key from the server
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param keyID The GPG key ID to query for
-	@return ApiGPGKeyServiceGetRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param keyID The GPG key ID to query for
+ @return ApiGPGKeyServiceGetRequest
 */
 func (a *GPGKeyServiceApiService) GPGKeyServiceGet(ctx _context.Context, keyID string) ApiGPGKeyServiceGetRequest {
 	return ApiGPGKeyServiceGetRequest{
 		ApiService: a,
-		ctx:        ctx,
-		keyID:      keyID,
+		ctx: ctx,
+		keyID: keyID,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1GnuPGPublicKey
+//  @return V1alpha1GnuPGPublicKey
 func (a *GPGKeyServiceApiService) GPGKeyServiceGetExecute(r ApiGPGKeyServiceGetRequest) (V1alpha1GnuPGPublicKey, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1GnuPGPublicKey
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1GnuPGPublicKey
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GPGKeyServiceApiService.GPGKeyServiceGet")
@@ -356,13 +353,13 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceGetExecute(r ApiGPGKeyServiceGetR
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -379,9 +376,9 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceGetExecute(r ApiGPGKeyServiceGetR
 }
 
 type ApiGPGKeyServiceListRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *GPGKeyServiceApiService
-	keyID      *string
+	keyID *string
 }
 
 // The GPG key ID to query for.
@@ -397,25 +394,24 @@ func (r ApiGPGKeyServiceListRequest) Execute() (V1alpha1GnuPGPublicKeyList, *_ne
 /*
 GPGKeyServiceList List all available repository certificates
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiGPGKeyServiceListRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiGPGKeyServiceListRequest
 */
 func (a *GPGKeyServiceApiService) GPGKeyServiceList(ctx _context.Context) ApiGPGKeyServiceListRequest {
 	return ApiGPGKeyServiceListRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1GnuPGPublicKeyList
+//  @return V1alpha1GnuPGPublicKeyList
 func (a *GPGKeyServiceApiService) GPGKeyServiceListExecute(r ApiGPGKeyServiceListRequest) (V1alpha1GnuPGPublicKeyList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1GnuPGPublicKeyList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1GnuPGPublicKeyList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "GPGKeyServiceApiService.GPGKeyServiceList")
@@ -471,13 +467,13 @@ func (a *GPGKeyServiceApiService) GPGKeyServiceListExecute(r ApiGPGKeyServiceLis
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

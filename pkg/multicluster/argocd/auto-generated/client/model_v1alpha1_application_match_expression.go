@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ApplicationMatchExpression struct for V1alpha1ApplicationMatchExpression
 type V1alpha1ApplicationMatchExpression struct {
-	Key      *string   `json:"key,omitempty"`
-	Operator *string   `json:"operator,omitempty"`
-	Values   *[]string `json:"values,omitempty"`
+	Key *string `json:"key,omitempty"`
+	Operator *string `json:"operator,omitempty"`
+	Values *[]string `json:"values,omitempty"`
 }
 
 // NewV1alpha1ApplicationMatchExpression instantiates a new V1alpha1ApplicationMatchExpression object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ApplicationMatchExpression) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

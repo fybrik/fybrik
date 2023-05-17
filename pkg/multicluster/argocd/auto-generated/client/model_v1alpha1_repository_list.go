@@ -16,8 +16,8 @@ import (
 
 // V1alpha1RepositoryList RepositoryList is a collection of Repositories.
 type V1alpha1RepositoryList struct {
-	Items    *[]V1alpha1Repository `json:"items,omitempty"`
-	Metadata *V1ListMeta           `json:"metadata,omitempty"`
+	Items *[]V1alpha1Repository `json:"items,omitempty"`
+	Metadata *V1ListMeta `json:"metadata,omitempty"`
 }
 
 // NewV1alpha1RepositoryList instantiates a new V1alpha1RepositoryList object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1RepositoryList) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

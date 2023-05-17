@@ -17,8 +17,7 @@ import (
 // V1alpha1RetryStrategy struct for V1alpha1RetryStrategy
 type V1alpha1RetryStrategy struct {
 	Backoff *V1alpha1Backoff `json:"backoff,omitempty"`
-	// Limit is the maximum number of attempts for retrying a failed sync. If set to 0, no retries will be performed.
-	Limit *string `json:"limit,omitempty"`
+	Limit *int32 `json:"limit,omitempty"`
 }
 
 // NewV1alpha1RetryStrategy instantiates a new V1alpha1RetryStrategy object
@@ -71,9 +70,9 @@ func (o *V1alpha1RetryStrategy) SetBackoff(v V1alpha1Backoff) {
 }
 
 // GetLimit returns the Limit field value if set, zero value otherwise.
-func (o *V1alpha1RetryStrategy) GetLimit() string {
+func (o *V1alpha1RetryStrategy) GetLimit() int32 {
 	if o == nil || o.Limit == nil {
-		var ret string
+		var ret int32
 		return ret
 	}
 	return *o.Limit
@@ -81,7 +80,7 @@ func (o *V1alpha1RetryStrategy) GetLimit() string {
 
 // GetLimitOk returns a tuple with the Limit field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *V1alpha1RetryStrategy) GetLimitOk() (*string, bool) {
+func (o *V1alpha1RetryStrategy) GetLimitOk() (*int32, bool) {
 	if o == nil || o.Limit == nil {
 		return nil, false
 	}
@@ -97,8 +96,8 @@ func (o *V1alpha1RetryStrategy) HasLimit() bool {
 	return false
 }
 
-// SetLimit gets a reference to the given string and assigns it to the Limit field.
-func (o *V1alpha1RetryStrategy) SetLimit(v string) {
+// SetLimit gets a reference to the given int32 and assigns it to the Limit field.
+func (o *V1alpha1RetryStrategy) SetLimit(v int32) {
 	o.Limit = &v
 }
 
@@ -148,3 +147,5 @@ func (v *NullableV1alpha1RetryStrategy) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

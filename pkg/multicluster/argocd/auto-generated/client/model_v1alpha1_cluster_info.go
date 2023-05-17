@@ -16,11 +16,11 @@ import (
 
 // V1alpha1ClusterInfo struct for V1alpha1ClusterInfo
 type V1alpha1ClusterInfo struct {
-	ApiVersions       *[]string                 `json:"apiVersions,omitempty"`
-	ApplicationsCount *int32                    `json:"applicationsCount,omitempty"`
-	CacheInfo         *V1alpha1ClusterCacheInfo `json:"cacheInfo,omitempty"`
-	ConnectionState   *V1alpha1ConnectionState  `json:"connectionState,omitempty"`
-	ServerVersion     *string                   `json:"serverVersion,omitempty"`
+	ApiVersions *[]string `json:"apiVersions,omitempty"`
+	ApplicationsCount *int32 `json:"applicationsCount,omitempty"`
+	CacheInfo *V1alpha1ClusterCacheInfo `json:"cacheInfo,omitempty"`
+	ConnectionState *V1alpha1ConnectionState `json:"connectionState,omitempty"`
+	ServerVersion *string `json:"serverVersion,omitempty"`
 }
 
 // NewV1alpha1ClusterInfo instantiates a new V1alpha1ClusterInfo object
@@ -255,3 +255,5 @@ func (v *NullableV1alpha1ClusterInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

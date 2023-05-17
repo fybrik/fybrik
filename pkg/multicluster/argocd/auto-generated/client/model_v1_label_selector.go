@@ -17,7 +17,7 @@ import (
 // V1LabelSelector struct for V1LabelSelector
 type V1LabelSelector struct {
 	MatchExpressions *[]V1LabelSelectorRequirement `json:"matchExpressions,omitempty"`
-	MatchLabels      *map[string]string            `json:"matchLabels,omitempty"`
+	MatchLabels *map[string]string `json:"matchLabels,omitempty"`
 }
 
 // NewV1LabelSelector instantiates a new V1LabelSelector object
@@ -147,3 +147,5 @@ func (v *NullableV1LabelSelector) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

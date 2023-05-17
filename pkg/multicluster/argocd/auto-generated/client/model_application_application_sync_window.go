@@ -16,10 +16,10 @@ import (
 
 // ApplicationApplicationSyncWindow struct for ApplicationApplicationSyncWindow
 type ApplicationApplicationSyncWindow struct {
-	Duration   *string `json:"duration,omitempty"`
-	Kind       *string `json:"kind,omitempty"`
-	ManualSync *bool   `json:"manualSync,omitempty"`
-	Schedule   *string `json:"schedule,omitempty"`
+	Duration *string `json:"duration,omitempty"`
+	Kind *string `json:"kind,omitempty"`
+	ManualSync *bool `json:"manualSync,omitempty"`
+	Schedule *string `json:"schedule,omitempty"`
 }
 
 // NewApplicationApplicationSyncWindow instantiates a new ApplicationApplicationSyncWindow object
@@ -219,3 +219,5 @@ func (v *NullableApplicationApplicationSyncWindow) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

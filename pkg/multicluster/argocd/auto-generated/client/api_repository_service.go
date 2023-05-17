@@ -28,11 +28,11 @@ var (
 type RepositoryServiceApiService service
 
 type ApiRepositoryServiceCreateRepositoryRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepositoryServiceApiService
-	body       *V1alpha1Repository
-	upsert     *bool
-	credsOnly  *bool
+	body *V1alpha1Repository
+	upsert *bool
+	credsOnly *bool
 }
 
 // Repository definition
@@ -40,13 +40,11 @@ func (r ApiRepositoryServiceCreateRepositoryRequest) Body(body V1alpha1Repositor
 	r.body = &body
 	return r
 }
-
 // Whether to create in upsert mode.
 func (r ApiRepositoryServiceCreateRepositoryRequest) Upsert(upsert bool) ApiRepositoryServiceCreateRepositoryRequest {
 	r.upsert = &upsert
 	return r
 }
-
 // Whether to operate on credential set instead of repository.
 func (r ApiRepositoryServiceCreateRepositoryRequest) CredsOnly(credsOnly bool) ApiRepositoryServiceCreateRepositoryRequest {
 	r.credsOnly = &credsOnly
@@ -60,25 +58,24 @@ func (r ApiRepositoryServiceCreateRepositoryRequest) Execute() (V1alpha1Reposito
 /*
 RepositoryServiceCreateRepository CreateRepository creates a new repository configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiRepositoryServiceCreateRepositoryRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiRepositoryServiceCreateRepositoryRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceCreateRepository(ctx _context.Context) ApiRepositoryServiceCreateRepositoryRequest {
 	return ApiRepositoryServiceCreateRepositoryRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1Repository
+//  @return V1alpha1Repository
 func (a *RepositoryServiceApiService) RepositoryServiceCreateRepositoryExecute(r ApiRepositoryServiceCreateRepositoryRequest) (V1alpha1Repository, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1Repository
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1Repository
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceCreateRepository")
@@ -142,13 +139,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceCreateRepositoryExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -165,9 +162,9 @@ func (a *RepositoryServiceApiService) RepositoryServiceCreateRepositoryExecute(r
 }
 
 type ApiRepositoryServiceDeleteRepositoryRequest struct {
-	ctx          _context.Context
-	ApiService   *RepositoryServiceApiService
-	repo         string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo string
 	forceRefresh *bool
 }
 
@@ -184,27 +181,26 @@ func (r ApiRepositoryServiceDeleteRepositoryRequest) Execute() (map[string]inter
 /*
 RepositoryServiceDeleteRepository DeleteRepository deletes a repository from the configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo Repo URL for query
-	@return ApiRepositoryServiceDeleteRepositoryRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo Repo URL for query
+ @return ApiRepositoryServiceDeleteRepositoryRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceDeleteRepository(ctx _context.Context, repo string) ApiRepositoryServiceDeleteRepositoryRequest {
 	return ApiRepositoryServiceDeleteRepositoryRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *RepositoryServiceApiService) RepositoryServiceDeleteRepositoryExecute(r ApiRepositoryServiceDeleteRepositoryRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodDelete
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceDeleteRepository")
@@ -261,13 +257,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceDeleteRepositoryExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -284,9 +280,9 @@ func (a *RepositoryServiceApiService) RepositoryServiceDeleteRepositoryExecute(r
 }
 
 type ApiRepositoryServiceGetRequest struct {
-	ctx          _context.Context
-	ApiService   *RepositoryServiceApiService
-	repo         string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo string
 	forceRefresh *bool
 }
 
@@ -303,27 +299,26 @@ func (r ApiRepositoryServiceGetRequest) Execute() (V1alpha1Repository, *_nethttp
 /*
 RepositoryServiceGet Get returns a repository or its credentials
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo Repo URL for query
-	@return ApiRepositoryServiceGetRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo Repo URL for query
+ @return ApiRepositoryServiceGetRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceGet(ctx _context.Context, repo string) ApiRepositoryServiceGetRequest {
 	return ApiRepositoryServiceGetRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1Repository
+//  @return V1alpha1Repository
 func (a *RepositoryServiceApiService) RepositoryServiceGetExecute(r ApiRepositoryServiceGetRequest) (V1alpha1Repository, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1Repository
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1Repository
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceGet")
@@ -380,13 +375,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetExecute(r ApiRepositor
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -403,10 +398,10 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetExecute(r ApiRepositor
 }
 
 type ApiRepositoryServiceGetAppDetailsRequest struct {
-	ctx           _context.Context
-	ApiService    *RepositoryServiceApiService
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
 	sourceRepoURL string
-	body          *RepositoryRepoAppDetailsQuery
+	body *RepositoryRepoAppDetailsQuery
 }
 
 func (r ApiRepositoryServiceGetAppDetailsRequest) Body(body RepositoryRepoAppDetailsQuery) ApiRepositoryServiceGetAppDetailsRequest {
@@ -421,27 +416,26 @@ func (r ApiRepositoryServiceGetAppDetailsRequest) Execute() (RepositoryRepoAppDe
 /*
 RepositoryServiceGetAppDetails GetAppDetails returns application details by given path
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param sourceRepoURL RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
-	@return ApiRepositoryServiceGetAppDetailsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param sourceRepoURL RepoURL is the URL to the repository (Git or Helm) that contains the application manifests
+ @return ApiRepositoryServiceGetAppDetailsRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceGetAppDetails(ctx _context.Context, sourceRepoURL string) ApiRepositoryServiceGetAppDetailsRequest {
 	return ApiRepositoryServiceGetAppDetailsRequest{
-		ApiService:    a,
-		ctx:           ctx,
+		ApiService: a,
+		ctx: ctx,
 		sourceRepoURL: sourceRepoURL,
 	}
 }
 
 // Execute executes the request
-//
-//	@return RepositoryRepoAppDetailsResponse
+//  @return RepositoryRepoAppDetailsResponse
 func (a *RepositoryServiceApiService) RepositoryServiceGetAppDetailsExecute(r ApiRepositoryServiceGetAppDetailsRequest) (RepositoryRepoAppDetailsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue RepositoryRepoAppDetailsResponse
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  RepositoryRepoAppDetailsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceGetAppDetails")
@@ -500,13 +494,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetAppDetailsExecute(r Ap
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -523,9 +517,9 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetAppDetailsExecute(r Ap
 }
 
 type ApiRepositoryServiceGetHelmChartsRequest struct {
-	ctx          _context.Context
-	ApiService   *RepositoryServiceApiService
-	repo         string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo string
 	forceRefresh *bool
 }
 
@@ -542,27 +536,26 @@ func (r ApiRepositoryServiceGetHelmChartsRequest) Execute() (RepositoryHelmChart
 /*
 RepositoryServiceGetHelmCharts GetHelmCharts returns list of helm charts in the specified repository
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo Repo URL for query
-	@return ApiRepositoryServiceGetHelmChartsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo Repo URL for query
+ @return ApiRepositoryServiceGetHelmChartsRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceGetHelmCharts(ctx _context.Context, repo string) ApiRepositoryServiceGetHelmChartsRequest {
 	return ApiRepositoryServiceGetHelmChartsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return RepositoryHelmChartsResponse
+//  @return RepositoryHelmChartsResponse
 func (a *RepositoryServiceApiService) RepositoryServiceGetHelmChartsExecute(r ApiRepositoryServiceGetHelmChartsRequest) (RepositoryHelmChartsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue RepositoryHelmChartsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  RepositoryHelmChartsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceGetHelmCharts")
@@ -619,13 +612,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetHelmChartsExecute(r Ap
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -642,11 +635,11 @@ func (a *RepositoryServiceApiService) RepositoryServiceGetHelmChartsExecute(r Ap
 }
 
 type ApiRepositoryServiceListAppsRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepositoryServiceApiService
-	repo       string
-	revision   *string
-	appName    *string
+	repo string
+	revision *string
+	appName *string
 	appProject *string
 }
 
@@ -670,27 +663,26 @@ func (r ApiRepositoryServiceListAppsRequest) Execute() (RepositoryRepoAppsRespon
 /*
 RepositoryServiceListApps ListApps returns list of apps in the repo
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo
-	@return ApiRepositoryServiceListAppsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo
+ @return ApiRepositoryServiceListAppsRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceListApps(ctx _context.Context, repo string) ApiRepositoryServiceListAppsRequest {
 	return ApiRepositoryServiceListAppsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return RepositoryRepoAppsResponse
+//  @return RepositoryRepoAppsResponse
 func (a *RepositoryServiceApiService) RepositoryServiceListAppsExecute(r ApiRepositoryServiceListAppsRequest) (RepositoryRepoAppsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue RepositoryRepoAppsResponse
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  RepositoryRepoAppsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceListApps")
@@ -753,13 +745,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceListAppsExecute(r ApiRepo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -776,9 +768,9 @@ func (a *RepositoryServiceApiService) RepositoryServiceListAppsExecute(r ApiRepo
 }
 
 type ApiRepositoryServiceListRefsRequest struct {
-	ctx          _context.Context
-	ApiService   *RepositoryServiceApiService
-	repo         string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo string
 	forceRefresh *bool
 }
 
@@ -795,27 +787,26 @@ func (r ApiRepositoryServiceListRefsRequest) Execute() (RepositoryRefs, *_nethtt
 /*
 RepositoryServiceListRefs Method for RepositoryServiceListRefs
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo Repo URL for query
-	@return ApiRepositoryServiceListRefsRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo Repo URL for query
+ @return ApiRepositoryServiceListRefsRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceListRefs(ctx _context.Context, repo string) ApiRepositoryServiceListRefsRequest {
 	return ApiRepositoryServiceListRefsRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return RepositoryRefs
+//  @return RepositoryRefs
 func (a *RepositoryServiceApiService) RepositoryServiceListRefsExecute(r ApiRepositoryServiceListRefsRequest) (RepositoryRefs, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue RepositoryRefs
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  RepositoryRefs
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceListRefs")
@@ -872,13 +863,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceListRefsExecute(r ApiRepo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -895,9 +886,9 @@ func (a *RepositoryServiceApiService) RepositoryServiceListRefsExecute(r ApiRepo
 }
 
 type ApiRepositoryServiceListRepositoriesRequest struct {
-	ctx          _context.Context
-	ApiService   *RepositoryServiceApiService
-	repo         *string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo *string
 	forceRefresh *bool
 }
 
@@ -906,7 +897,6 @@ func (r ApiRepositoryServiceListRepositoriesRequest) Repo(repo string) ApiReposi
 	r.repo = &repo
 	return r
 }
-
 // Whether to force a cache refresh on repo&#39;s connection state.
 func (r ApiRepositoryServiceListRepositoriesRequest) ForceRefresh(forceRefresh bool) ApiRepositoryServiceListRepositoriesRequest {
 	r.forceRefresh = &forceRefresh
@@ -920,25 +910,24 @@ func (r ApiRepositoryServiceListRepositoriesRequest) Execute() (V1alpha1Reposito
 /*
 RepositoryServiceListRepositories ListRepositories gets a list of all configured repositories
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@return ApiRepositoryServiceListRepositoriesRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiRepositoryServiceListRepositoriesRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceListRepositories(ctx _context.Context) ApiRepositoryServiceListRepositoriesRequest {
 	return ApiRepositoryServiceListRepositoriesRequest{
 		ApiService: a,
-		ctx:        ctx,
+		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1RepositoryList
+//  @return V1alpha1RepositoryList
 func (a *RepositoryServiceApiService) RepositoryServiceListRepositoriesExecute(r ApiRepositoryServiceListRepositoriesRequest) (V1alpha1RepositoryList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodGet
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1RepositoryList
+		localVarHTTPMethod   = _nethttp.MethodGet
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1RepositoryList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceListRepositories")
@@ -997,13 +986,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceListRepositoriesExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1020,10 +1009,10 @@ func (a *RepositoryServiceApiService) RepositoryServiceListRepositoriesExecute(r
 }
 
 type ApiRepositoryServiceUpdateRepositoryRequest struct {
-	ctx        _context.Context
+	ctx _context.Context
 	ApiService *RepositoryServiceApiService
-	repoRepo   string
-	body       *V1alpha1Repository
+	repoRepo string
+	body *V1alpha1Repository
 }
 
 func (r ApiRepositoryServiceUpdateRepositoryRequest) Body(body V1alpha1Repository) ApiRepositoryServiceUpdateRepositoryRequest {
@@ -1038,27 +1027,26 @@ func (r ApiRepositoryServiceUpdateRepositoryRequest) Execute() (V1alpha1Reposito
 /*
 RepositoryServiceUpdateRepository UpdateRepository updates a repository configuration
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repoRepo Repo contains the URL to the remote repository
-	@return ApiRepositoryServiceUpdateRepositoryRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repoRepo Repo contains the URL to the remote repository
+ @return ApiRepositoryServiceUpdateRepositoryRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceUpdateRepository(ctx _context.Context, repoRepo string) ApiRepositoryServiceUpdateRepositoryRequest {
 	return ApiRepositoryServiceUpdateRepositoryRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repoRepo:   repoRepo,
+		ctx: ctx,
+		repoRepo: repoRepo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return V1alpha1Repository
+//  @return V1alpha1Repository
 func (a *RepositoryServiceApiService) RepositoryServiceUpdateRepositoryExecute(r ApiRepositoryServiceUpdateRepositoryRequest) (V1alpha1Repository, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPut
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue V1alpha1Repository
+		localVarHTTPMethod   = _nethttp.MethodPut
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  V1alpha1Repository
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceUpdateRepository")
@@ -1117,13 +1105,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceUpdateRepositoryExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1140,27 +1128,27 @@ func (a *RepositoryServiceApiService) RepositoryServiceUpdateRepositoryExecute(r
 }
 
 type ApiRepositoryServiceValidateAccessRequest struct {
-	ctx                        _context.Context
-	ApiService                 *RepositoryServiceApiService
-	repo                       string
-	body                       *string
-	username                   *string
-	password                   *string
-	sshPrivateKey              *string
-	insecure                   *bool
-	tlsClientCertData          *string
-	tlsClientCertKey           *string
-	type_                      *string
-	name                       *string
-	enableOci                  *bool
-	githubAppPrivateKey        *string
-	githubAppID                *string
-	githubAppInstallationID    *string
+	ctx _context.Context
+	ApiService *RepositoryServiceApiService
+	repo string
+	body *string
+	username *string
+	password *string
+	sshPrivateKey *string
+	insecure *bool
+	tlsClientCertData *string
+	tlsClientCertKey *string
+	type_ *string
+	name *string
+	enableOci *bool
+	githubAppPrivateKey *string
+	githubAppID *string
+	githubAppInstallationID *string
 	githubAppEnterpriseBaseUrl *string
-	proxy                      *string
-	project                    *string
-	gcpServiceAccountKey       *string
-	forceHttpBasicAuth         *bool
+	proxy *string
+	project *string
+	gcpServiceAccountKey *string
+	forceHttpBasicAuth *bool
 }
 
 // The URL to the repo
@@ -1168,103 +1156,86 @@ func (r ApiRepositoryServiceValidateAccessRequest) Body(body string) ApiReposito
 	r.body = &body
 	return r
 }
-
 // Username for accessing repo.
 func (r ApiRepositoryServiceValidateAccessRequest) Username(username string) ApiRepositoryServiceValidateAccessRequest {
 	r.username = &username
 	return r
 }
-
 // Password for accessing repo.
 func (r ApiRepositoryServiceValidateAccessRequest) Password(password string) ApiRepositoryServiceValidateAccessRequest {
 	r.password = &password
 	return r
 }
-
 // Private key data for accessing SSH repository.
 func (r ApiRepositoryServiceValidateAccessRequest) SshPrivateKey(sshPrivateKey string) ApiRepositoryServiceValidateAccessRequest {
 	r.sshPrivateKey = &sshPrivateKey
 	return r
 }
-
 // Whether to skip certificate or host key validation.
 func (r ApiRepositoryServiceValidateAccessRequest) Insecure(insecure bool) ApiRepositoryServiceValidateAccessRequest {
 	r.insecure = &insecure
 	return r
 }
-
 // TLS client cert data for accessing HTTPS repository.
 func (r ApiRepositoryServiceValidateAccessRequest) TlsClientCertData(tlsClientCertData string) ApiRepositoryServiceValidateAccessRequest {
 	r.tlsClientCertData = &tlsClientCertData
 	return r
 }
-
 // TLS client cert key for accessing HTTPS repository.
 func (r ApiRepositoryServiceValidateAccessRequest) TlsClientCertKey(tlsClientCertKey string) ApiRepositoryServiceValidateAccessRequest {
 	r.tlsClientCertKey = &tlsClientCertKey
 	return r
 }
-
 // The type of the repo.
 func (r ApiRepositoryServiceValidateAccessRequest) Type_(type_ string) ApiRepositoryServiceValidateAccessRequest {
 	r.type_ = &type_
 	return r
 }
-
 // The name of the repo.
 func (r ApiRepositoryServiceValidateAccessRequest) Name(name string) ApiRepositoryServiceValidateAccessRequest {
 	r.name = &name
 	return r
 }
-
 // Whether helm-oci support should be enabled for this repo.
 func (r ApiRepositoryServiceValidateAccessRequest) EnableOci(enableOci bool) ApiRepositoryServiceValidateAccessRequest {
 	r.enableOci = &enableOci
 	return r
 }
-
 // Github App Private Key PEM data.
 func (r ApiRepositoryServiceValidateAccessRequest) GithubAppPrivateKey(githubAppPrivateKey string) ApiRepositoryServiceValidateAccessRequest {
 	r.githubAppPrivateKey = &githubAppPrivateKey
 	return r
 }
-
 // Github App ID of the app used to access the repo.
 func (r ApiRepositoryServiceValidateAccessRequest) GithubAppID(githubAppID string) ApiRepositoryServiceValidateAccessRequest {
 	r.githubAppID = &githubAppID
 	return r
 }
-
 // Github App Installation ID of the installed GitHub App.
 func (r ApiRepositoryServiceValidateAccessRequest) GithubAppInstallationID(githubAppInstallationID string) ApiRepositoryServiceValidateAccessRequest {
 	r.githubAppInstallationID = &githubAppInstallationID
 	return r
 }
-
 // Github App Enterprise base url if empty will default to https://api.github.com.
 func (r ApiRepositoryServiceValidateAccessRequest) GithubAppEnterpriseBaseUrl(githubAppEnterpriseBaseUrl string) ApiRepositoryServiceValidateAccessRequest {
 	r.githubAppEnterpriseBaseUrl = &githubAppEnterpriseBaseUrl
 	return r
 }
-
 // HTTP/HTTPS proxy to access the repository.
 func (r ApiRepositoryServiceValidateAccessRequest) Proxy(proxy string) ApiRepositoryServiceValidateAccessRequest {
 	r.proxy = &proxy
 	return r
 }
-
 // Reference between project and repository that allow you automatically to be added as item inside SourceRepos project entity.
 func (r ApiRepositoryServiceValidateAccessRequest) Project(project string) ApiRepositoryServiceValidateAccessRequest {
 	r.project = &project
 	return r
 }
-
 // Google Cloud Platform service account key.
 func (r ApiRepositoryServiceValidateAccessRequest) GcpServiceAccountKey(gcpServiceAccountKey string) ApiRepositoryServiceValidateAccessRequest {
 	r.gcpServiceAccountKey = &gcpServiceAccountKey
 	return r
 }
-
 // Whether to force HTTP basic auth.
 func (r ApiRepositoryServiceValidateAccessRequest) ForceHttpBasicAuth(forceHttpBasicAuth bool) ApiRepositoryServiceValidateAccessRequest {
 	r.forceHttpBasicAuth = &forceHttpBasicAuth
@@ -1278,27 +1249,26 @@ func (r ApiRepositoryServiceValidateAccessRequest) Execute() (map[string]interfa
 /*
 RepositoryServiceValidateAccess ValidateAccess validates access to a repository with given parameters
 
-	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-	@param repo The URL to the repo
-	@return ApiRepositoryServiceValidateAccessRequest
+ @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo The URL to the repo
+ @return ApiRepositoryServiceValidateAccessRequest
 */
 func (a *RepositoryServiceApiService) RepositoryServiceValidateAccess(ctx _context.Context, repo string) ApiRepositoryServiceValidateAccessRequest {
 	return ApiRepositoryServiceValidateAccessRequest{
 		ApiService: a,
-		ctx:        ctx,
-		repo:       repo,
+		ctx: ctx,
+		repo: repo,
 	}
 }
 
 // Execute executes the request
-//
-//	@return map[string]interface{}
+//  @return map[string]interface{}
 func (a *RepositoryServiceApiService) RepositoryServiceValidateAccessExecute(r ApiRepositoryServiceValidateAccessRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod  = _nethttp.MethodPost
-		localVarPostBody    interface{}
-		formFiles           []formFile
-		localVarReturnValue map[string]interface{}
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RepositoryServiceApiService.RepositoryServiceValidateAccess")
@@ -1408,13 +1378,13 @@ func (a *RepositoryServiceApiService) RepositoryServiceValidateAccessExecute(r A
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		var v RuntimeError
-		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-		if err != nil {
-			newErr.error = err.Error()
-			return localVarReturnValue, localVarHTTPResponse, newErr
-		}
-		newErr.model = v
+			var v RuntimeError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

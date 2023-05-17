@@ -16,15 +16,15 @@ import (
 
 // V1alpha1ApplicationSetNestedGenerator ApplicationSetNestedGenerator represents a generator nested within a combination-type generator (MatrixGenerator or MergeGenerator).
 type V1alpha1ApplicationSetNestedGenerator struct {
-	ClusterDecisionResource *V1alpha1DuckTypeGenerator    `json:"clusterDecisionResource,omitempty"`
-	Clusters                *V1alpha1ClusterGenerator     `json:"clusters,omitempty"`
-	Git                     *V1alpha1GitGenerator         `json:"git,omitempty"`
-	List                    *V1alpha1ListGenerator        `json:"list,omitempty"`
-	Matrix                  *V1JSON                       `json:"matrix,omitempty"`
-	Merge                   *V1JSON                       `json:"merge,omitempty"`
-	PullRequest             *V1alpha1PullRequestGenerator `json:"pullRequest,omitempty"`
-	ScmProvider             *V1alpha1SCMProviderGenerator `json:"scmProvider,omitempty"`
-	Selector                *V1LabelSelector              `json:"selector,omitempty"`
+	ClusterDecisionResource *V1alpha1DuckTypeGenerator `json:"clusterDecisionResource,omitempty"`
+	Clusters *V1alpha1ClusterGenerator `json:"clusters,omitempty"`
+	Git *V1alpha1GitGenerator `json:"git,omitempty"`
+	List *V1alpha1ListGenerator `json:"list,omitempty"`
+	Matrix *V1JSON `json:"matrix,omitempty"`
+	Merge *V1JSON `json:"merge,omitempty"`
+	PullRequest *V1alpha1PullRequestGenerator `json:"pullRequest,omitempty"`
+	ScmProvider *V1alpha1SCMProviderGenerator `json:"scmProvider,omitempty"`
+	Selector *V1LabelSelector `json:"selector,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetNestedGenerator instantiates a new V1alpha1ApplicationSetNestedGenerator object
@@ -399,3 +399,5 @@ func (v *NullableV1alpha1ApplicationSetNestedGenerator) UnmarshalJSON(src []byte
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

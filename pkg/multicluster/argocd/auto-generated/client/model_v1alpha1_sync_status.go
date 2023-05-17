@@ -17,9 +17,9 @@ import (
 // V1alpha1SyncStatus struct for V1alpha1SyncStatus
 type V1alpha1SyncStatus struct {
 	ComparedTo *V1alpha1ComparedTo `json:"comparedTo,omitempty"`
-	Revision   *string             `json:"revision,omitempty"`
-	Revisions  *[]string           `json:"revisions,omitempty"`
-	Status     *string             `json:"status,omitempty"`
+	Revision *string `json:"revision,omitempty"`
+	Revisions *[]string `json:"revisions,omitempty"`
+	Status *string `json:"status,omitempty"`
 }
 
 // NewV1alpha1SyncStatus instantiates a new V1alpha1SyncStatus object
@@ -219,3 +219,5 @@ func (v *NullableV1alpha1SyncStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

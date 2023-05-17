@@ -16,11 +16,11 @@ import (
 
 // V1alpha1ResourceOverride struct for V1alpha1ResourceOverride
 type V1alpha1ResourceOverride struct {
-	Actions           *string                     `json:"actions,omitempty"`
-	HealthLua         *string                     `json:"healthLua,omitempty"`
+	Actions *string `json:"actions,omitempty"`
+	HealthLua *string `json:"healthLua,omitempty"`
 	IgnoreDifferences *V1alpha1OverrideIgnoreDiff `json:"ignoreDifferences,omitempty"`
-	KnownTypeFields   *[]V1alpha1KnownTypeField   `json:"knownTypeFields,omitempty"`
-	UseOpenLibs       *bool                       `json:"useOpenLibs,omitempty"`
+	KnownTypeFields *[]V1alpha1KnownTypeField `json:"knownTypeFields,omitempty"`
+	UseOpenLibs *bool `json:"useOpenLibs,omitempty"`
 }
 
 // NewV1alpha1ResourceOverride instantiates a new V1alpha1ResourceOverride object
@@ -255,3 +255,5 @@ func (v *NullableV1alpha1ResourceOverride) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

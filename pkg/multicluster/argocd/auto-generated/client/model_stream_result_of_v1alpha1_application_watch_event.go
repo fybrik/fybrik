@@ -16,7 +16,7 @@ import (
 
 // StreamResultOfV1alpha1ApplicationWatchEvent struct for StreamResultOfV1alpha1ApplicationWatchEvent
 type StreamResultOfV1alpha1ApplicationWatchEvent struct {
-	Error  *RuntimeStreamError            `json:"error,omitempty"`
+	Error *RuntimeStreamError `json:"error,omitempty"`
 	Result *V1alpha1ApplicationWatchEvent `json:"result,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableStreamResultOfV1alpha1ApplicationWatchEvent) UnmarshalJSON(src 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

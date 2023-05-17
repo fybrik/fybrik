@@ -16,10 +16,10 @@ import (
 
 // V1alpha1HostResourceInfo struct for V1alpha1HostResourceInfo
 type V1alpha1HostResourceInfo struct {
-	Capacity             *string `json:"capacity,omitempty"`
-	RequestedByApp       *string `json:"requestedByApp,omitempty"`
+	Capacity *string `json:"capacity,omitempty"`
+	RequestedByApp *string `json:"requestedByApp,omitempty"`
 	RequestedByNeighbors *string `json:"requestedByNeighbors,omitempty"`
-	ResourceName         *string `json:"resourceName,omitempty"`
+	ResourceName *string `json:"resourceName,omitempty"`
 }
 
 // NewV1alpha1HostResourceInfo instantiates a new V1alpha1HostResourceInfo object
@@ -219,3 +219,5 @@ func (v *NullableV1alpha1HostResourceInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

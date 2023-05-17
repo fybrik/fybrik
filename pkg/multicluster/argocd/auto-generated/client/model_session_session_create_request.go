@@ -17,7 +17,7 @@ import (
 // SessionSessionCreateRequest SessionCreateRequest is for logging in.
 type SessionSessionCreateRequest struct {
 	Password *string `json:"password,omitempty"`
-	Token    *string `json:"token,omitempty"`
+	Token *string `json:"token,omitempty"`
 	Username *string `json:"username,omitempty"`
 }
 
@@ -183,3 +183,5 @@ func (v *NullableSessionSessionCreateRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

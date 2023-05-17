@@ -17,8 +17,8 @@ import (
 // V1alpha1ApplicationSourceJsonnet struct for V1alpha1ApplicationSourceJsonnet
 type V1alpha1ApplicationSourceJsonnet struct {
 	ExtVars *[]V1alpha1JsonnetVar `json:"extVars,omitempty"`
-	Libs    *[]string             `json:"libs,omitempty"`
-	Tlas    *[]V1alpha1JsonnetVar `json:"tlas,omitempty"`
+	Libs *[]string `json:"libs,omitempty"`
+	Tlas *[]V1alpha1JsonnetVar `json:"tlas,omitempty"`
 }
 
 // NewV1alpha1ApplicationSourceJsonnet instantiates a new V1alpha1ApplicationSourceJsonnet object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1ApplicationSourceJsonnet) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

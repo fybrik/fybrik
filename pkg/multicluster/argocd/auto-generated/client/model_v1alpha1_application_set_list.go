@@ -16,8 +16,8 @@ import (
 
 // V1alpha1ApplicationSetList struct for V1alpha1ApplicationSetList
 type V1alpha1ApplicationSetList struct {
-	Items    *[]V1alpha1ApplicationSet `json:"items,omitempty"`
-	Metadata *V1ListMeta               `json:"metadata,omitempty"`
+	Items *[]V1alpha1ApplicationSet `json:"items,omitempty"`
+	Metadata *V1ListMeta `json:"metadata,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetList instantiates a new V1alpha1ApplicationSetList object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ApplicationSetList) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

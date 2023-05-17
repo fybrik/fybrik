@@ -16,18 +16,18 @@ import (
 
 // VersionVersionMessage struct for VersionVersionMessage
 type VersionVersionMessage struct {
-	BuildDate        *string `json:"BuildDate,omitempty"`
-	Compiler         *string `json:"Compiler,omitempty"`
-	GitCommit        *string `json:"GitCommit,omitempty"`
-	GitTag           *string `json:"GitTag,omitempty"`
-	GitTreeState     *string `json:"GitTreeState,omitempty"`
-	GoVersion        *string `json:"GoVersion,omitempty"`
-	HelmVersion      *string `json:"HelmVersion,omitempty"`
-	JsonnetVersion   *string `json:"JsonnetVersion,omitempty"`
-	KubectlVersion   *string `json:"KubectlVersion,omitempty"`
+	BuildDate *string `json:"BuildDate,omitempty"`
+	Compiler *string `json:"Compiler,omitempty"`
+	GitCommit *string `json:"GitCommit,omitempty"`
+	GitTag *string `json:"GitTag,omitempty"`
+	GitTreeState *string `json:"GitTreeState,omitempty"`
+	GoVersion *string `json:"GoVersion,omitempty"`
+	HelmVersion *string `json:"HelmVersion,omitempty"`
+	JsonnetVersion *string `json:"JsonnetVersion,omitempty"`
+	KubectlVersion *string `json:"KubectlVersion,omitempty"`
 	KustomizeVersion *string `json:"KustomizeVersion,omitempty"`
-	Platform         *string `json:"Platform,omitempty"`
-	Version          *string `json:"Version,omitempty"`
+	Platform *string `json:"Platform,omitempty"`
+	Version *string `json:"Version,omitempty"`
 }
 
 // NewVersionVersionMessage instantiates a new VersionVersionMessage object
@@ -507,3 +507,5 @@ func (v *NullableVersionVersionMessage) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

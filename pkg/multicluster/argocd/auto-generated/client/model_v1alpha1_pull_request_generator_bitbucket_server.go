@@ -17,7 +17,7 @@ import (
 // V1alpha1PullRequestGeneratorBitbucketServer PullRequestGenerator defines connection info specific to BitbucketServer.
 type V1alpha1PullRequestGeneratorBitbucketServer struct {
 	// The Bitbucket REST API URL to talk to e.g. https://bitbucket.org/rest Required.
-	Api       *string                           `json:"api,omitempty"`
+	Api *string `json:"api,omitempty"`
 	BasicAuth *V1alpha1BasicAuthBitbucketServer `json:"basicAuth,omitempty"`
 	// Project to scan. Required.
 	Project *string `json:"project,omitempty"`
@@ -222,3 +222,5 @@ func (v *NullableV1alpha1PullRequestGeneratorBitbucketServer) UnmarshalJSON(src 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

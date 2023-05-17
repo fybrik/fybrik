@@ -17,9 +17,9 @@ import (
 // ApplicationApplicationPatchRequest struct for ApplicationApplicationPatchRequest
 type ApplicationApplicationPatchRequest struct {
 	AppNamespace *string `json:"appNamespace,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	Patch        *string `json:"patch,omitempty"`
-	PatchType    *string `json:"patchType,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Patch *string `json:"patch,omitempty"`
+	PatchType *string `json:"patchType,omitempty"`
 }
 
 // NewApplicationApplicationPatchRequest instantiates a new ApplicationApplicationPatchRequest object
@@ -219,3 +219,5 @@ func (v *NullableApplicationApplicationPatchRequest) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

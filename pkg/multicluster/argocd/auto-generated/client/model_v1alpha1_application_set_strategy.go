@@ -17,7 +17,7 @@ import (
 // V1alpha1ApplicationSetStrategy ApplicationSetStrategy configures how generated Applications are updated in sequence.
 type V1alpha1ApplicationSetStrategy struct {
 	RollingSync *V1alpha1ApplicationSetRolloutStrategy `json:"rollingSync,omitempty"`
-	Type        *string                                `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetStrategy instantiates a new V1alpha1ApplicationSetStrategy object
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1ApplicationSetStrategy) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

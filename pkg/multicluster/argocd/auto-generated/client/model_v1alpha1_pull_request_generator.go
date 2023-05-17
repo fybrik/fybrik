@@ -19,12 +19,12 @@ type V1alpha1PullRequestGenerator struct {
 	BitbucketServer *V1alpha1PullRequestGeneratorBitbucketServer `json:"bitbucketServer,omitempty"`
 	// Filters for which pull requests should be considered.
 	Filters *[]V1alpha1PullRequestGeneratorFilter `json:"filters,omitempty"`
-	Gitea   *V1alpha1PullRequestGeneratorGitea    `json:"gitea,omitempty"`
-	Github  *V1alpha1PullRequestGeneratorGithub   `json:"github,omitempty"`
-	Gitlab  *V1alpha1PullRequestGeneratorGitLab   `json:"gitlab,omitempty"`
+	Gitea *V1alpha1PullRequestGeneratorGitea `json:"gitea,omitempty"`
+	Github *V1alpha1PullRequestGeneratorGithub `json:"github,omitempty"`
+	Gitlab *V1alpha1PullRequestGeneratorGitLab `json:"gitlab,omitempty"`
 	// Standard parameters.
-	RequeueAfterSeconds *string                         `json:"requeueAfterSeconds,omitempty"`
-	Template            *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
+	RequeueAfterSeconds *string `json:"requeueAfterSeconds,omitempty"`
+	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1PullRequestGenerator instantiates a new V1alpha1PullRequestGenerator object
@@ -329,3 +329,5 @@ func (v *NullableV1alpha1PullRequestGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

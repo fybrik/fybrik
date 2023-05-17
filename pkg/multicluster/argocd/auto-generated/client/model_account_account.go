@@ -16,10 +16,10 @@ import (
 
 // AccountAccount struct for AccountAccount
 type AccountAccount struct {
-	Capabilities *[]string       `json:"capabilities,omitempty"`
-	Enabled      *bool           `json:"enabled,omitempty"`
-	Name         *string         `json:"name,omitempty"`
-	Tokens       *[]AccountToken `json:"tokens,omitempty"`
+	Capabilities *[]string `json:"capabilities,omitempty"`
+	Enabled *bool `json:"enabled,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Tokens *[]AccountToken `json:"tokens,omitempty"`
 }
 
 // NewAccountAccount instantiates a new AccountAccount object
@@ -219,3 +219,5 @@ func (v *NullableAccountAccount) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

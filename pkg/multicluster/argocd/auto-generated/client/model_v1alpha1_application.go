@@ -16,10 +16,10 @@ import (
 
 // V1alpha1Application struct for V1alpha1Application
 type V1alpha1Application struct {
-	Metadata  *V1ObjectMeta              `json:"metadata,omitempty"`
-	Operation *V1alpha1Operation         `json:"operation,omitempty"`
-	Spec      *V1alpha1ApplicationSpec   `json:"spec,omitempty"`
-	Status    *V1alpha1ApplicationStatus `json:"status,omitempty"`
+	Metadata *V1ObjectMeta `json:"metadata,omitempty"`
+	Operation *V1alpha1Operation `json:"operation,omitempty"`
+	Spec *V1alpha1ApplicationSpec `json:"spec,omitempty"`
+	Status *V1alpha1ApplicationStatus `json:"status,omitempty"`
 }
 
 // NewV1alpha1Application instantiates a new V1alpha1Application object
@@ -219,3 +219,5 @@ func (v *NullableV1alpha1Application) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

@@ -17,7 +17,7 @@ import (
 // GpgkeyGnuPGPublicKeyCreateResponse struct for GpgkeyGnuPGPublicKeyCreateResponse
 type GpgkeyGnuPGPublicKeyCreateResponse struct {
 	Created *V1alpha1GnuPGPublicKeyList `json:"created,omitempty"`
-	Skipped *[]string                   `json:"skipped,omitempty"`
+	Skipped *[]string `json:"skipped,omitempty"`
 }
 
 // NewGpgkeyGnuPGPublicKeyCreateResponse instantiates a new GpgkeyGnuPGPublicKeyCreateResponse object
@@ -147,3 +147,5 @@ func (v *NullableGpgkeyGnuPGPublicKeyCreateResponse) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

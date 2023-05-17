@@ -16,10 +16,10 @@ import (
 
 // V1alpha1ApplicationSourceDirectory struct for V1alpha1ApplicationSourceDirectory
 type V1alpha1ApplicationSourceDirectory struct {
-	Exclude *string                           `json:"exclude,omitempty"`
-	Include *string                           `json:"include,omitempty"`
+	Exclude *string `json:"exclude,omitempty"`
+	Include *string `json:"include,omitempty"`
 	Jsonnet *V1alpha1ApplicationSourceJsonnet `json:"jsonnet,omitempty"`
-	Recurse *bool                             `json:"recurse,omitempty"`
+	Recurse *bool `json:"recurse,omitempty"`
 }
 
 // NewV1alpha1ApplicationSourceDirectory instantiates a new V1alpha1ApplicationSourceDirectory object
@@ -219,3 +219,5 @@ func (v *NullableV1alpha1ApplicationSourceDirectory) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

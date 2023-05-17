@@ -16,7 +16,7 @@ import (
 
 // V1alpha1SecretRef Utility struct for a reference to a secret key.
 type V1alpha1SecretRef struct {
-	Key        *string `json:"key,omitempty"`
+	Key *string `json:"key,omitempty"`
 	SecretName *string `json:"secretName,omitempty"`
 }
 
@@ -147,3 +147,5 @@ func (v *NullableV1alpha1SecretRef) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+

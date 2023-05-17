@@ -18,7 +18,7 @@ import (
 type V1alpha1JWTToken struct {
 	Exp *string `json:"exp,omitempty"`
 	Iat *string `json:"iat,omitempty"`
-	Id  *string `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
 }
 
 // NewV1alpha1JWTToken instantiates a new V1alpha1JWTToken object
@@ -183,3 +183,5 @@ func (v *NullableV1alpha1JWTToken) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+
