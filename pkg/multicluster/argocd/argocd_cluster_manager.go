@@ -49,6 +49,7 @@ const (
 	failedToDeleteBlueprintErrMsg     = "Failed to delete blueprint"
 	applicationsNamespace             = "argocd"
 	clusterMetadataConfigMapName      = "cluster-metadata"
+	fileMode                          = 0600
 )
 
 var (
@@ -423,8 +424,7 @@ func (cm *argocdClusterManager) CreateBlueprint(cluster string, blueprint *app.B
 	cm.log.Info().Msg("fullPath: " + fileName)
 
 	fullFilename := filepath.Join(repoDir+"/"+cm.getBlueprintFilePath()+cluster, fileName)
-	// #nosec // avoid add-constant: avoid magic numbers like '0600', create a named constant for it (revive) error
-	err = os.WriteFile(fullFilename, content, 0600)
+	err = os.WriteFile(fullFilename, content, fileMode)
 
 	if err != nil {
 		return err

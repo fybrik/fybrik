@@ -64,7 +64,7 @@ To do so please execute the command:
 make kind-setup-multi
 ```
 
-Then, run the following commands to deploy Argo CD:
+Then, run the following commands to deploy Argo CD on the coordinator cluster:
 
 ```bash
 kubectl config use-context kind-control
