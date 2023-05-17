@@ -16,9 +16,9 @@ import (
 
 // V1alpha1HostInfo struct for V1alpha1HostInfo
 type V1alpha1HostInfo struct {
-	Name *string `json:"name,omitempty"`
+	Name          *string                     `json:"name,omitempty"`
 	ResourcesInfo *[]V1alpha1HostResourceInfo `json:"resourcesInfo,omitempty"`
-	SystemInfo *V1NodeSystemInfo `json:"systemInfo,omitempty"`
+	SystemInfo    *V1NodeSystemInfo           `json:"systemInfo,omitempty"`
 }
 
 // NewV1alpha1HostInfo instantiates a new V1alpha1HostInfo object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1HostInfo) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

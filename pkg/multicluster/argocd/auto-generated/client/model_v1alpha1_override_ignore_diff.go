@@ -16,8 +16,8 @@ import (
 
 // V1alpha1OverrideIgnoreDiff struct for V1alpha1OverrideIgnoreDiff
 type V1alpha1OverrideIgnoreDiff struct {
-	JSONPointers *[]string `json:"jSONPointers,omitempty"`
-	JqPathExpressions *[]string `json:"jqPathExpressions,omitempty"`
+	JSONPointers          *[]string `json:"jSONPointers,omitempty"`
+	JqPathExpressions     *[]string `json:"jqPathExpressions,omitempty"`
 	ManagedFieldsManagers *[]string `json:"managedFieldsManagers,omitempty"`
 }
 
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1OverrideIgnoreDiff) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

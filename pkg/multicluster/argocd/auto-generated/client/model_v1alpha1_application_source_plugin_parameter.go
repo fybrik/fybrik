@@ -223,5 +223,3 @@ func (v *NullableV1alpha1ApplicationSourcePluginParameter) UnmarshalJSON(src []b
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

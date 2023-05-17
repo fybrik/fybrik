@@ -27,10 +27,9 @@ var (
 type VersionServiceApiService service
 
 type ApiVersionServiceVersionRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *VersionServiceApiService
 }
-
 
 func (r ApiVersionServiceVersionRequest) Execute() (VersionVersionMessage, *_nethttp.Response, error) {
 	return r.ApiService.VersionServiceVersionExecute(r)
@@ -39,24 +38,25 @@ func (r ApiVersionServiceVersionRequest) Execute() (VersionVersionMessage, *_net
 /*
 VersionServiceVersion Version returns version information of the API server
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiVersionServiceVersionRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiVersionServiceVersionRequest
 */
 func (a *VersionServiceApiService) VersionServiceVersion(ctx _context.Context) ApiVersionServiceVersionRequest {
 	return ApiVersionServiceVersionRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return VersionVersionMessage
+//
+//	@return VersionVersionMessage
 func (a *VersionServiceApiService) VersionServiceVersionExecute(r ApiVersionServiceVersionRequest) (VersionVersionMessage, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  VersionVersionMessage
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue VersionVersionMessage
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VersionServiceApiService.VersionServiceVersion")
@@ -109,13 +109,13 @@ func (a *VersionServiceApiService) VersionServiceVersionExecute(r ApiVersionServ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

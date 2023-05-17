@@ -16,10 +16,10 @@ import (
 
 // V1alpha1SyncPolicy struct for V1alpha1SyncPolicy
 type V1alpha1SyncPolicy struct {
-	Automated *V1alpha1SyncPolicyAutomated `json:"automated,omitempty"`
+	Automated                *V1alpha1SyncPolicyAutomated      `json:"automated,omitempty"`
 	ManagedNamespaceMetadata *V1alpha1ManagedNamespaceMetadata `json:"managedNamespaceMetadata,omitempty"`
-	Retry *V1alpha1RetryStrategy `json:"retry,omitempty"`
-	SyncOptions *[]string `json:"syncOptions,omitempty"`
+	Retry                    *V1alpha1RetryStrategy            `json:"retry,omitempty"`
+	SyncOptions              *[]string                         `json:"syncOptions,omitempty"`
 }
 
 // NewV1alpha1SyncPolicy instantiates a new V1alpha1SyncPolicy object
@@ -219,5 +219,3 @@ func (v *NullableV1alpha1SyncPolicy) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

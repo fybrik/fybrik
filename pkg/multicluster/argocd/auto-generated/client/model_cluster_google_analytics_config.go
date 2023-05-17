@@ -16,8 +16,8 @@ import (
 
 // ClusterGoogleAnalyticsConfig struct for ClusterGoogleAnalyticsConfig
 type ClusterGoogleAnalyticsConfig struct {
-	AnonymizeUsers *bool `json:"anonymizeUsers,omitempty"`
-	TrackingID *string `json:"trackingID,omitempty"`
+	AnonymizeUsers *bool   `json:"anonymizeUsers,omitempty"`
+	TrackingID     *string `json:"trackingID,omitempty"`
 }
 
 // NewClusterGoogleAnalyticsConfig instantiates a new ClusterGoogleAnalyticsConfig object
@@ -147,5 +147,3 @@ func (v *NullableClusterGoogleAnalyticsConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

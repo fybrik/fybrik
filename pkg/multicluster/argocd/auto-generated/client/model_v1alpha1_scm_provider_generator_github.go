@@ -23,8 +23,8 @@ type V1alpha1SCMProviderGeneratorGithub struct {
 	// AppSecretName is a reference to a GitHub App repo-creds secret.
 	AppSecretName *string `json:"appSecretName,omitempty"`
 	// GitHub org to scan. Required.
-	Organization *string `json:"organization,omitempty"`
-	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
+	Organization *string            `json:"organization,omitempty"`
+	TokenRef     *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
 // NewV1alpha1SCMProviderGeneratorGithub instantiates a new V1alpha1SCMProviderGeneratorGithub object
@@ -259,5 +259,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorGithub) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

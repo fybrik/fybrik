@@ -16,10 +16,10 @@ import (
 
 // SessionGetUserInfoResponse struct for SessionGetUserInfoResponse
 type SessionGetUserInfoResponse struct {
-	Groups *[]string `json:"groups,omitempty"`
-	Iss *string `json:"iss,omitempty"`
-	LoggedIn *bool `json:"loggedIn,omitempty"`
-	Username *string `json:"username,omitempty"`
+	Groups   *[]string `json:"groups,omitempty"`
+	Iss      *string   `json:"iss,omitempty"`
+	LoggedIn *bool     `json:"loggedIn,omitempty"`
+	Username *string   `json:"username,omitempty"`
 }
 
 // NewSessionGetUserInfoResponse instantiates a new SessionGetUserInfoResponse object
@@ -219,5 +219,3 @@ func (v *NullableSessionGetUserInfoResponse) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

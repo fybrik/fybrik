@@ -16,10 +16,10 @@ import (
 
 // ProjectDetailedProjectsResponse struct for ProjectDetailedProjectsResponse
 type ProjectDetailedProjectsResponse struct {
-	Clusters *[]V1alpha1Cluster `json:"clusters,omitempty"`
+	Clusters       *[]V1alpha1Cluster    `json:"clusters,omitempty"`
 	GlobalProjects *[]V1alpha1AppProject `json:"globalProjects,omitempty"`
-	Project *V1alpha1AppProject `json:"project,omitempty"`
-	Repositories *[]V1alpha1Repository `json:"repositories,omitempty"`
+	Project        *V1alpha1AppProject   `json:"project,omitempty"`
+	Repositories   *[]V1alpha1Repository `json:"repositories,omitempty"`
 }
 
 // NewProjectDetailedProjectsResponse instantiates a new ProjectDetailedProjectsResponse object
@@ -219,5 +219,3 @@ func (v *NullableProjectDetailedProjectsResponse) UnmarshalJSON(src []byte) erro
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

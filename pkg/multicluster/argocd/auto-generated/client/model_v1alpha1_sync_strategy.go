@@ -17,7 +17,7 @@ import (
 // V1alpha1SyncStrategy struct for V1alpha1SyncStrategy
 type V1alpha1SyncStrategy struct {
 	Apply *V1alpha1SyncStrategyApply `json:"apply,omitempty"`
-	Hook *V1alpha1SyncStrategyHook `json:"hook,omitempty"`
+	Hook  *V1alpha1SyncStrategyHook  `json:"hook,omitempty"`
 }
 
 // NewV1alpha1SyncStrategy instantiates a new V1alpha1SyncStrategy object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1SyncStrategy) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

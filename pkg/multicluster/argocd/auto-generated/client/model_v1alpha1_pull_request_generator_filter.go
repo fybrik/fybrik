@@ -111,5 +111,3 @@ func (v *NullableV1alpha1PullRequestGeneratorFilter) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

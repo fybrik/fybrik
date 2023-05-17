@@ -17,8 +17,8 @@ import (
 // AccountToken struct for AccountToken
 type AccountToken struct {
 	ExpiresAt *string `json:"expiresAt,omitempty"`
-	Id *string `json:"id,omitempty"`
-	IssuedAt *string `json:"issuedAt,omitempty"`
+	Id        *string `json:"id,omitempty"`
+	IssuedAt  *string `json:"issuedAt,omitempty"`
 }
 
 // NewAccountToken instantiates a new AccountToken object
@@ -183,5 +183,3 @@ func (v *NullableAccountToken) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

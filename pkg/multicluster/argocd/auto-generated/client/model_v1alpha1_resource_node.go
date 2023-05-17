@@ -16,14 +16,14 @@ import (
 
 // V1alpha1ResourceNode struct for V1alpha1ResourceNode
 type V1alpha1ResourceNode struct {
-	CreatedAt *string `json:"createdAt,omitempty"`
-	Health *V1alpha1HealthStatus `json:"health,omitempty"`
-	Images *[]string `json:"images,omitempty"`
-	Info *[]V1alpha1InfoItem `json:"info,omitempty"`
-	NetworkingInfo *V1alpha1ResourceNetworkingInfo `json:"networkingInfo,omitempty"`
-	ParentRefs *[]V1alpha1ResourceRef `json:"parentRefs,omitempty"`
-	ResourceRef *V1alpha1ResourceRef `json:"resourceRef,omitempty"`
-	ResourceVersion *string `json:"resourceVersion,omitempty"`
+	CreatedAt       *string                         `json:"createdAt,omitempty"`
+	Health          *V1alpha1HealthStatus           `json:"health,omitempty"`
+	Images          *[]string                       `json:"images,omitempty"`
+	Info            *[]V1alpha1InfoItem             `json:"info,omitempty"`
+	NetworkingInfo  *V1alpha1ResourceNetworkingInfo `json:"networkingInfo,omitempty"`
+	ParentRefs      *[]V1alpha1ResourceRef          `json:"parentRefs,omitempty"`
+	ResourceRef     *V1alpha1ResourceRef            `json:"resourceRef,omitempty"`
+	ResourceVersion *string                         `json:"resourceVersion,omitempty"`
 }
 
 // NewV1alpha1ResourceNode instantiates a new V1alpha1ResourceNode object
@@ -363,5 +363,3 @@ func (v *NullableV1alpha1ResourceNode) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

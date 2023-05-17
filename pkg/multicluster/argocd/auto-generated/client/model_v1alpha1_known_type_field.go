@@ -17,7 +17,7 @@ import (
 // V1alpha1KnownTypeField struct for V1alpha1KnownTypeField
 type V1alpha1KnownTypeField struct {
 	Field *string `json:"field,omitempty"`
-	Type *string `json:"type,omitempty"`
+	Type  *string `json:"type,omitempty"`
 }
 
 // NewV1alpha1KnownTypeField instantiates a new V1alpha1KnownTypeField object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1KnownTypeField) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

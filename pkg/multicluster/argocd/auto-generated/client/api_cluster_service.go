@@ -16,8 +16,8 @@ import (
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 // Linger please
@@ -29,10 +29,10 @@ var (
 type ClusterServiceApiService service
 
 type ApiClusterServiceCreateRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	body *V1alpha1Cluster
-	upsert *bool
+	body       *V1alpha1Cluster
+	upsert     *bool
 }
 
 func (r ApiClusterServiceCreateRequest) Body(body V1alpha1Cluster) ApiClusterServiceCreateRequest {
@@ -51,24 +51,25 @@ func (r ApiClusterServiceCreateRequest) Execute() (V1alpha1Cluster, *_nethttp.Re
 /*
 ClusterServiceCreate Create creates a cluster
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiClusterServiceCreateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiClusterServiceCreateRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceCreate(ctx _context.Context) ApiClusterServiceCreateRequest {
 	return ApiClusterServiceCreateRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Cluster
+//
+//	@return V1alpha1Cluster
 func (a *ClusterServiceApiService) ClusterServiceCreateExecute(r ApiClusterServiceCreateRequest) (V1alpha1Cluster, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Cluster
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceCreate")
@@ -129,13 +130,13 @@ func (a *ClusterServiceApiService) ClusterServiceCreateExecute(r ApiClusterServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -152,12 +153,12 @@ func (a *ClusterServiceApiService) ClusterServiceCreateExecute(r ApiClusterServi
 }
 
 type ApiClusterServiceDeleteRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	idValue string
-	server *string
-	name *string
-	idType *string
+	idValue    string
+	server     *string
+	name       *string
+	idType     *string
 }
 
 func (r ApiClusterServiceDeleteRequest) Server(server string) ApiClusterServiceDeleteRequest {
@@ -168,6 +169,7 @@ func (r ApiClusterServiceDeleteRequest) Name(name string) ApiClusterServiceDelet
 	r.name = &name
 	return r
 }
+
 // type is the type of the specified cluster identifier ( \&quot;server\&quot; - default, \&quot;name\&quot; ).
 func (r ApiClusterServiceDeleteRequest) IdType(idType string) ApiClusterServiceDeleteRequest {
 	r.idType = &idType
@@ -181,26 +183,27 @@ func (r ApiClusterServiceDeleteRequest) Execute() (map[string]interface{}, *_net
 /*
 ClusterServiceDelete Delete deletes a cluster
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param idValue value holds the cluster server URL or cluster name
- @return ApiClusterServiceDeleteRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param idValue value holds the cluster server URL or cluster name
+	@return ApiClusterServiceDeleteRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceDelete(ctx _context.Context, idValue string) ApiClusterServiceDeleteRequest {
 	return ApiClusterServiceDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		idValue: idValue,
+		ctx:        ctx,
+		idValue:    idValue,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ClusterServiceApiService) ClusterServiceDeleteExecute(r ApiClusterServiceDeleteRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceDelete")
@@ -263,13 +266,13 @@ func (a *ClusterServiceApiService) ClusterServiceDeleteExecute(r ApiClusterServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -286,12 +289,12 @@ func (a *ClusterServiceApiService) ClusterServiceDeleteExecute(r ApiClusterServi
 }
 
 type ApiClusterServiceGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	idValue string
-	server *string
-	name *string
-	idType *string
+	idValue    string
+	server     *string
+	name       *string
+	idType     *string
 }
 
 func (r ApiClusterServiceGetRequest) Server(server string) ApiClusterServiceGetRequest {
@@ -302,6 +305,7 @@ func (r ApiClusterServiceGetRequest) Name(name string) ApiClusterServiceGetReque
 	r.name = &name
 	return r
 }
+
 // type is the type of the specified cluster identifier ( \&quot;server\&quot; - default, \&quot;name\&quot; ).
 func (r ApiClusterServiceGetRequest) IdType(idType string) ApiClusterServiceGetRequest {
 	r.idType = &idType
@@ -315,26 +319,27 @@ func (r ApiClusterServiceGetRequest) Execute() (V1alpha1Cluster, *_nethttp.Respo
 /*
 ClusterServiceGet Get returns a cluster by server address
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param idValue value holds the cluster server URL or cluster name
- @return ApiClusterServiceGetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param idValue value holds the cluster server URL or cluster name
+	@return ApiClusterServiceGetRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceGet(ctx _context.Context, idValue string) ApiClusterServiceGetRequest {
 	return ApiClusterServiceGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		idValue: idValue,
+		ctx:        ctx,
+		idValue:    idValue,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Cluster
+//
+//	@return V1alpha1Cluster
 func (a *ClusterServiceApiService) ClusterServiceGetExecute(r ApiClusterServiceGetRequest) (V1alpha1Cluster, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Cluster
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceGet")
@@ -397,13 +402,13 @@ func (a *ClusterServiceApiService) ClusterServiceGetExecute(r ApiClusterServiceG
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -420,11 +425,10 @@ func (a *ClusterServiceApiService) ClusterServiceGetExecute(r ApiClusterServiceG
 }
 
 type ApiClusterServiceInvalidateCacheRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	idValue string
+	idValue    string
 }
-
 
 func (r ApiClusterServiceInvalidateCacheRequest) Execute() (V1alpha1Cluster, *_nethttp.Response, error) {
 	return r.ApiService.ClusterServiceInvalidateCacheExecute(r)
@@ -433,26 +437,27 @@ func (r ApiClusterServiceInvalidateCacheRequest) Execute() (V1alpha1Cluster, *_n
 /*
 ClusterServiceInvalidateCache InvalidateCache invalidates cluster cache
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param idValue value holds the cluster server URL or cluster name
- @return ApiClusterServiceInvalidateCacheRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param idValue value holds the cluster server URL or cluster name
+	@return ApiClusterServiceInvalidateCacheRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceInvalidateCache(ctx _context.Context, idValue string) ApiClusterServiceInvalidateCacheRequest {
 	return ApiClusterServiceInvalidateCacheRequest{
 		ApiService: a,
-		ctx: ctx,
-		idValue: idValue,
+		ctx:        ctx,
+		idValue:    idValue,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Cluster
+//
+//	@return V1alpha1Cluster
 func (a *ClusterServiceApiService) ClusterServiceInvalidateCacheExecute(r ApiClusterServiceInvalidateCacheRequest) (V1alpha1Cluster, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Cluster
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceInvalidateCache")
@@ -506,13 +511,13 @@ func (a *ClusterServiceApiService) ClusterServiceInvalidateCacheExecute(r ApiClu
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -529,12 +534,12 @@ func (a *ClusterServiceApiService) ClusterServiceInvalidateCacheExecute(r ApiClu
 }
 
 type ApiClusterServiceListRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	server *string
-	name *string
-	idType *string
-	idValue *string
+	server     *string
+	name       *string
+	idType     *string
+	idValue    *string
 }
 
 func (r ApiClusterServiceListRequest) Server(server string) ApiClusterServiceListRequest {
@@ -545,11 +550,13 @@ func (r ApiClusterServiceListRequest) Name(name string) ApiClusterServiceListReq
 	r.name = &name
 	return r
 }
+
 // type is the type of the specified cluster identifier ( \&quot;server\&quot; - default, \&quot;name\&quot; ).
 func (r ApiClusterServiceListRequest) IdType(idType string) ApiClusterServiceListRequest {
 	r.idType = &idType
 	return r
 }
+
 // value holds the cluster server URL or cluster name.
 func (r ApiClusterServiceListRequest) IdValue(idValue string) ApiClusterServiceListRequest {
 	r.idValue = &idValue
@@ -563,24 +570,25 @@ func (r ApiClusterServiceListRequest) Execute() (V1alpha1ClusterList, *_nethttp.
 /*
 ClusterServiceList List returns list of clusters
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiClusterServiceListRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiClusterServiceListRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceList(ctx _context.Context) ApiClusterServiceListRequest {
 	return ApiClusterServiceListRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ClusterList
+//
+//	@return V1alpha1ClusterList
 func (a *ClusterServiceApiService) ClusterServiceListExecute(r ApiClusterServiceListRequest) (V1alpha1ClusterList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ClusterList
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ClusterList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceList")
@@ -645,13 +653,13 @@ func (a *ClusterServiceApiService) ClusterServiceListExecute(r ApiClusterService
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -668,11 +676,10 @@ func (a *ClusterServiceApiService) ClusterServiceListExecute(r ApiClusterService
 }
 
 type ApiClusterServiceRotateAuthRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ClusterServiceApiService
-	idValue string
+	idValue    string
 }
-
 
 func (r ApiClusterServiceRotateAuthRequest) Execute() (map[string]interface{}, *_nethttp.Response, error) {
 	return r.ApiService.ClusterServiceRotateAuthExecute(r)
@@ -681,26 +688,27 @@ func (r ApiClusterServiceRotateAuthRequest) Execute() (map[string]interface{}, *
 /*
 ClusterServiceRotateAuth RotateAuth rotates the bearer token used for a cluster
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param idValue value holds the cluster server URL or cluster name
- @return ApiClusterServiceRotateAuthRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param idValue value holds the cluster server URL or cluster name
+	@return ApiClusterServiceRotateAuthRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceRotateAuth(ctx _context.Context, idValue string) ApiClusterServiceRotateAuthRequest {
 	return ApiClusterServiceRotateAuthRequest{
 		ApiService: a,
-		ctx: ctx,
-		idValue: idValue,
+		ctx:        ctx,
+		idValue:    idValue,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ClusterServiceApiService) ClusterServiceRotateAuthExecute(r ApiClusterServiceRotateAuthRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceRotateAuth")
@@ -754,13 +762,13 @@ func (a *ClusterServiceApiService) ClusterServiceRotateAuthExecute(r ApiClusterS
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -777,12 +785,12 @@ func (a *ClusterServiceApiService) ClusterServiceRotateAuthExecute(r ApiClusterS
 }
 
 type ApiClusterServiceUpdateRequest struct {
-	ctx _context.Context
-	ApiService *ClusterServiceApiService
-	idValue string
-	body *V1alpha1Cluster
+	ctx           _context.Context
+	ApiService    *ClusterServiceApiService
+	idValue       string
+	body          *V1alpha1Cluster
 	updatedFields *[]string
-	idType *string
+	idType        *string
 }
 
 func (r ApiClusterServiceUpdateRequest) Body(body V1alpha1Cluster) ApiClusterServiceUpdateRequest {
@@ -793,6 +801,7 @@ func (r ApiClusterServiceUpdateRequest) UpdatedFields(updatedFields []string) Ap
 	r.updatedFields = &updatedFields
 	return r
 }
+
 // type is the type of the specified cluster identifier ( \&quot;server\&quot; - default, \&quot;name\&quot; ).
 func (r ApiClusterServiceUpdateRequest) IdType(idType string) ApiClusterServiceUpdateRequest {
 	r.idType = &idType
@@ -806,26 +815,27 @@ func (r ApiClusterServiceUpdateRequest) Execute() (V1alpha1Cluster, *_nethttp.Re
 /*
 ClusterServiceUpdate Update updates a cluster
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param idValue value holds the cluster server URL or cluster name
- @return ApiClusterServiceUpdateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param idValue value holds the cluster server URL or cluster name
+	@return ApiClusterServiceUpdateRequest
 */
 func (a *ClusterServiceApiService) ClusterServiceUpdate(ctx _context.Context, idValue string) ApiClusterServiceUpdateRequest {
 	return ApiClusterServiceUpdateRequest{
 		ApiService: a,
-		ctx: ctx,
-		idValue: idValue,
+		ctx:        ctx,
+		idValue:    idValue,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Cluster
+//
+//	@return V1alpha1Cluster
 func (a *ClusterServiceApiService) ClusterServiceUpdateExecute(r ApiClusterServiceUpdateRequest) (V1alpha1Cluster, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Cluster
+		localVarHTTPMethod  = _nethttp.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Cluster
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClusterServiceApiService.ClusterServiceUpdate")
@@ -898,13 +908,13 @@ func (a *ClusterServiceApiService) ClusterServiceUpdateExecute(r ApiClusterServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

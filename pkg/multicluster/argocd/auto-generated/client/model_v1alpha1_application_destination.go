@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ApplicationDestination struct for V1alpha1ApplicationDestination
 type V1alpha1ApplicationDestination struct {
-	Name *string `json:"name,omitempty"`
+	Name      *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
-	Server *string `json:"server,omitempty"`
+	Server    *string `json:"server,omitempty"`
 }
 
 // NewV1alpha1ApplicationDestination instantiates a new V1alpha1ApplicationDestination object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1ApplicationDestination) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

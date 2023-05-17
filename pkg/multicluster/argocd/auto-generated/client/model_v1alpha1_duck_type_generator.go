@@ -16,12 +16,12 @@ import (
 
 // V1alpha1DuckTypeGenerator DuckType defines a generator to match against clusters registered with ArgoCD.
 type V1alpha1DuckTypeGenerator struct {
-	ConfigMapRef *string `json:"configMapRef,omitempty"`
-	LabelSelector *V1LabelSelector `json:"labelSelector,omitempty"`
-	Name *string `json:"name,omitempty"`
-	RequeueAfterSeconds *string `json:"requeueAfterSeconds,omitempty"`
-	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
-	Values *map[string]string `json:"values,omitempty"`
+	ConfigMapRef        *string                         `json:"configMapRef,omitempty"`
+	LabelSelector       *V1LabelSelector                `json:"labelSelector,omitempty"`
+	Name                *string                         `json:"name,omitempty"`
+	RequeueAfterSeconds *string                         `json:"requeueAfterSeconds,omitempty"`
+	Template            *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
+	Values              *map[string]string              `json:"values,omitempty"`
 }
 
 // NewV1alpha1DuckTypeGenerator instantiates a new V1alpha1DuckTypeGenerator object
@@ -291,5 +291,3 @@ func (v *NullableV1alpha1DuckTypeGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -16,7 +16,7 @@ import (
 
 // V1EventSeries EventSeries contain information on series of events, i.e. thing that was/is happening continuously for some time.
 type V1EventSeries struct {
-	Count *int32 `json:"count,omitempty"`
+	Count            *int32       `json:"count,omitempty"`
 	LastObservedTime *V1MicroTime `json:"lastObservedTime,omitempty"`
 }
 
@@ -147,5 +147,3 @@ func (v *NullableV1EventSeries) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

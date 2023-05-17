@@ -17,8 +17,8 @@ import (
 // V1alpha1OperationInitiator struct for V1alpha1OperationInitiator
 type V1alpha1OperationInitiator struct {
 	// Automated is set to true if operation was initiated automatically by the application controller.
-	Automated *bool `json:"automated,omitempty"`
-	Username *string `json:"username,omitempty"`
+	Automated *bool   `json:"automated,omitempty"`
+	Username  *string `json:"username,omitempty"`
 }
 
 // NewV1alpha1OperationInitiator instantiates a new V1alpha1OperationInitiator object
@@ -148,5 +148,3 @@ func (v *NullableV1alpha1OperationInitiator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

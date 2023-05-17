@@ -28,13 +28,12 @@ var (
 type AccountServiceApiService service
 
 type ApiAccountServiceCanIRequest struct {
-	ctx _context.Context
-	ApiService *AccountServiceApiService
-	resource string
-	action string
+	ctx         _context.Context
+	ApiService  *AccountServiceApiService
+	resource    string
+	action      string
 	subresource string
 }
-
 
 func (r ApiAccountServiceCanIRequest) Execute() (AccountCanIResponse, *_nethttp.Response, error) {
 	return r.ApiService.AccountServiceCanIExecute(r)
@@ -43,30 +42,31 @@ func (r ApiAccountServiceCanIRequest) Execute() (AccountCanIResponse, *_nethttp.
 /*
 AccountServiceCanI CanI checks if the current account has permission to perform an action
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param resource
- @param action
- @param subresource
- @return ApiAccountServiceCanIRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param resource
+	@param action
+	@param subresource
+	@return ApiAccountServiceCanIRequest
 */
 func (a *AccountServiceApiService) AccountServiceCanI(ctx _context.Context, resource string, action string, subresource string) ApiAccountServiceCanIRequest {
 	return ApiAccountServiceCanIRequest{
-		ApiService: a,
-		ctx: ctx,
-		resource: resource,
-		action: action,
+		ApiService:  a,
+		ctx:         ctx,
+		resource:    resource,
+		action:      action,
 		subresource: subresource,
 	}
 }
 
 // Execute executes the request
-//  @return AccountCanIResponse
+//
+//	@return AccountCanIResponse
 func (a *AccountServiceApiService) AccountServiceCanIExecute(r ApiAccountServiceCanIRequest) (AccountCanIResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  AccountCanIResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue AccountCanIResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceCanI")
@@ -122,13 +122,13 @@ func (a *AccountServiceApiService) AccountServiceCanIExecute(r ApiAccountService
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -145,10 +145,10 @@ func (a *AccountServiceApiService) AccountServiceCanIExecute(r ApiAccountService
 }
 
 type ApiAccountServiceCreateTokenRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *AccountServiceApiService
-	name string
-	body *AccountCreateTokenRequest
+	name       string
+	body       *AccountCreateTokenRequest
 }
 
 func (r ApiAccountServiceCreateTokenRequest) Body(body AccountCreateTokenRequest) ApiAccountServiceCreateTokenRequest {
@@ -163,26 +163,27 @@ func (r ApiAccountServiceCreateTokenRequest) Execute() (AccountCreateTokenRespon
 /*
 AccountServiceCreateToken CreateToken creates a token
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiAccountServiceCreateTokenRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiAccountServiceCreateTokenRequest
 */
 func (a *AccountServiceApiService) AccountServiceCreateToken(ctx _context.Context, name string) ApiAccountServiceCreateTokenRequest {
 	return ApiAccountServiceCreateTokenRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return AccountCreateTokenResponse
+//
+//	@return AccountCreateTokenResponse
 func (a *AccountServiceApiService) AccountServiceCreateTokenExecute(r ApiAccountServiceCreateTokenRequest) (AccountCreateTokenResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  AccountCreateTokenResponse
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue AccountCreateTokenResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceCreateToken")
@@ -241,13 +242,13 @@ func (a *AccountServiceApiService) AccountServiceCreateTokenExecute(r ApiAccount
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -264,12 +265,11 @@ func (a *AccountServiceApiService) AccountServiceCreateTokenExecute(r ApiAccount
 }
 
 type ApiAccountServiceDeleteTokenRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *AccountServiceApiService
-	name string
-	id string
+	name       string
+	id         string
 }
-
 
 func (r ApiAccountServiceDeleteTokenRequest) Execute() (map[string]interface{}, *_nethttp.Response, error) {
 	return r.ApiService.AccountServiceDeleteTokenExecute(r)
@@ -278,28 +278,29 @@ func (r ApiAccountServiceDeleteTokenRequest) Execute() (map[string]interface{}, 
 /*
 AccountServiceDeleteToken DeleteToken deletes a token
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @param id
- @return ApiAccountServiceDeleteTokenRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@param id
+	@return ApiAccountServiceDeleteTokenRequest
 */
 func (a *AccountServiceApiService) AccountServiceDeleteToken(ctx _context.Context, name string, id string) ApiAccountServiceDeleteTokenRequest {
 	return ApiAccountServiceDeleteTokenRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
-		id: id,
+		ctx:        ctx,
+		name:       name,
+		id:         id,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *AccountServiceApiService) AccountServiceDeleteTokenExecute(r ApiAccountServiceDeleteTokenRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceDeleteToken")
@@ -354,13 +355,13 @@ func (a *AccountServiceApiService) AccountServiceDeleteTokenExecute(r ApiAccount
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -377,11 +378,10 @@ func (a *AccountServiceApiService) AccountServiceDeleteTokenExecute(r ApiAccount
 }
 
 type ApiAccountServiceGetAccountRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *AccountServiceApiService
-	name string
+	name       string
 }
-
 
 func (r ApiAccountServiceGetAccountRequest) Execute() (AccountAccount, *_nethttp.Response, error) {
 	return r.ApiService.AccountServiceGetAccountExecute(r)
@@ -390,26 +390,27 @@ func (r ApiAccountServiceGetAccountRequest) Execute() (AccountAccount, *_nethttp
 /*
 AccountServiceGetAccount GetAccount returns an account
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiAccountServiceGetAccountRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiAccountServiceGetAccountRequest
 */
 func (a *AccountServiceApiService) AccountServiceGetAccount(ctx _context.Context, name string) ApiAccountServiceGetAccountRequest {
 	return ApiAccountServiceGetAccountRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return AccountAccount
+//
+//	@return AccountAccount
 func (a *AccountServiceApiService) AccountServiceGetAccountExecute(r ApiAccountServiceGetAccountRequest) (AccountAccount, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  AccountAccount
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue AccountAccount
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceGetAccount")
@@ -463,13 +464,13 @@ func (a *AccountServiceApiService) AccountServiceGetAccountExecute(r ApiAccountS
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -486,10 +487,9 @@ func (a *AccountServiceApiService) AccountServiceGetAccountExecute(r ApiAccountS
 }
 
 type ApiAccountServiceListAccountsRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *AccountServiceApiService
 }
-
 
 func (r ApiAccountServiceListAccountsRequest) Execute() (AccountAccountsList, *_nethttp.Response, error) {
 	return r.ApiService.AccountServiceListAccountsExecute(r)
@@ -498,24 +498,25 @@ func (r ApiAccountServiceListAccountsRequest) Execute() (AccountAccountsList, *_
 /*
 AccountServiceListAccounts ListAccounts returns the list of accounts
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiAccountServiceListAccountsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiAccountServiceListAccountsRequest
 */
 func (a *AccountServiceApiService) AccountServiceListAccounts(ctx _context.Context) ApiAccountServiceListAccountsRequest {
 	return ApiAccountServiceListAccountsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return AccountAccountsList
+//
+//	@return AccountAccountsList
 func (a *AccountServiceApiService) AccountServiceListAccountsExecute(r ApiAccountServiceListAccountsRequest) (AccountAccountsList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  AccountAccountsList
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue AccountAccountsList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceListAccounts")
@@ -568,13 +569,13 @@ func (a *AccountServiceApiService) AccountServiceListAccountsExecute(r ApiAccoun
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -591,9 +592,9 @@ func (a *AccountServiceApiService) AccountServiceListAccountsExecute(r ApiAccoun
 }
 
 type ApiAccountServiceUpdatePasswordRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *AccountServiceApiService
-	body *AccountUpdatePasswordRequest
+	body       *AccountUpdatePasswordRequest
 }
 
 func (r ApiAccountServiceUpdatePasswordRequest) Body(body AccountUpdatePasswordRequest) ApiAccountServiceUpdatePasswordRequest {
@@ -608,24 +609,25 @@ func (r ApiAccountServiceUpdatePasswordRequest) Execute() (map[string]interface{
 /*
 AccountServiceUpdatePassword UpdatePassword updates an account's password to a new value
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiAccountServiceUpdatePasswordRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiAccountServiceUpdatePasswordRequest
 */
 func (a *AccountServiceApiService) AccountServiceUpdatePassword(ctx _context.Context) ApiAccountServiceUpdatePasswordRequest {
 	return ApiAccountServiceUpdatePasswordRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *AccountServiceApiService) AccountServiceUpdatePasswordExecute(r ApiAccountServiceUpdatePasswordRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "AccountServiceApiService.AccountServiceUpdatePassword")
@@ -683,13 +685,13 @@ func (a *AccountServiceApiService) AccountServiceUpdatePasswordExecute(r ApiAcco
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

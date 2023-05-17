@@ -18,11 +18,11 @@ import (
 type V1alpha1OperationState struct {
 	FinishedAt *string `json:"finishedAt,omitempty"`
 	// Message holds any pertinent messages when attempting to perform operation (typically errors).
-	Message *string `json:"message,omitempty"`
-	Operation *V1alpha1Operation `json:"operation,omitempty"`
-	Phase *string `json:"phase,omitempty"`
-	RetryCount *string `json:"retryCount,omitempty"`
-	StartedAt *string `json:"startedAt,omitempty"`
+	Message    *string                      `json:"message,omitempty"`
+	Operation  *V1alpha1Operation           `json:"operation,omitempty"`
+	Phase      *string                      `json:"phase,omitempty"`
+	RetryCount *string                      `json:"retryCount,omitempty"`
+	StartedAt  *string                      `json:"startedAt,omitempty"`
 	SyncResult *V1alpha1SyncOperationResult `json:"syncResult,omitempty"`
 }
 
@@ -328,5 +328,3 @@ func (v *NullableV1alpha1OperationState) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

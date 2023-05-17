@@ -16,11 +16,11 @@ import (
 
 // V1alpha1RepositoryCertificate struct for V1alpha1RepositoryCertificate
 type V1alpha1RepositoryCertificate struct {
-	CertData *string `json:"certData,omitempty"`
-	CertInfo *string `json:"certInfo,omitempty"`
+	CertData    *string `json:"certData,omitempty"`
+	CertInfo    *string `json:"certInfo,omitempty"`
 	CertSubType *string `json:"certSubType,omitempty"`
-	CertType *string `json:"certType,omitempty"`
-	ServerName *string `json:"serverName,omitempty"`
+	CertType    *string `json:"certType,omitempty"`
+	ServerName  *string `json:"serverName,omitempty"`
 }
 
 // NewV1alpha1RepositoryCertificate instantiates a new V1alpha1RepositoryCertificate object
@@ -255,5 +255,3 @@ func (v *NullableV1alpha1RepositoryCertificate) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

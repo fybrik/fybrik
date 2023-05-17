@@ -16,10 +16,10 @@ import (
 
 // ApplicationLogEntry struct for ApplicationLogEntry
 type ApplicationLogEntry struct {
-	Content *string `json:"content,omitempty"`
-	Last *bool `json:"last,omitempty"`
-	PodName *string `json:"podName,omitempty"`
-	TimeStamp *string `json:"timeStamp,omitempty"`
+	Content      *string `json:"content,omitempty"`
+	Last         *bool   `json:"last,omitempty"`
+	PodName      *string `json:"podName,omitempty"`
+	TimeStamp    *string `json:"timeStamp,omitempty"`
 	TimeStampStr *string `json:"timeStampStr,omitempty"`
 }
 
@@ -255,5 +255,3 @@ func (v *NullableApplicationLogEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

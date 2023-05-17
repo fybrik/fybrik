@@ -16,9 +16,9 @@ import (
 
 // V1alpha1SyncOperationResource SyncOperationResource contains resources to sync.
 type V1alpha1SyncOperationResource struct {
-	Group *string `json:"group,omitempty"`
-	Kind *string `json:"kind,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Group     *string `json:"group,omitempty"`
+	Kind      *string `json:"kind,omitempty"`
+	Name      *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
 }
 
@@ -219,5 +219,3 @@ func (v *NullableV1alpha1SyncOperationResource) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -16,13 +16,13 @@ import (
 
 // V1alpha1ResourceIgnoreDifferences ResourceIgnoreDifferences contains resource filter and list of json paths which should be ignored during comparison with live state.
 type V1alpha1ResourceIgnoreDifferences struct {
-	Group *string `json:"group,omitempty"`
-	JqPathExpressions *[]string `json:"jqPathExpressions,omitempty"`
-	JsonPointers *[]string `json:"jsonPointers,omitempty"`
-	Kind *string `json:"kind,omitempty"`
+	Group                 *string   `json:"group,omitempty"`
+	JqPathExpressions     *[]string `json:"jqPathExpressions,omitempty"`
+	JsonPointers          *[]string `json:"jsonPointers,omitempty"`
+	Kind                  *string   `json:"kind,omitempty"`
 	ManagedFieldsManagers *[]string `json:"managedFieldsManagers,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
+	Name                  *string   `json:"name,omitempty"`
+	Namespace             *string   `json:"namespace,omitempty"`
 }
 
 // NewV1alpha1ResourceIgnoreDifferences instantiates a new V1alpha1ResourceIgnoreDifferences object
@@ -327,5 +327,3 @@ func (v *NullableV1alpha1ResourceIgnoreDifferences) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

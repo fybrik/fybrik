@@ -16,11 +16,11 @@ import (
 
 // V1alpha1ExecProviderConfig struct for V1alpha1ExecProviderConfig
 type V1alpha1ExecProviderConfig struct {
-	ApiVersion *string `json:"apiVersion,omitempty"`
-	Args *[]string `json:"args,omitempty"`
-	Command *string `json:"command,omitempty"`
-	Env *map[string]string `json:"env,omitempty"`
-	InstallHint *string `json:"installHint,omitempty"`
+	ApiVersion  *string            `json:"apiVersion,omitempty"`
+	Args        *[]string          `json:"args,omitempty"`
+	Command     *string            `json:"command,omitempty"`
+	Env         *map[string]string `json:"env,omitempty"`
+	InstallHint *string            `json:"installHint,omitempty"`
 }
 
 // NewV1alpha1ExecProviderConfig instantiates a new V1alpha1ExecProviderConfig object
@@ -255,5 +255,3 @@ func (v *NullableV1alpha1ExecProviderConfig) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

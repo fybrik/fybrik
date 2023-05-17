@@ -19,10 +19,10 @@ type V1alpha1SCMProviderGeneratorGitea struct {
 	// Scan all branches instead of just the default branch.
 	AllBranches *bool `json:"allBranches,omitempty"`
 	// The Gitea URL to talk to. For example https://gitea.mydomain.com/.
-	Api *string `json:"api,omitempty"`
-	Insecure *bool `json:"insecure,omitempty"`
+	Api      *string `json:"api,omitempty"`
+	Insecure *bool   `json:"insecure,omitempty"`
 	// Gitea organization or user to scan. Required.
-	Owner *string `json:"owner,omitempty"`
+	Owner    *string            `json:"owner,omitempty"`
 	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
@@ -258,5 +258,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorGitea) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

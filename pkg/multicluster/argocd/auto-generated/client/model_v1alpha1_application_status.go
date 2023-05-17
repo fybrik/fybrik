@@ -16,18 +16,18 @@ import (
 
 // V1alpha1ApplicationStatus struct for V1alpha1ApplicationStatus
 type V1alpha1ApplicationStatus struct {
-	Conditions *[]V1alpha1ApplicationCondition `json:"conditions,omitempty"`
-	Health *V1alpha1HealthStatus `json:"health,omitempty"`
-	History *[]V1alpha1RevisionHistory `json:"history,omitempty"`
-	ObservedAt *string `json:"observedAt,omitempty"`
-	OperationState *V1alpha1OperationState `json:"operationState,omitempty"`
-	ReconciledAt *string `json:"reconciledAt,omitempty"`
-	ResourceHealthSource *string `json:"resourceHealthSource,omitempty"`
-	Resources *[]V1alpha1ResourceStatus `json:"resources,omitempty"`
-	SourceType *string `json:"sourceType,omitempty"`
-	SourceTypes *[]string `json:"sourceTypes,omitempty"`
-	Summary *V1alpha1ApplicationSummary `json:"summary,omitempty"`
-	Sync *V1alpha1SyncStatus `json:"sync,omitempty"`
+	Conditions           *[]V1alpha1ApplicationCondition `json:"conditions,omitempty"`
+	Health               *V1alpha1HealthStatus           `json:"health,omitempty"`
+	History              *[]V1alpha1RevisionHistory      `json:"history,omitempty"`
+	ObservedAt           *string                         `json:"observedAt,omitempty"`
+	OperationState       *V1alpha1OperationState         `json:"operationState,omitempty"`
+	ReconciledAt         *string                         `json:"reconciledAt,omitempty"`
+	ResourceHealthSource *string                         `json:"resourceHealthSource,omitempty"`
+	Resources            *[]V1alpha1ResourceStatus       `json:"resources,omitempty"`
+	SourceType           *string                         `json:"sourceType,omitempty"`
+	SourceTypes          *[]string                       `json:"sourceTypes,omitempty"`
+	Summary              *V1alpha1ApplicationSummary     `json:"summary,omitempty"`
+	Sync                 *V1alpha1SyncStatus             `json:"sync,omitempty"`
 }
 
 // NewV1alpha1ApplicationStatus instantiates a new V1alpha1ApplicationStatus object
@@ -507,5 +507,3 @@ func (v *NullableV1alpha1ApplicationStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -16,16 +16,16 @@ import (
 
 // V1alpha1ResourceStatus struct for V1alpha1ResourceStatus
 type V1alpha1ResourceStatus struct {
-	Group *string `json:"group,omitempty"`
-	Health *V1alpha1HealthStatus `json:"health,omitempty"`
-	Hook *bool `json:"hook,omitempty"`
-	Kind *string `json:"kind,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
-	RequiresPruning *bool `json:"requiresPruning,omitempty"`
-	Status *string `json:"status,omitempty"`
-	SyncWave *string `json:"syncWave,omitempty"`
-	Version *string `json:"version,omitempty"`
+	Group           *string               `json:"group,omitempty"`
+	Health          *V1alpha1HealthStatus `json:"health,omitempty"`
+	Hook            *bool                 `json:"hook,omitempty"`
+	Kind            *string               `json:"kind,omitempty"`
+	Name            *string               `json:"name,omitempty"`
+	Namespace       *string               `json:"namespace,omitempty"`
+	RequiresPruning *bool                 `json:"requiresPruning,omitempty"`
+	Status          *string               `json:"status,omitempty"`
+	SyncWave        *string               `json:"syncWave,omitempty"`
+	Version         *string               `json:"version,omitempty"`
 }
 
 // NewV1alpha1ResourceStatus instantiates a new V1alpha1ResourceStatus object
@@ -435,5 +435,3 @@ func (v *NullableV1alpha1ResourceStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

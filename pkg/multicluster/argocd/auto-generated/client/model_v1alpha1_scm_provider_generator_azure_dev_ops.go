@@ -259,5 +259,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorAzureDevOps) UnmarshalJSON(src []by
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

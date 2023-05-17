@@ -16,9 +16,9 @@ import (
 
 // V1LoadBalancerIngress LoadBalancerIngress represents the status of a load-balancer ingress point: traffic intended for the service should be sent to an ingress point.
 type V1LoadBalancerIngress struct {
-	Hostname *string `json:"hostname,omitempty"`
-	Ip *string `json:"ip,omitempty"`
-	Ports *[]V1PortStatus `json:"ports,omitempty"`
+	Hostname *string         `json:"hostname,omitempty"`
+	Ip       *string         `json:"ip,omitempty"`
+	Ports    *[]V1PortStatus `json:"ports,omitempty"`
 }
 
 // NewV1LoadBalancerIngress instantiates a new V1LoadBalancerIngress object
@@ -183,5 +183,3 @@ func (v *NullableV1LoadBalancerIngress) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

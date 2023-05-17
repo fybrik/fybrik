@@ -18,28 +18,28 @@ import (
 type V1alpha1Repository struct {
 	ConnectionState *V1alpha1ConnectionState `json:"connectionState,omitempty"`
 	// EnableLFS specifies whether git-lfs support should be enabled for this repo. Only valid for Git repositories.
-	EnableLfs *bool `json:"enableLfs,omitempty"`
-	EnableOCI *bool `json:"enableOCI,omitempty"`
-	ForceHttpBasicAuth *bool `json:"forceHttpBasicAuth,omitempty"`
-	GcpServiceAccountKey *string `json:"gcpServiceAccountKey,omitempty"`
+	EnableLfs                  *bool   `json:"enableLfs,omitempty"`
+	EnableOCI                  *bool   `json:"enableOCI,omitempty"`
+	ForceHttpBasicAuth         *bool   `json:"forceHttpBasicAuth,omitempty"`
+	GcpServiceAccountKey       *string `json:"gcpServiceAccountKey,omitempty"`
 	GithubAppEnterpriseBaseUrl *string `json:"githubAppEnterpriseBaseUrl,omitempty"`
-	GithubAppID *string `json:"githubAppID,omitempty"`
-	GithubAppInstallationID *string `json:"githubAppInstallationID,omitempty"`
-	GithubAppPrivateKey *string `json:"githubAppPrivateKey,omitempty"`
-	InheritedCreds *bool `json:"inheritedCreds,omitempty"`
-	Insecure *bool `json:"insecure,omitempty"`
-	InsecureIgnoreHostKey *bool `json:"insecureIgnoreHostKey,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Password *string `json:"password,omitempty"`
-	Project *string `json:"project,omitempty"`
-	Proxy *string `json:"proxy,omitempty"`
-	Repo *string `json:"repo,omitempty"`
+	GithubAppID                *string `json:"githubAppID,omitempty"`
+	GithubAppInstallationID    *string `json:"githubAppInstallationID,omitempty"`
+	GithubAppPrivateKey        *string `json:"githubAppPrivateKey,omitempty"`
+	InheritedCreds             *bool   `json:"inheritedCreds,omitempty"`
+	Insecure                   *bool   `json:"insecure,omitempty"`
+	InsecureIgnoreHostKey      *bool   `json:"insecureIgnoreHostKey,omitempty"`
+	Name                       *string `json:"name,omitempty"`
+	Password                   *string `json:"password,omitempty"`
+	Project                    *string `json:"project,omitempty"`
+	Proxy                      *string `json:"proxy,omitempty"`
+	Repo                       *string `json:"repo,omitempty"`
 	// SSHPrivateKey contains the PEM data for authenticating at the repo server. Only used with Git repos.
-	SshPrivateKey *string `json:"sshPrivateKey,omitempty"`
+	SshPrivateKey     *string `json:"sshPrivateKey,omitempty"`
 	TlsClientCertData *string `json:"tlsClientCertData,omitempty"`
-	TlsClientCertKey *string `json:"tlsClientCertKey,omitempty"`
+	TlsClientCertKey  *string `json:"tlsClientCertKey,omitempty"`
 	// Type specifies the type of the repo. Can be either \"git\" or \"helm. \"git\" is assumed if empty or absent.
-	Type *string `json:"type,omitempty"`
+	Type     *string `json:"type,omitempty"`
 	Username *string `json:"username,omitempty"`
 }
 
@@ -870,5 +870,3 @@ func (v *NullableV1alpha1Repository) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

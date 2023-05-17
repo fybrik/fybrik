@@ -17,11 +17,11 @@ import (
 // V1alpha1GnuPGPublicKey struct for V1alpha1GnuPGPublicKey
 type V1alpha1GnuPGPublicKey struct {
 	Fingerprint *string `json:"fingerprint,omitempty"`
-	KeyData *string `json:"keyData,omitempty"`
-	KeyID *string `json:"keyID,omitempty"`
-	Owner *string `json:"owner,omitempty"`
-	SubType *string `json:"subType,omitempty"`
-	Trust *string `json:"trust,omitempty"`
+	KeyData     *string `json:"keyData,omitempty"`
+	KeyID       *string `json:"keyID,omitempty"`
+	Owner       *string `json:"owner,omitempty"`
+	SubType     *string `json:"subType,omitempty"`
+	Trust       *string `json:"trust,omitempty"`
 }
 
 // NewV1alpha1GnuPGPublicKey instantiates a new V1alpha1GnuPGPublicKey object
@@ -291,5 +291,3 @@ func (v *NullableV1alpha1GnuPGPublicKey) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -16,13 +16,13 @@ import (
 
 // V1ObjectReference struct for V1ObjectReference
 type V1ObjectReference struct {
-	ApiVersion *string `json:"apiVersion,omitempty"`
-	FieldPath *string `json:"fieldPath,omitempty"`
-	Kind *string `json:"kind,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
+	ApiVersion      *string `json:"apiVersion,omitempty"`
+	FieldPath       *string `json:"fieldPath,omitempty"`
+	Kind            *string `json:"kind,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	Namespace       *string `json:"namespace,omitempty"`
 	ResourceVersion *string `json:"resourceVersion,omitempty"`
-	Uid *string `json:"uid,omitempty"`
+	Uid             *string `json:"uid,omitempty"`
 }
 
 // NewV1ObjectReference instantiates a new V1ObjectReference object
@@ -327,5 +327,3 @@ func (v *NullableV1ObjectReference) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

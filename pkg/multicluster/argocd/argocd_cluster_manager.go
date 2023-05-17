@@ -189,9 +189,7 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 func NewArgoCDClusterManager(connectionURL, user, password, gitRepoURL, gitRepoUser, gitRepoPassword,
 	argocdFybrikAppsNamePrefix string) (multicluster.ClusterManager, error) {
 	logger := logging.LogInit(logging.SETUP, "ArgoCDManager")
-	tlsConfig := &tls.Config{
-		// FIXME: handle TLS properly
-		// #nosec G402
+	tlsConfig := &tls.Config{ // #nosec G402 // FIXME: handle TLS properly
 		InsecureSkipVerify: true,
 	}
 	retryClient := retryablehttp.NewClient()

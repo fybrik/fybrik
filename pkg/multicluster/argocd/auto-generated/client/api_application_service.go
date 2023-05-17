@@ -16,8 +16,8 @@ import (
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 // Linger please
@@ -29,11 +29,11 @@ var (
 type ApplicationServiceApiService service
 
 type ApiApplicationServiceCreateRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	body *V1alpha1Application
-	upsert *bool
-	validate *bool
+	body       *V1alpha1Application
+	upsert     *bool
+	validate   *bool
 }
 
 func (r ApiApplicationServiceCreateRequest) Body(body V1alpha1Application) ApiApplicationServiceCreateRequest {
@@ -56,24 +56,25 @@ func (r ApiApplicationServiceCreateRequest) Execute() (V1alpha1Application, *_ne
 /*
 ApplicationServiceCreate Create creates an application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationServiceCreateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationServiceCreateRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceCreate(ctx _context.Context) ApiApplicationServiceCreateRequest {
 	return ApiApplicationServiceCreateRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServiceCreateExecute(r ApiApplicationServiceCreateRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceCreate")
@@ -137,13 +138,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceCreateExecute(r ApiAppl
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -160,12 +161,12 @@ func (a *ApplicationServiceApiService) ApplicationServiceCreateExecute(r ApiAppl
 }
 
 type ApiApplicationServiceDeleteRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	cascade *bool
+	ctx               _context.Context
+	ApiService        *ApplicationServiceApiService
+	name              string
+	cascade           *bool
 	propagationPolicy *string
-	appNamespace *string
+	appNamespace      *string
 }
 
 func (r ApiApplicationServiceDeleteRequest) Cascade(cascade bool) ApiApplicationServiceDeleteRequest {
@@ -188,26 +189,27 @@ func (r ApiApplicationServiceDeleteRequest) Execute() (map[string]interface{}, *
 /*
 ApplicationServiceDelete Delete deletes an application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceDeleteRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceDeleteRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceDelete(ctx _context.Context, name string) ApiApplicationServiceDeleteRequest {
 	return ApiApplicationServiceDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ApplicationServiceApiService) ApplicationServiceDeleteExecute(r ApiApplicationServiceDeleteRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceDelete")
@@ -270,13 +272,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceDeleteExecute(r ApiAppl
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -293,16 +295,16 @@ func (a *ApplicationServiceApiService) ApplicationServiceDeleteExecute(r ApiAppl
 }
 
 type ApiApplicationServiceDeleteResourceRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
-	force *bool
-	orphan *bool
+	version      *string
+	group        *string
+	kind         *string
+	force        *bool
+	orphan       *bool
 	appNamespace *string
 }
 
@@ -346,26 +348,27 @@ func (r ApiApplicationServiceDeleteResourceRequest) Execute() (map[string]interf
 /*
 ApplicationServiceDeleteResource DeleteResource deletes a single application resource
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceDeleteResourceRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceDeleteResourceRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceDeleteResource(ctx _context.Context, name string) ApiApplicationServiceDeleteResourceRequest {
 	return ApiApplicationServiceDeleteResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ApplicationServiceApiService) ApplicationServiceDeleteResourceExecute(r ApiApplicationServiceDeleteResourceRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceDeleteResource")
@@ -443,13 +446,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceDeleteResourceExecute(r
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -466,16 +469,16 @@ func (a *ApplicationServiceApiService) ApplicationServiceDeleteResourceExecute(r
 }
 
 type ApiApplicationServiceGetRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	refresh *string
-	projects *[]string
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
+	name            string
+	refresh         *string
+	projects        *[]string
 	resourceVersion *string
-	selector *string
-	repo *string
-	appNamespace *string
-	project *[]string
+	selector        *string
+	repo            *string
+	appNamespace    *string
+	project         *[]string
 }
 
 // forces application reconciliation if set to true.
@@ -483,31 +486,37 @@ func (r ApiApplicationServiceGetRequest) Refresh(refresh string) ApiApplicationS
 	r.refresh = &refresh
 	return r
 }
+
 // the project names to restrict returned list applications.
 func (r ApiApplicationServiceGetRequest) Projects(projects []string) ApiApplicationServiceGetRequest {
 	r.projects = &projects
 	return r
 }
+
 // when specified with a watch call, shows changes that occur after that particular version of a resource.
 func (r ApiApplicationServiceGetRequest) ResourceVersion(resourceVersion string) ApiApplicationServiceGetRequest {
 	r.resourceVersion = &resourceVersion
 	return r
 }
+
 // the selector to restrict returned list to applications only with matched labels.
 func (r ApiApplicationServiceGetRequest) Selector(selector string) ApiApplicationServiceGetRequest {
 	r.selector = &selector
 	return r
 }
+
 // the repoURL to restrict returned list applications.
 func (r ApiApplicationServiceGetRequest) Repo(repo string) ApiApplicationServiceGetRequest {
 	r.repo = &repo
 	return r
 }
+
 // the application&#39;s namespace.
 func (r ApiApplicationServiceGetRequest) AppNamespace(appNamespace string) ApiApplicationServiceGetRequest {
 	r.appNamespace = &appNamespace
 	return r
 }
+
 // the project names to restrict returned list applications (legacy name for backwards-compatibility).
 func (r ApiApplicationServiceGetRequest) Project(project []string) ApiApplicationServiceGetRequest {
 	r.project = &project
@@ -521,26 +530,27 @@ func (r ApiApplicationServiceGetRequest) Execute() (V1alpha1Application, *_netht
 /*
 ApplicationServiceGet Get returns an application by name
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name the application's name
- @return ApiApplicationServiceGetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name the application's name
+	@return ApiApplicationServiceGetRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceGet(ctx _context.Context, name string) ApiApplicationServiceGetRequest {
 	return ApiApplicationServiceGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServiceGetExecute(r ApiApplicationServiceGetRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceGet")
@@ -631,13 +641,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetExecute(r ApiApplica
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -654,9 +664,9 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetExecute(r ApiApplica
 }
 
 type ApiApplicationServiceGetApplicationSyncWindowsRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
 	appNamespace *string
 }
 
@@ -672,26 +682,27 @@ func (r ApiApplicationServiceGetApplicationSyncWindowsRequest) Execute() (Applic
 /*
 ApplicationServiceGetApplicationSyncWindows Get returns sync windows of the application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceGetApplicationSyncWindowsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceGetApplicationSyncWindowsRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceGetApplicationSyncWindows(ctx _context.Context, name string) ApiApplicationServiceGetApplicationSyncWindowsRequest {
 	return ApiApplicationServiceGetApplicationSyncWindowsRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationApplicationSyncWindowsResponse
+//
+//	@return ApplicationApplicationSyncWindowsResponse
 func (a *ApplicationServiceApiService) ApplicationServiceGetApplicationSyncWindowsExecute(r ApiApplicationServiceGetApplicationSyncWindowsRequest) (ApplicationApplicationSyncWindowsResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationApplicationSyncWindowsResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationApplicationSyncWindowsResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceGetApplicationSyncWindows")
@@ -748,13 +759,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetApplicationSyncWindo
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -771,10 +782,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetApplicationSyncWindo
 }
 
 type ApiApplicationServiceGetManifestsRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	revision *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	revision     *string
 	appNamespace *string
 }
 
@@ -794,26 +805,27 @@ func (r ApiApplicationServiceGetManifestsRequest) Execute() (RepositoryManifestR
 /*
 ApplicationServiceGetManifests GetManifests returns application manifests
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceGetManifestsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceGetManifestsRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceGetManifests(ctx _context.Context, name string) ApiApplicationServiceGetManifestsRequest {
 	return ApiApplicationServiceGetManifestsRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return RepositoryManifestResponse
+//
+//	@return RepositoryManifestResponse
 func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsExecute(r ApiApplicationServiceGetManifestsRequest) (RepositoryManifestResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  RepositoryManifestResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue RepositoryManifestResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceGetManifests")
@@ -873,13 +885,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsExecute(r A
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -896,12 +908,12 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsExecute(r A
 }
 
 type ApiApplicationServiceGetManifestsWithFilesRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	body *ApplicationApplicationManifestQueryWithFilesWrapper
+	body       *ApplicationApplicationManifestQueryWithFilesWrapper
 }
 
-//  (streaming inputs)
+// (streaming inputs)
 func (r ApiApplicationServiceGetManifestsWithFilesRequest) Body(body ApplicationApplicationManifestQueryWithFilesWrapper) ApiApplicationServiceGetManifestsWithFilesRequest {
 	r.body = &body
 	return r
@@ -914,24 +926,25 @@ func (r ApiApplicationServiceGetManifestsWithFilesRequest) Execute() (Repository
 /*
 ApplicationServiceGetManifestsWithFiles GetManifestsWithFiles returns application manifests using provided files to generate them
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationServiceGetManifestsWithFilesRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationServiceGetManifestsWithFilesRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsWithFiles(ctx _context.Context) ApiApplicationServiceGetManifestsWithFilesRequest {
 	return ApiApplicationServiceGetManifestsWithFilesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return RepositoryManifestResponse
+//
+//	@return RepositoryManifestResponse
 func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsWithFilesExecute(r ApiApplicationServiceGetManifestsWithFilesRequest) (RepositoryManifestResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  RepositoryManifestResponse
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue RepositoryManifestResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceGetManifestsWithFiles")
@@ -989,13 +1002,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsWithFilesEx
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1012,14 +1025,14 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetManifestsWithFilesEx
 }
 
 type ApiApplicationServiceGetResourceRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
+	version      *string
+	group        *string
+	kind         *string
 	appNamespace *string
 }
 
@@ -1055,26 +1068,27 @@ func (r ApiApplicationServiceGetResourceRequest) Execute() (ApplicationApplicati
 /*
 ApplicationServiceGetResource GetResource returns single application resource
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceGetResourceRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceGetResourceRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceGetResource(ctx _context.Context, name string) ApiApplicationServiceGetResourceRequest {
 	return ApiApplicationServiceGetResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationApplicationResourceResponse
+//
+//	@return ApplicationApplicationResourceResponse
 func (a *ApplicationServiceApiService) ApplicationServiceGetResourceExecute(r ApiApplicationServiceGetResourceRequest) (ApplicationApplicationResourceResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationApplicationResourceResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationApplicationResourceResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceGetResource")
@@ -1146,13 +1160,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetResourceExecute(r Ap
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1169,16 +1183,16 @@ func (a *ApplicationServiceApiService) ApplicationServiceGetResourceExecute(r Ap
 }
 
 type ApiApplicationServiceListRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name *string
-	refresh *string
-	projects *[]string
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
+	name            *string
+	refresh         *string
+	projects        *[]string
 	resourceVersion *string
-	selector *string
-	repo *string
-	appNamespace *string
-	project *[]string
+	selector        *string
+	repo            *string
+	appNamespace    *string
+	project         *[]string
 }
 
 // the application&#39;s name.
@@ -1186,36 +1200,43 @@ func (r ApiApplicationServiceListRequest) Name(name string) ApiApplicationServic
 	r.name = &name
 	return r
 }
+
 // forces application reconciliation if set to true.
 func (r ApiApplicationServiceListRequest) Refresh(refresh string) ApiApplicationServiceListRequest {
 	r.refresh = &refresh
 	return r
 }
+
 // the project names to restrict returned list applications.
 func (r ApiApplicationServiceListRequest) Projects(projects []string) ApiApplicationServiceListRequest {
 	r.projects = &projects
 	return r
 }
+
 // when specified with a watch call, shows changes that occur after that particular version of a resource.
 func (r ApiApplicationServiceListRequest) ResourceVersion(resourceVersion string) ApiApplicationServiceListRequest {
 	r.resourceVersion = &resourceVersion
 	return r
 }
+
 // the selector to restrict returned list to applications only with matched labels.
 func (r ApiApplicationServiceListRequest) Selector(selector string) ApiApplicationServiceListRequest {
 	r.selector = &selector
 	return r
 }
+
 // the repoURL to restrict returned list applications.
 func (r ApiApplicationServiceListRequest) Repo(repo string) ApiApplicationServiceListRequest {
 	r.repo = &repo
 	return r
 }
+
 // the application&#39;s namespace.
 func (r ApiApplicationServiceListRequest) AppNamespace(appNamespace string) ApiApplicationServiceListRequest {
 	r.appNamespace = &appNamespace
 	return r
 }
+
 // the project names to restrict returned list applications (legacy name for backwards-compatibility).
 func (r ApiApplicationServiceListRequest) Project(project []string) ApiApplicationServiceListRequest {
 	r.project = &project
@@ -1229,24 +1250,25 @@ func (r ApiApplicationServiceListRequest) Execute() (V1alpha1ApplicationList, *_
 /*
 ApplicationServiceList List returns list of applications
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationServiceListRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationServiceListRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceList(ctx _context.Context) ApiApplicationServiceListRequest {
 	return ApiApplicationServiceListRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationList
+//
+//	@return V1alpha1ApplicationList
 func (a *ApplicationServiceApiService) ApplicationServiceListExecute(r ApiApplicationServiceListRequest) (V1alpha1ApplicationList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationList
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceList")
@@ -1339,13 +1361,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListExecute(r ApiApplic
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1362,10 +1384,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceListExecute(r ApiApplic
 }
 
 type ApiApplicationServiceListLinksRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
+	name       string
+	namespace  *string
 }
 
 func (r ApiApplicationServiceListLinksRequest) Namespace(namespace string) ApiApplicationServiceListLinksRequest {
@@ -1380,26 +1402,27 @@ func (r ApiApplicationServiceListLinksRequest) Execute() (ApplicationLinksRespon
 /*
 ApplicationServiceListLinks ListLinks returns the list of all application deep links
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceListLinksRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceListLinksRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceListLinks(ctx _context.Context, name string) ApiApplicationServiceListLinksRequest {
 	return ApiApplicationServiceListLinksRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationLinksResponse
+//
+//	@return ApplicationLinksResponse
 func (a *ApplicationServiceApiService) ApplicationServiceListLinksExecute(r ApiApplicationServiceListLinksRequest) (ApplicationLinksResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationLinksResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationLinksResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceListLinks")
@@ -1456,13 +1479,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListLinksExecute(r ApiA
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1479,14 +1502,14 @@ func (a *ApplicationServiceApiService) ApplicationServiceListLinksExecute(r ApiA
 }
 
 type ApiApplicationServiceListResourceActionsRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
+	version      *string
+	group        *string
+	kind         *string
 	appNamespace *string
 }
 
@@ -1522,26 +1545,27 @@ func (r ApiApplicationServiceListResourceActionsRequest) Execute() (ApplicationR
 /*
 ApplicationServiceListResourceActions ListResourceActions returns list of resource actions
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceListResourceActionsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceListResourceActionsRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceActions(ctx _context.Context, name string) ApiApplicationServiceListResourceActionsRequest {
 	return ApiApplicationServiceListResourceActionsRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationResourceActionsListResponse
+//
+//	@return ApplicationResourceActionsListResponse
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceActionsExecute(r ApiApplicationServiceListResourceActionsRequest) (ApplicationResourceActionsListResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationResourceActionsListResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationResourceActionsListResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceListResourceActions")
@@ -1613,13 +1637,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceActionsExec
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1636,13 +1660,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceActionsExec
 }
 
 type ApiApplicationServiceListResourceEventsRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
+	ctx               _context.Context
+	ApiService        *ApplicationServiceApiService
+	name              string
 	resourceNamespace *string
-	resourceName *string
-	resourceUID *string
-	appNamespace *string
+	resourceName      *string
+	resourceUID       *string
+	appNamespace      *string
 }
 
 func (r ApiApplicationServiceListResourceEventsRequest) ResourceNamespace(resourceNamespace string) ApiApplicationServiceListResourceEventsRequest {
@@ -1669,26 +1693,27 @@ func (r ApiApplicationServiceListResourceEventsRequest) Execute() (V1EventList, 
 /*
 ApplicationServiceListResourceEvents ListResourceEvents returns a list of event resources
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceListResourceEventsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceListResourceEventsRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceEvents(ctx _context.Context, name string) ApiApplicationServiceListResourceEventsRequest {
 	return ApiApplicationServiceListResourceEventsRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1EventList
+//
+//	@return V1EventList
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceEventsExecute(r ApiApplicationServiceListResourceEventsRequest) (V1EventList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1EventList
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1EventList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceListResourceEvents")
@@ -1754,13 +1779,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceEventsExecu
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1777,14 +1802,14 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceEventsExecu
 }
 
 type ApiApplicationServiceListResourceLinksRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
+	version      *string
+	group        *string
+	kind         *string
 	appNamespace *string
 }
 
@@ -1820,26 +1845,27 @@ func (r ApiApplicationServiceListResourceLinksRequest) Execute() (ApplicationLin
 /*
 ApplicationServiceListResourceLinks ListResourceLinks returns the list of all resource deep links
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceListResourceLinksRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceListResourceLinksRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceLinks(ctx _context.Context, name string) ApiApplicationServiceListResourceLinksRequest {
 	return ApiApplicationServiceListResourceLinksRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationLinksResponse
+//
+//	@return ApplicationLinksResponse
 func (a *ApplicationServiceApiService) ApplicationServiceListResourceLinksExecute(r ApiApplicationServiceListResourceLinksRequest) (ApplicationLinksResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationLinksResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationLinksResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceListResourceLinks")
@@ -1911,13 +1937,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceLinksExecut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -1934,15 +1960,15 @@ func (a *ApplicationServiceApiService) ApplicationServiceListResourceLinksExecut
 }
 
 type ApiApplicationServiceManagedResourcesRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
 	applicationName string
-	namespace *string
-	name *string
-	version *string
-	group *string
-	kind *string
-	appNamespace *string
+	namespace       *string
+	name            *string
+	version         *string
+	group           *string
+	kind            *string
+	appNamespace    *string
 }
 
 func (r ApiApplicationServiceManagedResourcesRequest) Namespace(namespace string) ApiApplicationServiceManagedResourcesRequest {
@@ -1977,26 +2003,27 @@ func (r ApiApplicationServiceManagedResourcesRequest) Execute() (ApplicationMana
 /*
 ApplicationServiceManagedResources ManagedResources returns list of managed resources
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param applicationName
- @return ApiApplicationServiceManagedResourcesRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param applicationName
+	@return ApiApplicationServiceManagedResourcesRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceManagedResources(ctx _context.Context, applicationName string) ApiApplicationServiceManagedResourcesRequest {
 	return ApiApplicationServiceManagedResourcesRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:      a,
+		ctx:             ctx,
 		applicationName: applicationName,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationManagedResourcesResponse
+//
+//	@return ApplicationManagedResourcesResponse
 func (a *ApplicationServiceApiService) ApplicationServiceManagedResourcesExecute(r ApiApplicationServiceManagedResourcesRequest) (ApplicationManagedResourcesResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationManagedResourcesResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationManagedResourcesResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceManagedResources")
@@ -2068,13 +2095,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceManagedResourcesExecute
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2091,10 +2118,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceManagedResourcesExecute
 }
 
 type ApiApplicationServicePatchRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	name string
-	body *ApplicationApplicationPatchRequest
+	name       string
+	body       *ApplicationApplicationPatchRequest
 }
 
 func (r ApiApplicationServicePatchRequest) Body(body ApplicationApplicationPatchRequest) ApiApplicationServicePatchRequest {
@@ -2109,26 +2136,27 @@ func (r ApiApplicationServicePatchRequest) Execute() (V1alpha1Application, *_net
 /*
 ApplicationServicePatch Patch patch an application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServicePatchRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServicePatchRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServicePatch(ctx _context.Context, name string) ApiApplicationServicePatchRequest {
 	return ApiApplicationServicePatchRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServicePatchExecute(r ApiApplicationServicePatchRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPatch
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodPatch
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServicePatch")
@@ -2187,13 +2215,13 @@ func (a *ApplicationServiceApiService) ApplicationServicePatchExecute(r ApiAppli
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2210,16 +2238,16 @@ func (a *ApplicationServiceApiService) ApplicationServicePatchExecute(r ApiAppli
 }
 
 type ApiApplicationServicePatchResourceRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	body *string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	body         *string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
-	patchType *string
+	version      *string
+	group        *string
+	kind         *string
+	patchType    *string
 	appNamespace *string
 }
 
@@ -2263,26 +2291,27 @@ func (r ApiApplicationServicePatchResourceRequest) Execute() (ApplicationApplica
 /*
 ApplicationServicePatchResource PatchResource patch single application resource
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServicePatchResourceRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServicePatchResourceRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServicePatchResource(ctx _context.Context, name string) ApiApplicationServicePatchResourceRequest {
 	return ApiApplicationServicePatchResourceRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationApplicationResourceResponse
+//
+//	@return ApplicationApplicationResourceResponse
 func (a *ApplicationServiceApiService) ApplicationServicePatchResourceExecute(r ApiApplicationServicePatchResourceRequest) (ApplicationApplicationResourceResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationApplicationResourceResponse
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationApplicationResourceResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServicePatchResource")
@@ -2362,13 +2391,13 @@ func (a *ApplicationServiceApiService) ApplicationServicePatchResourceExecute(r 
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2385,24 +2414,24 @@ func (a *ApplicationServiceApiService) ApplicationServicePatchResourceExecute(r 
 }
 
 type ApiApplicationServicePodLogsRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	podName string
-	namespace *string
-	container *string
-	sinceSeconds *string
+	ctx              _context.Context
+	ApiService       *ApplicationServiceApiService
+	name             string
+	podName          string
+	namespace        *string
+	container        *string
+	sinceSeconds     *string
 	sinceTimeSeconds *string
-	sinceTimeNanos *int32
-	tailLines *string
-	follow *bool
-	untilTime *string
-	filter *string
-	kind *string
-	group *string
-	resourceName *string
-	previous *bool
-	appNamespace *string
+	sinceTimeNanos   *int32
+	tailLines        *string
+	follow           *bool
+	untilTime        *string
+	filter           *string
+	kind             *string
+	group            *string
+	resourceName     *string
+	previous         *bool
+	appNamespace     *string
 }
 
 func (r ApiApplicationServicePodLogsRequest) Namespace(namespace string) ApiApplicationServicePodLogsRequest {
@@ -2417,11 +2446,13 @@ func (r ApiApplicationServicePodLogsRequest) SinceSeconds(sinceSeconds string) A
 	r.sinceSeconds = &sinceSeconds
 	return r
 }
+
 // Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.
 func (r ApiApplicationServicePodLogsRequest) SinceTimeSeconds(sinceTimeSeconds string) ApiApplicationServicePodLogsRequest {
 	r.sinceTimeSeconds = &sinceTimeSeconds
 	return r
 }
+
 // Non-negative fractions of a second at nanosecond resolution. Negative second values with fractions must still have non-negative nanos values that count forward in time. Must be from 0 to 999,999,999 inclusive. This field may be limited in precision depending on context.
 func (r ApiApplicationServicePodLogsRequest) SinceTimeNanos(sinceTimeNanos int32) ApiApplicationServicePodLogsRequest {
 	r.sinceTimeNanos = &sinceTimeNanos
@@ -2471,28 +2502,29 @@ func (r ApiApplicationServicePodLogsRequest) Execute() (StreamResultOfApplicatio
 /*
 ApplicationServicePodLogs PodLogs returns stream of log entries for the specified pod. Pod
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @param podName
- @return ApiApplicationServicePodLogsRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@param podName
+	@return ApiApplicationServicePodLogsRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServicePodLogs(ctx _context.Context, name string, podName string) ApiApplicationServicePodLogsRequest {
 	return ApiApplicationServicePodLogsRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
-		podName: podName,
+		ctx:        ctx,
+		name:       name,
+		podName:    podName,
 	}
 }
 
 // Execute executes the request
-//  @return StreamResultOfApplicationLogEntry
+//
+//	@return StreamResultOfApplicationLogEntry
 func (a *ApplicationServiceApiService) ApplicationServicePodLogsExecute(r ApiApplicationServicePodLogsRequest) (StreamResultOfApplicationLogEntry, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  StreamResultOfApplicationLogEntry
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue StreamResultOfApplicationLogEntry
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServicePodLogs")
@@ -2589,13 +2621,13 @@ func (a *ApplicationServiceApiService) ApplicationServicePodLogsExecute(r ApiApp
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2612,24 +2644,24 @@ func (a *ApplicationServiceApiService) ApplicationServicePodLogsExecute(r ApiApp
 }
 
 type ApiApplicationServicePodLogs2Request struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	namespace *string
-	podName *string
-	container *string
-	sinceSeconds *string
+	ctx              _context.Context
+	ApiService       *ApplicationServiceApiService
+	name             string
+	namespace        *string
+	podName          *string
+	container        *string
+	sinceSeconds     *string
 	sinceTimeSeconds *string
-	sinceTimeNanos *int32
-	tailLines *string
-	follow *bool
-	untilTime *string
-	filter *string
-	kind *string
-	group *string
-	resourceName *string
-	previous *bool
-	appNamespace *string
+	sinceTimeNanos   *int32
+	tailLines        *string
+	follow           *bool
+	untilTime        *string
+	filter           *string
+	kind             *string
+	group            *string
+	resourceName     *string
+	previous         *bool
+	appNamespace     *string
 }
 
 func (r ApiApplicationServicePodLogs2Request) Namespace(namespace string) ApiApplicationServicePodLogs2Request {
@@ -2648,11 +2680,13 @@ func (r ApiApplicationServicePodLogs2Request) SinceSeconds(sinceSeconds string) 
 	r.sinceSeconds = &sinceSeconds
 	return r
 }
+
 // Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.
 func (r ApiApplicationServicePodLogs2Request) SinceTimeSeconds(sinceTimeSeconds string) ApiApplicationServicePodLogs2Request {
 	r.sinceTimeSeconds = &sinceTimeSeconds
 	return r
 }
+
 // Non-negative fractions of a second at nanosecond resolution. Negative second values with fractions must still have non-negative nanos values that count forward in time. Must be from 0 to 999,999,999 inclusive. This field may be limited in precision depending on context.
 func (r ApiApplicationServicePodLogs2Request) SinceTimeNanos(sinceTimeNanos int32) ApiApplicationServicePodLogs2Request {
 	r.sinceTimeNanos = &sinceTimeNanos
@@ -2702,26 +2736,27 @@ func (r ApiApplicationServicePodLogs2Request) Execute() (StreamResultOfApplicati
 /*
 ApplicationServicePodLogs2 PodLogs returns stream of log entries for the specified pod. Pod
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServicePodLogs2Request
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServicePodLogs2Request
 */
 func (a *ApplicationServiceApiService) ApplicationServicePodLogs2(ctx _context.Context, name string) ApiApplicationServicePodLogs2Request {
 	return ApiApplicationServicePodLogs2Request{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return StreamResultOfApplicationLogEntry
+//
+//	@return StreamResultOfApplicationLogEntry
 func (a *ApplicationServiceApiService) ApplicationServicePodLogs2Execute(r ApiApplicationServicePodLogs2Request) (StreamResultOfApplicationLogEntry, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  StreamResultOfApplicationLogEntry
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue StreamResultOfApplicationLogEntry
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServicePodLogs2")
@@ -2820,13 +2855,13 @@ func (a *ApplicationServiceApiService) ApplicationServicePodLogs2Execute(r ApiAp
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -2843,15 +2878,15 @@ func (a *ApplicationServiceApiService) ApplicationServicePodLogs2Execute(r ApiAp
 }
 
 type ApiApplicationServiceResourceTreeRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
 	applicationName string
-	namespace *string
-	name *string
-	version *string
-	group *string
-	kind *string
-	appNamespace *string
+	namespace       *string
+	name            *string
+	version         *string
+	group           *string
+	kind            *string
+	appNamespace    *string
 }
 
 func (r ApiApplicationServiceResourceTreeRequest) Namespace(namespace string) ApiApplicationServiceResourceTreeRequest {
@@ -2886,26 +2921,27 @@ func (r ApiApplicationServiceResourceTreeRequest) Execute() (V1alpha1Application
 /*
 ApplicationServiceResourceTree ResourceTree returns resource tree
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param applicationName
- @return ApiApplicationServiceResourceTreeRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param applicationName
+	@return ApiApplicationServiceResourceTreeRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceResourceTree(ctx _context.Context, applicationName string) ApiApplicationServiceResourceTreeRequest {
 	return ApiApplicationServiceResourceTreeRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:      a,
+		ctx:             ctx,
 		applicationName: applicationName,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationTree
+//
+//	@return V1alpha1ApplicationTree
 func (a *ApplicationServiceApiService) ApplicationServiceResourceTreeExecute(r ApiApplicationServiceResourceTreeRequest) (V1alpha1ApplicationTree, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationTree
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationTree
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceResourceTree")
@@ -2977,13 +3013,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceResourceTreeExecute(r A
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3000,10 +3036,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceResourceTreeExecute(r A
 }
 
 type ApiApplicationServiceRevisionMetadataRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	revision string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	revision     string
 	appNamespace *string
 }
 
@@ -3020,28 +3056,29 @@ func (r ApiApplicationServiceRevisionMetadataRequest) Execute() (V1alpha1Revisio
 /*
 ApplicationServiceRevisionMetadata Get the meta-data (author, date, tags, message) for a specific revision of the application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name the application's name
- @param revision the revision of the app
- @return ApiApplicationServiceRevisionMetadataRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name the application's name
+	@param revision the revision of the app
+	@return ApiApplicationServiceRevisionMetadataRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceRevisionMetadata(ctx _context.Context, name string, revision string) ApiApplicationServiceRevisionMetadataRequest {
 	return ApiApplicationServiceRevisionMetadataRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
-		revision: revision,
+		ctx:        ctx,
+		name:       name,
+		revision:   revision,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1RevisionMetadata
+//
+//	@return V1alpha1RevisionMetadata
 func (a *ApplicationServiceApiService) ApplicationServiceRevisionMetadataExecute(r ApiApplicationServiceRevisionMetadataRequest) (V1alpha1RevisionMetadata, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1RevisionMetadata
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1RevisionMetadata
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceRevisionMetadata")
@@ -3099,13 +3136,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceRevisionMetadataExecute
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3122,10 +3159,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceRevisionMetadataExecute
 }
 
 type ApiApplicationServiceRollbackRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	name string
-	body *ApplicationApplicationRollbackRequest
+	name       string
+	body       *ApplicationApplicationRollbackRequest
 }
 
 func (r ApiApplicationServiceRollbackRequest) Body(body ApplicationApplicationRollbackRequest) ApiApplicationServiceRollbackRequest {
@@ -3140,26 +3177,27 @@ func (r ApiApplicationServiceRollbackRequest) Execute() (V1alpha1Application, *_
 /*
 ApplicationServiceRollback Rollback syncs an application to its target state
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceRollbackRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceRollbackRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceRollback(ctx _context.Context, name string) ApiApplicationServiceRollbackRequest {
 	return ApiApplicationServiceRollbackRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServiceRollbackExecute(r ApiApplicationServiceRollbackRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceRollback")
@@ -3218,13 +3256,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceRollbackExecute(r ApiAp
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3241,15 +3279,15 @@ func (a *ApplicationServiceApiService) ApplicationServiceRollbackExecute(r ApiAp
 }
 
 type ApiApplicationServiceRunResourceActionRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	body *string
-	namespace *string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	body         *string
+	namespace    *string
 	resourceName *string
-	version *string
-	group *string
-	kind *string
+	version      *string
+	group        *string
+	kind         *string
 	appNamespace *string
 }
 
@@ -3289,26 +3327,27 @@ func (r ApiApplicationServiceRunResourceActionRequest) Execute() (map[string]int
 /*
 ApplicationServiceRunResourceAction RunResourceAction run resource action
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceRunResourceActionRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceRunResourceActionRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceRunResourceAction(ctx _context.Context, name string) ApiApplicationServiceRunResourceActionRequest {
 	return ApiApplicationServiceRunResourceActionRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ApplicationServiceApiService) ApplicationServiceRunResourceActionExecute(r ApiApplicationServiceRunResourceActionRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceRunResourceAction")
@@ -3385,13 +3424,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceRunResourceActionExecut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3408,10 +3447,10 @@ func (a *ApplicationServiceApiService) ApplicationServiceRunResourceActionExecut
 }
 
 type ApiApplicationServiceSyncRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationServiceApiService
-	name string
-	body *ApplicationApplicationSyncRequest
+	name       string
+	body       *ApplicationApplicationSyncRequest
 }
 
 func (r ApiApplicationServiceSyncRequest) Body(body ApplicationApplicationSyncRequest) ApiApplicationServiceSyncRequest {
@@ -3426,26 +3465,27 @@ func (r ApiApplicationServiceSyncRequest) Execute() (V1alpha1Application, *_neth
 /*
 ApplicationServiceSync Sync syncs an application to its target state
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceSyncRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceSyncRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceSync(ctx _context.Context, name string) ApiApplicationServiceSyncRequest {
 	return ApiApplicationServiceSyncRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServiceSyncExecute(r ApiApplicationServiceSyncRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceSync")
@@ -3504,13 +3544,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceSyncExecute(r ApiApplic
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3527,9 +3567,9 @@ func (a *ApplicationServiceApiService) ApplicationServiceSyncExecute(r ApiApplic
 }
 
 type ApiApplicationServiceTerminateOperationRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
 	appNamespace *string
 }
 
@@ -3545,26 +3585,27 @@ func (r ApiApplicationServiceTerminateOperationRequest) Execute() (map[string]in
 /*
 ApplicationServiceTerminateOperation TerminateOperation terminates the currently running operation
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceTerminateOperationRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceTerminateOperationRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceTerminateOperation(ctx _context.Context, name string) ApiApplicationServiceTerminateOperationRequest {
 	return ApiApplicationServiceTerminateOperationRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return map[string]interface{}
+//
+//	@return map[string]interface{}
 func (a *ApplicationServiceApiService) ApplicationServiceTerminateOperationExecute(r ApiApplicationServiceTerminateOperationRequest) (map[string]interface{}, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  map[string]interface{}
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue map[string]interface{}
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceTerminateOperation")
@@ -3621,13 +3662,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceTerminateOperationExecu
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3644,11 +3685,11 @@ func (a *ApplicationServiceApiService) ApplicationServiceTerminateOperationExecu
 }
 
 type ApiApplicationServiceUpdateRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
+	ctx                     _context.Context
+	ApiService              *ApplicationServiceApiService
 	applicationMetadataName string
-	body *V1alpha1Application
-	validate *bool
+	body                    *V1alpha1Application
+	validate                *bool
 }
 
 func (r ApiApplicationServiceUpdateRequest) Body(body V1alpha1Application) ApiApplicationServiceUpdateRequest {
@@ -3667,26 +3708,27 @@ func (r ApiApplicationServiceUpdateRequest) Execute() (V1alpha1Application, *_ne
 /*
 ApplicationServiceUpdate Update updates an application
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param applicationMetadataName Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names +optional
- @return ApiApplicationServiceUpdateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param applicationMetadataName Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names +optional
+	@return ApiApplicationServiceUpdateRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceUpdate(ctx _context.Context, applicationMetadataName string) ApiApplicationServiceUpdateRequest {
 	return ApiApplicationServiceUpdateRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:              a,
+		ctx:                     ctx,
 		applicationMetadataName: applicationMetadataName,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1Application
+//
+//	@return V1alpha1Application
 func (a *ApplicationServiceApiService) ApplicationServiceUpdateExecute(r ApiApplicationServiceUpdateRequest) (V1alpha1Application, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1Application
+		localVarHTTPMethod  = _nethttp.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1Application
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceUpdate")
@@ -3748,13 +3790,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceUpdateExecute(r ApiAppl
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3771,11 +3813,11 @@ func (a *ApplicationServiceApiService) ApplicationServiceUpdateExecute(r ApiAppl
 }
 
 type ApiApplicationServiceUpdateSpecRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name string
-	body *V1alpha1ApplicationSpec
-	validate *bool
+	ctx          _context.Context
+	ApiService   *ApplicationServiceApiService
+	name         string
+	body         *V1alpha1ApplicationSpec
+	validate     *bool
 	appNamespace *string
 }
 
@@ -3799,26 +3841,27 @@ func (r ApiApplicationServiceUpdateSpecRequest) Execute() (V1alpha1ApplicationSp
 /*
 ApplicationServiceUpdateSpec UpdateSpec updates an application spec
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationServiceUpdateSpecRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationServiceUpdateSpecRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceUpdateSpec(ctx _context.Context, name string) ApiApplicationServiceUpdateSpecRequest {
 	return ApiApplicationServiceUpdateSpecRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationSpec
+//
+//	@return V1alpha1ApplicationSpec
 func (a *ApplicationServiceApiService) ApplicationServiceUpdateSpecExecute(r ApiApplicationServiceUpdateSpecRequest) (V1alpha1ApplicationSpec, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPut
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationSpec
+		localVarHTTPMethod  = _nethttp.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationSpec
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceUpdateSpec")
@@ -3883,13 +3926,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceUpdateSpecExecute(r Api
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -3906,16 +3949,16 @@ func (a *ApplicationServiceApiService) ApplicationServiceUpdateSpecExecute(r Api
 }
 
 type ApiApplicationServiceWatchRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
-	name *string
-	refresh *string
-	projects *[]string
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
+	name            *string
+	refresh         *string
+	projects        *[]string
 	resourceVersion *string
-	selector *string
-	repo *string
-	appNamespace *string
-	project *[]string
+	selector        *string
+	repo            *string
+	appNamespace    *string
+	project         *[]string
 }
 
 // the application&#39;s name.
@@ -3923,36 +3966,43 @@ func (r ApiApplicationServiceWatchRequest) Name(name string) ApiApplicationServi
 	r.name = &name
 	return r
 }
+
 // forces application reconciliation if set to true.
 func (r ApiApplicationServiceWatchRequest) Refresh(refresh string) ApiApplicationServiceWatchRequest {
 	r.refresh = &refresh
 	return r
 }
+
 // the project names to restrict returned list applications.
 func (r ApiApplicationServiceWatchRequest) Projects(projects []string) ApiApplicationServiceWatchRequest {
 	r.projects = &projects
 	return r
 }
+
 // when specified with a watch call, shows changes that occur after that particular version of a resource.
 func (r ApiApplicationServiceWatchRequest) ResourceVersion(resourceVersion string) ApiApplicationServiceWatchRequest {
 	r.resourceVersion = &resourceVersion
 	return r
 }
+
 // the selector to restrict returned list to applications only with matched labels.
 func (r ApiApplicationServiceWatchRequest) Selector(selector string) ApiApplicationServiceWatchRequest {
 	r.selector = &selector
 	return r
 }
+
 // the repoURL to restrict returned list applications.
 func (r ApiApplicationServiceWatchRequest) Repo(repo string) ApiApplicationServiceWatchRequest {
 	r.repo = &repo
 	return r
 }
+
 // the application&#39;s namespace.
 func (r ApiApplicationServiceWatchRequest) AppNamespace(appNamespace string) ApiApplicationServiceWatchRequest {
 	r.appNamespace = &appNamespace
 	return r
 }
+
 // the project names to restrict returned list applications (legacy name for backwards-compatibility).
 func (r ApiApplicationServiceWatchRequest) Project(project []string) ApiApplicationServiceWatchRequest {
 	r.project = &project
@@ -3966,24 +4016,25 @@ func (r ApiApplicationServiceWatchRequest) Execute() (StreamResultOfV1alpha1Appl
 /*
 ApplicationServiceWatch Watch returns stream of application change events
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationServiceWatchRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationServiceWatchRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceWatch(ctx _context.Context) ApiApplicationServiceWatchRequest {
 	return ApiApplicationServiceWatchRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return StreamResultOfV1alpha1ApplicationWatchEvent
+//
+//	@return StreamResultOfV1alpha1ApplicationWatchEvent
 func (a *ApplicationServiceApiService) ApplicationServiceWatchExecute(r ApiApplicationServiceWatchRequest) (StreamResultOfV1alpha1ApplicationWatchEvent, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  StreamResultOfV1alpha1ApplicationWatchEvent
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue StreamResultOfV1alpha1ApplicationWatchEvent
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceWatch")
@@ -4076,13 +4127,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceWatchExecute(r ApiAppli
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -4099,15 +4150,15 @@ func (a *ApplicationServiceApiService) ApplicationServiceWatchExecute(r ApiAppli
 }
 
 type ApiApplicationServiceWatchResourceTreeRequest struct {
-	ctx _context.Context
-	ApiService *ApplicationServiceApiService
+	ctx             _context.Context
+	ApiService      *ApplicationServiceApiService
 	applicationName string
-	namespace *string
-	name *string
-	version *string
-	group *string
-	kind *string
-	appNamespace *string
+	namespace       *string
+	name            *string
+	version         *string
+	group           *string
+	kind            *string
+	appNamespace    *string
 }
 
 func (r ApiApplicationServiceWatchResourceTreeRequest) Namespace(namespace string) ApiApplicationServiceWatchResourceTreeRequest {
@@ -4142,26 +4193,27 @@ func (r ApiApplicationServiceWatchResourceTreeRequest) Execute() (StreamResultOf
 /*
 ApplicationServiceWatchResourceTree Watch returns stream of application resource tree
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param applicationName
- @return ApiApplicationServiceWatchResourceTreeRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param applicationName
+	@return ApiApplicationServiceWatchResourceTreeRequest
 */
 func (a *ApplicationServiceApiService) ApplicationServiceWatchResourceTree(ctx _context.Context, applicationName string) ApiApplicationServiceWatchResourceTreeRequest {
 	return ApiApplicationServiceWatchResourceTreeRequest{
-		ApiService: a,
-		ctx: ctx,
+		ApiService:      a,
+		ctx:             ctx,
 		applicationName: applicationName,
 	}
 }
 
 // Execute executes the request
-//  @return StreamResultOfV1alpha1ApplicationTree
+//
+//	@return StreamResultOfV1alpha1ApplicationTree
 func (a *ApplicationServiceApiService) ApplicationServiceWatchResourceTreeExecute(r ApiApplicationServiceWatchResourceTreeRequest) (StreamResultOfV1alpha1ApplicationTree, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  StreamResultOfV1alpha1ApplicationTree
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue StreamResultOfV1alpha1ApplicationTree
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationServiceApiService.ApplicationServiceWatchResourceTree")
@@ -4233,13 +4285,13 @@ func (a *ApplicationServiceApiService) ApplicationServiceWatchResourceTreeExecut
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

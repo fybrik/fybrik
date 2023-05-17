@@ -17,9 +17,9 @@ import (
 // V1alpha1ConfigManagementPlugin struct for V1alpha1ConfigManagementPlugin
 type V1alpha1ConfigManagementPlugin struct {
 	Generate *V1alpha1Command `json:"generate,omitempty"`
-	Init *V1alpha1Command `json:"init,omitempty"`
-	LockRepo *bool `json:"lockRepo,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Init     *V1alpha1Command `json:"init,omitempty"`
+	LockRepo *bool            `json:"lockRepo,omitempty"`
+	Name     *string          `json:"name,omitempty"`
 }
 
 // NewV1alpha1ConfigManagementPlugin instantiates a new V1alpha1ConfigManagementPlugin object
@@ -219,5 +219,3 @@ func (v *NullableV1alpha1ConfigManagementPlugin) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

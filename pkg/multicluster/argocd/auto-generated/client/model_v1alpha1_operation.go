@@ -16,10 +16,10 @@ import (
 
 // V1alpha1Operation struct for V1alpha1Operation
 type V1alpha1Operation struct {
-	Info *[]V1alpha1Info `json:"info,omitempty"`
+	Info        *[]V1alpha1Info             `json:"info,omitempty"`
 	InitiatedBy *V1alpha1OperationInitiator `json:"initiatedBy,omitempty"`
-	Retry *V1alpha1RetryStrategy `json:"retry,omitempty"`
-	Sync *V1alpha1SyncOperation `json:"sync,omitempty"`
+	Retry       *V1alpha1RetryStrategy      `json:"retry,omitempty"`
+	Sync        *V1alpha1SyncOperation      `json:"sync,omitempty"`
 }
 
 // NewV1alpha1Operation instantiates a new V1alpha1Operation object
@@ -219,5 +219,3 @@ func (v *NullableV1alpha1Operation) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

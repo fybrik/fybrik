@@ -16,8 +16,8 @@ import (
 
 // V1alpha1JsonnetVar struct for V1alpha1JsonnetVar
 type V1alpha1JsonnetVar struct {
-	Code *bool `json:"code,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Code  *bool   `json:"code,omitempty"`
+	Name  *string `json:"name,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1JsonnetVar) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

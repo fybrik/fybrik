@@ -16,9 +16,9 @@ import (
 
 // ApplicationApplicationSyncWindowsResponse struct for ApplicationApplicationSyncWindowsResponse
 type ApplicationApplicationSyncWindowsResponse struct {
-	ActiveWindows *[]ApplicationApplicationSyncWindow `json:"activeWindows,omitempty"`
+	ActiveWindows   *[]ApplicationApplicationSyncWindow `json:"activeWindows,omitempty"`
 	AssignedWindows *[]ApplicationApplicationSyncWindow `json:"assignedWindows,omitempty"`
-	CanSync *bool `json:"canSync,omitempty"`
+	CanSync         *bool                               `json:"canSync,omitempty"`
 }
 
 // NewApplicationApplicationSyncWindowsResponse instantiates a new ApplicationApplicationSyncWindowsResponse object
@@ -183,5 +183,3 @@ func (v *NullableApplicationApplicationSyncWindowsResponse) UnmarshalJSON(src []
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

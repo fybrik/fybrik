@@ -16,8 +16,8 @@ import (
 
 // V1alpha1ClusterList ClusterList is a collection of Clusters.
 type V1alpha1ClusterList struct {
-	Items *[]V1alpha1Cluster `json:"items,omitempty"`
-	Metadata *V1ListMeta `json:"metadata,omitempty"`
+	Items    *[]V1alpha1Cluster `json:"items,omitempty"`
+	Metadata *V1ListMeta        `json:"metadata,omitempty"`
 }
 
 // NewV1alpha1ClusterList instantiates a new V1alpha1ClusterList object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1ClusterList) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

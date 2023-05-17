@@ -16,8 +16,8 @@ import (
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
 	_neturl "net/url"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 // Linger please
@@ -29,10 +29,10 @@ var (
 type ApplicationSetServiceApiService service
 
 type ApiApplicationSetServiceCreateRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationSetServiceApiService
-	body *V1alpha1ApplicationSet
-	upsert *bool
+	body       *V1alpha1ApplicationSet
+	upsert     *bool
 }
 
 func (r ApiApplicationSetServiceCreateRequest) Body(body V1alpha1ApplicationSet) ApiApplicationSetServiceCreateRequest {
@@ -51,24 +51,25 @@ func (r ApiApplicationSetServiceCreateRequest) Execute() (V1alpha1ApplicationSet
 /*
 ApplicationSetServiceCreate Create creates an applicationset
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationSetServiceCreateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationSetServiceCreateRequest
 */
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceCreate(ctx _context.Context) ApiApplicationSetServiceCreateRequest {
 	return ApiApplicationSetServiceCreateRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationSet
+//
+//	@return V1alpha1ApplicationSet
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceCreateExecute(r ApiApplicationSetServiceCreateRequest) (V1alpha1ApplicationSet, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationSet
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationSet
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationSetServiceApiService.ApplicationSetServiceCreate")
@@ -129,13 +130,13 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceCreateExecute(r A
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -152,11 +153,10 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceCreateExecute(r A
 }
 
 type ApiApplicationSetServiceDeleteRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationSetServiceApiService
-	name string
+	name       string
 }
-
 
 func (r ApiApplicationSetServiceDeleteRequest) Execute() (ApplicationsetApplicationSetResponse, *_nethttp.Response, error) {
 	return r.ApiService.ApplicationSetServiceDeleteExecute(r)
@@ -165,26 +165,27 @@ func (r ApiApplicationSetServiceDeleteRequest) Execute() (ApplicationsetApplicat
 /*
 ApplicationSetServiceDelete Delete deletes an application set
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name
- @return ApiApplicationSetServiceDeleteRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name
+	@return ApiApplicationSetServiceDeleteRequest
 */
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceDelete(ctx _context.Context, name string) ApiApplicationSetServiceDeleteRequest {
 	return ApiApplicationSetServiceDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return ApplicationsetApplicationSetResponse
+//
+//	@return ApplicationsetApplicationSetResponse
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceDeleteExecute(r ApiApplicationSetServiceDeleteRequest) (ApplicationsetApplicationSetResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  ApplicationsetApplicationSetResponse
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue ApplicationsetApplicationSetResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationSetServiceApiService.ApplicationSetServiceDelete")
@@ -238,13 +239,13 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceDeleteExecute(r A
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -261,11 +262,10 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceDeleteExecute(r A
 }
 
 type ApiApplicationSetServiceGetRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationSetServiceApiService
-	name string
+	name       string
 }
-
 
 func (r ApiApplicationSetServiceGetRequest) Execute() (V1alpha1ApplicationSet, *_nethttp.Response, error) {
 	return r.ApiService.ApplicationSetServiceGetExecute(r)
@@ -274,26 +274,27 @@ func (r ApiApplicationSetServiceGetRequest) Execute() (V1alpha1ApplicationSet, *
 /*
 ApplicationSetServiceGet Get returns an applicationset by name
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @param name the applicationsets's name
- @return ApiApplicationSetServiceGetRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param name the applicationsets's name
+	@return ApiApplicationSetServiceGetRequest
 */
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceGet(ctx _context.Context, name string) ApiApplicationSetServiceGetRequest {
 	return ApiApplicationSetServiceGetRequest{
 		ApiService: a,
-		ctx: ctx,
-		name: name,
+		ctx:        ctx,
+		name:       name,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationSet
+//
+//	@return V1alpha1ApplicationSet
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceGetExecute(r ApiApplicationSetServiceGetRequest) (V1alpha1ApplicationSet, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationSet
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationSet
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationSetServiceApiService.ApplicationSetServiceGet")
@@ -347,13 +348,13 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceGetExecute(r ApiA
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -370,10 +371,10 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceGetExecute(r ApiA
 }
 
 type ApiApplicationSetServiceListRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *ApplicationSetServiceApiService
-	projects *[]string
-	selector *string
+	projects   *[]string
+	selector   *string
 }
 
 // the project names to restrict returned list applicationsets.
@@ -381,6 +382,7 @@ func (r ApiApplicationSetServiceListRequest) Projects(projects []string) ApiAppl
 	r.projects = &projects
 	return r
 }
+
 // the selector to restrict returned list to applications only with matched labels.
 func (r ApiApplicationSetServiceListRequest) Selector(selector string) ApiApplicationSetServiceListRequest {
 	r.selector = &selector
@@ -394,24 +396,25 @@ func (r ApiApplicationSetServiceListRequest) Execute() (V1alpha1ApplicationSetLi
 /*
 ApplicationSetServiceList List returns list of applicationset
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiApplicationSetServiceListRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiApplicationSetServiceListRequest
 */
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceList(ctx _context.Context) ApiApplicationSetServiceListRequest {
 	return ApiApplicationSetServiceListRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return V1alpha1ApplicationSetList
+//
+//	@return V1alpha1ApplicationSetList
 func (a *ApplicationSetServiceApiService) ApplicationSetServiceListExecute(r ApiApplicationSetServiceListRequest) (V1alpha1ApplicationSetList, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  V1alpha1ApplicationSetList
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue V1alpha1ApplicationSetList
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ApplicationSetServiceApiService.ApplicationSetServiceList")
@@ -478,13 +481,13 @@ func (a *ApplicationSetServiceApiService) ApplicationSetServiceListExecute(r Api
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

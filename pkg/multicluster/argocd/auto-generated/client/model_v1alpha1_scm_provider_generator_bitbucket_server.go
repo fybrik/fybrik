@@ -19,7 +19,7 @@ type V1alpha1SCMProviderGeneratorBitbucketServer struct {
 	// Scan all branches instead of just the default branch.
 	AllBranches *bool `json:"allBranches,omitempty"`
 	// The Bitbucket Server REST API URL to talk to. Required.
-	Api *string `json:"api,omitempty"`
+	Api       *string                           `json:"api,omitempty"`
 	BasicAuth *V1alpha1BasicAuthBitbucketServer `json:"basicAuth,omitempty"`
 	// Project to scan. Required.
 	Project *string `json:"project,omitempty"`
@@ -222,5 +222,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorBitbucketServer) UnmarshalJSON(src 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

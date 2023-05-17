@@ -17,7 +17,7 @@ import (
 // RepositoryRefs struct for RepositoryRefs
 type RepositoryRefs struct {
 	Branches *[]string `json:"branches,omitempty"`
-	Tags *[]string `json:"tags,omitempty"`
+	Tags     *[]string `json:"tags,omitempty"`
 }
 
 // NewRepositoryRefs instantiates a new RepositoryRefs object
@@ -147,5 +147,3 @@ func (v *NullableRepositoryRefs) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

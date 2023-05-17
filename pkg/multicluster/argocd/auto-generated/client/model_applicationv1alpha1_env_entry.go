@@ -16,7 +16,7 @@ import (
 
 // Applicationv1alpha1EnvEntry struct for Applicationv1alpha1EnvEntry
 type Applicationv1alpha1EnvEntry struct {
-	Name *string `json:"name,omitempty"`
+	Name  *string `json:"name,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
@@ -147,5 +147,3 @@ func (v *NullableApplicationv1alpha1EnvEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -17,11 +17,11 @@ import (
 // V1alpha1SCMProviderGeneratorBitbucket SCMProviderGeneratorBitbucket defines connection info specific to Bitbucket Cloud (API version 2).
 type V1alpha1SCMProviderGeneratorBitbucket struct {
 	// Scan all branches instead of just the main branch.
-	AllBranches *bool `json:"allBranches,omitempty"`
+	AllBranches    *bool              `json:"allBranches,omitempty"`
 	AppPasswordRef *V1alpha1SecretRef `json:"appPasswordRef,omitempty"`
 	// Bitbucket workspace to scan. Required.
 	Owner *string `json:"owner,omitempty"`
-	User *string `json:"user,omitempty"`
+	User  *string `json:"user,omitempty"`
 }
 
 // NewV1alpha1SCMProviderGeneratorBitbucket instantiates a new V1alpha1SCMProviderGeneratorBitbucket object
@@ -221,5 +221,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorBitbucket) UnmarshalJSON(src []byte
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

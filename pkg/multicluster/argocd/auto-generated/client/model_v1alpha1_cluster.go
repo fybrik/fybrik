@@ -18,18 +18,18 @@ import (
 type V1alpha1Cluster struct {
 	Annotations *map[string]string `json:"annotations,omitempty"`
 	// Indicates if cluster level resources should be managed. This setting is used only if cluster is connected in a namespaced mode.
-	ClusterResources *bool `json:"clusterResources,omitempty"`
-	Config *V1alpha1ClusterConfig `json:"config,omitempty"`
-	ConnectionState *V1alpha1ConnectionState `json:"connectionState,omitempty"`
-	Info *V1alpha1ClusterInfo `json:"info,omitempty"`
-	Labels *map[string]string `json:"labels,omitempty"`
-	Name *string `json:"name,omitempty"`
+	ClusterResources *bool                    `json:"clusterResources,omitempty"`
+	Config           *V1alpha1ClusterConfig   `json:"config,omitempty"`
+	ConnectionState  *V1alpha1ConnectionState `json:"connectionState,omitempty"`
+	Info             *V1alpha1ClusterInfo     `json:"info,omitempty"`
+	Labels           *map[string]string       `json:"labels,omitempty"`
+	Name             *string                  `json:"name,omitempty"`
 	// Holds list of namespaces which are accessible in that cluster. Cluster level resources will be ignored if namespace list is not empty.
-	Namespaces *[]string `json:"namespaces,omitempty"`
-	Project *string `json:"project,omitempty"`
-	RefreshRequestedAt *string `json:"refreshRequestedAt,omitempty"`
-	Server *string `json:"server,omitempty"`
-	ServerVersion *string `json:"serverVersion,omitempty"`
+	Namespaces         *[]string `json:"namespaces,omitempty"`
+	Project            *string   `json:"project,omitempty"`
+	RefreshRequestedAt *string   `json:"refreshRequestedAt,omitempty"`
+	Server             *string   `json:"server,omitempty"`
+	ServerVersion      *string   `json:"serverVersion,omitempty"`
 	// Shard contains optional shard number. Calculated on the fly by the application controller if not specified.
 	Shard *string `json:"shard,omitempty"`
 }
@@ -546,5 +546,3 @@ func (v *NullableV1alpha1Cluster) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

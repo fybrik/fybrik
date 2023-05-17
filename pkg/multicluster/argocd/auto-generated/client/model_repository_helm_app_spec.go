@@ -17,10 +17,10 @@ import (
 // RepositoryHelmAppSpec struct for RepositoryHelmAppSpec
 type RepositoryHelmAppSpec struct {
 	FileParameters *[]V1alpha1HelmFileParameter `json:"fileParameters,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Parameters *[]V1alpha1HelmParameter `json:"parameters,omitempty"`
-	ValueFiles *[]string `json:"valueFiles,omitempty"`
-	Values *string `json:"values,omitempty"`
+	Name           *string                      `json:"name,omitempty"`
+	Parameters     *[]V1alpha1HelmParameter     `json:"parameters,omitempty"`
+	ValueFiles     *[]string                    `json:"valueFiles,omitempty"`
+	Values         *string                      `json:"values,omitempty"`
 }
 
 // NewRepositoryHelmAppSpec instantiates a new RepositoryHelmAppSpec object
@@ -255,5 +255,3 @@ func (v *NullableRepositoryHelmAppSpec) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

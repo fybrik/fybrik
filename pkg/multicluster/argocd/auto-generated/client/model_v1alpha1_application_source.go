@@ -17,15 +17,15 @@ import (
 // V1alpha1ApplicationSource struct for V1alpha1ApplicationSource
 type V1alpha1ApplicationSource struct {
 	// Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
-	Chart *string `json:"chart,omitempty"`
+	Chart     *string                             `json:"chart,omitempty"`
 	Directory *V1alpha1ApplicationSourceDirectory `json:"directory,omitempty"`
-	Helm *V1alpha1ApplicationSourceHelm `json:"helm,omitempty"`
+	Helm      *V1alpha1ApplicationSourceHelm      `json:"helm,omitempty"`
 	Kustomize *V1alpha1ApplicationSourceKustomize `json:"kustomize,omitempty"`
 	// Path is a directory path within the Git repository, and is only valid for applications sourced from Git.
-	Path *string `json:"path,omitempty"`
+	Path   *string                          `json:"path,omitempty"`
 	Plugin *V1alpha1ApplicationSourcePlugin `json:"plugin,omitempty"`
 	// Ref is reference to another source within sources field. This field will not be used if used with a `source` tag.
-	Ref *string `json:"ref,omitempty"`
+	Ref     *string `json:"ref,omitempty"`
 	RepoURL *string `json:"repoURL,omitempty"`
 	// TargetRevision defines the revision of the source to sync the application to. In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
 	TargetRevision *string `json:"targetRevision,omitempty"`
@@ -403,5 +403,3 @@ func (v *NullableV1alpha1ApplicationSource) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

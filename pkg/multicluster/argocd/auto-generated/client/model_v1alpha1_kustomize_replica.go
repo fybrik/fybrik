@@ -17,7 +17,7 @@ import (
 // V1alpha1KustomizeReplica struct for V1alpha1KustomizeReplica
 type V1alpha1KustomizeReplica struct {
 	Count *IntstrIntOrString `json:"count,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Name  *string            `json:"name,omitempty"`
 }
 
 // NewV1alpha1KustomizeReplica instantiates a new V1alpha1KustomizeReplica object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1KustomizeReplica) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

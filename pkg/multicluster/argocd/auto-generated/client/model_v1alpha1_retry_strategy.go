@@ -17,7 +17,7 @@ import (
 // V1alpha1RetryStrategy struct for V1alpha1RetryStrategy
 type V1alpha1RetryStrategy struct {
 	Backoff *V1alpha1Backoff `json:"backoff,omitempty"`
-	Limit *int32 `json:"limit,omitempty"`
+	Limit   *int32           `json:"limit,omitempty"`
 }
 
 // NewV1alpha1RetryStrategy instantiates a new V1alpha1RetryStrategy object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1RetryStrategy) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

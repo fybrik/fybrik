@@ -16,8 +16,8 @@ import (
 
 // V1alpha1Backoff struct for V1alpha1Backoff
 type V1alpha1Backoff struct {
-	Duration *string `json:"duration,omitempty"`
-	Factor *string `json:"factor,omitempty"`
+	Duration    *string `json:"duration,omitempty"`
+	Factor      *string `json:"factor,omitempty"`
 	MaxDuration *string `json:"maxDuration,omitempty"`
 }
 
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1Backoff) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

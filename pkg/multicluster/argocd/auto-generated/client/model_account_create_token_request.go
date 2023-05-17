@@ -17,8 +17,8 @@ import (
 // AccountCreateTokenRequest struct for AccountCreateTokenRequest
 type AccountCreateTokenRequest struct {
 	ExpiresIn *string `json:"expiresIn,omitempty"`
-	Id *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Id        *string `json:"id,omitempty"`
+	Name      *string `json:"name,omitempty"`
 }
 
 // NewAccountCreateTokenRequest instantiates a new AccountCreateTokenRequest object
@@ -183,5 +183,3 @@ func (v *NullableAccountCreateTokenRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

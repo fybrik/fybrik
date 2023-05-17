@@ -18,8 +18,8 @@ import (
 type V1LabelSelectorRequirement struct {
 	Key *string `json:"key,omitempty"`
 	// operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
-	Operator *string `json:"operator,omitempty"`
-	Values *[]string `json:"values,omitempty"`
+	Operator *string   `json:"operator,omitempty"`
+	Values   *[]string `json:"values,omitempty"`
 }
 
 // NewV1LabelSelectorRequirement instantiates a new V1LabelSelectorRequirement object
@@ -184,5 +184,3 @@ func (v *NullableV1LabelSelectorRequirement) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

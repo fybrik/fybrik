@@ -16,11 +16,11 @@ import (
 
 // V1alpha1SyncOperationResult struct for V1alpha1SyncOperationResult
 type V1alpha1SyncOperationResult struct {
-	Resources *[]V1alpha1ResourceResult `json:"resources,omitempty"`
-	Revision *string `json:"revision,omitempty"`
-	Revisions *[]string `json:"revisions,omitempty"`
-	Source *V1alpha1ApplicationSource `json:"source,omitempty"`
-	Sources *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
+	Resources *[]V1alpha1ResourceResult    `json:"resources,omitempty"`
+	Revision  *string                      `json:"revision,omitempty"`
+	Revisions *[]string                    `json:"revisions,omitempty"`
+	Source    *V1alpha1ApplicationSource   `json:"source,omitempty"`
+	Sources   *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
 }
 
 // NewV1alpha1SyncOperationResult instantiates a new V1alpha1SyncOperationResult object
@@ -255,5 +255,3 @@ func (v *NullableV1alpha1SyncOperationResult) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -16,15 +16,15 @@ import (
 
 // V1alpha1ApplicationSourceHelm struct for V1alpha1ApplicationSourceHelm
 type V1alpha1ApplicationSourceHelm struct {
-	FileParameters *[]V1alpha1HelmFileParameter `json:"fileParameters,omitempty"`
-	IgnoreMissingValueFiles *bool `json:"ignoreMissingValueFiles,omitempty"`
-	Parameters *[]V1alpha1HelmParameter `json:"parameters,omitempty"`
-	PassCredentials *bool `json:"passCredentials,omitempty"`
-	ReleaseName *string `json:"releaseName,omitempty"`
-	SkipCrds *bool `json:"skipCrds,omitempty"`
-	ValueFiles *[]string `json:"valueFiles,omitempty"`
-	Values *string `json:"values,omitempty"`
-	Version *string `json:"version,omitempty"`
+	FileParameters          *[]V1alpha1HelmFileParameter `json:"fileParameters,omitempty"`
+	IgnoreMissingValueFiles *bool                        `json:"ignoreMissingValueFiles,omitempty"`
+	Parameters              *[]V1alpha1HelmParameter     `json:"parameters,omitempty"`
+	PassCredentials         *bool                        `json:"passCredentials,omitempty"`
+	ReleaseName             *string                      `json:"releaseName,omitempty"`
+	SkipCrds                *bool                        `json:"skipCrds,omitempty"`
+	ValueFiles              *[]string                    `json:"valueFiles,omitempty"`
+	Values                  *string                      `json:"values,omitempty"`
+	Version                 *string                      `json:"version,omitempty"`
 }
 
 // NewV1alpha1ApplicationSourceHelm instantiates a new V1alpha1ApplicationSourceHelm object
@@ -399,5 +399,3 @@ func (v *NullableV1alpha1ApplicationSourceHelm) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

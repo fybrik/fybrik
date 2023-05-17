@@ -16,7 +16,7 @@ import (
 
 // ClusterClusterID struct for ClusterClusterID
 type ClusterClusterID struct {
-	Type *string `json:"type,omitempty"`
+	Type  *string `json:"type,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
@@ -147,5 +147,3 @@ func (v *NullableClusterClusterID) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

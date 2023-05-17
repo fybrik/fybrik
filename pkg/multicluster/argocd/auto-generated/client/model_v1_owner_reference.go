@@ -17,12 +17,12 @@ import (
 // V1OwnerReference struct for V1OwnerReference
 type V1OwnerReference struct {
 	// API version of the referent.
-	ApiVersion *string `json:"apiVersion,omitempty"`
-	BlockOwnerDeletion *bool `json:"blockOwnerDeletion,omitempty"`
-	Controller *bool `json:"controller,omitempty"`
-	Kind *string `json:"kind,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Uid *string `json:"uid,omitempty"`
+	ApiVersion         *string `json:"apiVersion,omitempty"`
+	BlockOwnerDeletion *bool   `json:"blockOwnerDeletion,omitempty"`
+	Controller         *bool   `json:"controller,omitempty"`
+	Kind               *string `json:"kind,omitempty"`
+	Name               *string `json:"name,omitempty"`
+	Uid                *string `json:"uid,omitempty"`
 }
 
 // NewV1OwnerReference instantiates a new V1OwnerReference object
@@ -292,5 +292,3 @@ func (v *NullableV1OwnerReference) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

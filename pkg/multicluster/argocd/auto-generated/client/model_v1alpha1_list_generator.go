@@ -16,9 +16,9 @@ import (
 
 // V1alpha1ListGenerator struct for V1alpha1ListGenerator
 type V1alpha1ListGenerator struct {
-	Elements *[]V1JSON `json:"elements,omitempty"`
-	ElementsYaml *string `json:"elementsYaml,omitempty"`
-	Template *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
+	Elements     *[]V1JSON                       `json:"elements,omitempty"`
+	ElementsYaml *string                         `json:"elementsYaml,omitempty"`
+	Template     *V1alpha1ApplicationSetTemplate `json:"template,omitempty"`
 }
 
 // NewV1alpha1ListGenerator instantiates a new V1alpha1ListGenerator object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1ListGenerator) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

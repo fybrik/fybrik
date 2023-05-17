@@ -27,9 +27,9 @@ var (
 type SessionServiceApiService service
 
 type ApiSessionServiceCreateRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *SessionServiceApiService
-	body *SessionSessionCreateRequest
+	body       *SessionSessionCreateRequest
 }
 
 func (r ApiSessionServiceCreateRequest) Body(body SessionSessionCreateRequest) ApiSessionServiceCreateRequest {
@@ -44,24 +44,25 @@ func (r ApiSessionServiceCreateRequest) Execute() (SessionSessionResponse, *_net
 /*
 SessionServiceCreate Create a new JWT for authentication and set a cookie if using HTTP
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiSessionServiceCreateRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSessionServiceCreateRequest
 */
 func (a *SessionServiceApiService) SessionServiceCreate(ctx _context.Context) ApiSessionServiceCreateRequest {
 	return ApiSessionServiceCreateRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return SessionSessionResponse
+//
+//	@return SessionSessionResponse
 func (a *SessionServiceApiService) SessionServiceCreateExecute(r ApiSessionServiceCreateRequest) (SessionSessionResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  SessionSessionResponse
+		localVarHTTPMethod  = _nethttp.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue SessionSessionResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SessionServiceApiService.SessionServiceCreate")
@@ -119,13 +120,13 @@ func (a *SessionServiceApiService) SessionServiceCreateExecute(r ApiSessionServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -142,10 +143,9 @@ func (a *SessionServiceApiService) SessionServiceCreateExecute(r ApiSessionServi
 }
 
 type ApiSessionServiceDeleteRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *SessionServiceApiService
 }
-
 
 func (r ApiSessionServiceDeleteRequest) Execute() (SessionSessionResponse, *_nethttp.Response, error) {
 	return r.ApiService.SessionServiceDeleteExecute(r)
@@ -154,24 +154,25 @@ func (r ApiSessionServiceDeleteRequest) Execute() (SessionSessionResponse, *_net
 /*
 SessionServiceDelete Delete an existing JWT cookie if using HTTP
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiSessionServiceDeleteRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSessionServiceDeleteRequest
 */
 func (a *SessionServiceApiService) SessionServiceDelete(ctx _context.Context) ApiSessionServiceDeleteRequest {
 	return ApiSessionServiceDeleteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return SessionSessionResponse
+//
+//	@return SessionSessionResponse
 func (a *SessionServiceApiService) SessionServiceDeleteExecute(r ApiSessionServiceDeleteRequest) (SessionSessionResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodDelete
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  SessionSessionResponse
+		localVarHTTPMethod  = _nethttp.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue SessionSessionResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SessionServiceApiService.SessionServiceDelete")
@@ -224,13 +225,13 @@ func (a *SessionServiceApiService) SessionServiceDeleteExecute(r ApiSessionServi
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
@@ -247,10 +248,9 @@ func (a *SessionServiceApiService) SessionServiceDeleteExecute(r ApiSessionServi
 }
 
 type ApiSessionServiceGetUserInfoRequest struct {
-	ctx _context.Context
+	ctx        _context.Context
 	ApiService *SessionServiceApiService
 }
-
 
 func (r ApiSessionServiceGetUserInfoRequest) Execute() (SessionGetUserInfoResponse, *_nethttp.Response, error) {
 	return r.ApiService.SessionServiceGetUserInfoExecute(r)
@@ -259,24 +259,25 @@ func (r ApiSessionServiceGetUserInfoRequest) Execute() (SessionGetUserInfoRespon
 /*
 SessionServiceGetUserInfo Get the current user's info
 
- @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiSessionServiceGetUserInfoRequest
+	@param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiSessionServiceGetUserInfoRequest
 */
 func (a *SessionServiceApiService) SessionServiceGetUserInfo(ctx _context.Context) ApiSessionServiceGetUserInfoRequest {
 	return ApiSessionServiceGetUserInfoRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
 // Execute executes the request
-//  @return SessionGetUserInfoResponse
+//
+//	@return SessionGetUserInfoResponse
 func (a *SessionServiceApiService) SessionServiceGetUserInfoExecute(r ApiSessionServiceGetUserInfoRequest) (SessionGetUserInfoResponse, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodGet
-		localVarPostBody     interface{}
-		formFiles            []formFile
-		localVarReturnValue  SessionGetUserInfoResponse
+		localVarHTTPMethod  = _nethttp.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue SessionGetUserInfoResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SessionServiceApiService.SessionServiceGetUserInfo")
@@ -329,13 +330,13 @@ func (a *SessionServiceApiService) SessionServiceGetUserInfoExecute(r ApiSession
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-			var v RuntimeError
-			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
-			if err != nil {
-				newErr.error = err.Error()
-				return localVarReturnValue, localVarHTTPResponse, newErr
-			}
-			newErr.model = v
+		var v RuntimeError
+		err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+		if err != nil {
+			newErr.error = err.Error()
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		newErr.model = v
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 

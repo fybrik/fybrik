@@ -17,7 +17,7 @@ import (
 // ProjectProjectCreateRequest ProjectCreateRequest defines project creation parameters.
 type ProjectProjectCreateRequest struct {
 	Project *V1alpha1AppProject `json:"project,omitempty"`
-	Upsert *bool `json:"upsert,omitempty"`
+	Upsert  *bool               `json:"upsert,omitempty"`
 }
 
 // NewProjectProjectCreateRequest instantiates a new ProjectProjectCreateRequest object
@@ -147,5 +147,3 @@ func (v *NullableProjectProjectCreateRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

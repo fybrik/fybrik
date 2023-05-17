@@ -17,8 +17,8 @@ import (
 // V1alpha1OrphanedResourceKey struct for V1alpha1OrphanedResourceKey
 type V1alpha1OrphanedResourceKey struct {
 	Group *string `json:"group,omitempty"`
-	Kind *string `json:"kind,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Kind  *string `json:"kind,omitempty"`
+	Name  *string `json:"name,omitempty"`
 }
 
 // NewV1alpha1OrphanedResourceKey instantiates a new V1alpha1OrphanedResourceKey object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1OrphanedResourceKey) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

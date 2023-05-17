@@ -16,8 +16,8 @@ import (
 
 // V1alpha1GitDirectoryGeneratorItem struct for V1alpha1GitDirectoryGeneratorItem
 type V1alpha1GitDirectoryGeneratorItem struct {
-	Exclude *bool `json:"exclude,omitempty"`
-	Path *string `json:"path,omitempty"`
+	Exclude *bool   `json:"exclude,omitempty"`
+	Path    *string `json:"path,omitempty"`
 }
 
 // NewV1alpha1GitDirectoryGeneratorItem instantiates a new V1alpha1GitDirectoryGeneratorItem object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1GitDirectoryGeneratorItem) UnmarshalJSON(src []byte) er
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

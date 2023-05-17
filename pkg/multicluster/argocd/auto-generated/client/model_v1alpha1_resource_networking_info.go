@@ -17,11 +17,11 @@ import (
 // V1alpha1ResourceNetworkingInfo struct for V1alpha1ResourceNetworkingInfo
 type V1alpha1ResourceNetworkingInfo struct {
 	// ExternalURLs holds list of URLs which should be available externally. List is populated for ingress resources using rules hostnames.
-	ExternalURLs *[]string `json:"externalURLs,omitempty"`
-	Ingress *[]V1LoadBalancerIngress `json:"ingress,omitempty"`
-	Labels *map[string]string `json:"labels,omitempty"`
-	TargetLabels *map[string]string `json:"targetLabels,omitempty"`
-	TargetRefs *[]V1alpha1ResourceRef `json:"targetRefs,omitempty"`
+	ExternalURLs *[]string                `json:"externalURLs,omitempty"`
+	Ingress      *[]V1LoadBalancerIngress `json:"ingress,omitempty"`
+	Labels       *map[string]string       `json:"labels,omitempty"`
+	TargetLabels *map[string]string       `json:"targetLabels,omitempty"`
+	TargetRefs   *[]V1alpha1ResourceRef   `json:"targetRefs,omitempty"`
 }
 
 // NewV1alpha1ResourceNetworkingInfo instantiates a new V1alpha1ResourceNetworkingInfo object
@@ -256,5 +256,3 @@ func (v *NullableV1alpha1ResourceNetworkingInfo) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

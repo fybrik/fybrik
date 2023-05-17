@@ -17,8 +17,8 @@ import (
 // V1alpha1ConnectionState struct for V1alpha1ConnectionState
 type V1alpha1ConnectionState struct {
 	AttemptedAt *string `json:"attemptedAt,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Status *string `json:"status,omitempty"`
+	Message     *string `json:"message,omitempty"`
+	Status      *string `json:"status,omitempty"`
 }
 
 // NewV1alpha1ConnectionState instantiates a new V1alpha1ConnectionState object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1ConnectionState) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

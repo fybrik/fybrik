@@ -16,8 +16,8 @@ import (
 
 // V1PortStatus struct for V1PortStatus
 type V1PortStatus struct {
-	Error *string `json:"error,omitempty"`
-	Port *int32 `json:"port,omitempty"`
+	Error    *string `json:"error,omitempty"`
+	Port     *int32  `json:"port,omitempty"`
 	Protocol *string `json:"protocol,omitempty"`
 }
 
@@ -183,5 +183,3 @@ func (v *NullableV1PortStatus) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

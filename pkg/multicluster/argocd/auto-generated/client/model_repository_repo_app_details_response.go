@@ -16,11 +16,11 @@ import (
 
 // RepositoryRepoAppDetailsResponse struct for RepositoryRepoAppDetailsResponse
 type RepositoryRepoAppDetailsResponse struct {
-	Directory *map[string]interface{} `json:"directory,omitempty"`
-	Helm *RepositoryHelmAppSpec `json:"helm,omitempty"`
+	Directory *map[string]interface{}     `json:"directory,omitempty"`
+	Helm      *RepositoryHelmAppSpec      `json:"helm,omitempty"`
 	Kustomize *RepositoryKustomizeAppSpec `json:"kustomize,omitempty"`
-	Plugin *RepositoryPluginAppSpec `json:"plugin,omitempty"`
-	Type *string `json:"type,omitempty"`
+	Plugin    *RepositoryPluginAppSpec    `json:"plugin,omitempty"`
+	Type      *string                     `json:"type,omitempty"`
 }
 
 // NewRepositoryRepoAppDetailsResponse instantiates a new RepositoryRepoAppDetailsResponse object
@@ -255,5 +255,3 @@ func (v *NullableRepositoryRepoAppDetailsResponse) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

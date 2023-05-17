@@ -16,11 +16,11 @@ import (
 
 // V1alpha1ApplicationSetApplicationStatus struct for V1alpha1ApplicationSetApplicationStatus
 type V1alpha1ApplicationSetApplicationStatus struct {
-	Application *string `json:"application,omitempty"`
+	Application        *string `json:"application,omitempty"`
 	LastTransitionTime *string `json:"lastTransitionTime,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Status *string `json:"status,omitempty"`
-	Step *string `json:"step,omitempty"`
+	Message            *string `json:"message,omitempty"`
+	Status             *string `json:"status,omitempty"`
+	Step               *string `json:"step,omitempty"`
 }
 
 // NewV1alpha1ApplicationSetApplicationStatus instantiates a new V1alpha1ApplicationSetApplicationStatus object
@@ -255,5 +255,3 @@ func (v *NullableV1alpha1ApplicationSetApplicationStatus) UnmarshalJSON(src []by
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

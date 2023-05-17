@@ -17,7 +17,7 @@ import (
 // V1alpha1ApplicationWatchEvent ApplicationWatchEvent contains information about application change.
 type V1alpha1ApplicationWatchEvent struct {
 	Application *V1alpha1Application `json:"application,omitempty"`
-	Type *string `json:"type,omitempty"`
+	Type        *string              `json:"type,omitempty"`
 }
 
 // NewV1alpha1ApplicationWatchEvent instantiates a new V1alpha1ApplicationWatchEvent object
@@ -147,5 +147,3 @@ func (v *NullableV1alpha1ApplicationWatchEvent) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

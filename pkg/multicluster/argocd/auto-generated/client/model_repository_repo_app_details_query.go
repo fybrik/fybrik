@@ -16,9 +16,9 @@ import (
 
 // RepositoryRepoAppDetailsQuery struct for RepositoryRepoAppDetailsQuery
 type RepositoryRepoAppDetailsQuery struct {
-	AppName *string `json:"appName,omitempty"`
-	AppProject *string `json:"appProject,omitempty"`
-	Source *V1alpha1ApplicationSource `json:"source,omitempty"`
+	AppName    *string                    `json:"appName,omitempty"`
+	AppProject *string                    `json:"appProject,omitempty"`
+	Source     *V1alpha1ApplicationSource `json:"source,omitempty"`
 }
 
 // NewRepositoryRepoAppDetailsQuery instantiates a new RepositoryRepoAppDetailsQuery object
@@ -183,5 +183,3 @@ func (v *NullableRepositoryRepoAppDetailsQuery) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

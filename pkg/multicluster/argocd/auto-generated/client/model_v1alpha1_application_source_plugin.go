@@ -16,8 +16,8 @@ import (
 
 // V1alpha1ApplicationSourcePlugin struct for V1alpha1ApplicationSourcePlugin
 type V1alpha1ApplicationSourcePlugin struct {
-	Env *[]Applicationv1alpha1EnvEntry `json:"env,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Env        *[]Applicationv1alpha1EnvEntry              `json:"env,omitempty"`
+	Name       *string                                     `json:"name,omitempty"`
 	Parameters *[]V1alpha1ApplicationSourcePluginParameter `json:"parameters,omitempty"`
 }
 
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1ApplicationSourcePlugin) UnmarshalJSON(src []byte) erro
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

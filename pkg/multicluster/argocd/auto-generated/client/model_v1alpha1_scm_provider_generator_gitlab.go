@@ -21,9 +21,9 @@ type V1alpha1SCMProviderGeneratorGitlab struct {
 	// The Gitlab API URL to talk to.
 	Api *string `json:"api,omitempty"`
 	// Gitlab group to scan. Required.  You can use either the project id (recommended) or the full namespaced path.
-	Group *string `json:"group,omitempty"`
-	IncludeSubgroups *bool `json:"includeSubgroups,omitempty"`
-	TokenRef *V1alpha1SecretRef `json:"tokenRef,omitempty"`
+	Group            *string            `json:"group,omitempty"`
+	IncludeSubgroups *bool              `json:"includeSubgroups,omitempty"`
+	TokenRef         *V1alpha1SecretRef `json:"tokenRef,omitempty"`
 }
 
 // NewV1alpha1SCMProviderGeneratorGitlab instantiates a new V1alpha1SCMProviderGeneratorGitlab object
@@ -258,5 +258,3 @@ func (v *NullableV1alpha1SCMProviderGeneratorGitlab) UnmarshalJSON(src []byte) e
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

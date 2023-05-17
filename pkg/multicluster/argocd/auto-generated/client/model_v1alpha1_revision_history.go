@@ -16,13 +16,13 @@ import (
 
 // V1alpha1RevisionHistory struct for V1alpha1RevisionHistory
 type V1alpha1RevisionHistory struct {
-	DeployStartedAt *string `json:"deployStartedAt,omitempty"`
-	DeployedAt *string `json:"deployedAt,omitempty"`
-	Id *int32 `json:"id,omitempty"`
-	Revision *string `json:"revision,omitempty"`
-	Revisions *[]string `json:"revisions,omitempty"`
-	Source *V1alpha1ApplicationSource `json:"source,omitempty"`
-	Sources *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
+	DeployStartedAt *string                      `json:"deployStartedAt,omitempty"`
+	DeployedAt      *string                      `json:"deployedAt,omitempty"`
+	Id              *int32                       `json:"id,omitempty"`
+	Revision        *string                      `json:"revision,omitempty"`
+	Revisions       *[]string                    `json:"revisions,omitempty"`
+	Source          *V1alpha1ApplicationSource   `json:"source,omitempty"`
+	Sources         *[]V1alpha1ApplicationSource `json:"sources,omitempty"`
 }
 
 // NewV1alpha1RevisionHistory instantiates a new V1alpha1RevisionHistory object
@@ -327,5 +327,3 @@ func (v *NullableV1alpha1RevisionHistory) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

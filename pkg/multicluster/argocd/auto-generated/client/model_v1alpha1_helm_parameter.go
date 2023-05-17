@@ -16,9 +16,9 @@ import (
 
 // V1alpha1HelmParameter struct for V1alpha1HelmParameter
 type V1alpha1HelmParameter struct {
-	ForceString *bool `json:"forceString,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Value *string `json:"value,omitempty"`
+	ForceString *bool   `json:"forceString,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Value       *string `json:"value,omitempty"`
 }
 
 // NewV1alpha1HelmParameter instantiates a new V1alpha1HelmParameter object
@@ -183,5 +183,3 @@ func (v *NullableV1alpha1HelmParameter) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-
