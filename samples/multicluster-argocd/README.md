@@ -157,6 +157,8 @@ kubectl apply -f samples/multicluster-argocd/cert-manager-appset.yaml
 ```
 
 Please note that the deployments are automatically synced as defined in the applications.
+To view the status of the deployments in Argo CD GUI please press the `Applications` bottom on the right bar in the GUI.
+The deployments should be in `Synced` state.
 
 ### Fybrik deployment using Argo CD
 
@@ -229,8 +231,9 @@ kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-con
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml
 ```
 
-As the application contains automatic sync the deployment of Fybrik CRD and Fybrik should be done automatically
-on the cluster. This can be verified in Argocd GUI by pressing the `Applications` button and checking the applications status.
+Please note that the deployments are automatically synced as defined in the applications.
+To view the status of the deployments in Argo CD GUI please press the `Applications` bottom on the right bar in the GUI.
+The deployments should be in `Synced` state.
 
 ## Deploy Fybrik modules
 
@@ -275,7 +278,7 @@ kubectl apply -f samples/multicluster-argocd/blueprints-appset.yaml
 
 # Run the notebook read flow sample
 
-Execute the (`before we begin`)[https://fybrik.io/v1.3/samples/pre-steps/] section and (notebook-read)(https://fybrik.io/v1.3/samples/notebook-read/) section, using the katalog as data catalog. Stop before `Create a FybrikApplication resource for the notebook` section.
+Execute the [`before we begin`](https://fybrik.io/v1.3/samples/pre-steps/) section and [notebook-read](https://fybrik.io/v1.3/samples/notebook-read/) section, using the katalog as data catalog. Stop before `Create a FybrikApplication resource for the notebook` section.
 
 ### Apply Fybrik application
 
@@ -304,7 +307,9 @@ spec:
 EOF
 
 
-Run the following command to wait until the FybrikApplication is ready
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
+
+Then Run the following command to wait until the FybrikApplication is ready
 
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
