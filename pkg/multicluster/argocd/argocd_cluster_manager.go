@@ -8,7 +8,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -47,6 +46,7 @@ const (
 	failToListClustersErrMsg          = "Failed to list clusters"
 	failedToCreateBlueprintErrMsg     = "Failed to create blueprint"
 	failedToCreateBlueprintsDirErrMsg = "Failed to create blueprints directory"
+	failedToDeleteBlueprintErrMsg     = "Failed to delete blueprint"
 	applicationsNamespace             = "argocd"
 )
 
@@ -87,8 +87,14 @@ func (cm *argocdClusterManager) doGitCommitAndPush(repo *git.Repository, w *git.
 			When:  time.Now(),
 		},
 	})
+	if err != nil {
+		return err
+	}
 
 	remote, err := repo.Remote(gitOrigin)
+	if err != nil {
+		return err
+	}
 
 	cm.log.Info().Msg("commit hash " + commit.String())
 	po := &git.PushOptions{
@@ -180,10 +186,12 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 	return nil
 }
 
-func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoUser, gitRepoPassword,
+func NewArgoCDClusterManager(connectionURL, user, password, gitRepoURL, gitRepoUser, gitRepoPassword,
 	argocdFybrikAppsNamePrefix string) (multicluster.ClusterManager, error) {
 	logger := logging.LogInit(logging.SETUP, "ArgoCDManager")
 	tlsConfig := &tls.Config{
+		// FIXME: handle TLS properly
+		// #nosec G402
 		InsecureSkipVerify: true,
 	}
 	retryClient := retryablehttp.NewClient()
@@ -210,6 +218,7 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoU
 	sess := apiClient.SessionServiceApi.SessionServiceCreate(context.Background())
 	sess = sess.Body(sessionReq)
 	sessionResp, httpResp, err := apiClient.SessionServiceApi.SessionServiceCreateExecute(sess)
+	defer httpResp.Body.Close()
 	if err != nil {
 		logger.Error().Err(err).Msg("Failed to get bearer token")
 		return nil, err
@@ -232,7 +241,7 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoUrl, gitRepoU
 		argoCDAppsGitRepo: gitRepo{
 			password: gitRepoPassword,
 			username: gitRepoUser,
-			url:      gitRepoUrl,
+			url:      gitRepoURL,
 		},
 		argocdFybrikAppsNamePrefix: argocdFybrikAppsNamePrefix,
 	}
@@ -272,6 +281,7 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 		cm.argocdFybrikAppsNamePrefix+"-"+clusterName)
 	cm.log.Info().Msg("application name: " + cm.argocdFybrikAppsNamePrefix + "-" + clusterName)
 	argocdApplication, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetExecute(req)
+	defer httpResp.Body.Close()
 	if err != nil {
 		cm.log.Error().Err(err).Msg("Failed to get argocd application")
 		return cluster, err
@@ -312,6 +322,9 @@ func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster
 func (cm *argocdClusterManager) cloneGitRepo() (string, *git.Repository, error) {
 	cm.log.Info().Msg(cm.argoCDAppsGitRepo.username + cm.argoCDAppsGitRepo.url)
 	tmpDir, err := os.MkdirTemp(environment.GetDataDir(), "blueprints-repo")
+	if err != nil {
+		return "", nil, err
+	}
 	r, err := git.PlainClone(tmpDir, false, &git.CloneOptions{
 		Auth: &githttp.BasicAuth{
 			Username: cm.argoCDAppsGitRepo.username,
@@ -334,6 +347,7 @@ func (cm *argocdClusterManager) GetClusters() ([]multicluster.Cluster, error) {
 	req := cm.client.ClusterServiceApi.ClusterServiceList(context.Background())
 
 	clustersList, httpResp, err := cm.client.ClusterServiceApi.ClusterServiceListExecute(req)
+	defer httpResp.Body.Close()
 	if err != nil {
 		cm.log.Error().Err(err).Msg(failToListClustersErrMsg)
 		return nil, err
@@ -385,6 +399,7 @@ func (cm *argocdClusterManager) GetBlueprint(cluster, namespace, name string) (*
 	req1 = req1.Version(blueprintVersion)
 	req1 = req1.Namespace(namespace)
 	resp1, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetResourceExecute(req1)
+	defer httpResp.Body.Close()
 	if err != nil {
 		cm.log.Error().Err(err).Msg("Failed to get application manifest")
 		return nil, err
@@ -434,7 +449,7 @@ func (cm *argocdClusterManager) CreateBlueprint(cluster string, blueprint *app.B
 	cm.log.Info().Msg("fullPath: " + fileName)
 
 	fullFilename := filepath.Join(repoDir+"/"+cm.getBlueprintFilePath()+cluster, fileName)
-	err = ioutil.WriteFile(fullFilename, content, 0644)
+	err = os.WriteFile(fullFilename, content, 0644)
 
 	if err != nil {
 		return err
@@ -465,7 +480,7 @@ func (cm *argocdClusterManager) DeleteBlueprint(cluster, namespace, name string)
 	repoDir, repo, err := cm.cloneGitRepo()
 	defer os.RemoveAll(repoDir)
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to delete blueprint")
+		cm.log.Error().Err(err).Msg(failedToDeleteBlueprintErrMsg)
 		return err
 	}
 	fileName := cm.getBlueprintFileName(cluster, name, namespace)
@@ -475,7 +490,7 @@ func (cm *argocdClusterManager) DeleteBlueprint(cluster, namespace, name string)
 	cm.log.Info().Msg("do git remove of blueprint " + cm.getBlueprintFilePath() + cluster + "/" + fileName)
 	w, err := repo.Worktree()
 	if err != nil {
-		cm.log.Error().Err(err).Msg("Failed to delete blueprint")
+		cm.log.Error().Err(err).Msg(failedToDeleteBlueprintErrMsg)
 	}
 
 	_, err = w.Remove(cm.getBlueprintFilePath() + cluster + "/" + fileName)
