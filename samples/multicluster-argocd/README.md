@@ -231,9 +231,11 @@ kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-con
 kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml
 ```
 
-Please note that the deployments are automatically synced as defined in the applications.
+Please note that the applications except `fybrik-kind-control` are automatically synced as defined in the applications.
 To view the status of the deployments in Argo CD GUI please press the `Applications` bottom on the right bar in the GUI.
 The deployments should be in `Synced` state.
+
+To allow changes in the `fybrik-adminconfig` ConfigMap in fybrik deployment auto sync is disabled for the `fybrik-kind-control` application. To manually sync the `fybrik-kind-control` application please go to the Argo CD GUI and press `Applications`  bottom on the left bar. Then enter the `fybrik-kind-control` application and press the `sync` bottom.
 
 ## Deploy Fybrik modules
 
@@ -314,6 +316,12 @@ Then Run the following command to wait until the FybrikApplication is ready
 ```bash
 while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready}') != "true" ]]; do echo "waiting for FybrikApplication" && sleep 5; done
 ```
+
+
+## Cleanup
+
+Follow the [Fybrik cleanup](https://fybrik.io/v1.3/samples/cleanup/) section to cleanup the resources used in this sample.
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
 
 
 
