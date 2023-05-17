@@ -6,7 +6,7 @@ This README contains information about how to enable Fybrik to use ArgoCD as its
 
 **Disclaimer**: This work is in progress.
 
-# Argo CD in high level
+## Argo CD in high level
 
 Argo CD is an open-source continuous delivery (CD) tool designed to automate the deployment and lifecycle management of applications in Kubernetes clusters. It follows the GitOps methodology, which means it uses a Git repository as the source of truth for defining and managing the desired state of applications and infrastructure.
 
@@ -64,7 +64,7 @@ To do so please execute the command:
 make kind-setup-multi
 ```
 
-Then, run the following command to deploy Argo CD:
+Then, run the following commands to deploy Argo CD:
 
 ```bash
 kubectl config use-context kind-control
@@ -72,7 +72,7 @@ make -C third_party/argocd deploy
 make -C third_party/argocd deploy-wait
 ```
 
-## Logging to Argo CD:
+## Logging to Argo CD
 
 To execute Argo CD CLI commands in this tutorial, run the following commands:
 
@@ -160,7 +160,7 @@ Please note that the deployments are automatically synced as defined in the appl
 To view the status of the deployments in Argo CD GUI please press the `Applications` bottom on the right bar in the GUI.
 The deployments should be in `Synced` state.
 
-### Fybrik deployment using Argo CD
+## Fybrik deployment using Argo CD
 
 This section describe Fybrik deployment on the clusters using Argo CD. In addition, Argo CD serves as the multi-cluster manager for Fybrik and thus relevant information needs to be provided upon Fybrik deployment.
 
@@ -237,6 +237,8 @@ The deployments should be in `Synced` state.
 
 To allow changes in the `fybrik-adminconfig` ConfigMap in fybrik deployment auto sync is disabled for the `fybrik-kind-control` application. To manually sync the `fybrik-kind-control` application please go to the Argo CD GUI and press `Applications`  bottom on the left bar. Then enter the `fybrik-kind-control` application and press the `sync` bottom.
 
+TODO: add support in Fybrik to add policies to the adminConfig via the helm values.yaml.
+
 ## Deploy Fybrik modules
 
 Next, deploy the [arrow flight module](https://github.com/fybrik/arrow-flight-module)
@@ -278,11 +280,11 @@ Next execute the following command to apply the applicationSet:
 kubectl apply -f samples/multicluster-argocd/blueprints-appset.yaml
 ```
 
-# Run the notebook read flow sample
+## Run the notebook read flow sample
 
 Execute the [`before we begin`](https://fybrik.io/v1.3/samples/pre-steps/) section and [notebook-read](https://fybrik.io/v1.3/samples/notebook-read/) section, using the katalog as data catalog. Stop before `Create a FybrikApplication resource for the notebook` section.
 
-### Apply Fybrik application
+## Apply Fybrik application
 
 Execute the following command to create fybrikapplication resource.
 
