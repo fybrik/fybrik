@@ -48,6 +48,7 @@ const (
 	failedToCreateBlueprintsDirErrMsg = "Failed to create blueprints directory"
 	failedToDeleteBlueprintErrMsg     = "Failed to delete blueprint"
 	applicationsNamespace             = "argocd"
+	clusterMetadataConfigMapName      = "cluster-metadata"
 )
 
 var (
@@ -189,7 +190,7 @@ func (cm *argocdClusterManager) createBlueprintsDirIfNotExists() error {
 func NewArgoCDClusterManager(connectionURL, user, password, gitRepoURL, gitRepoUser, gitRepoPassword,
 	argocdFybrikAppsNamePrefix string) (multicluster.ClusterManager, error) {
 	logger := logging.LogInit(logging.SETUP, "ArgoCDManager")
-	// #nosec
+	// #nosec // FIXME: address TLS properly
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -252,69 +253,43 @@ func NewArgoCDClusterManager(connectionURL, user, password, gitRepoURL, gitRepoU
 	return &cm, nil
 }
 
-func (cm *argocdClusterManager) packClusterConfigMap(params map[string]string) *v1.ConfigMap {
-	configMap := v1.ConfigMap{}
-	configMap.Data = params
-	return &configMap
-}
-
 // Get the cluster info.
-// The cluster information is retrieved from the Argo CD Application for Fybrik deployment on the cluster.
-// To do so, an API call to ApplicationService is done in order to fetch the helm parameters
-// of the deployment in the cluster.
-// For example, to get the cluster zone the helm parameter cluster.zone
-// is retrieved from the Argo CD Application:
-//
-//	helm:
-//	  parameters:
-//	    - name: cluster.name
-//	      value: kind-control
-//	    - name: cluster.zone
-//	      value: baggin
-//
-// TODO: Consider retrieving the cluster info from fybrik cluster-metadata configMap resource
-// by using ApplicationServiceGetResource API call
 func (cm *argocdClusterManager) getClusterInfo(clusterName string) (multicluster.Cluster, error) {
 	var cluster multicluster.Cluster
-	req := cm.client.ApplicationServiceApi.ApplicationServiceGet(context.Background(),
-		cm.argocdFybrikAppsNamePrefix+"-"+clusterName)
-	cm.log.Info().Msg("application name: " + cm.argocdFybrikAppsNamePrefix + "-" + clusterName)
-	argocdApplication, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetExecute(req)
+
+	// The cluster information is retrieved using the Argo CD Application for Fybrik deployment on the cluster.
+	// It is done by calling ApplicationServiceGetResource API call to fetch the cluster-metadata configMap resource which contains
+	// the cluster information.
+	cm.log.Info().Msg("get cluster info " + clusterName)
+
+	req1 := cm.client.ApplicationServiceApi.ApplicationServiceGetResource(context.Background(), cm.argocdFybrikAppsNamePrefix+"-"+clusterName)
+	req1 = req1.ResourceName(clusterMetadataConfigMapName)
+	req1 = req1.Kind("ConfigMap")
+	req1 = req1.AppNamespace(applicationsNamespace)
+	req1 = req1.Version("v1")
+	req1 = req1.Namespace(environment.GetControllerNamespace())
+	resp1, httpResp, err := cm.client.ApplicationServiceApi.ApplicationServiceGetResourceExecute(req1)
 	defer httpResp.Body.Close()
 	if err != nil {
-		cm.log.Error().Err(err).Msg("failed to get argocd application")
+		cm.log.Error().Err(err).Msg("failed to get cluster info")
 		return cluster, err
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		cm.log.Error().Msg("failed to get argocd application: http status code is " + strconv.Itoa(httpResp.StatusCode))
+		cm.log.Error().Msg("failed to get cluster metadata config map: http status code is " + strconv.Itoa(httpResp.StatusCode))
 		return cluster, errors.New("http status code is " + strconv.Itoa(httpResp.StatusCode))
 	}
-	fybrikHelmParams := argocdApplication.GetSpec().Source.Helm.GetParameters()
-	var params = make(map[string]string)
 
-	for _, helmParam := range fybrikHelmParams {
-		switch helmParam.GetName() {
-		case "cluster.region":
-			params["Region"] = helmParam.GetValue()
-			cm.log.Info().Msg("region: " + helmParam.GetValue())
-		case "cluster.zone":
-			params["Zone"] = helmParam.GetValue()
-			cm.log.Info().Msg("zone: " + helmParam.GetValue())
-		case "cluster.name":
-			params["ClusterName"] = helmParam.GetValue()
-			cm.log.Info().Msg("ClusterName: " + helmParam.GetValue())
-		case "cluster.vaultAuthPath":
-			params["VaultAuthPath"] = helmParam.GetValue()
-			cm.log.Info().Msg("VaultAuthPath: " + helmParam.GetValue())
-		}
+	manifest := resp1.GetManifest()
+	configMap := v1.ConfigMap{}
+	cm.log.Info().Msg(manifest)
+	err = multicluster.Decode(manifest, scheme, &configMap)
+	if err != nil {
+		return cluster, err
 	}
 
-	if len(params) != 4 {
-		cm.log.Error().Err(err).Msg("missing expected cluster info related field in helm params")
-		return cluster, errors.New("failed to get cluster info")
-	}
-
-	return multicluster.CreateCluster(*cm.packClusterConfigMap(params)), nil
+	cm.log.Info().Msg("found cluster metadata for cluster " + clusterName)
+	cluster = multicluster.CreateCluster(configMap)
+	return cluster, nil
 }
 
 // Clone a git repository into local filesystem
@@ -448,6 +423,7 @@ func (cm *argocdClusterManager) CreateBlueprint(cluster string, blueprint *app.B
 	cm.log.Info().Msg("fullPath: " + fileName)
 
 	fullFilename := filepath.Join(repoDir+"/"+cm.getBlueprintFilePath()+cluster, fileName)
+	// #nosec // avoid add-constant: avoid magic numbers like '0600', create a named constant for it (revive) error
 	err = os.WriteFile(fullFilename, content, 0600)
 
 	if err != nil {

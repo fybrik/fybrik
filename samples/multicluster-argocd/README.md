@@ -293,6 +293,7 @@ apiVersion: app.fybrik.io/v1beta1
 kind: FybrikApplication
 metadata:
   name: my-notebook
+  namespace: fybrik-notebook-sample
   labels:
     app: my-notebook
 spec:
@@ -311,7 +312,7 @@ spec:
 EOF
 
 
-Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
 
 Then Run the following command to wait until the FybrikApplication is ready
 
@@ -323,7 +324,7 @@ while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready
 ## Cleanup
 
 Follow the [Fybrik cleanup](https://fybrik.io/v1.3/samples/cleanup/) section to cleanup the resources used in this sample.
-Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the lft bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
 
 
 
