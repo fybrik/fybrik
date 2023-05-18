@@ -122,9 +122,6 @@ func ExecPod(restClient restclient.Interface, config *restclient.Config, podName
 		Stdout: stdout,
 		Stderr: stderr,
 	})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
