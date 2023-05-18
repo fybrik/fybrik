@@ -1,3 +1,6 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -19,7 +22,7 @@ spec:
           selfHeal: true
           allowEmpty: true
       source:
-        repoURL: https://github.com/revit13/new-argocd-test1
+        repoURL: https://github.com/username/repo-name
         targetRevision: HEAD
         path: blueprints/{{name}}
       destination:

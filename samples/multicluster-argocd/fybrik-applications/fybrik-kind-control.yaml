@@ -1,3 +1,6 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -12,8 +15,8 @@ spec:
     server: 'https://kubernetes.default.svc'
   source:
     path: charts/fybrik
-    repoURL: 'https://github.com/revit13/fybrik'
-    targetRevision: argocd-test
+    repoURL: 'https://github.com/fybrik/fybrik'
+    targetRevision: HEAD
     helm:
       parameters:
         - name: clusterScoped
