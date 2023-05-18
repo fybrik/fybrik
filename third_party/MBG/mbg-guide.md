@@ -12,7 +12,7 @@ Install MBG in both clusters:
 
 [Install fybrik](https://fybrik.io/dev/tasks/multicluster/) in the two clusters with the values of the names of MBG pods:
 
-- In the main cluster use `--set cluster.mbg.mbgPodName=${MBG_POD1} --set cluster.mbg.mbgCtlPodName=${MBG_CTL_POD1} --set cluster.mbgNamespace=default`.
-- In the remote cluster use `--set cluster.mbg.mbgPodName=${MBG_POD2} --set cluster.mbg.mbgCtlPodName=${MBG_CTL_POD2} --set cluster.mbgNamespace=default`.
+- In the main cluster use `--set cluster.mbg.enabled=true --set cluster.mbg.mbgPodName=${MBG_POD1} --set cluster.mbg.mbgCtlPodName=${MBG_CTL_POD1} --set cluster.mbg.mbgNamespace=default`.
+- In the remote cluster use `--set cluster.mbg.enabled=true --set cluster.mbg.mbgPodName=${MBG_POD2} --set cluster.mbg.mbgCtlPodName=${MBG_CTL_POD2} --set cluster.mbgNamespace=default`.
 
 Try the chaining sample of fybrik https://fybrik.io/dev/samples/chaining-sample/.
