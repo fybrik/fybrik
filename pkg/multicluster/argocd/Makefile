@@ -29,8 +29,8 @@ generate-client-argocd: patch
 		-v ${PWD}:/local \
 		-u "${USER_ID}:${GROUP_ID}" \
 		${OPENAPI_GENERATOR_IMG} generate -g go \
-		--additional-properties=packageName=openapiclient,isGoSubmodule=false \
-		--global-property=apis,models,supportingFiles,apiDocs=false \
+		--additional-properties=packageName=openapiclient,isGoSubmodule=false,debugOpenAPI \
+		--global-property=verbose=true,models,debugModels,apis="ApplicationService:ClusterService:SessionService",supportingFiles,modelTests=false,modelDocs=false,apiTests=false,apiDocs=false \
 		--git-host=${GIT_HOST} \
 		--git-user-id=${GIT_USER_ID} \
 		--git-repo-id=${GIT_REPO_ID} \

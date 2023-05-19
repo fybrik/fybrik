@@ -49,31 +49,11 @@ type APIClient struct {
 
 	// API Services
 
-	AccountServiceApi *AccountServiceApiService
-
 	ApplicationServiceApi *ApplicationServiceApiService
-
-	ApplicationSetServiceApi *ApplicationSetServiceApiService
-
-	CertificateServiceApi *CertificateServiceApiService
 
 	ClusterServiceApi *ClusterServiceApiService
 
-	GPGKeyServiceApi *GPGKeyServiceApiService
-
-	NotificationServiceApi *NotificationServiceApiService
-
-	ProjectServiceApi *ProjectServiceApiService
-
-	RepoCredsServiceApi *RepoCredsServiceApiService
-
-	RepositoryServiceApi *RepositoryServiceApiService
-
 	SessionServiceApi *SessionServiceApiService
-
-	SettingsServiceApi *SettingsServiceApiService
-
-	VersionServiceApi *VersionServiceApiService
 }
 
 type service struct {
@@ -92,19 +72,9 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.common.client = c
 
 	// API Services
-	c.AccountServiceApi = (*AccountServiceApiService)(&c.common)
 	c.ApplicationServiceApi = (*ApplicationServiceApiService)(&c.common)
-	c.ApplicationSetServiceApi = (*ApplicationSetServiceApiService)(&c.common)
-	c.CertificateServiceApi = (*CertificateServiceApiService)(&c.common)
 	c.ClusterServiceApi = (*ClusterServiceApiService)(&c.common)
-	c.GPGKeyServiceApi = (*GPGKeyServiceApiService)(&c.common)
-	c.NotificationServiceApi = (*NotificationServiceApiService)(&c.common)
-	c.ProjectServiceApi = (*ProjectServiceApiService)(&c.common)
-	c.RepoCredsServiceApi = (*RepoCredsServiceApiService)(&c.common)
-	c.RepositoryServiceApi = (*RepositoryServiceApiService)(&c.common)
 	c.SessionServiceApi = (*SessionServiceApiService)(&c.common)
-	c.SettingsServiceApi = (*SettingsServiceApiService)(&c.common)
-	c.VersionServiceApi = (*VersionServiceApiService)(&c.common)
 
 	return c
 }
