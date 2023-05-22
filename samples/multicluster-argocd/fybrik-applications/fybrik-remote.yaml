@@ -4,7 +4,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fybrik-kind-kind
+  name: fybrik-remote
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -17,7 +17,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
   destination:
-    name: 'kind-kind'
+    name: 'remote'
     namespace: fybrik-system
   source:
     path: charts/fybrik
@@ -30,7 +30,7 @@ spec:
         - name: applicationNamespace
           value: fybrik-notebook-sample
         - name: cluster.name
-          value: kind-kind
+          value: remote
         - name: cluster.zone
           value: hobbiton
         - name: cluster.region

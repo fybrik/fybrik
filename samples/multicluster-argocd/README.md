@@ -102,18 +102,18 @@ The following steps needs to be executed to configure the argo CD server:
 
 1. Add clusters:
 
-The coordinator cluster is automatically registered in argo CD server. However its default name is `in-cluster`. In this tutorial we change it to `kind-control`. This can be done manually via the Argo CD GUI or by executing the following command:
+The coordinator cluster is automatically registered in argo CD server. However its default name is `in-cluster`. In this tutorial we change it to `coordinator`. This can be done manually via the Argo CD GUI or by executing the following command:
 
 ```bash
 kubectl config set-context kind-control --namespace=argocd
-argocd cluster --insecure add kind-control  --in-cluster --name kind-control -y
+argocd cluster --insecure add kind-kind  --in-cluster --name coordinator -y
 ```
 
 For the remote cluster, please execute the following command.
 
 ```bash
 kubectl config set-context kind-control --namespace=argocd
-argocd cluster add kind-kind --cluster-endpoint kube-public -y
+argocd cluster add kind-control --name remote --cluster-endpoint kube-public -y
 ```
 
 Note that the `--cluster-endpoint` is a new option added in Argo CD v2.7. For older versions
@@ -163,7 +163,7 @@ The deployments should be in `Synced` state.
 This section describe Fybrik deployment on the clusters using Argo CD. In addition, Argo CD serves as the multi-cluster manager for Fybrik and thus relevant information needs to be provided upon Fybrik deployment.
 
 The folder `samples/multicluster-argocd/fybrik-applications/` contains Argo CD applications that install the fybrik-crd and fybrik helm chart on the clusters.
-It's important to note that the default prefix for ArgoCD application names related to the Fybrik helm chart deployment is 'fybrik'. The complete application names for fybrik deployment are expected to be in the format: fybrik-<cluster-name>. For example, if the cluster name is "kind-kind" and the prefix is "fybrik", then the ArgoCD application name should be "fybrik-kind-kind".
+It's important to note that the default prefix for ArgoCD application names related to the Fybrik helm chart deployment is 'fybrik'. The complete application names for fybrik deployment are expected to be in the format: fybrik-<cluster-name>. For example, if the cluster name is "remote" and the prefix is "fybrik", then the ArgoCD application name should be "fybrik-remote".
 The application name prefix ('fybrik') is customized and can be changed upon fybrik deployment by changing the relavent helm parameter.
 It is crucial that the ArgoCD application names for Fybrik deployments follow the specified syntax, as Fybrik relies on it when retrieving cluster information from the Argo CD server.
 
@@ -176,11 +176,11 @@ kubectl config use-context kind-kind
 kubectl create ns fybrik-notebook-sample
 ```
 
-Before installing the applications, details about Argo CD local deployment and the git repository needs to be updated in the `samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml` file:
+Before installing the applications, details about Argo CD local deployment and the git repository needs to be updated in the `samples/multicluster-argocd/fybrik-applications/fybrik-coordinator.yaml` file:
 
 ### Coordinator cluster
 
-File `samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml` contains Fybrik deployment on the coordinator cluster.
+File `samples/multicluster-argocd/fybrik-applications/fybrik-coordinator.yaml` contains Fybrik deployment on the coordinator cluster.
 
 To do so the following fields needs to be updated:
 
@@ -203,11 +203,11 @@ kubectl config use-context kind-control
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Then, replace the value of `coordinator.argocd.password` in `samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml` with the password value above.
+Then, replace the value of `coordinator.argocd.password` in `samples/multicluster-argocd/fybrik-applications/fybrik-coordinator.yaml` with the password value above.
 
 ### Remote cluster
 
-The remote clusters only need the watch keeper and cluster subscription agents installed. The remote clusters do not need the coordinator component of Fybrik. Thus the coordinator configuration in `samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml` file looks like the following:
+The remote clusters only need the watch keeper and cluster subscription agents installed. The remote clusters do not need the coordinator component of Fybrik. Thus the coordinator configuration in `samples/multicluster-argocd/fybrik-applications/fybrik-remote.yaml` file looks like the following:
 
 ```bash
     helm:
@@ -223,19 +223,19 @@ Finally, apply the applications to deploy Fybrik chart on the clusters:
 
 ```bash
 kubectl config use-context kind-control
-kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-control.yaml
-kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-kind-kind.yaml
-kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-control.yaml
-kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-kind-kind.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-coordinator.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-crd-remote.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-coordinator.yaml
+kubectl apply -f samples/multicluster-argocd/fybrik-applications/fybrik-remote.yaml
 ```
 
-**Note** that the applications except `fybrik-kind-control` are automatically synced as defined in the applications.
+**Note** that the applications except `fybrik-coordinator` are automatically synced as defined in the applications.
 To view the status of the deployments in Argo CD GUI please press the `Applications` bottom on the left bar in the GUI.
 The deployments should be in `Synced` state.
 
-### Manually sync `fybrik-kind-control` application
+### Manually sync `fybrik-coordinator` application
 
-Note that the auto sync option is disabled for the `fybrik-kind-control` application. This is done to allow changes in the `fybrik-adminconfig` ConfigMap in fybrik deployment that are shown in the upcoming section. To manually sync the `fybrik-kind-control` application please go to the Argo CD GUI and press `Applications`  bottom on the left bar. Then enter the `fybrik-kind-control` application and press the `sync` bottom.
+Note that the auto sync option is disabled for the `fybrik-coordinator` application. This is done to allow changes in the `fybrik-adminconfig` ConfigMap in fybrik deployment that are shown in the upcoming section. To manually sync the `fybrik-coordinator` application please go to the Argo CD GUI and press `Applications`  bottom on the left bar. Then enter the `fybrik-coordinator` application and press the `sync` bottom.
 
 TODO: add support in Fybrik to add policies to the adminConfig via the helm values.yaml.
 
@@ -251,7 +251,7 @@ kubectl apply -f https://raw.githubusercontent.com/fybrik/arrow-flight-module/ma
 
 ## Add Adminconfig policy
 
-Add an [extended policy](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements. In this sample a policy which specify where the transform modules should run is deployed. As the katalog Asset region is `theshire` then the blueprint is expected to be created on the remote cluster `kind-kind`.
+Add an [extended policy](https://fybrik.io/dev/concepts/config-policies/#extended-policies) to meet advanced deployment requirements. In this sample a policy which specify where the transform modules should run is deployed. As the katalog Asset region is `theshire` then the blueprint is expected to be created on the remote cluster `remote`.
 
 ```bash
 kubectl config use-context kind-control
@@ -272,7 +272,7 @@ Add the following policy:
 
 Upon Fybrik deployment, a new directory named `blueprints` is automatically created (if not exists) on the github repository with sub-directories for each of the clusters to hold the blueprints of that cluster.
 
-File  `samples/multicluster-argocd/blueprints-appset.yaml` contains Argo CD applicationSet to sync the Fybrik blueprints from the git repo described above with the clusters. The Argo CD applications are generated with name prefix "blueprints" while the full applications names for the blueprints deployment are expected to be of the form: blueprints-<cluster-name>. For example, when the cluster name is "kind-kind" the application name is `blueprints-kind-kind`.
+File  `samples/multicluster-argocd/blueprints-appset.yaml` contains Argo CD applicationSet to sync the Fybrik blueprints from the git repo described above with the clusters. The Argo CD applications are generated with name prefix "blueprints" while the full applications names for the blueprints deployment are expected to be of the form: blueprints-<cluster-name>. For example, when the cluster name is "remote" the application name is `blueprints-remote`.
 
 Next execute the following command to apply the applicationSet:
 
@@ -300,7 +300,7 @@ metadata:
     app: my-notebook
 spec:
   selector:
-    clusterName: kind-kind
+    clusterName: remote
     workloadSelector:
       matchLabels:
         app: my-notebook
@@ -314,9 +314,9 @@ spec:
 EOF
 ```
 
-### Manual refresh `blueprints-kind-kind` application
+### Manual refresh `blueprints-remote` application
 
-Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the left bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the left bar in the Argo CD GUI. Then, enter the `blueprints-remote` and press the Refresh bottom on the top of the page.
 
 Then Run the following command to wait until the FybrikApplication is ready
 
@@ -329,7 +329,7 @@ while [[ $(kubectl get fybrikapplication my-notebook -o 'jsonpath={.status.ready
 ## Cleanup
 
 Follow the [Fybrik cleanup](https://fybrik.io/v1.3/samples/cleanup/) section to cleanup the resources used in this sample.
-Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the left bar in the Argo CD GUI. Then, enter the `blueprints-kind-kind` and press the Refresh bottom on the top of the page.
+Due to an [open issue](https://github.com/argoproj/argo-cd/issues/10329) in Argo CD a manual refresh needs to be done for the blueprint application to fetch the latest changes from Git repo. It can be done by pressing the `Applications` bottom on the left bar in the Argo CD GUI. Then, enter the `blueprints-remote` and press the Refresh bottom on the top of the page.
 
 
 
