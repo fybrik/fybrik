@@ -366,7 +366,7 @@ func (r *BlueprintReconciler) bindService(ctx context.Context, restClient restcl
 	mbgCtlPodName := environment.GetMBGCtlPodName()
 	mbgNamespace := environment.GetMBGNameSpace()
 	svcName, svcNamespace, svcPort := r.getSvcHostPort(urlString, moduleNamespace)
-	if svcName != "" {
+	if svcName == "" {
 		return nil
 	}
 	r.Log.Trace().Msgf("bind MBG remote service with name %s, namespace %s, port %s", svcName, svcNamespace, svcPort)
@@ -441,7 +441,7 @@ func (r *BlueprintReconciler) applyMBGNetwork(ctx context.Context, blueprint *fa
 	for _, egress := range network.Egress {
 		if egress.Cluster != cluster {
 			for _, urlString := range egress.URLs {
-				r.Log.Trace().Msgf("bind MBG remote service")
+				r.Log.Trace().Msgf("bind MBG remote service %s", urlString)
 				if err := r.bindService(ctx, restClient, config, urlString, moduleNamespace); err != nil {
 					return err
 				}

@@ -5,12 +5,9 @@ metadata:
   name: mbg-role
   namespace: default
 rules:
-- apiGroups: [ "" ]
-  resources: [ "pods", "services"]
-  verbs: [ "get", "list", "watch", "create", "delete"]
-- apiGroups: [ "apps" ]
-  resources: [ "replicasets" ]
-  verbs: [ "get", "list", "watch"]
+- apiGroups: ["", "apps"]
+  resources: ["pods", "replicasets", "services", "pods/exec"]
+  verbs: ["get", "list", "watch", "create", "delete", "exec"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -25,3 +22,18 @@ subjects:
 - kind: ServiceAccount
   name: default
   namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system-mbg-role
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mbg-role
+subjects:
+- kind: ServiceAccount
+  name: manager
+  namespace: fybrik-system
