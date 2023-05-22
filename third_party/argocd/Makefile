@@ -2,15 +2,19 @@ ROOT_DIR:=../..
 include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
+WITH_OPENSHIFT ?= false
+
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	@echo "Installing argocd ..."
 	helm repo add argo https://argoproj.github.io/argo-helm
+	helm repo update
 	helm install argo argo/argo-cd \
 		--namespace argocd \
 		--create-namespace \
 		--set configs.params."server.insecure"=true \
 		--set server.ingress.enabled=true \
+		--set openshift.enabled=$(WITH_OPENSHIFT) \
 		--version v${ARGOCD_HELM_VERSION}
 
 .PHONY: undeploy
