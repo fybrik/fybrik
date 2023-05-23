@@ -23,7 +23,7 @@ patch:
 		jq 'setpath(["definitions", "v1Time"]; {"type":"string"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "apisCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterCacheInfo", "properties", "resourcesCount"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1ClusterInfo", "properties", "applicationsCount"]; {"type":"integer"}) | setpath(["definitions", "v1ObjectMeta", "properties", "generation"]; {"type":"integer"})| setpath(["definitions", "v1alpha1RevisionHistory", "properties", "id"]; {"type":"integer"}) | setpath(["definitions", "v1alpha1RetryStrategy", "properties", "limit"]; {"type":"integer"})' swagger.json.orig > swagger.json
 
 .PHONY: generate-client-argocd
-generate-client-argocd: patch
+generate-client-argocd: clean patch
 	rm -Rf ${AUTO_GENERATED}/
 	docker run --rm \
 		-v ${PWD}:/local \

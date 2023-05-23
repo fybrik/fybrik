@@ -46,14 +46,14 @@ In order to facilitate this flow with Argo CD, it is necessary to supply a GitHu
 
 - Fybrik pre-requisite: https://fybrik.io/v1.3/get-started/quickstart/
 - Argo CD CLI v2.7 and above
-- Github account and Github repository to store the Blueprints
+- GitHub account and GitHub repository to store the Blueprints
 
 
 ## Setup multi-cluster environment
 
 This README demonstrates the setup of Fybrik using Argo CD as cluster manager using two clusters.
 
-For local testing `hack/tools/create_kind.sh` script can be used to setup two kind clusters:
+For local testing `hack/tools/create_kind.sh` script can be used to set up two kind clusters:
 
 - `kind-control`: the coordinator cluster.
 - `kind-kind`: the remote cluster.

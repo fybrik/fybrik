@@ -39,6 +39,8 @@ spec:
           value: katalog
         - name: coordinator.argocd.url
           value: "http://argo-argocd-server.argocd:80"
+        - name: coordinator.argocd.enabled
+          value: "true"
         - name: coordinator.argocd.user
           value: "admin"
         - name: coordinator.argocd.password

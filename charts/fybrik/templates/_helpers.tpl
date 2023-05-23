@@ -100,7 +100,7 @@ true
 isArgocdConfigurationEnabled checks if argocd configuration is enabled
 */}}
 {{- define "fybrik.isArgocdConfigurationEnabled" -}}
-{{- if .Values.coordinator.argocd.user -}}
+{{- if .Values.coordinator.argocd.enabled -}}
 true
 {{- end -}}
 {{- end }}

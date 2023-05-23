@@ -3,6 +3,7 @@ include $(ROOT_DIR)/Makefile.env
 include $(ROOT_DIR)/hack/make-rules/tools.mk
 
 WITH_OPENSHIFT ?= false
+ARGOCD_NAMESPACE ?= argocd
 
 .PHONY: deploy
 deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
@@ -10,7 +11,7 @@ deploy: $(TOOLBIN)/kubectl $(TOOLBIN)/helm
 	helm repo add argo https://argoproj.github.io/argo-helm
 	helm repo update
 	helm install argo argo/argo-cd \
-		--namespace argocd \
+		--namespace ${ARGOCD_NAMESPACE} \
 		--create-namespace \
 		--set configs.params."server.insecure"=true \
 		--set server.ingress.enabled=true \

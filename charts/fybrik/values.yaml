@@ -148,6 +148,7 @@ coordinator:
 
   # Configures the ArgoCD instance to be used by the coordinator manager in a multicluster setup
   argocd:
+    enabled : false
     # URL for ArgoCD local deployment
     url: ""
     # Username for ArgoCD local deployment
@@ -167,7 +168,7 @@ coordinator:
       url: ""
       # Usernane for git repository repo
       user: ""
-      # Password for git repository repo
+      # Password for git repository repo. Can be Token as well.
       password: ""
       
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup

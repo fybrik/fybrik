@@ -9,7 +9,7 @@ if [[ "$target_os" == "darwin" ]]; then
     target_os="mac"
 fi
 
-VERSION=${ARGOCD_CLI}
+VERSION=${ARGOCD_CLI_VERSION}
 header_text "Checking for bin/argocd-cli ${VERSION}"
 [[ -f bin/argocd &&  `bin/argocd version | grep argocd: |awk '{print $2}'` =~ ^v${VERSION} ]] && exit 0
 
