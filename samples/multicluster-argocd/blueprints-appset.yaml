@@ -22,7 +22,7 @@ spec:
           selfHeal: true
           allowEmpty: true
       source:
-        repoURL: https://github.com/username/repo-name
+        repoURL: "https://github.com/fybrik/blueprint-repo"
         targetRevision: HEAD
         path: blueprints/{{name}}
       destination:
