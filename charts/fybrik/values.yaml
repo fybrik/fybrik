@@ -168,7 +168,7 @@ coordinator:
       url: ""
       # Usernane for git repository repo
       user: ""
-      # Password for git repository repo. Can be Token as well.
+      # Password for git repository repo. Can be token as well.
       password: ""
       
   # Configures the Razee instance to be used by the coordinator manager in a multicluster setup

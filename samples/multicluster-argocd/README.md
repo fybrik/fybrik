@@ -85,13 +85,15 @@ kubectl config use-context coordinator
 make -C third_party/argocd deploy
 make -C third_party/argocd deploy-wait
 ```
-    ---
-    > _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
-    ```bash
-    oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
-    ```
-    > Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
-    ---
+
+---
+> _NOTE:_ If you are using OpenShift cluster you will see that the deployment fails because OpenShift doesn't allow `privileged: true` value in `securityContext` field by default. Thus, you should add the service account of the module's deployment to the `privileged SCC` using the following command:
+```bash
+oc adm policy add-scc-to-user privileged system:serviceaccount:fybrik-blueprints:<SERVICE_ACCOUNT_NAME>
+```
+> Then, the deployment will restart the failed pods and the pods in `fybrik-blueprints` namespace should start successfully.
+---
+
 
 
 ## Logging to Argo CD
