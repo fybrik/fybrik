@@ -35,6 +35,9 @@ internalCRsNamespace: ""
 # Otherwise, the namespace must already exist.
 adminCRsNamespace: ""
 
+# If true validation webhooks are enabled. Otherwise the webhooks are disabled.
+validationWebhookEnabled: true
+
 # Taxonomy file for taxonomy ConfigMap
 taxonomyOverride: ""
 
