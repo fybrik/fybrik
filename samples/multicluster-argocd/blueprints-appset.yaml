@@ -1,0 +1,31 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: appset-bluerprints
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  generators:
+  - clusters: {} # Automatically use all clusters defined within Argo CD
+  template:
+    metadata:
+      name: 'blueprints-{{name}}' # 'name' field of the Secret
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+          allowEmpty: true
+      source:
+        repoURL: "https://github.com/fybrik/blueprint-repo"
+        targetRevision: HEAD
+        path: blueprints/{{name}}
+      destination:
+        server: '{{server}}' # 'server' field of the secret
+        namespace: fybrik-system
+

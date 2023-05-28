@@ -108,6 +108,10 @@ spec:
             - secretRef:
                 name: razee-credentials
             {{- end }}
+            {{- if include "fybrik.isArgocdConfigurationEnabled" . }}
+            - secretRef:
+                name: argocd-credentials
+            {{- end }}
           env:
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}

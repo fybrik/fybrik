@@ -38,6 +38,7 @@ import (
 	"fybrik.io/fybrik/pkg/logging"
 	"fybrik.io/fybrik/pkg/monitor"
 	"fybrik.io/fybrik/pkg/multicluster"
+	"fybrik.io/fybrik/pkg/multicluster/argocd"
 	"fybrik.io/fybrik/pkg/multicluster/local"
 	"fybrik.io/fybrik/pkg/multicluster/razee"
 	"fybrik.io/fybrik/pkg/utils"
@@ -350,7 +351,16 @@ func newPolicyManager() (pmclient.PolicyManager, error) {
 // cluster manager instance should be initiated.
 func newClusterManager(mgr manager.Manager) (multicluster.ClusterManager, error) {
 	multiClusterGroup := os.Getenv("MULTICLUSTER_GROUP")
-	if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
+	if argocdURL, argocdConf := os.LookupEnv("ARGOCD_URL"); argocdConf {
+		argocdUser := strings.TrimSpace(os.Getenv("ARGOCD_USER"))
+		argocdPassword := strings.TrimSpace(os.Getenv("ARGOCD_PASSWORD"))
+		argocdGitRepoURL := strings.TrimSpace(os.Getenv("ARGOCD_GIT_URL"))
+		argocdGitRepoUser := strings.TrimSpace(os.Getenv("ARGOCD_GIT_USER"))
+		argocdGitRepoPassword := strings.TrimSpace(os.Getenv("ARGOCD_GIT_PASSWORD"))
+		argocdFybrikAppsNamePrefix := strings.TrimSpace(os.Getenv("ARGOCD_FYBRIK_APPS_NAME_PREFIX"))
+		return argocd.NewArgoCDClusterManager(argocdURL, argocdUser, argocdPassword, argocdGitRepoURL, argocdGitRepoUser,
+			argocdGitRepoPassword, argocdFybrikAppsNamePrefix)
+	} else if user, razeeLocal := os.LookupEnv("RAZEE_USER"); razeeLocal {
 		razeeURL := strings.TrimSpace(os.Getenv("RAZEE_URL"))
 		password := strings.TrimSpace(os.Getenv("RAZEE_PASSWORD"))
 

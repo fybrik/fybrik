@@ -1,0 +1,60 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fybrik-coordinator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: ''
+    namespace: fybrik-system
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: charts/fybrik
+    repoURL: 'https://github.com/fybrik/fybrik'
+    targetRevision: HEAD
+    helm:
+      parameters:
+        - name: clusterScoped
+          value: 'false'
+        - name: applicationNamespace
+          value: fybrik-notebook-sample
+        - name: cluster.name
+          value: coordinator
+        - name: cluster.zone
+          value: baggin
+        - name: cluster.region
+          value: took
+        - name: cluster.vaultAuthPath
+          value: control
+        - name: coordinator.vault.enabled
+          value: "true"
+        - name: coordinator.vault.address
+          value: http://control-control-plane:80
+        - name: coordinator.catalog
+          value: katalog
+        - name: coordinator.argocd.url
+          value: "http://argo-argocd-server.argocd:80"
+        - name: coordinator.argocd.enabled
+          value: "true"
+        - name: coordinator.argocd.user
+          value: "admin"
+        - name: coordinator.argocd.password
+          value: "esalFNL3cpAusjW8"
+        - name: coordinator.argocd.appsGitRepo.url
+          value: "https://github.com/fybrik/blueprint-repo"
+        - name: coordinator.argocd.appsGitRepo.user
+          value: "gitUsername"
+        - name: coordinator.argocd.appsGitRepo.password
+          value: "gitPassword"
+        - name: coordinator.argocd.appsGitRepo.fybrikAppsPrefix
+          value: "fybrik"
+        - name: coordinator.argocd.appsGitRepo.blueprintsAppsPath
+          value: "blueprints"
+  sources: []
+  project: default
+

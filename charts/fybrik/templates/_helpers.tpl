@@ -97,6 +97,15 @@ true
 {{- end }}
 
 {{/*
+isArgocdConfigurationEnabled checks if argocd configuration is enabled
+*/}}
+{{- define "fybrik.isArgocdConfigurationEnabled" -}}
+{{- if .Values.coordinator.argocd.enabled -}}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
 Detect the version of cert manager crd that is installed
 Defaults to cert-manager.io/v1
 */}}

@@ -21,10 +21,6 @@ nodes:
   - containerPort: 443 # for Kind ingress
     hostPort: 443
     protocol: TCP
-  - containerPort: 30333  # Razee dash API node port in K8s
-    hostPort: 3333  # Razee dash API on host
-  - containerPort: 30080  # Razee dash UI node port in K8s
-    hostPort: 8080  # Razee dash UI on host
 - role: worker
 containerdConfigPatches:
 - |-

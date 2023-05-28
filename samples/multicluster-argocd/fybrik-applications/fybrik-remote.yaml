@@ -1,0 +1,43 @@
+# Copyright 2020 IBM Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fybrik-remote
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    name: 'remote'
+    namespace: fybrik-system
+  source:
+    path: charts/fybrik
+    repoURL: 'https://github.com/fybrik/charts'
+    targetRevision: HEAD
+    helm:
+      parameters:
+        - name: clusterScoped
+          value: 'false'
+        - name: applicationNamespace
+          value: fybrik-notebook-sample
+        - name: cluster.name
+          value: remote
+        - name: cluster.zone
+          value: hobbiton
+        - name: cluster.region
+          value: theshire
+        - name: cluster.vaultAuthPath
+          value: kind
+        - name: coordinator.enabled
+          value: "false"
+  sources: []
+  project: default
