@@ -327,7 +327,7 @@ func (r *BlueprintReconciler) exposeServices(svcsToExpose *[]SvcToExpose, restCl
 		r.Log.Trace().Msg("expose service " + svcToExpose.svcName + " with port " + svcToExpose.port)
 		// add the service to MBG
 		svcID := svcToExpose.svcName + "." + moduleNamespace
-		MBGCommand := "./mbgctl add service --id " + svcID + "-" + svcToExpose.port + " --target " + svcID + " --port " + svcToExpose.port
+		MBGCommand := "./mbgctl add service --id " + svcID + "-" + svcToExpose.port + " --target " + svcID + " --" + "port " + svcToExpose.port
 		if err := managerUtils.ExecPod(restClient, config, mbgCtlPodName, mbgNamespace, MBGCommand, os.Stdin, os.Stdout, os.Stderr); err != nil {
 			r.Log.Error().Msg("MBG error " + err.Error())
 			return err

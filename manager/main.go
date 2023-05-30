@@ -262,10 +262,8 @@ func run(namespace, metricsAddr, healthProbeAddr string, enableLeaderElection bo
 		// Initiate the Blueprint Controller
 		localMountPath := os.Getenv("LOCAL_CHARTS_DIR")
 		setupLog.Trace().Str("local charts dir", localMountPath).Msg("creating Blueprint controller")
-		// isMultiCluster := !(enableApplicationController || !enablePlotterController) || clusterManager.IsMultiClusterSetup()
-		// blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", helm.NewHelmerImpl(localMountPath),
-		// 	clusterManager.IsMultiClusterSetup())
-		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", helm.NewHelmerImpl(localMountPath), true)
+		isMultiCluster := environment.IsMBGEnabled() || clusterManager.IsMultiClusterSetup()
+		blueprintController := app.NewBlueprintReconciler(mgr, "Blueprint", helm.NewHelmerImpl(localMountPath), isMultiCluster)
 		if err := blueprintController.SetupWithManager(mgr); err != nil {
 			setupLog.Error().Err(err).Str(logging.CONTROLLER, "Blueprint").Msg("unable to create controller " + blueprintController.Name)
 			return 1

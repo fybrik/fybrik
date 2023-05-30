@@ -1,10 +1,3 @@
-################################################################
-#Name: Simple iperf3  test
-#Desc: create 2 kind clusters :
-# 1) MBG and iperf3 client
-# 2) MBG and iperf3 server    
-###############################################################
-#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -14,13 +7,13 @@ from colorama import Style
 import subprocess as sp
 
 
-def startKindClusterMbg(mbgName, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane, mbgcrtFlags):
-    mbgKindIp = getKindIp(mbgName)
+def startMbg(mbgName, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane, mbgcrtFlags):
+    mbgNodeIp = getNodeIp(mbgName)
     podMbg, podMbgIp    = buildMbg(mbgName)
     destMbgIp          = f"{podMbgIp}:{mbgcPortLocal}"
     runcmd(f"kubectl create service nodeport mbg --tcp={mbgcPortLocal}:{mbgcPortLocal} --node-port={mbgcPort}")
     printHeader(f"\n\nStart {mbgName} (along with PolicyEngine)")
-    startcmd= f'{podMbg} -- ./mbg start --id "{mbgName}" --ip {mbgKindIp} --cport {mbgcPort} --cportLocal {mbgcPortLocal}  --externalDataPortRange {mbgDataPort}\
+    startcmd= f'{podMbg} -- ./mbg start --id "{mbgName}" --ip {mbgNodeIp} --cport {mbgcPort} --cportLocal {mbgcPortLocal}  --externalDataPortRange {mbgDataPort}\
     --dataplane {dataplane} {mbgcrtFlags} --startPolicyEngine={True} --logFile={True}'
     runcmdb("kubectl exec -i " + startcmd)
     mbgctlPod, _ = buildMbgctl(mbgctlName)
@@ -39,7 +32,7 @@ def buildMbgctl(name):
     name,ip= getPodNameIp("mbgctl")
     return name, ip
 
-def getKindIp(name):
+def getNodeIp(name):
     clJson=json.loads(sp.getoutput(f' kubectl get nodes -o json'))
     ip = clJson["items"][0]["status"]["addresses"][0]["address"]
     return ip
@@ -102,14 +95,13 @@ if __name__ == "__main__":
     printHeader("Start installing MBG")
 
     dataplane = args["dataplane"]
-    #MBG1 parameters 
-    mbg1DataPort    = "30001"
-    mbg1cPort       = "30443"
-    mbg1cPortLocal  = "8443"
-    mbg1crtFlags    = "--rootCa ./mtls/ca.crt " + "--certificate " + args["certificate"] + " --key " + args["key"]
-    mbg1Name        = args["mbgname"]
-    mbgctl1Name     = args["mbgctlname"]
+    # MBG parameters 
+    mbgDataPort    = "30001"
+    mbgcPort       = "30443"
+    mbgcPortLocal  = "8443"
+    mbgcrtFlags    = "--rootCa ./mtls/ca.crt " + "--certificate " + args["certificate"] + " --key " + args["key"]
+    mbg1Name       = args["mbgname"]
+    mbgctlName     = args["mbgctlname"]
     
-    ### Build MBG in Kind clusters environment 
-    startKindClusterMbg(mbg1Name, mbgctl1Name, mbg1cPortLocal, mbg1cPort, mbg1DataPort, dataplane ,mbg1crtFlags)
+    startMbg(mbg1Name, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane ,mbgcrtFlags)
 

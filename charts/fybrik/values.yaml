@@ -114,7 +114,7 @@ cluster:
     enabled: false
     mbgPodName: ""
     mbgCtlPodName: ""
-    mbgNamespace: "default"
+    mbgNamespace: ""
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:
