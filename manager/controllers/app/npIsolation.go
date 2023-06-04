@@ -70,12 +70,36 @@ func getDefaultNetworkPolicyIngressRules() []netv1.NetworkPolicyIngressRule {
 	return nil
 }
 
+func (r *BlueprintReconciler) createMBGNetworkPolicy() *netv1.NetworkPolicy {
+	r.Log.Trace().Str(logging.ACTION, logging.DELETE).Msg("create network policy for MBG")
+	np := netv1.NetworkPolicy{}
+	np.Name = "mbg-np"
+	np.Namespace = environment.GetMBGNameSpace()
+	podsSelector := meta.LabelSelector{}
+	// podsSelector.MatchLabels = map[string]string{managerUtils.KubernetesAppName: environment.GetMBGPodName()}
+	podsSelector.MatchLabels = map[string]string{"app": "mbg"}
+	np.Spec.PodSelector = podsSelector
+	// add an ingress rule for mbg control
+	selector := meta.LabelSelector{MatchLabels: map[string]string{"app": "mbgctl"}}
+	from := netv1.NetworkPolicyPeer{PodSelector: &selector}
+	ingressRule := netv1.NetworkPolicyIngressRule{From: []netv1.NetworkPolicyPeer{from}}
+	np.Spec.Ingress = append(np.Spec.Ingress, ingressRule)
+	// TODO: add an ingress rule for the remote mbg agents
+
+	np.Spec.Egress = append(np.Spec.Egress, dnsEgressRules)
+	return &np
+}
+
 func (r *BlueprintReconciler) createNetworkPolicies(ctx context.Context,
 	releaseName string, network *fapp.ModuleNetwork, blueprint *fapp.Blueprint, logger *zerolog.Logger) error {
 	log := logger.With().Str(managerUtils.KubernetesInstance, releaseName).Logger()
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msg("Creating Network Policies for  " + releaseName)
 
-	np, err := r.createNetworkPoliciesDefinition(ctx, releaseName, network, blueprint, &log)
+	var mbgNp *netv1.NetworkPolicy
+	if environment.IsMBGEnabled() {
+		mbgNp = r.createMBGNetworkPolicy()
+	}
+	np, err := r.createNetworkPoliciesDefinition(ctx, releaseName, network, blueprint, &log, mbgNp)
 	if err != nil {
 		return err
 	}
@@ -85,11 +109,19 @@ func (r *BlueprintReconciler) createNetworkPolicies(ctx context.Context,
 	}
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Network Policies for %s/%s were createdOrUpdated result: %s",
 		np.Namespace, releaseName, res)
+	if mbgNp != nil {
+		res, err := ctrlutil.CreateOrUpdate(ctx, r.Client, mbgNp, func() error { return nil })
+		if err != nil {
+			return errors.WithMessagef(err, "failed to create NetworkPolicy: %v", mbgNp)
+		}
+		log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Network Policies for %s were createdOrUpdated result: %s",
+			mbgNp.Namespace, res)
+	}
 	return nil
 }
 
 func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Context, releaseName string, network *fapp.ModuleNetwork,
-	blueprint *fapp.Blueprint, log *zerolog.Logger) (*netv1.NetworkPolicy, error) {
+	blueprint *fapp.Blueprint, log *zerolog.Logger, mbgNp *netv1.NetworkPolicy) (*netv1.NetworkPolicy, error) {
 	np := netv1.NetworkPolicy{}
 	np.Name = releaseName
 	np.Namespace = blueprint.Spec.ModulesNamespace
@@ -101,23 +133,27 @@ func (r *BlueprintReconciler) createNetworkPoliciesDefinition(ctx context.Contex
 
 	np.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress, netv1.PolicyTypeIngress}
 
-	ingress, err := r.createNPIngressRules(network.Endpoint, network.Ingress, blueprint.Spec.Application, blueprint.Spec.Cluster, log)
+	ingress, err := r.createNPIngressRules(network.Endpoint, network.Ingress, blueprint.Spec.Application,
+		blueprint.Spec.Cluster, log, releaseName, mbgNp)
 	if err != nil {
 		return nil, err
 	}
 	np.Spec.Ingress = ingress
-	egress := r.createNPEgressRules(ctx, network.Egress, network.URLs, blueprint.Spec.Cluster, blueprint.Spec.ModulesNamespace, log)
+	egress := r.createNPEgressRules(ctx, network.Egress, network.URLs, blueprint.Spec.Cluster,
+		blueprint.Spec.ModulesNamespace, log, releaseName, mbgNp)
 
 	np.Spec.Egress = egress
 	return &np, nil
 }
 
 func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fapp.ModuleDeployment,
-	application *fapp.ApplicationDetails, cluster string, log *zerolog.Logger) ([]netv1.NetworkPolicyIngressRule, error) {
+	application *fapp.ApplicationDetails, cluster string, log *zerolog.Logger, releaseName string,
+	mbgNp *netv1.NetworkPolicy) ([]netv1.NetworkPolicyIngressRule, error) {
 	log.Trace().Str(logging.ACTION, logging.CREATE).Msgf("Ingress rules creation from Endpoint:%v appDetails %v and Ingress: %v",
 		endpoint, application, ingresses)
 
 	var from []netv1.NetworkPolicyPeer
+	allowMultiCluster := false
 	// access from user workloads
 	// TODO: we don't check cluster here, because meantime we don't support workloads from other clusters.
 	if endpoint {
@@ -147,6 +183,13 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 			npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &workLoadSelector}
 			from = append(from, npPeer)
 		}
+		// Allow workloads from different clusters by adding ingress rule for MBG
+		allowMultiCluster = true
+		mbgNamespace := environment.GetMBGNameSpace()
+		nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: mbgNamespace}}
+		podSelector := meta.LabelSelector{MatchLabels: map[string]string{"app": "mbg"}}
+		npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &podSelector}
+		from = append(from, npPeer)
 	}
 
 	for _, ingress := range ingresses {
@@ -163,6 +206,24 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 			// TODO: multi-cluster support
 			log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Cross-cluster ingress connectivity, ingress.Cluster %s, blueprint cluster %s",
 				ingress.Cluster, cluster)
+			// allow MBG to connect to the module
+			allowMultiCluster = true
+		}
+		if allowMultiCluster && environment.IsMBGEnabled() {
+			mbgNamespace := environment.GetMBGNameSpace()
+			nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: mbgNamespace}}
+			podSelector := meta.LabelSelector{MatchLabels: map[string]string{"app": "mbg"}}
+			npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &podSelector}
+			from = append(from, npPeer)
+
+			// add rules for MBG pod
+			if mbgNp != nil {
+				// add an egress rule to the module
+				selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: releaseName}}
+				to := netv1.NetworkPolicyPeer{PodSelector: &selector}
+				egressRule := netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}}
+				mbgNp.Spec.Egress = append(mbgNp.Spec.Egress, egressRule)
+			}
 		}
 	}
 	if len(from) == 0 {
@@ -172,13 +233,13 @@ func (r *BlueprintReconciler) createNPIngressRules(endpoint bool, ingresses []fa
 }
 
 func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses []fapp.ModuleDeployment, urls []string,
-	cluster string, modulesNamespace string, log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
+	cluster string, modulesNamespace string, log *zerolog.Logger, releaseName string, mbgNp *netv1.NetworkPolicy) []netv1.NetworkPolicyEgressRule {
 	log.Trace().Str(logging.ACTION, logging.CREATE).
 		Msgf("Egress rules creation from network.Egress: %v, network.URLs %v",
 			egresses, urls)
 	egressRules := []netv1.NetworkPolicyEgressRule{}
 
-	modulesEgressRules := r.createModuleEgressRules(egresses, cluster, log)
+	modulesEgressRules := r.createModuleEgressRules(egresses, cluster, log, releaseName, mbgNp)
 	egressRules = append(egressRules, modulesEgressRules...)
 
 	// The URLs can be a CIDR block, or urls to the cluster internal or external services.
@@ -265,7 +326,7 @@ func (r *BlueprintReconciler) createNPEgressRules(ctx context.Context, egresses 
 }
 
 func (r *BlueprintReconciler) createModuleEgressRules(egresses []fapp.ModuleDeployment, cluster string,
-	log *zerolog.Logger) []netv1.NetworkPolicyEgressRule {
+	log *zerolog.Logger, releaseName string, mbgNp *netv1.NetworkPolicy) []netv1.NetworkPolicyEgressRule {
 	var egressRules []netv1.NetworkPolicyEgressRule
 	for _, egress := range egresses {
 		if egress.Cluster == "" || egress.Cluster == cluster {
@@ -295,6 +356,27 @@ func (r *BlueprintReconciler) createModuleEgressRules(egresses []fapp.ModuleDepl
 			// TODO: multi-cluster support
 			log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Cross-cluster egress connectivity, egress.Cluster %s, blueprint cluster %s",
 				egress.Cluster, cluster)
+			if environment.IsMBGEnabled() {
+				// TODO: multi-cluster support
+				log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Cross-cluster egress connectivity, egress.Cluster %s, blueprint cluster %s",
+					egress.Cluster, cluster)
+				// add egress rule to MBG
+				mbgNamespace := environment.GetMBGNameSpace()
+				nsSelector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesNamespaceName: mbgNamespace}}
+				podSelector := meta.LabelSelector{MatchLabels: map[string]string{"app": "mbg"}}
+				npPeer := netv1.NetworkPolicyPeer{NamespaceSelector: &nsSelector, PodSelector: &podSelector}
+				egressRules = append(egressRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{npPeer}})
+
+				// add rules for MBG pod
+				if mbgNp != nil {
+					log.Debug().Str(logging.ACTION, logging.CREATE).Msgf("Add ingress rule for MBG")
+					// add an ingress rule from the module
+					selector := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: releaseName}}
+					from := netv1.NetworkPolicyPeer{PodSelector: &selector}
+					ingressRule := netv1.NetworkPolicyIngressRule{From: []netv1.NetworkPolicyPeer{from}}
+					mbgNp.Spec.Ingress = append(mbgNp.Spec.Ingress, ingressRule)
+				}
+			}
 		}
 	}
 
