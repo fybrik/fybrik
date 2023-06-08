@@ -2,8 +2,8 @@ Create two clusters.
 
 Install MBG in both clusters:
 
-- In the main cluster install and run MBG using the command `python3 third_party/MBG/install-mbg.py --mbgname mbg1 --mbgctlname mbgctl1  --certificate ./mtls/mbg1.crt --key ./mtls/mbg1.key`.
-- In the remote cluster install and run MBG using the command `python3 third_party/MBG/install-mbg.py --mbgname mbg2 --mbgctlname mbgctl2  --certificate ./mtls/mbg2.crt --key ./mtls/mbg2.key`.
+- In the main cluster install and run MBG using the command `python3 third_party/MBG/install-mbg.py --mbgname mbg1 --mbgctlname mbgctl1 --mbgnamespace default --fybriknamespace fybrik-system --certificate ./mtls/mbg1.crt --key ./mtls/mbg1.key`.
+- In the remote cluster install and run MBG using the command `python3 third_party/MBG/install-mbg.py --mbgname mbg2 --mbgctlname mbgctl2 --mbgnamespace default --fybriknamespace fybrik-system --certificate ./mtls/mbg2.crt --key ./mtls/mbg2.key`.
 - In the main cluster Store the name of the MBG and MBG control pod `mbg-deployment-XXXX` and `mbgctl-deployment-XXXX` in `MBG_POD1` and `MBG_CTL_POD1` respectively.
 - In the remote cluster Store the name of the MBG and MBG control pod `mbg-deployment-XXXX` and `mbgctl-deployment-XXXX` in `MBG_POD2` and `MBG_CTL_POD2` respectively.
 - In the remote cluster: Get the MBG IP by running `kubectl exec -i ${MBG_POD2} -- cat /root/.mbg/mbgApp`, store it in `MBG_IP2`.

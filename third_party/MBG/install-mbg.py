@@ -7,33 +7,38 @@ from colorama import Style
 import subprocess as sp
 
 
-def startMbg(mbgName, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane, mbgcrtFlags):
+def startMbg(mbgName, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane, mbgcrtFlags, mbgNamespace, fybrikNamespace):
+    runcmd("./hack/tools/bin=./hack/tools/bin")
     mbgNodeIp = getNodeIp(mbgName)
-    podMbg, podMbgIp    = buildMbg(mbgName)
+    podMbg, podMbgIp    = buildMbg(mbgName, mbgNamespace, fybrikNamespace)
     destMbgIp          = f"{podMbgIp}:{mbgcPortLocal}"
-    runcmd(f"kubectl create service nodeport mbg --tcp={mbgcPortLocal}:{mbgcPortLocal} --node-port={mbgcPort}")
+    runcmd(f"./hack/tools/bin/kubectl create service nodeport mbg --tcp={mbgcPortLocal}:{mbgcPortLocal} --node-port={mbgcPort}")
     printHeader(f"\n\nStart {mbgName} (along with PolicyEngine)")
     startcmd= f'{podMbg} -- ./mbg start --id "{mbgName}" --ip {mbgNodeIp} --cport {mbgcPort} --cportLocal {mbgcPortLocal}  --externalDataPortRange {mbgDataPort}\
     --dataplane {dataplane} {mbgcrtFlags} --startPolicyEngine={True} --logFile={True}'
-    runcmdb("kubectl exec -i " + startcmd)
+    runcmdb("./hack/tools/bin/kubectl exec -i " + startcmd)
     mbgctlPod, _ = buildMbgctl(mbgctlName)
-    runcmdb(f'kubectl exec -i {mbgctlPod} -- ./mbgctl create --id {mbgctlName} --mbgIP {destMbgIp}  --dataplane {dataplane} {mbgcrtFlags} ')
+    runcmdb(f'./hack/tools/bin/kubectl exec -i {mbgctlPod} -- ./mbgctl create --id {mbgctlName} --mbgIP {destMbgIp}  --dataplane {dataplane} {mbgcrtFlags} ')
 
-def buildMbg(name):
-    runcmd(f"kubectl apply -f third_party/MBG/mbg-role.yaml")
-    runcmd(f"kubectl create -f third_party/MBG/mbg.yaml")
+def buildMbg(name, mbgNamespace, fybrikNamespace):
+    runcmd("./hack/tools/bin/kubectl apply -f third_party/MBG/mbg-role.yaml")
+    runcmd(f"./hack/tools/bin/yq -i eval '.subjects[0].namespace |= \"{mbgNamespace}\"' third_party/MBG/mbg-rolebinding-default.yaml")
+    runcmd("./hack/tools/bin/kubectl apply -f third_party/MBG/mbg-rolebinding-default.yaml")
+    runcmd(f"./hack/tools/bin/yq -i eval '.subjects[0].namespace |= \"{fybrikNamespace}\"' third_party/MBG/mbg-rolebinding-manager.yaml")
+    runcmd("./hack/tools/bin/kubectl apply -f third_party/MBG/mbg-rolebinding-manager.yaml")
+    runcmd("./hack/tools/bin/kubectl create -f third_party/MBG/mbg.yaml")
     waitPod("mbg")
-    podMbg, mbgIp= getPodNameIp("mbg")
+    podMbg, mbgIp = getPodNameIp("mbg")
     return podMbg, mbgIp
 
 def buildMbgctl(name):
-    runcmd(f"kubectl create -f third_party/MBG/mbgctl.yaml")
+    runcmd("./hack/tools/bin/kubectl create -f third_party/MBG/mbgctl.yaml")
     waitPod("mbgctl")
     name,ip= getPodNameIp("mbgctl")
     return name, ip
 
 def getNodeIp(name):
-    clJson=json.loads(sp.getoutput(f' kubectl get nodes -o json'))
+    clJson=json.loads(sp.getoutput('./hack/tools/bin/kubectl get nodes -o json'))
     ip = clJson["items"][0]["status"]["addresses"][0]["address"]
     return ip
 
@@ -43,12 +48,12 @@ def getPodNameIp(app):
     return podName, podIp
 
 def getPodNameApp(app):
-    cmd=f"kubectl get pods -l app={app} "+'-o jsonpath="{.items[0].metadata.name}"'
+    cmd=f"./hack/tools/bin/kubectl get pods -l app={app} "+'-o jsonpath="{.items[0].metadata.name}"'
     podName=sp.getoutput(cmd)
     return podName
 
 def getPodName(prefix):
-    podName=sp.getoutput(f'kubectl get pods -o name | fgrep {prefix}| cut -d\'/\' -f2')
+    podName=sp.getoutput(f'./hack/tools/bin/kubectl get pods -o name | fgrep {prefix}| cut -d\'/\' -f2')
     return podName
 
 def printHeader(msg):
@@ -56,14 +61,14 @@ def printHeader(msg):
 
 def getPodIp(name):
     name=getPodName(name)
-    podIp=sp.getoutput(f"kubectl get pod {name}"+" --template '{{.status.podIP}}'")
+    podIp=sp.getoutput(f"./hack/tools/bin/kubectl get pod {name}"+" --template '{{.status.podIP}}'")
     return podIp
 
 def waitPod(name):
     time.sleep(2) #Initial start
     podStatus=""
     while(podStatus != "Running"):
-        cmd=f"kubectl get pods -l app={name} "+ '--no-headers -o custom-columns=":status.phase"'
+        cmd=f"./hack/tools/bin/kubectl get pods -l app={name} "+ '--no-headers -o custom-columns=":status.phase"'
         podStatus =sp.getoutput(cmd)
         if (podStatus != "Running"):
             print (f"Waiting for pod {name} to start current status: {podStatus}")
@@ -89,6 +94,8 @@ if __name__ == "__main__":
     parser.add_argument('--key', required=False, default="./mtls/mbg1.key")
     parser.add_argument('--mbgname', help='MBG name', required=False, default="mbg1")
     parser.add_argument('--mbgctlname', help='MBG control name', required=False, default="mbgctl1")
+    parser.add_argument('--mbgnamespace', help='MBG namespace', required=False, default="default")
+    parser.add_argument('--fybriknamespace', help='fybrik controller namespace', required=False, default="fybrik-system")
 
     args = vars(parser.parse_args())
 
@@ -96,12 +103,13 @@ if __name__ == "__main__":
 
     dataplane = args["dataplane"]
     # MBG parameters 
-    mbgDataPort    = "30001"
-    mbgcPort       = "30443"
-    mbgcPortLocal  = "8443"
-    mbgcrtFlags    = "--rootCa ./mtls/ca.crt " + "--certificate " + args["certificate"] + " --key " + args["key"]
-    mbg1Name       = args["mbgname"]
-    mbgctlName     = args["mbgctlname"]
+    mbgDataPort        = "30001"
+    mbgcPort           = "30443"
+    mbgcPortLocal      = "8443"
+    mbgcrtFlags        = "--rootCa ./mtls/ca.crt " + "--certificate " + args["certificate"] + " --key " + args["key"]
+    mbg1Name           = args["mbgname"]
+    mbgctlName         = args["mbgctlname"]
+    mbgNamespace       = args["mbgnamespace"]
+    fybrikNamespace    = args["fybriknamespace"]
     
-    startMbg(mbg1Name, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane ,mbgcrtFlags)
-
+    startMbg(mbg1Name, mbgctlName, mbgcPortLocal, mbgcPort, mbgDataPort, dataplane ,mbgcrtFlags, mbgNamespace, fybrikNamespace)
