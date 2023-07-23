@@ -109,6 +109,12 @@ cluster:
   region: theshire
   # Set to the cluster Vault auth method path.
   vaultAuthPath: kubernetes
+  # MBG
+  mbg:
+    enabled: false
+    mbgPodName: ""
+    mbgCtlPodName: ""
+    mbgNamespace: ""
 
 # Configuration when deploying to a coordinator cluster.
 coordinator:

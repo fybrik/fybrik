@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mbg-role
+rules:
+  - apiGroups: ["", "apps"]
+    resources: ["pods", "replicasets", "services", "pods/exec"]
+    verbs: ["get", "list", "watch", "create", "delete", "exec"]

@@ -48,6 +48,10 @@ const (
 	DiscoveryBurst                    string = "DISCOVERY_BURST"
 	DiscoveryQPS                      string = "DISCOVERY_QPS"
 	NPEnabled                         string = "NP_ENABLED"
+	MBGEnabled                        string = "MBG_ENABLED"
+	MBGPodName                        string = "MBG_POD_NAME"
+	MBGCtlPodName                     string = "MBG_CTL_POD_NAME"
+	MBGNamespace                      string = "MBG_NAMESPACE"
 	OpenShiftDeployment               string = "OPENSHIFT_DEPLOYMENT"
 )
 
@@ -154,6 +158,22 @@ func GetMinTLSVersion(log *zerolog.Logger) uint16 {
 
 func IsNPEnabled() bool {
 	return strings.ToLower(os.Getenv(NPEnabled)) == "true"
+}
+
+func IsMBGEnabled() bool {
+	return strings.ToLower(os.Getenv(MBGEnabled)) == "true"
+}
+
+func GetMBGPodName() string {
+	return os.Getenv(MBGPodName)
+}
+
+func GetMBGCtlPodName() string {
+	return os.Getenv(MBGCtlPodName)
+}
+
+func GetMBGNameSpace() string {
+	return os.Getenv(MBGNamespace)
 }
 
 func IsOpenShiftDeployment() bool {
