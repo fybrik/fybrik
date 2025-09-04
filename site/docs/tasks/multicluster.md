@@ -193,3 +193,31 @@ vault write auth/<auth path>/role/module \
 ```
 1. Deploy the Fybrik helm chart with `--set cluster.vaultAuthPath=<auth path>` parameter
 
+### Configure Vault address (required in multi-cluster)
+
+In a multi-cluster setup, the Fybrik Helm chart must know how modules in **remote clusters** can reach Vault. You must set `.Values.vault.address` to the **Vault Ingress address** (usually port 80 or 443).
+
+#### Option A — values.yaml
+
+```yaml
+vault:
+  address: https://<vault-ingress-host>:443
+```
+
+#### Option B — Helm Flag
+```bash
+helm install fybrik fybrik-charts/fybrik \
+  --set vault.address=https://<vault-ingress-host>:443
+```
+
+#### Combined with auth path
+
+Often you will also need to configure the Kubernetes auth path at the same time:
+
+```bash
+helm install fybrik fybrik-charts/fybrik \
+  --set vault.address=https://<vault-ingress-host>:443 \
+  --set cluster.vaultAuthPath=<auth path>
+```
+
+Without this setting, modules running on remote clusters cannot authenticate against Vault.
