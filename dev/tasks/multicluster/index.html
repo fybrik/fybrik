@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.5.10">
     
     
       
@@ -503,7 +503,7 @@
   
     <li class="md-nav__item">
       <a href="../../get-started/OneClickDemo/" class="md-nav__link">
-        OneClickDemo
+        One Click Demo
       </a>
     </li>
   
@@ -879,6 +879,40 @@
   <a href="#enabling-kubernetes-authentication-for-each-cluster-with-running-fybrik-modules" class="md-nav__link">
     Enabling Kubernetes authentication for each cluster with running Fybrik modules:
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-vault-address-required-in-multi-cluster" class="md-nav__link">
+    Configure Vault address (required in multi-cluster)
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure Vault address (required in multi-cluster)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-valuesyaml" class="md-nav__link">
+    Option A — values.yaml
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-helm-flag" class="md-nav__link">
+    Option B — Helm Flag
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combined-with-auth-path" class="md-nav__link">
+    Combined with auth path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1541,6 +1575,40 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#configure-vault-address-required-in-multi-cluster" class="md-nav__link">
+    Configure Vault address (required in multi-cluster)
+  </a>
+  
+    <nav class="md-nav" aria-label="Configure Vault address (required in multi-cluster)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-valuesyaml" class="md-nav__link">
+    Option A — values.yaml
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-helm-flag" class="md-nav__link">
+    Option B — Helm Flag
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combined-with-auth-path" class="md-nav__link">
+    Combined with auth path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1733,6 +1801,23 @@ More details on the parameters in the command above can be found in <a href="htt
 </li>
 <li>Deploy the Fybrik helm chart with <code>--set cluster.vaultAuthPath=&lt;auth path&gt;</code> parameter</li>
 </ol>
+<h3 id="configure-vault-address-required-in-multi-cluster">Configure Vault address (required in multi-cluster)</h3>
+<p>In a multi-cluster setup, the Fybrik Helm chart must know how modules in <strong>remote clusters</strong> can reach Vault. You must set <code>.Values.vault.address</code> to the <strong>Vault Ingress address</strong> (usually port 80 or 443).</p>
+<h4 id="option-a-valuesyaml">Option A — values.yaml</h4>
+<div class="highlight"><pre><span></span><code><span class="nt">vault</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://&lt;vault-ingress-host&gt;:443</span>
+</code></pre></div>
+<h4 id="option-b-helm-flag">Option B — Helm Flag</h4>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>vault.address<span class="o">=</span>https://&lt;vault-ingress-host&gt;:443
+</code></pre></div>
+<h4 id="combined-with-auth-path">Combined with auth path</h4>
+<p>Often you will also need to configure the Kubernetes auth path at the same time:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>fybrik<span class="w"> </span>fybrik-charts/fybrik<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>vault.address<span class="o">=</span>https://&lt;vault-ingress-host&gt;:443<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>cluster.vaultAuthPath<span class="o">=</span>&lt;auth<span class="w"> </span>path&gt;
+</code></pre></div>
+<p>Without this setting, modules running on remote clusters cannot authenticate against Vault.</p>
 
 
 

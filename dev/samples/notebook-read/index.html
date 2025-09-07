@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.5.10">
     
     
       
@@ -583,7 +583,7 @@
   
     <li class="md-nav__item">
       <a href="../../get-started/OneClickDemo/" class="md-nav__link">
-        OneClickDemo
+        One Click Demo
       </a>
     </li>
   
@@ -1721,22 +1721,22 @@ We use port-forwarding to send asset creation requests to the Katalog connector.
 <p><a href="../../get-started/quickstart/">Quick Start</a> installs a fybrik control plane with the region <code>theshire</code> by default. If you change it or the <code>geography</code> in the json above, a <a href="https://github.com/fybrik/mover">copy module</a> will be required by the policies, but we do not install any copy module in the <a href="../../get-started/quickstart/">Quick Start</a>.</p>
 <h2 id="define-data-access-policies">Define data access policies</h2>
 <p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy to redact the columns tagged as <code>PII.Sensitive</code> for datasets tagged with <code>Purpose.finance</code>. Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
-<div class="highlight"><pre><span></span><code>package dataapi.authz
+<div class="highlight"><pre><span></span><code><span class="k">package</span><span class="w"> </span><span class="n">dataapi</span><span class="p">.</span><span class="n">authz</span>
 
-# If the conditions between the curly braces are true then Fybrik will get an object containing information about
-# &quot;RedactAction&quot;.
-rule[{&quot;action&quot;: {&quot;name&quot;:&quot;RedactAction&quot;, &quot;columns&quot;: column_names}, &quot;policy&quot;: description}] {
-  description := &quot;Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true&quot;
-  # this condition is true if it is a read operation
-  input.action.actionType == &quot;read&quot;
-  # this condition is true if the asset has &quot;Purpose.finance&quot; tag
-  input.resource.metadata.tags[&quot;Purpose.finance&quot;]
-  # this statement assigns to column_names variable all the columns that contain &quot;PII.Sensitive&quot; tag
-  column_names := [input.resource.metadata.columns[i].name | input.resource.metadata.columns[i].tags[&quot;PII.Sensitive&quot;]]
-  # this condition is true if column_names is not empty
-  # we need this check to apply the RedactAction action only in cases where sensitive data exists.
-  count(column_names) &gt; 0
-}
+<span class="c1"># If the conditions between the curly braces are true then Fybrik will get an object containing information about</span>
+<span class="c1"># &quot;RedactAction&quot;.</span>
+<span class="n">rule</span><span class="p">[{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;RedactAction&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;columns&quot;</span><span class="p">:</span><span class="w"> </span><span class="n">column_names</span><span class="p">},</span><span class="w"> </span><span class="s2">&quot;policy&quot;</span><span class="p">:</span><span class="w"> </span><span class="n">description</span><span class="p">}]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">description</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;Redact columns tagged as PII.Sensitive in datasets tagged with Purpose.finance = true&quot;</span>
+<span class="w">  </span><span class="c1"># this condition is true if it is a read operation</span>
+<span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">action</span><span class="p">.</span><span class="n">actionType</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;read&quot;</span>
+<span class="w">  </span><span class="c1"># this condition is true if the asset has &quot;Purpose.finance&quot; tag</span>
+<span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">resource</span><span class="p">.</span><span class="n">metadata</span><span class="p">.</span><span class="n">tags</span><span class="p">[</span><span class="s2">&quot;Purpose.finance&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="c1"># this statement assigns to column_names variable all the columns that contain &quot;PII.Sensitive&quot; tag</span>
+<span class="w">  </span><span class="n">column_names</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">[</span><span class="nb">input</span><span class="p">.</span><span class="n">resource</span><span class="p">.</span><span class="n">metadata</span><span class="p">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">name</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">resource</span><span class="p">.</span><span class="n">metadata</span><span class="p">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">tags</span><span class="p">[</span><span class="s2">&quot;PII.Sensitive&quot;</span><span class="p">]]</span>
+<span class="w">  </span><span class="c1"># this condition is true if column_names is not empty</span>
+<span class="w">  </span><span class="c1"># we need this check to apply the RedactAction action only in cases where sensitive data exists.</span>
+<span class="w">  </span><span class="n">count</span><span class="p">(</span><span class="n">column_names</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>-n<span class="w"> </span>fybrik-system<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>sample-policy<span class="w"> </span>--from-file<span class="o">=</span>sample-policy.rego

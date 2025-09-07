@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../static/logo.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.5.10">
     
     
       
@@ -583,7 +583,7 @@
   
     <li class="md-nav__item">
       <a href="../../get-started/OneClickDemo/" class="md-nav__link">
-        OneClickDemo
+        One Click Demo
       </a>
     </li>
   
@@ -1730,12 +1730,12 @@ We use port-forwarding to send asset creation requests to the Katalog connector.
 <p>Acting as the data steward, define an <a href="https://www.openpolicyagent.org/">OpenPolicyAgent</a> policy.
 In this sample we only specify the action taken.
 Below is the policy (written in <a href="https://www.openpolicyagent.org/docs/latest/policy-language/#what-is-rego">Rego</a> language):</p>
-<div class="highlight"><pre><span></span><code>package dataapi.authz
+<div class="highlight"><pre><span></span><code><span class="k">package</span><span class="w"> </span><span class="n">dataapi</span><span class="p">.</span><span class="n">authz</span>
 
-rule[{}] {
-  description := &quot;allow the delete operation&quot;
-  input.action.actionType == &quot;delete&quot;
-}
+<span class="n">rule</span><span class="p">[{}]</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">description</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;allow the delete operation&quot;</span>
+<span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">action</span><span class="p">.</span><span class="n">actionType</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span>
+<span class="p">}</span>
 </code></pre></div>
 <p>In this sample only the policy above is applied. Copy the policy to a file named <code>sample-policy.rego</code> and then run:</p>
 <div class="highlight"><pre><span></span><code><span class="nv">NS</span><span class="o">=</span><span class="s2">&quot;fybrik-system&quot;</span><span class="p">;</span><span class="w"> </span>kubectl<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NS</span><span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/sample/{print $1}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w">  </span>kubectl<span class="w"> </span>delete<span class="w"> </span>-n<span class="w"> </span><span class="nv">$NS</span><span class="w"> </span>configmap
