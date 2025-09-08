@@ -10,15 +10,21 @@ For more information please visit [our website](https://fybrik.io/).
 
 ## Repositories
 
-Fybrik is composed of the following repositiores
+Fybrik is composed of the following repositories:
 
 - [fybrik/fybrik](https://github.com/fybrik/fybrik). This is the main code repository. It hosts the core components, install artifacts, and sample programs. It includes:
 
   - [manager](manager) This directory contains the code for the main operator that is responsible for the control plane of Fybrik.
 
+- [fybrik/charts](https://github.com/fybrik/charts) — Helm charts for deploying Fybrik.
+
 - [fybrik/arrow-flight-module](https://github.com/fybrik/arrow-flight-module). This is the code repository for read/write data access module based on Arrow/Flight.
 
 - [fybrik/mover](https://github.com/fybrik/mover). This is the code respository for an implicit copy module based on Apache SparkSQL.
+
+Other modules and connectors are maintained under the Fybrik organization (for example: `openmetadata-connector`, `airbyte-module`, `trino-module`, `dremio-module`).  
+
+See the full list at: https://github.com/fybrik
 
 ## Issue management
 
