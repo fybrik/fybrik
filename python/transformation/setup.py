@@ -13,6 +13,6 @@ setup(name='fybrik_python_transformation',
       packages=['fybrik_python_transformation'],
       install_requires=[
           "pandas==1.4.2",
-          "pyarrow==8.0.0",
+          "pyarrow==14.0.1",
       ],
 )
