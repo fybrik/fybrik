@@ -57,23 +57,23 @@ func TestCreateNPIngressRules(t *testing.T) {
 	expectedIngressRules := getDefaultNetworkPolicyIngressRules()
 
 	// check default Ingress rules creation
-	rules, err := r.createNPIngressRules(false, nil, nil, myCluster, &log)
+	rules, err := r.createNPIngressRules(false, nil, nil, myCluster, &log, "", nil)
 	g.Expect(err).To(gomega.BeNil(), "cannot create default NP IngressRules")
 	g.Expect(rules).To(gomega.Equal(expectedIngressRules))
 
 	// check mismatching error when endpoint is true, but application details is nil
-	_, err = r.createNPIngressRules(true, nil, nil, myCluster, &log)
+	_, err = r.createNPIngressRules(true, nil, nil, myCluster, &log, "", nil)
 	g.Expect(err).Should(gomega.MatchError(NilApplicationDetailsError), "nil application error is not thrown")
 
 	// check mismatching error when endpoint is true, but application details do not provide any information about possible
 	// user workloads.
 	app := fapp.ApplicationDetails{}
-	_, err = r.createNPIngressRules(true, nil, &app, myCluster, &log)
+	_, err = r.createNPIngressRules(true, nil, &app, myCluster, &log, "", nil)
 	g.Expect(err).Should(gomega.MatchError(EmptyApplicationDetailsError), "empty application error is not thrown")
 
 	compareRules := func(endPoint bool, ingresses []fapp.ModuleDeployment, app *fapp.ApplicationDetails,
 		cluster string, expectedRules []netv1.NetworkPolicyIngressRule) {
-		rules, err = r.createNPIngressRules(endPoint, ingresses, app, cluster, &log)
+		rules, err = r.createNPIngressRules(endPoint, ingresses, app, cluster, &log, "", nil)
 		_, file, line, ok := runtime.Caller(1)
 		var msg string
 		if !ok {
@@ -171,7 +171,7 @@ func TestCreateNPEgressDefaultDNSRules(t *testing.T) {
 	r := createTestFybrikBlueprintController(s)
 
 	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules}
-	rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &r.Log)
+	rules := r.createNPEgressRules(context.Background(), nil, nil, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
@@ -195,7 +195,7 @@ func TestCreateNPEgress4NextModule(t *testing.T) {
 	podSelector2 := meta.LabelSelector{MatchLabels: map[string]string{managerUtils.KubernetesInstance: release3}}
 	to = netv1.NetworkPolicyPeer{PodSelector: &podSelector2}
 	expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{to}})
-	rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &r.Log)
+	rules := r.createNPEgressRules(context.Background(), egresses, nil, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
@@ -237,7 +237,7 @@ func TestCreateNPEgress2InternalServices(t *testing.T) {
 	expectedRules := []netv1.NetworkPolicyEgressRule{dnsEgressRules, {To: []netv1.NetworkPolicyPeer{toPods}, Ports: npPortsPods},
 		{To: []netv1.NetworkPolicyPeer{toSvc}, Ports: npPortsSvc}}
 	rules := r.createNPEgressRules(context.Background(), nil,
-		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log)
+		[]string{serviceURL}, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
@@ -255,7 +255,7 @@ func TestCreateNPEgress2IPBlocks(t *testing.T) {
 			expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: []netv1.NetworkPolicyPeer{{IPBlock: &ipBlock}}})
 		}
 	}
-	rules := r.createNPEgressRules(context.Background(), nil, ipBlocks, myCluster, modulesNamespace, &r.Log)
+	rules := r.createNPEgressRules(context.Background(), nil, ipBlocks, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
@@ -284,7 +284,7 @@ func TestCreateNPEgress2IPs(t *testing.T) {
 			expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{port}})
 		}
 	}
-	rules := r.createNPEgressRules(context.Background(), nil, urls, myCluster, modulesNamespace, &r.Log)
+	rules := r.createNPEgressRules(context.Background(), nil, urls, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
@@ -321,7 +321,7 @@ func TestCreateNPEgress2HostNames(t *testing.T) {
 	netPort := netv1.NetworkPolicyPort{Protocol: &tcp, Port: &p}
 	expectedRules = append(expectedRules, netv1.NetworkPolicyEgressRule{To: to, Ports: []netv1.NetworkPolicyPort{netPort}})
 
-	rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &r.Log)
+	rules := r.createNPEgressRules(context.Background(), nil, []string{urlString}, myCluster, modulesNamespace, &r.Log, "", nil)
 	g.Expect(expectedRules).To(CompareNPEgressRules(rules))
 }
 
