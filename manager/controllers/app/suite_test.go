@@ -135,7 +135,7 @@ var _ = BeforeSuite(func() {
 					Info: &release.Info{Status: release.StatusDeployed},
 				},
 			)
-			err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm).SetupWithManager(mgr)
+			err = NewBlueprintReconciler(mgr, "Blueprint", fakeHelm, false).SetupWithManager(mgr)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Setup plotter controller

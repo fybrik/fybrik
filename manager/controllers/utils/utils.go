@@ -5,13 +5,18 @@ package utils
 
 import (
 	"context"
+	"io"
 	"net/url"
 	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/kubectl/pkg/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fapp "fybrik.io/fybrik/manager/apis/app/v1beta1"
@@ -83,4 +88,40 @@ func ParseRawURL(rawURL string) (*url.URL, error) {
 	}
 	u, err := url.Parse(rawURL)
 	return u, err
+}
+
+func ExecPod(restClient restclient.Interface, config *restclient.Config, podName string, namespace string,
+	command string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+	cmd := []string{
+		"sh",
+		"-c",
+		command,
+	}
+	req := restClient.Post().Resource("pods").Name(podName).
+		Namespace(namespace).SubResource("exec")
+	option := &corev1.PodExecOptions{
+		Command: cmd,
+		Stdin:   true,
+		Stdout:  true,
+		Stderr:  true,
+		TTY:     true,
+	}
+	if stdin == nil {
+		option.Stdin = false
+	}
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
+	})
+
+	return err
 }
