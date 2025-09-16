@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Fybrik repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: fybrik/fybrik
           path: fybrik-repo
       - name: Checkout original Operate First repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: operate-first/apps
           path: operate-first-repo

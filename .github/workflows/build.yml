@@ -33,7 +33,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Cache dependencies
@@ -63,7 +63,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
@@ -96,7 +96,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
@@ -151,7 +151,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
@@ -179,7 +179,7 @@ jobs:
 #      uses: actions/setup-go@v4
 #      with:
 #        go-version: ${{ env.GO_VERSION }}
-#    - uses: actions/checkout@v3
+#    - uses: actions/checkout@v4
 #    - name: Cache dependencies
 #      uses: actions/cache@v3
 #      with:
@@ -213,7 +213,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache dependencies
       id: cache
       uses: actions/cache@v3
@@ -288,7 +288,7 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: install nfs rpms
       run: sudo apt-get update && sudo apt-get install -y nfs-kernel-server nfs-common && sudo modprobe nfsd && sudo modprobe nfs
     - name: Cache dependencies
@@ -329,7 +329,7 @@ jobs:
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 10
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download artifact
       uses: actions/download-artifact@v3
       with:
