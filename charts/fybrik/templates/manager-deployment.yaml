@@ -112,7 +112,7 @@ spec:
             - name: DATA_DIR
               value: {{ include "fybrik.getDataDir" . }}
             - name: ENABLE_WEBHOOKS
-            {{- if .Values.clusterScoped }} 
+            {{- if and .Values.clusterScoped .Values.validationWebhookEnabled }}
               value: "true"
             {{- else }}
               value: "false"
@@ -145,7 +145,7 @@ spec:
             - name: LOCAL_CHARTS_DIR
               value: {{ include "fybrik.localChartsMountPath" . }}
             {{- end }}
-          {{- if .Values.clusterScoped }} 
+          {{- if and .Values.clusterScoped .Values.validationWebhookEnabled }}
           ports:
             - containerPort: 9443
               name: webhook-server
@@ -164,7 +164,7 @@ spec:
           volumeMounts:
             - name: data
               mountPath: {{ include "fybrik.getDataDir" . }}
-           {{- if .Values.clusterScoped }}
+           {{- if and .Values.clusterScoped .Values.validationWebhookEnabled }}
             - mountPath: {{ include "fybrik.getDataSubdir" (tuple "k8s-webhook-server" ) }}
               name: webhook-cert
               readOnly: true
@@ -197,7 +197,7 @@ spec:
             {{- toYaml .Values.manager.resources | nindent 12 }}
       terminationGracePeriodSeconds: 10
       volumes:
-        {{- if .Values.clusterScoped }}
+        {{- if and .Values.clusterScoped .Values.validationWebhookEnabled }}
         - name: webhook-cert
           secret:
             defaultMode: 420

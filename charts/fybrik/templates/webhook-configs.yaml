@@ -1,5 +1,5 @@
 {{- if include "fybrik.isEnabled" (tuple .Values.manager.enabled (or .Values.coordinator.enabled .Values.worker.enabled)) }}
-{{- if .Values.clusterScoped }}
+{{- if and .Values.clusterScoped .Values.validationWebhookEnabled }}
 {{ tpl ( .Files.Get "files/webhook-configs.yaml" ) . }}
 {{- end }}
 {{- end }}
